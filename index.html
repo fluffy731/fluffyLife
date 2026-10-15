@@ -29,6 +29,10 @@
   <button data-tab="settings"><span class="ic">⚙</span>Settings</button>
 </nav>
 <dialog id="dlg"></dialog>
-<script type="module" src="./app.js"></script>
+<script type="module">
+  import { start } from "./app.js";
+  import { koPack } from "./packs/ko.js";
+  start(koPack);
+</script>
 </body>
 </html>
