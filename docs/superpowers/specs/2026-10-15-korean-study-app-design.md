@@ -101,3 +101,12 @@ unique ids, and a valid tier. UI is verified by a Playwright screenshot pass.
 ## Out of scope
 
 Server push, accounts, sync between devices, audio, TOPIK mock exams.
+
+## Future direction (not built now)
+
+A reverse pack for Korean speakers learning Cantonese. To keep that door
+open, the seed data is a **pack**: `data/pack.js` exports
+`{ id: "ko-zh", target: "ko", support: ["zh", "en"], vocab, grammar }`.
+The UI reads field names from the pack's `fields` list rather than
+hard-coding `hanja`/`zh`. A future `yue-ko` pack would carry `jyutping`
+and `ko` glosses instead. Nothing else in the app changes.
