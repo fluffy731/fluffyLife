@@ -156,7 +156,9 @@ function renderSettings() {
       <div class="actions"><button class="btn" data-theme>${t.theme(esc(state.settings.theme || "auto"))}</button><button class="btn" data-wipe style="color:var(--bad)">${t.resetAll}</button></div>
       <p class="small muted">${t.progressNote}</p>
       <p class="small muted">${t.packLine(esc(pack.id), pack.vocab.length, pack.grammar.length, (state.custom || []).length)}</p>
-    </div>`;
+    </div>
+    <h2>${t.speechCheck}</h2>
+    <div class="card"><button class="btn" data-speechtest style="width:100%">${t.speechCheckBtn}</button><pre id="speech-log" class="speech-log"></pre></div>`;
 }
 
 const VIEWS = { home: renderHome, learn: renderLearn, review: renderReview, browse: renderBrowse, settings: renderSettings };
@@ -229,9 +231,10 @@ function openEditor(existing) {
 // ---------- events ----------
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
+    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
     if (!el) return;
     if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
+    if (el.dataset.speechtest !== undefined) return speechCheck();
     if (el.dataset.setting) { state.settings[el.dataset.setting] = el.dataset.value; persist(); queue = []; flipped = false; return render(); }
     if (el.dataset.tab || el.dataset.go) { tab = el.dataset.tab || el.dataset.go; if (el.dataset.go === "learn") learnUnitKey = null; flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
     if (el.dataset.flip !== undefined || el.id === "card") { flipped = !flipped; return render(); }
@@ -283,8 +286,9 @@ function bindEvents() {
 // Speaks `text` with the first installed voice matching one of pack.speechLang, in order
 // (Cantonese: zh-HK, then zh-TW). With several candidate languages and no installed voice for any
 // of them it says so in the pack's own language instead of failing silently.
+let lastSpeak = "none yet";
 function speak(text) {
-  if (!("speechSynthesis" in window)) { alert(t.noSpeech); return; }
+  if (!("speechSynthesis" in window)) { lastSpeak = "no speechSynthesis"; alert(t.noSpeech); return; }
   const voices = speechSynthesis.getVoices();
   const norm = (l) => l.replace("_", "-").toLowerCase();
   let lang = pack.speechLang[0], voice = null;
@@ -293,11 +297,43 @@ function speak(text) {
     if (voice) { lang = l; break; }
   }
   // An empty list means the voices have not loaded yet (common in Safari): speak anyway and let the OS pick.
-  if (!voice && voices.length && pack.speechLang.length > 1) { alert(t.noVoice); return; }
+  if (!voice && voices.length && pack.speechLang.length > 1) { lastSpeak = `refused: ${voices.length} voices, none for ${pack.speechLang.join("/")}`; alert(t.noVoice); return; }
   const u = new SpeechSynthesisUtterance(pack.speechClean(text));
   u.lang = lang; u.rate = 0.85;
   if (voice) u.voice = voice;
+  lastSpeak = `spoke lang=${lang} voice=${voice ? voice.name : "(os default)"} of ${voices.length}`;
+  u.onerror = (e) => { lastSpeak += ` → error ${e.error}`; };
   speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+
+// Settings → speech check: shows what this device reports and speaks one test phrase with event timing.
+// Diagnostic only; it does not change how 🔊 behaves.
+function speechCheck() {
+  const out = $("#speech-log"); if (!out) return;
+  out.textContent = "";
+  const log = (m) => { out.textContent += m + "\n"; };
+  const standalone = window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true;
+  log(`mode: ${standalone ? "home-screen app" : "browser tab"}`);
+  log(`system: ${(navigator.userAgent.match(/(iPhone|iPad|Android)[^;)]*;?[^;)]*/) || [navigator.platform])[0]}`);
+  log(`last 🔊 tap: ${lastSpeak}`);
+  if (!("speechSynthesis" in window)) { log("speechSynthesis: MISSING"); return; }
+  const report = (label) => {
+    const v = speechSynthesis.getVoices();
+    const rel = v.filter((x) => /^(ko|zh|yue)/i.test(x.lang.replace("_", "-")));
+    log(`${label}: ${v.length} voices; ko/zh/yue: ${rel.map((x) => `${x.lang} ${x.name}`).join(", ") || "none"}`);
+  };
+  report("voices now");
+  log(`wanted: ${pack.speechLang.join(" → ")} · speaking=${speechSynthesis.speaking} pending=${speechSynthesis.pending} paused=${speechSynthesis.paused}`);
+  const u = new SpeechSynthesisUtterance(pack.speechTest);
+  u.lang = pack.speechLang[0]; u.rate = 0.85;
+  const t0 = performance.now(), ms = () => Math.round(performance.now() - t0);
+  let started = false;
+  u.onstart = () => { started = true; log(`test: start +${ms()} ms`); };
+  u.onend = () => log(`test: end +${ms()} ms`);
+  u.onerror = (e) => log(`test: error "${e.error}" +${ms()} ms`);
+  speechSynthesis.speak(u);
+  log(`test: speak("${pack.speechTest}", ${u.lang}) called`);
+  setTimeout(() => { if (!started) log("test: no start event after 3 s"); report("voices after 3 s"); }, 3000);
 }
 
 function applyTheme() {
