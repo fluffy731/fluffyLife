@@ -30,4 +30,5 @@ export const ui = {
   confirmWipe: "Erase all progress on this device? Custom words are kept.",
   confirmImport: "Replace the progress AND custom words on this device with the backup?",
   noSpeech: "This browser has no speech voices.", noVoice: "No matching voice is installed.",
+  speechCheck: "Speech check", speechCheckBtn: "🔊 Test speech and show details",
 };

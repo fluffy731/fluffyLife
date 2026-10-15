@@ -16,6 +16,7 @@ export const yuePack = {
   // Cantonese voices only (iOS zh-HK, Android yue-HK). A Mandarin voice would read 唔該 as "wú gāi"
   // under a card that says 음 꼬이, so with no Cantonese voice the app says so instead of speaking.
   speechLang: ["zh-HK", "yue-HK"],
+  speechTest: "你好",
   // Grammar forms such as "형용사 + 咗" mix in Korean; only the Chinese is read aloud.
   speechClean: (text) => text.replace(/[A-Za-z0-9\u3131-\u318e\uac00-\ud7a3+()/…]/g, " ").replace(/\s+/g, " ").trim().replace(/ (?=\p{Script=Han})|(?<=\p{Script=Han}) /gu, ""),
   tiers: YUE_TIERS.map((key) => ({ key, label: TIER[key][0], short: TIER[key][1] })),

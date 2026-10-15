@@ -11,6 +11,7 @@ export const koPack = {
   backupPrefix: "korean",
   swPath: "./sw.js",
   speechLang: ["ko-KR"],
+  speechTest: "안녕하세요",
   speechClean: (text) => text.replace(/^-|\(.*?\)/g, "").trim(),
   tiers: TIER_ORDER.map((key) => ({ key, label: TIER_LABEL[key], short: TIER_LABEL[key].split(" ·")[0] })),
   ui, cards, editable: true, validate: validateItem,
