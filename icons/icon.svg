@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="110" fill="#1b2a41"/>
+  <text x="256" y="300" font-family="PingFang TC, Noto Sans CJK TC, Apple SD Gothic Neo, serif" font-size="240" font-weight="700" fill="#ffffff" text-anchor="middle">漢</text>
+  <text x="256" y="430" font-family="Apple SD Gothic Neo, Noto Sans KR, sans-serif" font-size="90" font-weight="700" fill="#9dbcff" text-anchor="middle">한자</text>
+</svg>
