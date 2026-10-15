@@ -52,7 +52,8 @@ test("runtime pack", () => {
   assert.equal(yuePack.storageKey, "yue.v1");
   assert.equal(yuePack.backupPrefix, "yue");
   assert.equal(yuePack.swPath, "../sw.js");
-  assert.deepEqual(yuePack.speechLang, ["zh-HK", "zh-TW"]);
+  // Mandarin (zh-TW) is never used: it would read 唔該 as "wú gāi" under a card that says 음 꼬이 (review I6).
+  assert.deepEqual(yuePack.speechLang, ["zh-HK", "yue-HK"]);
   assert.equal(yuePack.editable, false);
   assert.equal(yuePack.validate, validateYue);
   assert.deepEqual(yuePack.tiers.map((t) => t.key), YUE_TIERS);
@@ -105,8 +106,8 @@ test("release content: ≥ 300 words, 12 units each ≥ 24 words, ≥ 40 grammar
 import { HANJA_KO } from "../data/yue/hanja-ko.js";
 import { bridge, hasBridge } from "../lib/bridge.js";
 
-const CANTONESE_ONLY = [..."唔冇咗嘅啲嗰呢佢哋睇瞓攰嬲嘈啦喎嘛呀㗎囉咋乜嘢畀搵咁蚊餸靚緊嗎仔闆找做姐"];
-const LOANWORD_ONLY = [..."巴士的咖啡卡嚨"];
+const CANTONESE_ONLY = [..."唔冇咗嘅啲嗰呢佢哋睇瞓攰嬲啦喎嘛呀㗎囉咋乜嘢畀搵咁餸靚嗎闆找"];
+const LOANWORD_ONLY = [..."巴士的咖啡卡"];
 
 test("bridge table: every reading is one 한글 syllable keyed by a Han character", () => {
   for (const [ch, ko] of Object.entries(HANJA_KO)) {
@@ -134,4 +135,50 @@ test("every non-Cantonese-only character in the vocabulary has a reading", () =>
   const missing = new Set();
   for (const v of vocab) for (const c of v.zh) if (/\p{Script=Han}/u.test(c) && !skip.has(c) && !(c in HANJA_KO)) missing.add(c);
   assert.deepEqual([...missing], []);
+});
+
+import { LEGACY_IDS } from "../data/yue/legacy-ids.js";
+
+test("ids are stable: words keyed by characters, grammar by unit + form (review I3)", () => {
+  for (const v of vocab) assert.equal(v.id, `y:${v.zh}`);
+  for (const g of grammar) assert.equal(g.id, `yg:${g.unit}:${g.form}`);
+  const migrated = yuePack.migrate({ progress: { "y01-01": { reps: 1 } }, custom: [], settings: {} });
+  assert.deepEqual(migrated.progress, { [LEGACY_IDS["y01-01"]]: { reps: 1 } });
+});
+
+test("speech strips Korean and Latin from grammar forms (review M3)", () => {
+  assert.equal(yuePack.speechClean("형용사 + 咗"), "咗");
+  assert.equal(yuePack.speechClean("你好，我叫美英。"), "你好，我叫美英。");
+});
+
+test("units have Korean titles (review M8) and Home shows the tone key (review I4)", () => {
+  for (let u = 1; u <= 12; u++) assert.ok(yuePack.unitTitles[u], `unit ${u}`);
+  const home = yuePack.homeExtra(ctx);
+  for (const label of yuePack.ui.toneKey) assert.ok(home.includes(label), label);
+  for (const n of [1, 2, 3, 4, 5, 6]) assert.ok(home.includes(`t${n}`));
+});
+
+test("unit 1 explains how to read the 한글 spelling (review I4)", () => {
+  assert.ok(grammar.some((g) => g.unit === 1 && /한글/.test(g.ko) && /ㅍ/.test(g.note)));
+});
+
+test("grammar card fronts are distinguishable: the form is shown (review M2)", () => {
+  const g = grammar.find((x) => x.form === "형용사 + 咗");
+  assert.ok(yuePack.cards.card(g, false, ctx).includes('<div class="chars" lang="zh-Hant">형용사 + 咗</div>'));
+});
+
+test("meaning → sound review direction (review I5)", () => {
+  const w = word("十");
+  const rctx = { ...ctx, settings: { direction: "meaning" }, tab: "review" };
+  const front = yuePack.cards.card(w, false, rctx);
+  assert.ok(front.includes(w.ko) && !front.includes('class="syl'));
+  assert.ok(yuePack.cards.card(w, true, rctx).includes('class="syl'));
+  const learnFront = yuePack.cards.card(w, false, { ...rctx, tab: "learn" });
+  assert.ok(learnFront.includes('class="syl')); // Learn always introduces sound first
+  assert.ok(yuePack.settingsExtra(rctx).includes('data-setting="direction"'));
+});
+
+test("loanwords get their own badge, not the Cantonese-only one (review M1)", () => {
+  const back = yuePack.cards.card(word("咖啡"), true, ctx);
+  assert.ok(back.includes(yuePack.ui.loanword) && !back.includes(yuePack.ui.cantoneseOnly));
 });

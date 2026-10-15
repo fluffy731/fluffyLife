@@ -24,6 +24,7 @@ function rebuild() {
 
 const persist = () => save(ls, state, pack.storageKey);
 const tierLabel = (k) => pack.tiers.find((x) => x.key === k)?.label ?? k;
+const unitTitle = (u) => (pack.unitTitles?.[u] ? ` · ${esc(pack.unitTitles[u])}` : "");
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const isGrammar = (it) => "form" in it;
@@ -57,11 +58,11 @@ function renderHome() {
       <div class="stat"><b>${idx + 1}/${units.length}</b><span>${t.unit}</span></div>
     </div>
     <h2>${t.wordOfHour}</h2>
-    ${hour ? cardHTML(hour, flipped) : '<div class="card empty">${t.noItems}</div>'}
-    <div class="small muted" style="margin-top:6px">${t.changesAt(nextHour.getHours().toString().padStart(2, "0"))} · ${esc(tierLabel(cur.tier))}</div>
+    ${hour ? cardHTML(hour, flipped) : `<div class="card empty">${t.noItems}</div>`}
+    <div class="small muted" style="margin-top:6px">${t.changesAt(nextHour.getHours().toString().padStart(2, "0"))} · ${esc(tierLabel(cur.tier))}</div>${pack.homeExtra ? pack.homeExtra(ctx) : ""}
     <h2>${t.currentUnit}</h2>
     <div class="card">
-      <div class="row"><b>${esc(tierLabel(cur.tier))} · ${t.unitN(esc(cur.unit))}</b><span class="pill ${esc(cur.tier)}">${esc(cur.tier)}</span></div>
+      <div class="row"><b>${esc(tierLabel(cur.tier))} · ${t.unitN(esc(cur.unit))}${unitTitle(cur.unit)}</b><span class="pill ${esc(cur.tier)}">${esc(cur.tier)}</span></div>
       <div class="progress-line"><i style="width:${(learnedInUnit / cur.items.length) * 100}%"></i></div>
       <div class="small muted" style="margin-top:6px">${t.introduced(learnedInUnit, cur.items.length, cur.items.filter(isGrammar).length)}</div>
       <div class="actions">
@@ -77,7 +78,7 @@ function renderLearn() {
   const unlocked = isUnlocked(units, units.indexOf(unit), state.progress);
   if (!queue.length || queue._key !== unit.key) { queue = unseenItems(unit, state.progress); queue._key = unit.key; flipped = false; }
   const header = `<div class="row" style="margin-bottom:10px">
-      <select id="unit-pick">${units.map((u) => `<option value="${esc(u.key)}" ${u.key === unit.key ? "selected" : ""}>${esc(tierLabel(u.tier))} · ${t.unitN(esc(u.unit))}${isLearned(u, state.progress) ? " ✓" : ""}</option>`).join("")}</select>
+      <select id="unit-pick">${units.map((u) => `<option value="${esc(u.key)}" ${u.key === unit.key ? "selected" : ""}>${esc(tierLabel(u.tier))} · ${t.unitN(esc(u.unit))}${unitTitle(u.unit)}${isLearned(u, state.progress) ? " ✓" : ""}</option>`).join("")}</select>
     </div>`;
   if (!queue.length) return header + `<div class="card empty"><b>${t.unitDone}</b>${isLearned(unit, state.progress) ? t.unitDoneHint : ""}</div>`;
   const it = queue[0];
@@ -132,7 +133,7 @@ function browseListHTML(list) {
       const p = state.progress[i.id];
       const status = !p ? t.statusNew : p.due <= Date.now() ? t.statusDue : t.statusIn(fmtDue(p.due));
       return pack.cards.browseRow(i, status, ctx);
-    }).join("")}${list.length > 200 ? '<div class="small muted">${t.showingFirst}</div>' : ""}</div>`;
+    }).join("")}${list.length > 200 ? `<div class="small muted">${t.showingFirst}</div>` : ""}</div>`;
 }
 
 function renderSettings() {
@@ -141,10 +142,10 @@ function renderSettings() {
       const done = u.items.length - unseenItems(u, state.progress).length;
       const cur = currentUnit(units, state.progress) === u;
       return `<div class="unit ${isUnlocked(units, i, state.progress) ? "" : "locked"} ${cur ? "current" : ""}" data-unit="${esc(u.key)}">
-        <span class="pill ${esc(u.tier)}">${esc(u.tier)}</span><span style="min-width:52px">${t.unitN(esc(u.unit))}</span>
+        <span class="pill ${esc(u.tier)}">${esc(u.tier)}</span><span style="min-width:52px">${t.unitN(esc(u.unit))}${unitTitle(u.unit)}</span>
         <div class="bar"><i style="width:${(done / u.items.length) * 100}%"></i></div>
         <span class="small muted">${done}/${u.items.length}</span></div>`;
-    }).join("")}</div>
+    }).join("")}</div>${pack.settingsExtra ? pack.settingsExtra(ctx) : ""}
     <h2>${t.data}</h2>
     <div class="card">
       <div class="actions">
@@ -228,25 +229,26 @@ function openEditor(existing) {
 // ---------- events ----------
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
-    if (!t) return;
-    if (t.dataset.say !== undefined) { e.stopPropagation(); return speak(t.dataset.say); }
-    if (t.dataset.tab || t.dataset.go) { tab = t.dataset.tab || t.dataset.go; if (t.dataset.go === "learn") learnUnitKey = null; flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
-    if (t.dataset.flip !== undefined || t.id === "card") { flipped = !flipped; return render(); }
-    if (t.dataset.grade) {
+    const el = e.target.closest("[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
+    if (!el) return;
+    if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
+    if (el.dataset.setting) { state.settings[el.dataset.setting] = el.dataset.value; persist(); queue = []; flipped = false; return render(); }
+    if (el.dataset.tab || el.dataset.go) { tab = el.dataset.tab || el.dataset.go; if (el.dataset.go === "learn") learnUnitKey = null; flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
+    if (el.dataset.flip !== undefined || el.id === "card") { flipped = !flipped; return render(); }
+    if (el.dataset.grade) {
       const it = queue.shift(); if (!it) return;
-      state.progress[it.id] = grade(state.progress[it.id], t.dataset.grade, Date.now());
-      if (t.dataset.grade === "again") queue.push(it);
+      state.progress[it.id] = grade(state.progress[it.id], el.dataset.grade, Date.now());
+      if (el.dataset.grade === "again") queue.push(it);
       persist(); flipped = false; return render();
     }
-    if (t.dataset.tier) { browse.tier = t.dataset.tier; return render(); }
-    if (t.dataset.kind) { browse.kind = t.dataset.kind; return render(); }
-    if (t.dataset.add !== undefined) return openEditor(null);
-    if (t.dataset.edit) { e.stopPropagation(); return openEditor(items.find((i) => i.id === t.dataset.edit)); }
-    if (t.dataset.reset) { e.stopPropagation(); delete state.progress[t.dataset.reset]; persist(); return render(); }
-    if (t.classList.contains("item")) { t.classList.toggle("open"); return; }
-    if (t.dataset.unit) { learnUnitKey = t.dataset.unit; tab = "learn"; queue = []; return render(); }
-    if (t.dataset.export !== undefined) {
+    if (el.dataset.tier) { browse.tier = el.dataset.tier; return render(); }
+    if (el.dataset.kind) { browse.kind = el.dataset.kind; return render(); }
+    if (el.dataset.add !== undefined) return openEditor(null);
+    if (el.dataset.edit) { e.stopPropagation(); return openEditor(items.find((i) => i.id === el.dataset.edit)); }
+    if (el.dataset.reset) { e.stopPropagation(); delete state.progress[el.dataset.reset]; persist(); return render(); }
+    if (el.classList.contains("item")) { el.classList.toggle("open"); return; }
+    if (el.dataset.unit) { learnUnitKey = el.dataset.unit; tab = "learn"; queue = []; return render(); }
+    if (el.dataset.export !== undefined) {
       const name = `${pack.backupPrefix}-backup-${new Date().toISOString().slice(0, 10)}.json`;
       const json = exportJSON(state);
       const file = new File([json], name, { type: "application/json" });
@@ -255,9 +257,9 @@ function bindEvents() {
       const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(file), download: name });
       a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 30000); return;
     }
-    if (t.dataset.import !== undefined) return $("#file").click();
-    if (t.dataset.wipe !== undefined) { if (confirm(t.confirmWipe)) { state.progress = {}; persist(); render(); } return; }
-    if (t.dataset.theme !== undefined) {
+    if (el.dataset.import !== undefined) return $("#file").click();
+    if (el.dataset.wipe !== undefined) { if (confirm(t.confirmWipe)) { state.progress = {}; persist(); render(); } return; }
+    if (el.dataset.theme !== undefined) {
       const order = ["auto", "light", "dark"]; const next = order[(order.indexOf(state.settings.theme || "auto") + 1) % 3];
       state.settings.theme = next; persist(); applyTheme(); return render();
     }
@@ -299,17 +301,18 @@ function speak(text) {
 }
 
 function applyTheme() {
-  const t = state.settings.theme;
-  if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme;
+  const theme = state.settings.theme;
+  if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme; else delete document.documentElement.dataset.theme;
 }
 
 // ---------- boot ----------
 export function start(p) {
   pack = p; t = pack.ui;
-  ctx = { esc, say, t, isGrammar };
+  ctx = { esc, say, t, isGrammar, get settings() { return state.settings; }, get tab() { return tab; } };
   // Safari with "Block All Cookies" throws on localStorage access; fall back to memory so the app still renders.
   ls = (() => { try { const l = window.localStorage; l.getItem("probe"); return l; } catch { const m = {}; return { getItem: (k) => m[k] ?? null, setItem: (k, v) => { m[k] = String(v); } }; } })();
   state = load(ls, { key: pack.storageKey, validate: pack.validate });
+  if (pack.migrate) { state = pack.migrate(state); persist(); }
   rebuild();
   document.querySelectorAll("#tabs button").forEach((b) => { b.lastChild.textContent = t.tabs[b.dataset.tab]; });
   bindEvents();

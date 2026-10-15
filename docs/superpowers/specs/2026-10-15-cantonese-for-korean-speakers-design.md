@@ -96,9 +96,9 @@ test-pinned.
 | i | ㅣ | | yu | ㅟ |
 | aai / aau | 아이 / 아우 (two syllables) | | ai / au | 어이 / 어우 |
 | ei / ou | 에이 / 오우 | | oi / ui | 오이 / 우이 |
-| iu | 이우 | | eoi | 우이 |
+| iu | 이우 | | eoi | 어이 |
 | -m -n -ng | 받침 ㅁ ㄴ ㅇ | | -p -t -k | 받침 ㅂ ㄷ ㄱ |
-| eon / eot | ㅜㄴ / ㅜㄷ | | yun / yut | ㅟㄴ / ㅟㄷ |
+| eon / eot | ㅓㄴ / ㅓㄷ | | yun / yut | ㅟㄴ / ㅟㄷ |
 | m̩ / ng̩ | 음 / 응 | | oeng / oek | ㅓㅇ / ㅓㄱ |
 
 The -p/-t/-k to 받침 ㅂ ㄷ ㄱ match is exact in kind: both languages leave
@@ -118,7 +118,11 @@ Front: 한글 sound (large, tone-coloured) · 🔊 · Korean meaning hidden.
 Back: Korean + English meaning · Jyutping (small) · characters (last) ·
 bridge line (`學 학 ↔ hok6 · 校 교 ↔ haau6`) · example sentence with its
 own 한글 spelling, Jyutping, 🔊 and Korean translation.
-Direction is sound → meaning; a "meaning → sound" review mode is a setting.
+Direction is sound → meaning; a "meaning → sound" review mode is a setting
+(Review only — Learn always introduces the sound first). Home shows a tone key
+with the 詩 史 試 時 市 事 drill; Unit 1 opens with a "how to read the 한글" card.
+Ids are stable (`y:<zh>`, `yg:<unit>:<form>`) so data can be edited without
+moving progress. (Revised after review.)
 
 ## Study track — release 1 (~300 words, ~40 grammar points)
 
@@ -141,9 +145,10 @@ comparatives, word order of time and place.
 
 ## Speech
 
-`speechLang: "zh-HK"`; the *characters* are spoken (Jyutping is not
-readable by TTS). If no `zh-HK` voice is installed, fall back to `zh-TW`, then
-show the Settings-path hint for downloading the Hong Kong voice.
+`speechLang: ["zh-HK", "yue-HK"]`; the *characters* are spoken (Jyutping is not
+readable by TTS). Mandarin voices are never used (they would read 唔該 as "wú gāi"
+under a card that says 음 꼬이); with no Cantonese voice the app shows the
+Settings-path hint for downloading the Hong Kong voice. (Revised after review.)
 
 ## Testing
 

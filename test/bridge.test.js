@@ -24,3 +24,12 @@ test("punctuation and Latin are ignored on both sides", () => {
   assert.equal(rows.length, 2);
   assert.equal(hasBridge(rows), true);
 });
+
+test("first character follows the Korean initial-sound rule (두음법칙)", () => {
+  assert.deepEqual(bridge("老師", "lou5 si1", { 老: "로", 師: "사" }).map((r) => r.ko), ["노", "사"]);
+  assert.deepEqual(bridge("女", "neoi5", { 女: "녀" }).map((r) => r.ko), ["여"]);
+  assert.deepEqual(bridge("六", "luk6", { 六: "륙" }).map((r) => r.ko), ["육"]);
+  assert.deepEqual(bridge("十六", "sap6 luk6", { 十: "십", 六: "륙" }).map((r) => r.ko), ["십", "륙"]);
+  assert.deepEqual(bridge("你好", "nei5 hou2", { 你: "니", 好: "호" }).map((r) => r.ko), ["이", "호"]);
+  assert.deepEqual(bridge("兩個", "loeng5 go3", { 兩: "량", 個: "개" }).map((r) => r.ko), ["양", "개"]);
+});

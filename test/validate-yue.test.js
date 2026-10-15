@@ -37,3 +37,11 @@ test("zh and grammar form must contain Han characters (they are spoken by the zh
   assert.ok(validateYue({ ...okV, zh: "hello" }, "vocab").some((e) => /zh.*Han|Han.*zh/i.test(e)));
   assert.deepEqual(validateYue({ ...okG, form: "太…喇", formJp: "taai3 … laa3" }, "grammar"), []);
 });
+
+test("malformed Jyutping is reported, not passed off as punctuation (review I7)", () => {
+  for (const bad of ["nei5,hou2", "nei5hou2", "sik7", "(nei5)", "HOU2"]) {
+    assert.ok(validateYue({ ...okV, jp: bad }, "vocab").length > 0, bad);
+  }
+  assert.deepEqual(validateYue({ ...okV, exJp: "ngo5 daap3 MTR." }, "vocab"), []);
+  assert.deepEqual(validateYue({ ...okV, exJp: "HK$ 5 man1." }, "vocab"), []);
+});
