@@ -31,4 +31,5 @@ export const ui = {
   confirmImport: "Replace the progress AND custom words on this device with the backup?",
   noSpeech: "This browser has no speech voices.", noVoice: "No matching voice is installed.",
   speechCheck: "Speech check", speechCheckBtn: "🔊 Test speech and show details",
+  expUnlock: "silent audio + speech", expBeep: "beep (audio file)",
 };

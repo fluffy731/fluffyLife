@@ -158,7 +158,9 @@ function renderSettings() {
       <p class="small muted">${t.packLine(esc(pack.id), pack.vocab.length, pack.grammar.length, (state.custom || []).length)}</p>
     </div>
     <h2>${t.speechCheck}</h2>
-    <div class="card"><button class="btn" data-speechtest style="width:100%">${t.speechCheckBtn}</button><pre id="speech-log" class="speech-log"></pre></div>`;
+    <div class="card"><button class="btn" data-speechtest style="width:100%">${t.speechCheckBtn}</button>
+      <div class="actions"><button class="btn" data-exp="unlock">B · ${t.expUnlock}</button><button class="btn" data-exp="beep">C · ${t.expBeep}</button></div>
+      <pre id="speech-log" class="speech-log"></pre></div>`;
 }
 
 const VIEWS = { home: renderHome, learn: renderLearn, review: renderReview, browse: renderBrowse, settings: renderSettings };
@@ -231,10 +233,11 @@ function openEditor(existing) {
 // ---------- events ----------
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
+    const el = e.target.closest("[data-exp],[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
     if (!el) return;
     if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
     if (el.dataset.speechtest !== undefined) return speechCheck();
+    if (el.dataset.exp) return experiment(el.dataset.exp);
     if (el.dataset.setting) { state.settings[el.dataset.setting] = el.dataset.value; persist(); queue = []; flipped = false; return render(); }
     if (el.dataset.tab || el.dataset.go) { tab = el.dataset.tab || el.dataset.go; if (el.dataset.go === "learn") learnUnitKey = null; flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
     if (el.dataset.flip !== undefined || el.id === "card") { flipped = !flipped; return render(); }
@@ -311,6 +314,40 @@ function speak(text) {
   u.onerror = (e) => { lastSpeak += ` → error ${e.error}`; };
   audible();
   speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+
+// A tiny PCM WAV (silence when freq is 0), built in the page so the experiments need no files.
+function wavURL(seconds, freq) {
+  const rate = 22050, n = Math.floor(seconds * rate), buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt "); v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, freq ? Math.round(Math.sin((2 * Math.PI * freq * i) / rate) * 12000 * Math.min(1, (n - i) / 2000)) : 0, true);
+  return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+}
+
+// Silent-mode experiments, one variable each (Settings → speech check):
+//   B: start a looping silent <audio> element first, then speak — does media playback make speech audible?
+//   C: play a short beep through an <audio> element — do audio files play on silent at all?
+function experiment(kind) {
+  const out = $("#speech-log"); if (!out) return;
+  const log = (m) => { out.textContent += m + "\n"; };
+  out.textContent = "";
+  if (kind === "beep") {
+    const a = new Audio(wavURL(0.7, 660));
+    a.play().then(() => log("C: beep <audio> playing")).catch((e) => log(`C: beep error ${e.name}: ${e.message}`));
+    a.onended = () => log("C: beep ended");
+    return;
+  }
+  const bed = new Audio(wavURL(2, 0)); bed.loop = true;
+  bed.play().then(() => log("B: silent <audio> playing")).catch((e) => log(`B: silent audio error ${e.name}: ${e.message}`));
+  const u = new SpeechSynthesisUtterance(pack.speechTest);
+  u.lang = pack.speechLang[0]; u.rate = 0.85;
+  u.onstart = () => log("B: speech start");
+  u.onend = () => { log("B: speech end"); bed.pause(); };
+  u.onerror = (e) => { log(`B: speech error ${e.error}`); bed.pause(); };
+  setTimeout(() => { speechSynthesis.speak(u); log(`B: speak("${pack.speechTest}") called`); }, 300);
 }
 
 // Settings → speech check: shows what this device reports and speaks one test phrase with event timing.
