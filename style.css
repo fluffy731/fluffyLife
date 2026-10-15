@@ -123,3 +123,9 @@ dialog::backdrop { background: rgba(0,0,0,.5); }
 :root[data-theme="dark"] .pill.a0 { background:#173a37; color:#80cbc4 } :root[data-theme="dark"] .pill.a1 { background:#3d2f14; color:#ffcc80 } :root[data-theme="dark"] .pill.a2 { background:#2a2144; color:#b39ddb }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .pill.a0 { background:#173a37; color:#80cbc4 } :root:not([data-theme="light"]) .pill.a1 { background:#3d2f14; color:#ffcc80 } :root:not([data-theme="light"]) .pill.a2 { background:#2a2144; color:#b39ddb } }
 .exrow { margin-top: 6px; }
+.chars { font-size: 18px; color: var(--hanja); margin-top: 4px; }
+.front.ko-front { font-size: 30px; font-weight: 700; }
+.tonekey .tk { display: grid; grid-template-columns: 56px 44px 1fr auto; align-items: center; gap: 6px; padding: 4px 0; }
+.tonekey .tk .hg { font-size: 22px; }
+.tonekey .contour { font-size: 22px; font-weight: 700; text-align: center; }
+.tonekey .tkl { font-size: 14px; }

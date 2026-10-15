@@ -7,8 +7,8 @@ const T = (jp) => hangul(jp, { tones: true });
 test("reference words (spec examples)", () => {
   const cases = [
     ["nei5 hou2", "네이⁵ 호우²"], ["hok6 haau6", "혹⁶ 하우⁶"], ["m4 goi1", "음⁴ 꼬이¹"], ["do1 ze6", "또¹ 쩨⁶"],
-    ["heoi3", "후이³"], ["gwok3", "꿕³"], ["gwaai1", "꽈이¹"], ["ngo5", "오⁵"], ["ng5", "응⁵"], ["jau5", "여우⁵"],
-    ["waa6", "와⁶"], ["seoi2", "수이²"], ["syu1", "쉬¹"], ["sap6", "섭⁶"], ["saam1", "삼¹"], ["sam1", "섬¹"],
+    ["heoi3", "허이³"], ["gwok3", "꿕³"], ["gwaai1", "꽈이¹"], ["ngo5", "오⁵"], ["ng5", "응⁵"], ["jau5", "여우⁵"],
+    ["waa6", "와⁶"], ["seoi2", "서이²"], ["syu1", "쉬¹"], ["sap6", "섭⁶"], ["saam1", "삼¹"], ["sam1", "섬¹"],
     ["saang1", "상¹"], ["faan6", "판⁶"], ["daai6", "따이⁶"], ["hai2", "허이²"], ["coi3", "초이³"], ["gong2", "꽁²"],
   ];
   for (const [jp, hg] of cases) assert.equal(T(jp), hg, jp);
@@ -36,7 +36,8 @@ test("every final (with a plain initial)", () => {
   assert.equal(T("mu4"), "무⁴"); assert.equal(T("mui4"), "무이⁴"); assert.equal(T("mun4"), "문⁴"); assert.equal(T("mung4"), "뭉⁴");
   assert.equal(T("mut6"), "묻⁶"); assert.equal(T("muk6"), "묵⁶");
   assert.equal(T("soe1"), "서¹"); assert.equal(T("soeng1"), "성¹"); assert.equal(T("soek3"), "석³");
-  assert.equal(T("seoi2"), "수이²"); assert.equal(T("seon3"), "순³"); assert.equal(T("seot1"), "숟¹");
+  assert.equal(T("seoi2"), "서이²"); assert.equal(T("seon3"), "선³"); assert.equal(T("seot1"), "섣¹");
+  assert.notEqual(T("gui6").slice(0, 2), T("geoi6").slice(0, 2)); // 攰 gui6 and 句 geoi3 must not merge
   assert.equal(T("jyu4"), "위⁴"); assert.equal(T("jyun4"), "윈⁴"); assert.equal(T("jyut6"), "윋⁶");
 });
 

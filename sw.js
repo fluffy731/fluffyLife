@@ -10,7 +10,7 @@ const FILES = [
   "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
   "./yue/", "./yue/index.html", "./yue/manifest.json", "./icons/yue.svg", "./icons/yue-180.png", "./icons/yue-512.png",
-  "./data/yue/pack.js", "./data/yue/vocab.js", "./data/yue/vocab-a0.js", "./data/yue/vocab-a1.js", "./data/yue/vocab-a2.js", "./data/yue/grammar.js", "./data/yue/hanja-ko.js",
+  "./data/yue/pack.js", "./data/yue/vocab.js", "./data/yue/vocab-a0.js", "./data/yue/vocab-a1.js", "./data/yue/vocab-a2.js", "./data/yue/grammar.js", "./data/yue/hanja-ko.js", "./data/yue/legacy-ids.js",
   "./data/pack.js", "./data/vocab.js", "./data/vocab-int.js", "./data/vocab-adv.js", "./data/vocab-beg.js", "./data/grammar.js",
 ];
 
@@ -33,6 +33,6 @@ self.addEventListener("fetch", (e) => {
     fetch(e.request).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
       return res;
-    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match("./index.html")))
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match(new URL(e.request.url).pathname.includes("/yue") ? "./yue/index.html" : "./index.html")))
   );
 });

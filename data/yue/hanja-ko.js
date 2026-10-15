@@ -1,11 +1,11 @@
-// 한국 한자음 (Sino-Korean readings, dictionary form, before the 두음법칙) for characters in the
+// 한국 한자음 (Sino-Korean readings, dictionary form; lib/bridge.js applies the 두음법칙 to the first character) for characters in the
 // Cantonese pack, so a Korean speaker can bridge from sounds she already knows (學校 학교 ↔ hok6 haau6).
 // Deliberately absent: Cantonese-only characters (唔 冇 咗 嘅 啲 嗰 呢 佢 哋 睇 瞓 攰 嬲 …) and
 // characters used only to spell loanwords (巴士 的士 咖啡 卡), where a reading would mislead.
 export const HANJA_KO = {
   // unit 1
   詩: "시", 史: "사", 試: "시", 時: "시", 市: "시", 事: "사", 媽: "마", 麻: "마", 馬: "마", 罵: "매",
-  一: "일", 二: "이", 三: "삼", 四: "사", 五: "오", 六: "육", 七: "칠", 八: "팔", 九: "구", 十: "십",
+  一: "일", 二: "이", 三: "삼", 四: "사", 五: "오", 六: "륙", 七: "칠", 八: "팔", 九: "구", 十: "십",
   你: "니", 我: "아", 好: "호",
   // greetings, numbers, time
   早: "조", 晨: "신", 晚: "만", 安: "안", 再: "재", 見: "견", 該: "해", 多: "다", 謝: "사", 對: "대", 住: "주",
@@ -40,5 +40,6 @@ export const HANJA_KO = {
   附: "부", 旁: "방", 病: "병", 頭: "두", 痛: "통", 喉: "후", 發: "발", 咳: "해", 流: "류", 鼻: "비",
   感: "감", 冒: "모", 藥: "약", 房: "방", 休: "휴", 息: "식", 過: "과", 敏: "민", 瀉: "사", 暈: "훈",
   受: "수", 傷: "상", 救: "구", 護: "호", 急: "급", 症: "증", 室: "실", 罩: "조", 體: "체", 溫: "온",
-  健: "건", 康: "강", 都: "도", 又: "우", 仲: "중", 先: "선", 似: "사", 真: "진", 題: "제", 解: "해",
+  健: "건", 康: "강", 緊: "긴", 做: "주", 姐: "저", 蚊: "문", 仔: "자", 嘈: "조", 嚨: "롱", 朝: "조", 舖: "포",
+  蕩: "탕", 失: "실", 都: "도", 又: "우", 仲: "중", 先: "선", 似: "사", 真: "진", 題: "제", 解: "해",
 };

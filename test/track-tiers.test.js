@@ -32,3 +32,10 @@ test("load and importJSON accept a pack validator for custom items", () => {
   assert.deepEqual(load(ls, { key: "yue.v1", validate }).custom.map((c) => c.id), ["u1"]);
   assert.deepEqual(importJSON(exportJSON({ progress: {}, custom: [ok, bad], settings: {} }), validate).custom.map((c) => c.id), ["u1"]);
 });
+
+import { migrateProgress } from "../lib/store.js";
+
+test("migrateProgress renames legacy ids and never overwrites a newer entry (review I3)", () => {
+  const out = migrateProgress({ "y01-01": { reps: 1 }, "y01-02": { reps: 2 }, "y:史": { reps: 9 }, other: { reps: 3 } }, { "y01-01": "y:詩", "y01-02": "y:史" });
+  assert.deepEqual(out, { "y:詩": { reps: 1 }, "y:史": { reps: 9 }, other: { reps: 3 } });
+});

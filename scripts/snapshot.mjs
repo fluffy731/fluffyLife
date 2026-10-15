@@ -30,10 +30,12 @@ out.home = await view();
 await page.click('[data-tab="learn"]'); out.learn = await view();
 await page.click("[data-flip]"); out.learnFlipped = await view();
 await page.click('[data-tab="review"]'); out.reviewEmpty = await view();
-await page.click('[data-tab="browse"]'); await page.fill("#q", "경제"); out.browseSearch = await view();
+await page.click('[data-tab="browse"]'); out.browseAll = await view();
+await page.fill("#q", "경제"); out.browseSearch = await view();
 await page.fill("#q", ""); await page.click('[data-kind="grammar"]'); await page.click('[data-tier="int"]');
 await page.locator(".item").first().click(); out.browseGrammar = await view();
 await page.click('[data-tab="settings"]'); out.settings = await view();
+out.wipeConfirm = await page.evaluate(() => { let msg = null; const c = window.confirm; window.confirm = (m) => { msg = m; return false; }; document.querySelector("[data-wipe]").click(); window.confirm = c; return msg; });
 await browser.close(); srv.close();
 
 if (mode === "write") { await writeFile(GOLDEN, JSON.stringify(out, null, 1)); console.log("golden written:", Object.keys(out).join(", ")); }

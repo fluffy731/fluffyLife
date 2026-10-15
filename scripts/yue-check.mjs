@@ -45,15 +45,36 @@ async function speechRun(voices) {
 {
   const hk = await speechRun(["zh-HK", "zh-TW", "ko-KR"]);
   ok("zh-HK voice preferred", hk.spoken[0]?.lang === "zh-HK" && /\p{Script=Han}/u.test(hk.spoken[0]?.text));
+  const yue = await speechRun(["yue-HK", "ko-KR"]);
+  ok("Android yue-HK voice accepted", yue.spoken[0]?.lang === "yue-HK");
   const tw = await speechRun(["zh-TW", "ko-KR"]);
-  ok("falls back to zh-TW", tw.spoken[0]?.lang === "zh-TW");
+  ok("Mandarin-only device: nothing spoken, Korean hint shown (review I6)", tw.spoken.length === 0 && /광둥어/.test(tw.alerts[0] || ""));
   const none = await speechRun(["ko-KR", "en-US"]);
   ok("no Cantonese voice → Korean hint, nothing spoken", none.spoken.length === 0 && /광둥어/.test(none.alerts[0] || ""));
   const notLoaded = await speechRun([]); // Safari often returns [] until voices finish loading
   ok("voices not loaded yet → still speaks zh-HK, no alert", notLoaded.spoken[0]?.lang === "zh-HK" && notLoaded.alerts.length === 0);
 }
 
-// 3. offline after first visit (review focus 4)
+// 3. review fixes: legacy-id migration, wipe dialog text, unfiltered Browse, tone key, review direction
+{
+  const page = await b.newPage({ viewport: { width: 390, height: 844 } });
+  await page.addInitScript(() => { if (!sessionStorage.getItem("seeded")) { sessionStorage.setItem("seeded", "1"); localStorage.setItem("yue.v1", JSON.stringify({ progress: { "y01-01": { ease: 2.5, interval: 1, reps: 1, due: 0 } }, custom: [], settings: {} })); } });
+  await page.goto(base + "yue/", { waitUntil: "networkidle" });
+  const prog = await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem("yue.v1")).progress));
+  ok("release-1 progress migrated to stable ids (y01-01 → y:詩)", prog.length === 1 && prog[0] === "y:詩");
+  ok("Home shows the tone key", (await page.locator(".tonekey .tk").count()) === 6);
+  await page.click('[data-tab="browse"]');
+  ok("unfiltered Browse has no raw ${…}", !(await page.textContent("#view")).includes("${"));
+  await page.click('[data-tab="settings"]');
+  const msg = await page.evaluate(() => { let m = null; const c = window.confirm; window.confirm = (x) => { m = x; return false; }; document.querySelector("[data-wipe]").click(); window.confirm = c; return m; });
+  ok("wipe dialog has its Korean text (review I1)", /진도/.test(msg || ""));
+  await page.click('[data-setting="direction"][data-value="meaning"]');
+  await page.click('[data-tab="review"]');
+  ok("meaning → sound: Review front shows the Korean meaning", (await page.locator(".ko-front").count()) === 1 && (await page.locator("#card .syl").count()) === 0);
+  await page.close();
+}
+
+// 4. offline after first visit (review focus 4)
 {
   const ctx = await b.newContext();
   const page = await ctx.newPage();
