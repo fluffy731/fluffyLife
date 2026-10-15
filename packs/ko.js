@@ -1,0 +1,17 @@
+// The Korean app: Korean target language, Chinese (Traditional) + English support.
+import { pack as data } from "../data/pack.js";
+import { TIER_ORDER, TIER_LABEL } from "../lib/track.js";
+import { validateItem } from "../lib/validate.js";
+import { ui } from "../ui/en.js";
+import { cards } from "../cards/ko.js";
+
+export const koPack = {
+  ...data,
+  storageKey: "korean.v1",
+  backupPrefix: "korean",
+  swPath: "./sw.js",
+  speechLang: ["ko-KR"],
+  speechClean: (text) => text.replace(/^-|\(.*?\)/g, "").trim(),
+  tiers: TIER_ORDER.map((key) => ({ key, label: TIER_LABEL[key], short: TIER_LABEL[key].split(" ·")[0] })),
+  ui, cards, editable: true, validate: validateItem,
+};

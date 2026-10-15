@@ -6,7 +6,8 @@ const CACHE = `${PREFIX}${VERSION}`;
 const FILES = [
   "./", "./index.html", "./style.css", "./app.js", "./manifest.json",
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
-  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js",
+  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/bridge.js", "./lib/validate-yue.js",
+  "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
   "./data/pack.js", "./data/vocab.js", "./data/vocab-int.js", "./data/vocab-adv.js", "./data/vocab-beg.js", "./data/grammar.js",
 ];
 
