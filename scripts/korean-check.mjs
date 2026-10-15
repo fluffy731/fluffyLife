@@ -1,8 +1,11 @@
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || "playwright");
 import { createServer } from "node:http"; import { readFile } from "node:fs/promises"; import { extname, join } from "node:path";
 const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png" };
-const srv = createServer(async (req, res) => { let p = req.url.split("?")[0]; if (p === "/") p = "/index.html";
-  try { res.writeHead(200, { "content-type": types[extname(p)] || "text/plain" }); res.end(await readFile(join(process.cwd(), p))); } catch { res.writeHead(404); res.end(); } }).listen(0);
+const srv = createServer(async (req, res) => {
+  let p = req.url.split("?")[0]; if (p.endsWith("/")) p += "index.html";
+  try { const body = await readFile(join(process.cwd(), p)); res.writeHead(200, { "content-type": types[extname(p)] || "text/plain" }); res.end(body); }
+  catch { res.writeHead(404); res.end(); }
+}).listen(0);
 const base = `http://localhost:${srv.address().port}/`;
 const b = await chromium.launch(); const page = await b.newPage({ viewport: { width: 390, height: 844 } });
 const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} ${name}`);
