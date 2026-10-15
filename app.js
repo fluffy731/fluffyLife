@@ -279,8 +279,8 @@ function bindEvents() {
 }
 
 // Speaks `text` with the first installed voice matching one of pack.speechLang, in order
-// (Cantonese: zh-HK, then zh-TW). With several candidate languages and no voice for any of them
-// it says so in the pack's own language instead of failing silently.
+// (Cantonese: zh-HK, then zh-TW). With several candidate languages and no installed voice for any
+// of them it says so in the pack's own language instead of failing silently.
 function speak(text) {
   if (!("speechSynthesis" in window)) { alert(t.noSpeech); return; }
   const voices = speechSynthesis.getVoices();
@@ -290,7 +290,8 @@ function speak(text) {
     voice = voices.find((v) => norm(v.lang) === norm(l)) ?? (pack.speechLang.length === 1 ? voices.find((v) => norm(v.lang).startsWith(norm(l).split("-")[0])) : null);
     if (voice) { lang = l; break; }
   }
-  if (!voice && pack.speechLang.length > 1) { alert(t.noVoice); return; }
+  // An empty list means the voices have not loaded yet (common in Safari): speak anyway and let the OS pick.
+  if (!voice && voices.length && pack.speechLang.length > 1) { alert(t.noVoice); return; }
   const u = new SpeechSynthesisUtterance(pack.speechClean(text));
   u.lang = lang; u.rate = 0.85;
   if (voice) u.voice = voice;
