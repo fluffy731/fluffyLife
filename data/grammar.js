@@ -95,9 +95,10 @@ const ROWS = [
 ["-(이)라도","int",15,"even, at least","哪怕、至少","Second-best option.",[
  ["차라리 물이라도 마셔.","至少喝點水吧。","At least drink some water."]]],
 ["-기는커녕","int",15,"far from, let alone","別說…了，連…都","Negation of a lesser expectation.",[
- ["칭찬은커녕 오히려 혼났다.","別說稱讚了，反而挨罵。","Far from being praised, I got scolded."]]],
-["-(으)ㄴ/는 반면","int",15,"on the other hand (formal)","另一方面","Sentence connector form 반면(에).",[
- ["도시는 편리한 반면 물가가 비싸다.","城市方便，另一方面物價很貴。","Cities are convenient, but on the other hand costly."]]],
+ ["칭찬받기는커녕 오히려 혼났다.","別說受到稱讚了，反而挨罵。","Far from being praised, I got scolded."]]],
+["-(으)ㄴ/는 모양이다","int",15,"it seems that (from evidence)","看樣子、似乎","Inference from what the speaker observes; compare -(으)ㄴ/는 것 같다 (any guess).",[
+ ["설마 벌써 떠난 모양이다.","看樣子他已經離開了。","It seems he has already left."],
+ ["아마 바쁜 모양이에요.","看樣子大概很忙。","It looks like they're busy."]]],
 // ---------- Advanced (TOPIK 5–6) ----------
 ["-(으)ㄹ 따름이다","adv",1,"merely, simply","只是、僅僅","Formal; speaker's limited stance.",[
  ["제 의견을 말씀드릴 따름입니다.","我只是陳述我的意見。","I am merely stating my opinion."]]],
@@ -112,7 +113,7 @@ const ROWS = [
 ["-(으)ㄴ/는 가운데","adv",2,"amid, while","在…之中","Background situation, news style.",[
  ["불황이 계속되는 가운데 수출은 늘었다.","在不景氣持續的情況下，出口卻增加了。","Amid the ongoing recession, exports rose."]]],
 ["-(으)ㄴ/는 데(에) 있다","adv",3,"lies in","在於","Locates the point or cause.",[
- ["문제는 협상 태도에 있다.","問題在於談判態度。","The problem lies in the negotiating attitude."]]],
+ ["문제는 협상 태도를 바꾸지 않는 데 있다.","問題在於不改變談判態度。","The problem lies in not changing the negotiating attitude."]]],
 ["-(으)ㄹ 지경이다","adv",3,"to the point of","到了…的地步","Extreme state, usually negative.",[
  ["긴장이 전쟁 직전일 지경이다.","緊張到了戰爭邊緣的地步。","Tensions are at the brink of war."]]],
 ["-(으)로 말미암아","adv",3,"owing to (literary)","由於（文言）","Literary cause; compare -(으)로 인해.",[
@@ -136,7 +137,7 @@ const ROWS = [
 ["-(으)ㄹ 요량으로","adv",6,"with the intention of","打算…","Intention, slightly literary.",[
  ["직접 해결할 요량으로 나섰다.","打算親自解決而出面。","He stepped in intending to solve it himself."]]],
 ["-(으)ㄴ/는 듯이","adv",7,"as if, like","彷彿","Simile. Also -(으)ㄴ/는 듯하다 'seems'.",[
- ["비가 쏟아지듯이 눈물이 흘렀다.","眼淚如雨般流下。","Tears flowed as if rain were pouring."]]],
+ ["비가 쏟아지는 듯이 눈물이 흘렀다.","眼淚如雨般流下。","Tears flowed as if rain were pouring."]]],
 ["-(으)ㄹ망정","adv",7,"even though (concessive)","即使…也","Concession, often with 'but'.",[
  ["가난할망정 양심은 팔지 않는다.","即使貧窮，也不出賣良心。","Though poor, I won't sell my conscience."]]],
 ["-건마는/-건만","adv",7,"although, and yet","雖然…卻","Literary contrast.",[

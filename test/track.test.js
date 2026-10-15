@@ -41,7 +41,8 @@ test("isUnlocked", () => {
 test("dueItems: seen and due, sorted by due", () => {
   const items = [...vocab, ...grammar];
   const p = { v1: { reps: 1, due: 200 }, v2: { reps: 1, due: 100 }, v3: { reps: 1, due: 999 }, v4: { reps: 0, due: 0 } };
-  assert.deepEqual(dueItems(items, p, 500).map(i => i.id), ["v2", "v1"]);
+  // v4 has a state (an Again) so it is seen and due
+  assert.deepEqual(dueItems(items, p, 500).map(i => i.id), ["v4", "v2", "v1"]);
 });
 
 test("unseenItems", () => {
@@ -52,4 +53,14 @@ test("pickHourItems falls back to tier when unit fully learned", () => {
   const p = { v1: { reps: 1 }, v2: { reps: 1 }, g1: { reps: 1 } };
   assert.deepEqual(pickHourItems(units, units[0], p).map(i => i.id), ["v1", "v2", "g1", "v3"]);
   assert.deepEqual(pickHourItems(units, units[0], {}).map(i => i.id), ["v1", "v2", "g1"]);
+});
+
+test("Again keeps an item seen: still due, unit still learned", async () => {
+  const { grade } = await import("../lib/sm2.js");
+  const now = 1_700_000_000_000;
+  let s = grade(undefined, "good", now); s = grade(s, "again", now);
+  const p = { v1: s, v2: { reps: 1, due: now + 1 }, g1: { reps: 1, due: now + 1 } };
+  assert.equal(isLearned(units[0], p), true);
+  assert.deepEqual(dueItems(units[0].items, p, now).map(i => i.id), ["v1"]);
+  assert.deepEqual(unseenItems(units[0], p), []);
 });

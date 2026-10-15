@@ -1,6 +1,8 @@
-// Cache-first offline shell. Bump VERSION to invalidate after content changes.
-const VERSION = "v1";
-const CACHE = `hanja-korean-${VERSION}`;
+// Offline shell: network-first so fixes reach installed copies, cache fallback when offline.
+// VERSION is rewritten to the commit SHA by the Pages workflow at deploy time.
+const VERSION = "dev";
+const PREFIX = "hanja-korean-";
+const CACHE = `${PREFIX}${VERSION}`;
 const FILES = [
   "./", "./index.html", "./style.css", "./app.js", "./manifest.json",
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
@@ -9,25 +11,24 @@ const FILES = [
 ];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: "reload" bypasses the HTTP cache so a fresh install never mixes old and new files.
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES.map((f) => new Request(f, { cache: "reload" })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener("activate", (e) => {
+  // Only our own old caches: Cache Storage is shared by every app on this origin.
   e.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+    caches.keys().then((keys) => Promise.all(keys.filter((k) => k.startsWith(PREFIX) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
+  if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
-    caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
-      if (res.ok && new URL(e.request.url).origin === location.origin) {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy));
-      }
+    fetch(e.request).then((res) => {
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
       return res;
-    }))
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match("./index.html")))
   );
 });
