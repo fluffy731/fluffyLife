@@ -92,3 +92,12 @@ test("release content, stage 1: units 1–6 each have ≥ 24 words and ≥ 2 gra
     assert.ok(grammar.filter((g) => g.unit === u).length >= 2, `unit ${u} grammar`);
   }
 });
+
+test("release content: ≥ 300 words, 12 units each ≥ 24 words, ≥ 40 grammar points, each unit ≥ 2", () => {
+  assert.ok(vocab.length >= 300, `words ${vocab.length}`);
+  assert.ok(grammar.length >= 40, `grammar ${grammar.length}`);
+  for (let u = 1; u <= 12; u++) {
+    assert.ok(vocab.filter((v) => v.unit === u).length >= 24, `unit ${u} words`);
+    assert.ok(grammar.filter((g) => g.unit === u).length >= 2, `unit ${u} grammar`);
+  }
+});
