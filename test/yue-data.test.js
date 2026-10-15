@@ -85,3 +85,10 @@ test("browse row and search text", () => {
   const hay = yuePack.cards.searchText(w).join(" ");
   for (const needle of ["十", "sap6", hangul(w.jp), w.ko, w.en]) assert.ok(hay.includes(needle), needle);
 });
+
+test("release content, stage 1: units 1–6 each have ≥ 24 words and ≥ 2 grammar points", () => {
+  for (let u = 1; u <= 6; u++) {
+    assert.ok(vocab.filter((v) => v.unit === u).length >= 24, `unit ${u} words`);
+    assert.ok(grammar.filter((g) => g.unit === u).length >= 2, `unit ${u} grammar`);
+  }
+});

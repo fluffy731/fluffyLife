@@ -31,3 +31,9 @@ test("grammar needs formJp and at least one complete example", () => {
   assert.ok(validateYue({ ...okG, ex: [] }, "grammar").some((e) => /ex/.test(e)));
   assert.ok(validateYue({ ...okG, ex: [{ zh: "我", ko: "나" }] }, "grammar").some((e) => /ex/.test(e)));
 });
+
+test("zh and grammar form must contain Han characters (they are spoken by the zh-HK voice)", () => {
+  assert.ok(validateYue({ ...okG, form: "시간 표현" }, "grammar").some((e) => /form.*Han|Han.*form/i.test(e)));
+  assert.ok(validateYue({ ...okV, zh: "hello" }, "vocab").some((e) => /zh.*Han|Han.*zh/i.test(e)));
+  assert.deepEqual(validateYue({ ...okG, form: "太…喇", formJp: "taai3 … laa3" }, "grammar"), []);
+});
