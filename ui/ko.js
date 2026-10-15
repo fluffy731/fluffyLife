@@ -38,6 +38,8 @@ export const ui = {
   noVoice: "광둥어(홍콩) 음성이 설치되어 있지 않아요. 표준중국어 음성으로 읽으면 소리가 틀려서 읽지 않았어요. 설정 → 손쉬운 사용 → 말하기 콘텐츠 → 음성 → 중국어 → 광둥어에서 내려받아 주세요. (메뉴 이름은 iOS 버전에 따라 조금 달라요.)",
   speechCheck: "음성 점검",
   speechCheckBtn: "🔊 음성 테스트하고 자세히 보기",
+  expUnlock: "무음 오디오 + 음성",
+  expBeep: "삐 소리 (오디오 파일)",
   // Cantonese-only strings
   posName: (p) => POS[p] ?? p,
   cantoneseOnly: "광동어에만 있는 글자",
