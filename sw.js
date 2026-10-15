@@ -6,7 +6,7 @@ const CACHE = `${PREFIX}${VERSION}`;
 const FILES = [
   "./", "./index.html", "./style.css", "./app.js", "./manifest.json",
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
-  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/bridge.js", "./lib/validate-yue.js",
+  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js",
   "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
   "./yue/", "./yue/index.html", "./yue/manifest.json", "./icons/yue.svg", "./icons/yue-180.png", "./icons/yue-512.png",
@@ -29,6 +29,8 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
+  // Recorded clips: iOS fetches media with Range requests; let the browser handle those directly.
+  if (new URL(e.request.url).pathname.endsWith(".mp3") || e.request.headers.has("range")) return;
   // GitHub Pages sends Cache-Control: max-age=600. A plain fetch() would take the HTTP cache and keep
   // serving the previous deploy for up to 10 minutes; "no-cache" revalidates with the server (cheap 304s).
   const fresh = e.request.mode === "navigate" ? new Request(e.request.url, { cache: "no-cache" }) : new Request(e.request, { cache: "no-cache" });
