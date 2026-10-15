@@ -28,23 +28,31 @@ const b = await chromium.launch();
 }
 
 // 2. speech: zh-HK missing → zh-TW; none → Korean hint (review focus 5)
-async function speechRun(voices) {
+async function speechRun(voices, path = "yue/") {
   const page = await b.newPage();
   await page.addInitScript((vs) => {
-    window.__spoken = []; window.__alerts = [];
+    window.__spoken = []; window.__alerts = []; window.__order = [];
+    // iOS 16.4+ Audio Session API: record its type at the moment speak() is called.
+    const session = { _t: "auto", get type() { return this._t; }, set type(v) { this._t = v; window.__order.push(`type=${v}`); } };
+    Object.defineProperty(navigator, "audioSession", { configurable: true, value: session });
     window.alert = (m) => window.__alerts.push(m);
     // speechSynthesis is a read-only getter on Window, so it has to be redefined, not assigned.
-    Object.defineProperty(window, "speechSynthesis", { configurable: true, value: { getVoices: () => vs.map((lang) => ({ lang, name: lang })), cancel() {}, speak(u) { window.__spoken.push({ lang: u.lang, text: u.text }); } } });
+    Object.defineProperty(window, "speechSynthesis", { configurable: true, value: { getVoices: () => vs.map((lang) => ({ lang, name: lang })), cancel() {}, speak(u) { window.__order.push(`speak@${navigator.audioSession.type}`); window.__spoken.push({ lang: u.lang, text: u.text }); } } });
     Object.defineProperty(window, "SpeechSynthesisUtterance", { configurable: true, value: class { constructor(t) { this.text = t; } } });
   }, voices);
-  await page.goto(base + "yue/", { waitUntil: "networkidle" });
+  await page.goto(base + path, { waitUntil: "networkidle" });
   await page.click(".say");
-  const r = await page.evaluate(() => ({ spoken: window.__spoken, alerts: window.__alerts }));
+  const r = await page.evaluate(() => ({ spoken: window.__spoken, alerts: window.__alerts, order: window.__order }));
   await page.close(); return r;
 }
 {
   const hk = await speechRun(["zh-HK", "zh-TW", "ko-KR"]);
   ok("zh-HK voice preferred", hk.spoken[0]?.lang === "zh-HK" && /\p{Script=Han}/u.test(hk.spoken[0]?.text));
+  // iPhone home-screen app: speech ran (start/end fired) but was inaudible — the default audio session
+  // obeys the ring/silent switch. "playback" must be set before speak() is called.
+  ok("Cantonese: audio session set to playback before speaking", hk.order.join(",") === "type=playback,speak@playback");
+  const ko = await speechRun(["ko-KR"], "");
+  ok("Korean: audio session set to playback before speaking", ko.order.join(",") === "type=playback,speak@playback");
   const yue = await speechRun(["yue-HK", "ko-KR"]);
   ok("Android yue-HK voice accepted", yue.spoken[0]?.lang === "yue-HK");
   const tw = await speechRun(["zh-TW", "ko-KR"]);

@@ -287,6 +287,12 @@ function bindEvents() {
 // (Cantonese: zh-HK, then zh-TW). With several candidate languages and no installed voice for any
 // of them it says so in the pack's own language instead of failing silently.
 let lastSpeak = "none yet";
+// iPhone: a web page's default audio session is "ambient", which the ring/silent switch mutes —
+// speech then runs (start/end fire) but nothing is heard. "playback" (iOS 16.4+) plays it like a
+// media app. Side effect: background music pauses while a word is spoken.
+function audible() {
+  if ("audioSession" in navigator) { try { navigator.audioSession.type = "playback"; } catch { /* unsupported type */ } }
+}
 function speak(text) {
   if (!("speechSynthesis" in window)) { lastSpeak = "no speechSynthesis"; alert(t.noSpeech); return; }
   const voices = speechSynthesis.getVoices();
@@ -303,6 +309,7 @@ function speak(text) {
   if (voice) u.voice = voice;
   lastSpeak = `spoke lang=${lang} voice=${voice ? voice.name : "(os default)"} of ${voices.length}`;
   u.onerror = (e) => { lastSpeak += ` → error ${e.error}`; };
+  audible();
   speechSynthesis.cancel(); speechSynthesis.speak(u);
 }
 
@@ -316,6 +323,7 @@ function speechCheck() {
   log(`mode: ${standalone ? "home-screen app" : "browser tab"}`);
   log(`system: ${(navigator.userAgent.match(/(iPhone|iPad|Android)[^;)]*;?[^;)]*/) || [navigator.platform])[0]}`);
   log(`last 🔊 tap: ${lastSpeak}`);
+  log(`audio session: ${"audioSession" in navigator ? navigator.audioSession.type : "not supported"}`);
   if (!("speechSynthesis" in window)) { log("speechSynthesis: MISSING"); return; }
   const report = (label) => {
     const v = speechSynthesis.getVoices();
@@ -331,8 +339,9 @@ function speechCheck() {
   u.onstart = () => { started = true; log(`test: start +${ms()} ms`); };
   u.onend = () => log(`test: end +${ms()} ms`);
   u.onerror = (e) => log(`test: error "${e.error}" +${ms()} ms`);
+  audible();
   speechSynthesis.speak(u);
-  log(`test: speak("${pack.speechTest}", ${u.lang}) called`);
+  log(`test: speak("${pack.speechTest}", ${u.lang}) called with audio session ${"audioSession" in navigator ? navigator.audioSession.type : "n/a"}`);
   setTimeout(() => { if (!started) log("test: no start event after 3 s"); report("voices after 3 s"); }, 3000);
 }
 
