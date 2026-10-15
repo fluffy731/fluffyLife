@@ -15,7 +15,7 @@ let tab = "home";
 let learnUnitKey = null;   // null = current unit
 let flipped = false;
 let queue = [];            // current learn/review queue
-let browse = { q: "", tier: "all" };
+let browse = { q: "", tier: "all", kind: "all" };
 
 function rebuild() {
   const custom = state.custom || [];
@@ -147,14 +147,16 @@ const preview = (it, g) => { const s = grade(state.progress[it.id], g, Date.now(
 function renderBrowse() {
   const list = browseList();
   return `<input type="search" id="q" placeholder="Search 한글 · 漢字 · 中文 · English" value="${esc(browse.q)}">
-    <div class="chips">${["all", ...TIER_ORDER].map((t) => `<button data-tier="${t}" class="${browse.tier === t ? "on" : ""}">${t === "all" ? "All" : TIER_LABEL[t].split(" ·")[0]}</button>`).join("")}
+    <div class="chips">${[["all", "All"], ["vocab", "Words"], ["grammar", "Grammar"]].map(([k, l]) => `<button data-kind="${k}" class="${browse.kind === k ? "on" : ""}">${l}</button>`).join("")}
       <button data-add style="margin-left:auto">+ Add</button></div>
+    <div class="chips">${["all", ...TIER_ORDER].map((t) => `<button data-tier="${t}" class="${browse.tier === t ? "on" : ""}">${t === "all" ? "Any level" : TIER_LABEL[t].split(" ·")[0]}</button>`).join("")}</div>
     <div id="browse-list">${browseListHTML(list)}</div>`;
 }
 
 function browseList() {
   const q = browse.q.trim().toLowerCase();
   return items.filter((i) => (browse.tier === "all" || i.tier === browse.tier) &&
+    (browse.kind === "all" || (browse.kind === "grammar") === isGrammar(i)) &&
     (!q || [i.ko, i.form, i.hanja, i.zh, i.en].some((f) => f && String(f).toLowerCase().includes(q))));
 }
 
@@ -269,7 +271,7 @@ function openEditor(existing) {
 
 // ---------- events ----------
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
+  const t = e.target.closest("[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
   if (!t) return;
   if (t.dataset.say !== undefined) { e.stopPropagation(); return speak(t.dataset.say); }
   if (t.dataset.tab || t.dataset.go) { tab = t.dataset.tab || t.dataset.go; if (t.dataset.go === "learn") learnUnitKey = null; flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
@@ -281,6 +283,7 @@ document.addEventListener("click", (e) => {
     persist(); flipped = false; return render();
   }
   if (t.dataset.tier) { browse.tier = t.dataset.tier; return render(); }
+  if (t.dataset.kind) { browse.kind = t.dataset.kind; return render(); }
   if (t.dataset.add !== undefined) return openEditor(null);
   if (t.dataset.edit) { e.stopPropagation(); return openEditor(items.find((i) => i.id === t.dataset.edit)); }
   if (t.dataset.reset) { e.stopPropagation(); delete state.progress[t.dataset.reset]; persist(); return render(); }
