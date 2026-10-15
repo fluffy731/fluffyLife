@@ -182,6 +182,142 @@ const ROWS = [
  ["복잡하지만 재미있어요.","雖然複雜但有趣。","It's complicated but fun."]]],
 ["-(으)ㄹ 수 있다/없다","beg",5,"can / cannot","能/不能","Ability or possibility.",[
  ["한국어로 말할 수 있어요.","會說韓語。","I can speak Korean."]]],
+// ---------- Intermediate: extra points for units 1–15 ----------
+["-(으)ㄴ/는 탓에","int",1,"because of (blame)","都怪、由於（負面）","Negative cause; the speaker assigns blame. Compare -덕분에 (positive).",[
+ ["물가 상승 탓에 소비가 줄었다.","由於物價上漲，消費減少了。","Consumption fell because of rising prices."]]],
+["-(으)ㄴ/는 덕분에","int",2,"thanks to","多虧、託…的福","Positive cause. N 덕분에.",[
+ ["동료 덕분에 보고서를 끝냈다.","多虧同事，報告完成了。","Thanks to my colleague I finished the report."]]],
+["-(으)ㄹ 겨를이 없다","int",3,"no time to","沒空、來不及","Set phrase with 겨를.",[
+ ["복습할 겨를이 없었다.","沒空複習。","There was no time to revise."]]],
+["-아/어야","int",4,"only if, must … to","只有…才","Necessary condition; stronger than -(으)면.",[
+ ["푹 쉬어야 회복된다.","只有好好休息才能恢復。","You recover only if you rest properly."]]],
+["-(으)ㄹ 지경이다","int",5,"to the point of","到了…的地步","Extreme (usually bad) state.",[
+ ["너무 불안해서 잠을 못 잘 지경이다.","不安到睡不著的地步。","I'm so anxious I can't even sleep."]]],
+["-(으)ㄴ/는 바람에","int",6,"because of (unexpected)","因為…（突發）","Reinforced here with an environmental example; see unit 2.",[
+ ["태풍이 오는 바람에 비행기가 취소됐다.","因為颱風來了，班機被取消。","The typhoon caused the flight to be cancelled."]]],
+["-(으)ㄴ/는 반면","int",7,"whereas","相反地","Contrast; see also -(으)ㄴ/는 데 반해.",[
+ ["기술은 발전한 반면 개인정보는 위험해졌다.","技術發展了，相反地個資卻變得危險。","Technology advanced, whereas personal data became exposed."]]],
+["-(이)란","int",8,"as for … (defining)","所謂…","Topic for definitions: N(이)란 … 이다.",[
+ ["전통이란 지켜야 할 가치다.","所謂傳統，是應該守護的價值。","Tradition is a value to be preserved."]]],
+["-아/어 두다","int",9,"do in advance (and keep)","事先…好","Preparation kept for later; near -아/어 놓다.",[
+ ["관리비를 미리 내 두었다.","事先繳好了管理費。","I paid the maintenance fee in advance."]]],
+["-(으)ㄹ 겸","int",10,"partly to, as well as","順便、兼","Two purposes; see unit 9.",[
+ ["화해도 할 겸 저녁을 같이 먹었다.","順便和解，一起吃了晚餐。","We had dinner together, partly to make up."]]],
+["-느라고","int",11,"because (busy doing)","因為忙著…","Reason that occupied the subject; result often negative.",[
+ ["짐을 싸느라고 늦었다.","因為忙著打包所以遲到了。","I was late because I was packing."]]],
+["-(으)ㄴ/는 이상","int",12,"now that, since","既然","Given the fact; obligation follows.",[
+ ["법을 어긴 이상 처벌을 받아야 한다.","既然違了法，就該受罰。","Now that the law has been broken, punishment must follow."]]],
+["-(으)ㄴ/는 가운데","int",13,"amid, while","在…之中","News-style background.",[
+ ["논란이 계속되는 가운데 정부가 결정을 내렸다.","在爭議持續之中，政府做出了決定。","Amid ongoing controversy, the government decided."]]],
+["-아/어 버리다","int",14,"do completely (relief or regret)","…掉了（徹底）","Completion with feeling.",[
+ ["참다못해 말해 버렸다.","忍不住說出來了。","I couldn't hold it in and just said it."]]],
+["-(으)ㄴ/는 데다가","int",15,"on top of","再加上","Additive; see unit 6.",[
+ ["게다가 비까지 오는 데다가 춥다.","再加上還下雨，又冷。","On top of that it's raining, and cold."]]],
+// ---------- Intermediate: new units 16–20 ----------
+["-아/어 내다","int",16,"manage to (do through to the end)","…出來、堅持做到","Achievement after effort.",[
+ ["끝까지 버텨 냈다.","撐到了最後。","I held out to the end."],
+ ["어려운 문제를 풀어 냈다.","解出了難題。","I managed to solve the hard problem."]]],
+["-고 말다","int",16,"end up (regrettably)","終究…了","Unintended completion.",[
+ ["커피를 쏟고 말았다.","最後還是把咖啡灑了。","I ended up spilling the coffee."]]],
+["-(으)ㄹ 뻔하다","int",16,"almost did","差點","Near miss; always past.",[
+ ["휴대폰을 떨어뜨릴 뻔했다.","差點把手機摔了。","I nearly dropped my phone."]]],
+["-아/어 하다","int",17,"(3rd person) feels …","（他人）感到…","Turns a feeling adjective into a 3rd-person verb: 그리워하다, 안타까워하다.",[
+ ["그는 고향을 그리워한다.","他想念故鄉。","He misses his hometown."],
+ ["아이가 무서워해요.","孩子很害怕。","The child is scared."]]],
+["-(으)ㄴ/는 척하다","int",17,"pretend to","假裝","See unit 5; here with speech verbs.",[
+ ["모르는 척 시치미를 뗐다.","裝作不知道。","He played dumb."]]],
+["-지 그래(요)?","int",17,"why don't you …?","你怎麼不…呢？","Gentle suggestion.",[
+ ["고민을 털어놓지 그래?","你怎麼不說出來呢？","Why don't you open up about it?"]]],
+["-아/어 보이다","int",18,"to look (adjective)","看起來…","Appearance from an adjective.",[
+ ["오늘 뿌듯해 보여요.","今天看起來很有成就感。","You look pleased today."],
+ ["방이 널찍해 보인다.","房間看起來很寬敞。","The room looks spacious."]]],
+["-(으)ㄴ 나머지","int",18,"as a result of being so …","因為太…以致","Excess leading to result.",[
+ ["긴장한 나머지 말을 더듬었다.","因為太緊張而結巴。","I was so nervous I stammered."]]],
+["-기 짝이 없다","int",18,"extremely","…之極","Formal intensifier for adjectives.",[
+ ["민망하기 짝이 없다.","難為情至極。","It's embarrassing beyond words."]]],
+["-(으)ㄹ 만하다","int",19,"worth; manageable","值得","With nouns of worth: 보람.",[
+ ["보람을 느낄 만한 일이다.","是值得有成就感的工作。","It's work worth feeling proud of."]]],
+["-에 불과하다","int",19,"nothing more than","不過是","Minimising.",[
+ ["핑계에 불과하다.","不過是藉口。","It's nothing but an excuse."]]],
+["-(으)ㄴ/는 셈 치다","int",19,"consider it as","就當作","Treat as if; concession.",[
+ ["빚 갚은 셈 치자.","就當還了債吧。","Let's just call the debt settled."]]],
+["-다가는","int",20,"if (you keep) …, then (bad)","再這樣…的話","Warning of consequences.",[
+ ["자꾸 미루다가는 못 끝낸다.","再這樣拖下去會做不完。","Keep putting it off and you won't finish."]]],
+["-(으)ㄹ 리 만무하다","int",20,"no way that (formal)","絕無可能","Formal version of -(으)ㄹ 리가 없다.",[
+ ["도무지 알 리 만무하다.","絕無可能知道。","There is no way they could know."]]],
+["-(으)ㄴ/는지 모르다 (감탄)","int",20,"so … (exclamation)","不知有多…","Exclamatory with 얼마나/어찌나.",[
+ ["어찌나 기쁜지 몰라요.","不知有多開心。","You can't imagine how happy I am."]]],
+// ---------- Advanced: extra points for units 1–10 ----------
+["-(으)ㄴ/는 데(에) 반해","adv",1,"in contrast to","與…相反","Formal contrast.",[
+ ["추상적인 설명인 데 반해 예시는 구체적이다.","說明抽象，相反地例子很具體。","The explanation is abstract, whereas the examples are concrete."]]],
+["-(으)ㅁ에도 불구하고","adv",2,"despite","儘管","Formal concession, nominalised.",[
+ ["금리 인상에도 불구하고 투자가 늘었다.","儘管利率上升，投資仍增加。","Despite the rate rise, investment grew."]]],
+["-(으)ㄹ 뿐","adv",3,"only, merely","只是","Sentence-final -(으)ㄹ 뿐이다.",[
+ ["협상은 시작일 뿐이다.","談判只是開始。","The negotiation is only the beginning."]]],
+["-(으)ㄴ/는 한편","adv",4,"while also","一方面…另一方面","Parallel action.",[
+ ["가설을 세우는 한편 자료를 모았다.","一方面建立假說，一方面收集資料。","While forming the hypothesis, we gathered data."]]],
+["-(으)ㄹ 법도 하다","adv",5,"it would be natural to","也難怪會…","Reasonable expectation that didn't happen.",[
+ ["좌절할 법도 한데 웃었다.","照理說會受挫，他卻笑了。","You'd expect him to be crushed, but he smiled."]]],
+["-(으)ㅁ으로 인해","adv",6,"due to (nominalised)","由於","Formal cause with -(으)ㅁ.",[
+ ["규제를 완화함으로 인해 경쟁이 늘었다.","由於放寬規制，競爭增加了。","Due to deregulation, competition increased."]]],
+["-(으)ㄴ/는 양 (하다)","adv",7,"as if (pretending)","好像…似的","Literary; near 척하다.",[
+ ["다 아는 양 말했다.","好像什麼都懂似的說。","He spoke as if he knew it all."]]],
+["-(으)ㄹ 겨를도 없이","adv",8,"without even a moment to","連…的時間都沒有","Rapid succession.",[
+ ["대응할 겨를도 없이 파업이 시작됐다.","連應對的時間都沒有，罷工就開始了。","The strike began before anyone could respond."]]],
+["-(으)ㄹ진대","adv",9,"given that (archaic)","既然…","Archaic concessive-causal; speeches and literature.",[
+ ["어른도 힘들진대 아이는 오죽하랴.","大人都辛苦，更何況孩子。","Even adults struggle; how much more a child."]]],
+["-(으)ㄹ 따름","adv",10,"merely","只是","See unit 1; adverbial use.",[
+ ["최선을 다했을 따름이다.","只是盡了全力。","I merely did my best."]]],
+// ---------- Advanced: new units 11–14 ----------
+["-(으)ㄹ 나위도 없이","adv",11,"needless to say","無庸置疑","Formal.",[
+ ["말할 나위도 없이 빼어난 작품이다.","無庸置疑是出眾的作品。","Needless to say, it's an outstanding work."]]],
+["-(으)로 말미암아","adv",11,"owing to","由於（文言）","Literary cause; verbs of this unit often follow.",[
+ ["오해로 말미암아 갈등이 빚어졌다.","由於誤會而釀成了衝突。","Conflict arose owing to misunderstanding."]]],
+["-건대","adv",11,"(I) assert/hope that","（我）敢說/但願","With 바라건대, 단언하건대.",[
+ ["바라건대 부디 맞서 주기를.","但願你能勇敢對抗。","I only hope you will stand up to it."]]],
+["-기 이를 데 없다","adv",12,"extremely (formal)","…無以復加","High register intensifier.",[
+ ["경치가 빼어나기 이를 데 없다.","景色美得無以復加。","The scenery is beyond beautiful."]]],
+["-(으)ㄴ/는 듯 만 듯","adv",12,"barely, as if (not)","似…非…","Ambiguous degree.",[
+ ["들릴 듯 말 듯 속삭였다.","似聽得見又聽不見地耳語。","She whispered almost inaudibly."]]],
+["-기 일쑤이다","adv",12,"habitually (bad)","動不動就","Bad habit.",[
+ ["쌀쌀맞게 대답하기 일쑤다.","動不動就冷淡地回答。","He habitually answers curtly."]]],
+["-(으)ㄹ 턱이 없다","adv",13,"no reason it would","沒道理","Colloquial disbelief; see unit 8.",[
+ ["실마리가 그냥 나올 턱이 없다.","線索沒道理憑空出現。","There's no way a lead just appears."]]],
+["-(으)ㄹ 따름이거니와","adv",13,"not only merely … but","不僅僅…而且","Stacked formal connector.",[
+ ["발판이 될 따름이거니와 밑천도 된다.","不僅是跳板，還是本錢。","It's not merely a stepping stone, it's capital too."]]],
+["-(으)ㄴ즉","adv",13,"as for, in that","就…而言、既然","Archaic 'as for'.",[
+ ["사정인즉 밑천이 부족하다.","就情況而言，本錢不足。","The situation is that capital is lacking."]]],
+["-기는 하다","adv",14,"it's true that … (but)","是…沒錯（但）","Partial concession, often before idioms.",[
+ ["발이 넓기는 하지만 믿을 만하진 않다.","人脈廣是廣，但不太可靠。","He's well-connected, true, but not reliable."]]],
+["-(으)ㄴ/는 체하다","adv",14,"pretend","裝作","Pairs with 시치미를 떼다.",[
+ ["모르는 체 시치미를 뗐다.","裝作不知道。","He feigned ignorance."]]],
+["-아/어 죽겠다","adv",14,"… to death (colloquial)","…死了","Colloquial intensifier.",[
+ ["어깨가 무거워 죽겠다.","責任重得要死。","The responsibility is killing me."]]],
+// ---------- Beginner: extra points for units 1–5 ----------
+["-부터 -까지","beg",1,"from … to (time)","從…到…","Time range.",[
+ ["아홉 시부터 다섯 시까지 일해요.","從九點工作到五點。","I work from nine to five."]]],
+["-에 있다/없다","beg",2,"there is/isn't at","在…有/沒有","Location of existence.",[
+ ["근처에 은행이 있어요.","附近有銀行。","There's a bank nearby."]]],
+["-하고 / -(이)랑","beg",3,"and; with (spoken)","和（口語）","Casual 'and/with'.",[
+ ["친구하고 영화를 봤어요.","和朋友看了電影。","I watched a film with a friend."]]],
+["-(으)ㄹ래요?","beg",4,"would you like to?","要不要…？","Offer or suggestion.",[
+ ["같이 산책할래요?","要一起散步嗎？","Would you like to take a walk together?"]]],
+["-아/어서 (이유)","beg",5,"because, so","因為…所以","Reason; no tense marker before 서.",[
+ ["복잡해서 길을 잃었어요.","因為很複雜所以迷路了。","It was complicated so I got lost."]]],
+// ---------- Beginner: new units 6–8 ----------
+["-고 있다","beg",6,"be doing (progressive)","正在…","Ongoing action.",[
+ ["밥을 먹고 있어요.","正在吃飯。","I'm eating."]]],
+["-(으)세요 (명령)","beg",6,"please do","請…","Polite imperative; 듣다 → 들으세요.",[
+ ["여기 앉으세요.","請坐這裡。","Please sit here."]]],
+["-지 않다","beg",7,"not (long negation)","不…","Long-form negative, any register.",[
+ ["오늘은 바쁘지 않아요.","今天不忙。","I'm not busy today."]]],
+["-(으)ㄴ + 명사","beg",7,"adjective modifier","…的（形容詞修飾名詞）","Adjective before a noun: 크다 → 큰 집.",[
+ ["큰 집에 살아요.","住在大房子裡。","I live in a big house."],
+ ["맛있는 음식을 먹었어요.","吃了好吃的食物。","I ate delicious food."]]],
+["-이/가 있다/없다","beg",8,"to have / not have","有/沒有","Possession.",[
+ ["돈이 없어요.","沒有錢。","I have no money."]]],
+["-에서 (장소)","beg",8,"at/in (action location)","在（動作地點）","Place where an action happens.",[
+ ["집에서 책을 읽어요.","在家看書。","I read at home."]]],
 ];
 
 const counters = { int: 0, adv: 0, beg: 0 };
