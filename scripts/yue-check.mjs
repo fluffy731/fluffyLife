@@ -63,6 +63,37 @@ async function speechRun(voices, path = "yue/") {
   ok("voices not loaded yet → still speaks zh-HK, no alert", notLoaded.spoken[0]?.lang === "zh-HK" && notLoaded.alerts.length === 0);
 }
 
+// 2b. recorded clips: 🔊 plays the file (audible on silent) and does not use the speech engine
+{
+  const { buildJobs } = await import("../lib/audio-jobs.js");
+  const { yuePack } = await import("../packs/yue.js");
+  const { koPack } = await import("../packs/ko.js");
+  const wav = Buffer.from("UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=", "base64");
+  async function clipRun(path, pack, withIndex) {
+    const page = await b.newPage();
+    const names = buildJobs(pack).map((j) => j.file.split("/").pop().replace(".mp3", ""));
+    await page.route("**/audio/*/index.json", (r) => (withIndex ? r.fulfill({ contentType: "application/json", body: JSON.stringify({ clips: names }) }) : r.fulfill({ status: 404, body: "" })));
+    await page.route("**/audio/*/*.mp3", (r) => r.fulfill({ contentType: "audio/mpeg", body: wav }));
+    await page.addInitScript(() => {
+      window.__played = []; window.__spoken = [];
+      HTMLMediaElement.prototype.play = function () { window.__played.push(this.src); return Promise.resolve(); };
+      Object.defineProperty(window, "speechSynthesis", { configurable: true, value: { getVoices: () => [{ lang: "zh-HK", name: "Sinji" }, { lang: "ko-KR", name: "Yuna" }], cancel() {}, speak(u) { window.__spoken.push(u.text); } } });
+      Object.defineProperty(window, "SpeechSynthesisUtterance", { configurable: true, value: class { constructor(t) { this.text = t; } } });
+    });
+    await page.goto(base + path, { waitUntil: "networkidle" });
+    await page.waitForTimeout(300); // clip index loads in the background
+    await page.click(".say");
+    const r = await page.evaluate(() => ({ played: window.__played, spoken: window.__spoken }));
+    await page.close(); return r;
+  }
+  const y = await clipRun("yue/", yuePack, true);
+  ok("Cantonese 🔊 plays the recorded clip, not the speech engine", y.played.length === 1 && /\/audio\/yue\/[0-9a-f]{16}\.mp3$/.test(y.played[0]) && y.spoken.length === 0);
+  const k = await clipRun("", koPack, true);
+  ok("Korean 🔊 plays the recorded clip, not the speech engine", k.played.length === 1 && /\/audio\/ko\/[0-9a-f]{16}\.mp3$/.test(k.played[0]) && k.spoken.length === 0);
+  const none = await clipRun("yue/", yuePack, false);
+  ok("no recordings deployed → falls back to the speech engine", none.played.length === 0 && none.spoken.length === 1);
+}
+
 // 3. review fixes: legacy-id migration, wipe dialog text, unfiltered Browse, tone key, review direction
 {
   const page = await b.newPage({ viewport: { width: 390, height: 844 } });

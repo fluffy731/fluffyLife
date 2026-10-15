@@ -26,6 +26,24 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      # Recorded clips for 🔊 (the iPhone mutes its built-in voice on silent, but plays audio files).
+      - name: List clips to record
+        run: node scripts/audio-jobs.mjs
+      - name: Restore previously recorded clips
+        uses: actions/cache@v4
+        with:
+          path: audio/*/*.mp3
+          key: audio-v1-${{ hashFiles('audio-jobs.json') }}
+          restore-keys: audio-v1-
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Record new clips (Microsoft neural voices via edge-tts)
+        # Never blocks a deploy: missing clips fall back to the device voice in the app.
+        continue-on-error: true
+        timeout-minutes: 30
+        run: pip install --quiet "edge-tts>=6.1,<8" && python scripts/gen_audio.py audio-jobs.json
       - name: Stamp service-worker cache version with the commit SHA
         run: sed -i "s/const VERSION = \"dev\";/const VERSION = \"${GITHUB_SHA::12}\";/" sw.js && grep -q "${GITHUB_SHA::12}" sw.js
       - uses: actions/configure-pages@v5
