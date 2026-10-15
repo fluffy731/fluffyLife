@@ -11,7 +11,7 @@ export const A0 = {
     ["市", "si5", "시, 시장", "city, market", "n", "我住喺市區。", "ngo5 zyu6 hai2 si5 keoi1.", "저는 시내에 살아요."],
     ["事", "si6", "일", "matter, affair", "n", "冇事。", "mou5 si6.", "괜찮아요. (문제없어요)"],
     // Tone drill: "maa" in four tones
-    ["媽", "maa1", "엄마", "mum", "n", "我媽媽好好。", "ngo5 maa1 maa1 hou2 hou2.", "우리 엄마는 아주 좋은 분이에요."],
+    ["媽", "maa1", "엄마", "mum", "n", "我媽媽好好。", "ngo5 maa4 maa1 hou2 hou2.", "우리 엄마는 아주 좋은 분이에요.", 1],
     ["麻", "maa4", "저리다, 삼베", "numb; hemp", "adj", "呢隻手麻咗。", "ni1 zek3 sau2 maa4 zo2.", "이 손이 저려요."],
     ["馬", "maa5", "말 (동물)", "horse", "n", "佢鍾意馬。", "keoi5 zung1 ji3 maa5.", "그는 말을 좋아해요."],
     ["罵", "maa6", "꾸짖다, 욕하다", "to scold", "v", "唔好罵人。", "m4 hou2 maa6 jan4.", "사람을 욕하지 마세요."],
