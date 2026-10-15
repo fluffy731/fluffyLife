@@ -1,0 +1,15 @@
+{
+  "name": "광동어 · 粵語",
+  "short_name": "광동어",
+  "description": "한글로 배우는 광동어 — 단어와 문법, 간격 반복 복습.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f8f9",
+  "theme_color": "#0f4c5c",
+  "icons": [
+    { "src": "../icons/yue.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/yue-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/yue-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -8,6 +8,9 @@ const FILES = [
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
   "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/bridge.js", "./lib/validate-yue.js",
   "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
+  "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
+  "./yue/", "./yue/index.html", "./yue/manifest.json", "./icons/yue.svg", "./icons/yue-180.png", "./icons/yue-512.png",
+  "./data/yue/pack.js", "./data/yue/vocab.js", "./data/yue/vocab-a0.js", "./data/yue/vocab-a1.js", "./data/yue/vocab-a2.js", "./data/yue/grammar.js", "./data/yue/hanja-ko.js",
   "./data/pack.js", "./data/vocab.js", "./data/vocab-int.js", "./data/vocab-adv.js", "./data/vocab-beg.js", "./data/grammar.js",
 ];
 
