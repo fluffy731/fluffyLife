@@ -57,6 +57,24 @@ npm test        # node --test: scheduler, track, storage, data validation
 
 No build step. Serve the folder with any static server to try it locally.
 
-## Future
+## 광동어 · 粵語 — Cantonese for Korean speakers (`/yue/`)
 
-The data is a *pack* (`data/pack.js`) with `target` and `support` languages, so a reverse pack — Cantonese for Korean speakers, with jyutping instead of hanja — can slot in without changing the app.
+A second home-screen app on the same engine, for a Korean speaker who is a complete beginner and cannot read Chinese characters yet. Everything is explained in Korean.
+
+- **URL:** `https://<user>.github.io/<repo>/yue/` — add it to the home screen separately; it has its own icon (粵), name and progress (`yue.v1`), so it never mixes with the Korean app.
+- **한글 pronunciation spelling** on every word and example, computed from Jyutping by `lib/jyutping.js` (never hand-typed). Each syllable is coloured by tone with the tone number as a superscript: 你好 → 네이⁵ 호우². Tone key: 1 높고 평평 · 2 올라감 · 3 중간 평평 · 4 낮게 내려감 · 5 낮게 올라감 · 6 낮고 평평.
+- Spelling choices: b d g z → ㅃ ㄸ ㄲ ㅉ (unaspirated), p t k c → ㅍ ㅌ ㅋ ㅊ, short *a* → ㅓ, long *aa* → ㅏ, final -p -t -k → 받침 ㅂ ㄷ ㄱ. Lossy by nature: f and p both become ㅍ, and 한글 cannot show tone, so always check the colour/number and listen with 🔊. The tables are in one place in `lib/jyutping.js` if you want ㅂ ㄷ ㄱ ㅈ instead.
+- **Bridge to characters:** where she already knows the word by sound, the back of the card pairs each character with its 한국 한자음 (學校 학·교 ↔ 혹·하우). Characters that exist only in Cantonese (唔 冇 咗 嘅 啲 …) show a *광동어에만 있는 글자* badge.
+- **Track:** 12 units, 301 words, 41 grammar points — A0 (1 소리와 성조 · 2 인사 · 3 숫자·돈·시간 · 4 음식), A1 (5 교통 · 6 쇼핑 · 7 가족 · 8 동사 · 9 형용사), A2 (10 장소 · 11 건강 · 12 광동어다운 말투). Rows marked `?` are ones to double-check with a native speaker.
+- **Speech:** reads the characters with the iPhone's Hong Kong voice (falls back to Taiwan). If 🔊 says no voice is installed: 설정 → 손쉬운 사용 → 말하기 콘텐츠 → 음성 → 중국어 → 광둥어.
+- Cantonese words live in `data/yue/vocab-a0.js`, `vocab-a1.js`, `vocab-a2.js`, grouped by unit: `[zh, jyutping, 한국어 뜻, English, pos, example zh, example jyutping, example 한국어, check?]`. `npm test` validates every syllable.
+
+## Development checks
+
+```
+npm test                                   # unit tests: scheduler, track, storage, Korean & Cantonese data, Jyutping engine
+node scripts/snapshot.mjs --check          # Korean app HTML identical to the golden snapshot
+node scripts/korean-check.mjs              # Korean app behaviour (search IME, dialog, Again keeps progress …)
+node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
+```
+The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.
