@@ -101,3 +101,37 @@ test("release content: ≥ 300 words, 12 units each ≥ 24 words, ≥ 40 grammar
     assert.ok(grammar.filter((g) => g.unit === u).length >= 2, `unit ${u} grammar`);
   }
 });
+
+import { HANJA_KO } from "../data/yue/hanja-ko.js";
+import { bridge, hasBridge } from "../lib/bridge.js";
+
+const CANTONESE_ONLY = [..."唔冇咗嘅啲嗰呢佢哋睇瞓攰嬲嘈啦喎嘛呀㗎囉咋乜嘢畀搵咁蚊餸靚緊嗎仔闆找做姐"];
+const LOANWORD_ONLY = [..."巴士的咖啡卡嚨"];
+
+test("bridge table: every reading is one 한글 syllable keyed by a Han character", () => {
+  for (const [ch, ko] of Object.entries(HANJA_KO)) {
+    assert.ok(/^\p{Script=Han}$/u.test(ch), `key ${ch}`);
+    assert.ok(/^[가-힣]$/u.test(ko), `${ch} → ${ko}`);
+  }
+});
+
+test("bridge table omits Cantonese-only characters and loanword transliterations", () => {
+  for (const ch of [...CANTONESE_ONLY, ...LOANWORD_ONLY]) assert.ok(!(ch in HANJA_KO), `${ch} must not have a reading`);
+});
+
+test("every word's characters pair one-to-one with its syllables", () => {
+  const bad = vocab.filter((v) => bridge(v.zh, v.jp, HANJA_KO) === null).map((v) => `${v.id} ${v.zh} ${v.jp}`);
+  assert.deepEqual(bad, []);
+});
+
+test("at least 55% of words give the learner a Sino-Korean reading she may already know", () => {
+  const n = vocab.filter((v) => hasBridge(bridge(v.zh, v.jp, HANJA_KO))).length;
+  assert.ok(n / vocab.length >= 0.55, `${n}/${vocab.length}`);
+});
+
+test("every non-Cantonese-only character in the vocabulary has a reading", () => {
+  const skip = new Set([...CANTONESE_ONLY, ...LOANWORD_ONLY]);
+  const missing = new Set();
+  for (const v of vocab) for (const c of v.zh) if (/\p{Script=Han}/u.test(c) && !skip.has(c) && !(c in HANJA_KO)) missing.add(c);
+  assert.deepEqual([...missing], []);
+});
