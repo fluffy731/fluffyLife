@@ -29,8 +29,11 @@ self.addEventListener("activate", (e) => {
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
+  // GitHub Pages sends Cache-Control: max-age=600. A plain fetch() would take the HTTP cache and keep
+  // serving the previous deploy for up to 10 minutes; "no-cache" revalidates with the server (cheap 304s).
+  const fresh = e.request.mode === "navigate" ? new Request(e.request.url, { cache: "no-cache" }) : new Request(e.request, { cache: "no-cache" });
   e.respondWith(
-    fetch(e.request).then((res) => {
+    fetch(fresh).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
       return res;
     }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match(new URL(e.request.url).pathname.includes("/yue") ? "./yue/index.html" : "./index.html")))

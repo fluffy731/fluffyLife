@@ -77,5 +77,6 @@ npm test                                   # unit tests: scheduler, track, stora
 node scripts/snapshot.mjs --check          # Korean app HTML identical to the golden snapshot
 node scripts/korean-check.mjs              # Korean app behaviour (search IME, dialog, Again keeps progress …)
 node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
+node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
 ```
 The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.
