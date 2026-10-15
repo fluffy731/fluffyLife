@@ -4,6 +4,7 @@ import { TIER_ORDER, TIER_LABEL, buildUnits, isLearned, currentUnit, isUnlocked,
 import { wordOfHour } from "./lib/hour.js";
 import { load, save, exportJSON, importJSON } from "./lib/store.js";
 import { validateItem, mergeItems } from "./lib/validate.js";
+import { pronounce, romanize } from "./lib/pron.js";
 
 // ---------- state ----------
 // Safari with "Block All Cookies" throws on localStorage access; fall back to memory so the app still renders.
@@ -29,6 +30,13 @@ const persist = () => save(ls, state);
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const isGrammar = (it) => "form" in it;
+const say = (text) => `<button class="say" data-say="${esc(text)}" aria-label="Listen" title="Listen">🔊</button>`;
+// [pronounced form] + romanisation, only when a sound-change rule actually applies.
+function pronHTML(it) {
+  const said = pronounce(it.ko, { sino: !!it.hanja });
+  const rr = romanize(it.ko, { sino: !!it.hanja });
+  return `<div class="pron">${said !== it.ko ? `<span class="said">[${esc(said)}]</span> ` : ""}<span class="rr">${esc(rr)}</span></div>`;
+}
 const DAY = 86400000;
 
 function fmtDue(ms) {
@@ -43,17 +51,18 @@ function fmtDue(ms) {
 function cardHTML(it, open) {
   const front = isGrammar(it)
     ? `<div class="front grammar">${esc(it.form)}</div>`
-    : `<div class="front">${esc(it.ko)}</div><div class="pos">${esc(it.pos)}${it.check ? '<span class="check">?</span>' : ""}</div>`;
+    : `<div class="front">${esc(it.ko)} ${say(it.ko)}</div><div class="pos">${esc(it.pos)}${it.check ? '<span class="check">?</span>' : ""}</div>`;
   if (!open) return `<div class="card flash" id="card">${front}<div class="hint">tap to flip</div></div>`;
   let back;
   if (isGrammar(it)) {
     back = `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div><div class="en">${esc(it.en)}</div>` +
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +
-      it.ex.map((e) => `<div class="ex"><div class="k">${esc(e.ko)}</div><div class="t" lang="zh-Hant">${esc(e.zh)}</div><div class="t">${esc(e.en)}</div></div>`).join("");
+      it.ex.map((e) => `<div class="ex"><div class="k">${esc(e.ko)} ${say(e.ko)}</div><div class="t" lang="zh-Hant">${esc(e.zh)}</div><div class="t">${esc(e.en)}</div></div>`).join("");
   } else {
-    back = (it.hanja ? `<div class="hanja" lang="zh-Hant">${esc(it.hanja)}</div>` : `<div class="hanja none">고유어 · native word</div>`) +
+    back = pronHTML(it) +
+      (it.hanja ? `<div class="hanja" lang="zh-Hant">${esc(it.hanja)}</div>` : `<div class="hanja none">고유어 · native word</div>`) +
       `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div><div class="en">${esc(it.en)}</div>` +
-      `<div class="ex"><div class="k">${esc(it.ex)}</div><div class="t" lang="zh-Hant">${esc(it.exZh)}</div><div class="t">${esc(it.exEn)}</div></div>`;
+      `<div class="ex"><div class="k">${esc(it.ex)} ${say(it.ex)}</div><div class="t" lang="zh-Hant">${esc(it.exZh)}</div><div class="t">${esc(it.exEn)}</div></div>`;
   }
   return `<div class="card flash" id="card">${front}${back}</div>`;
 }
@@ -157,11 +166,13 @@ function browseListHTML(list) {
       return `<div class="item" data-id="${esc(i.id)}">
         <div class="row"><div><b>${esc(i.ko ?? i.form)}</b>${i.hanja ? `<span class="hj" lang="zh-Hant">${esc(i.hanja)}</span>` : ""}${i.check ? '<span class="check">?</span>' : ""}</div>
           <span class="meta"><span class="pill ${esc(i.tier)}">${esc(i.tier)} ${esc(i.unit)}</span> ${status}</span></div>
-        <div class="meta" lang="zh-Hant">${esc(i.zh)} · <span lang="en">${esc(i.en)}</span></div>
+        <div class="meta" lang="zh-Hant">${isGrammar(i) ? "" : `<span class="rr">${esc(romanize(i.ko, { sino: !!i.hanja }))}</span> · `}${esc(i.zh)} · <span lang="en">${esc(i.en)}</span></div>
         <div class="more">${isGrammar(i)
           ? (i.note ? `<div class="muted">${esc(i.note)}</div>` : "") + i.ex.map((e) => `<div><b>${esc(e.ko)}</b><br><span class="muted" lang="zh-Hant">${esc(e.zh)}</span><br><span class="muted">${esc(e.en)}</span></div>`).join("")
-          : `<b>${esc(i.ex)}</b><br><span class="muted" lang="zh-Hant">${esc(i.exZh)}</span><br><span class="muted">${esc(i.exEn)}</span>`}
-          <div class="actions"><button class="btn" data-edit="${esc(i.id)}">Edit</button><button class="btn" data-reset="${esc(i.id)}">Reset progress</button></div>
+          : `<b>${esc(i.ex)}</b> ${say(i.ex)}<br><span class="muted" lang="zh-Hant">${esc(i.exZh)}</span><br><span class="muted">${esc(i.exEn)}</span>`}
+          <div class="actions"><button class="btn" data-say="${esc(i.ko ?? i.form)}">🔊 Listen</button>
+          <button class="btn" data-edit="${esc(i.id)}">Edit</button></div>
+          <div class="actions"><button class="btn" data-reset="${esc(i.id)}">Reset progress</button></div>
         </div></div>`;
     }).join("")}${list.length > 200 ? '<div class="small muted">Showing first 200 — narrow the search.</div>' : ""}</div>`;
 }
@@ -258,8 +269,9 @@ function openEditor(existing) {
 
 // ---------- events ----------
 document.addEventListener("click", (e) => {
-  const t = e.target.closest("[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
+  const t = e.target.closest("[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
   if (!t) return;
+  if (t.dataset.say !== undefined) { e.stopPropagation(); return speak(t.dataset.say); }
   if (t.dataset.tab || t.dataset.go) { tab = t.dataset.tab || t.dataset.go; if (t.dataset.go === "learn") learnUnitKey = null; flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
   if (t.dataset.flip !== undefined || t.id === "card") { flipped = !flipped; return render(); }
   if (t.dataset.grade) {
@@ -304,6 +316,16 @@ document.addEventListener("change", (e) => {
     e.target.value = "";
   }
 });
+
+// iOS ships a ko-KR voice (Yuna); the OS picks it from utterance.lang when no voice is set.
+function speak(text) {
+  if (!("speechSynthesis" in window)) { alert("This browser has no speech voices."); return; }
+  const u = new SpeechSynthesisUtterance(text.replace(/^-|\(.*?\)/g, "").trim());
+  u.lang = "ko-KR"; u.rate = 0.85;
+  const v = speechSynthesis.getVoices().find((x) => x.lang.replace("_", "-").startsWith("ko"));
+  if (v) u.voice = v;
+  speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
 
 function applyTheme() {
   const t = state.settings.theme;
