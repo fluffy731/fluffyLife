@@ -46,6 +46,11 @@ h2:first-child { margin-top: 0; }
 .flash .front.grammar { font-size: 28px; }
 .flash .pos { color: var(--muted); font-size: 13px; margin-top: 4px; }
 .flash .hint { color: var(--muted); font-size: 13px; margin-top: 24px; }
+.pron { font-size: 15px; color: var(--muted); margin-top: 4px; }
+.pron .said { color: var(--ink); }
+.rr { font-family: ui-monospace, Menlo, monospace; font-size: .9em; letter-spacing: .02em; }
+button.say { border: 0; background: var(--soft); color: var(--ink); border-radius: 999px; width: 34px; height: 34px; font-size: 16px; vertical-align: middle; margin-left: 4px; }
+.flash .front button.say { width: 40px; height: 40px; font-size: 18px; }
 .hanja { font-size: 34px; color: var(--hanja); font-weight: 600; margin-top: 10px; letter-spacing: .08em; }
 .hanja.none { font-size: 14px; color: var(--muted); font-weight: 400; letter-spacing: 0; }
 .zh { font-size: 20px; margin-top: 6px; }

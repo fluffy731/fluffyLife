@@ -31,6 +31,7 @@ The Home tab shows a word of the hour, chosen from the current unit by the clock
 
 Units run **Intermediate (TOPIK 3–4) → Advanced (TOPIK 5–6) → Beginner (TOPIK 1–2)**. Each unit has 20 words and 2–3 grammar points. A unit counts as learned once every item has been introduced; the next one unlocks then, but you can jump to any unit from Settings.
 
+- Every word shows its **pronounced form** and Revised Romanisation when a sound change applies (학문 → [항문] *hangmun*), computed by rule in `lib/pron.js`. The 🔊 button reads words and example sentences aloud with the phone's built-in Korean voice (Settings → Accessibility → Spoken Content → Voices → Korean to download a better one).
 - **Learn** introduces unseen items of a unit. "Got it" and "Already knew" both schedule the first review for tomorrow; the buttons show the exact interval, and "Already knew" raises the card's ease so later gaps grow faster.
 - **Review** shows everything due. Again / Hard / Good / Easy.
 - **Browse** searches by 한글, 漢字, 中文 or English; tap an item to see examples, edit it, or reset its progress. **+ Add** creates your own words or grammar points.
