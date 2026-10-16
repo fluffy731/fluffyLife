@@ -1,4 +1,4 @@
-// Golden DOM snapshot of the Korean app (`/`). Run before and after a refactor:
+// Golden DOM snapshot of the Korean app (`/korean/`). Run before and after a refactor:
 //   node scripts/snapshot.mjs --write   |   node scripts/snapshot.mjs --check
 // Needs Playwright: set PLAYWRIGHT_MODULE to its index.mjs if it is not importable as "playwright".
 import { createServer } from "node:http";
@@ -21,7 +21,7 @@ await page.addInitScript(() => {
   const FIXED = new Date("2026-10-15T09:30:00").getTime(), D = Date;
   window.Date = class extends D { constructor(...a) { super(...(a.length ? a : [FIXED])); } static now() { return FIXED; } };
 });
-await page.goto(base, { waitUntil: "networkidle" });
+await page.goto(base + "korean/", { waitUntil: "networkidle" });
 const view = () => page.evaluate(() => document.querySelector("#view").innerHTML);
 const out = {};
 out.title = await page.title();

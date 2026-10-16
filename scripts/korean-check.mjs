@@ -10,7 +10,9 @@ const base = `http://localhost:${srv.address().port}/`;
 const b = await chromium.launch(); const page = await b.newPage({ viewport: { width: 390, height: 844 } });
 const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} ${name}`);
 page.on("dialog", (d) => d.accept());
-await page.goto(base, { waitUntil: "networkidle" });
+// The old address (/) forwards to the app at /korean/.
+await page.goto(base + "?from=old", { waitUntil: "networkidle" });
+ok("old address forwards to /korean/", new URL(page.url()).pathname === "/korean/" && new URL(page.url()).search === "?from=old");
 // Browse: input element survives typing
 await page.click('[data-tab="browse"]');
 const before = await page.evaluate(() => { window.__q = document.querySelector("#q"); return true; });

@@ -9,11 +9,11 @@ The workflow in `.github/workflows/pages.yml` runs the tests and deploys the rep
 1. Repo **Settings → Pages → Source: GitHub Actions**.
 2. Repo **Settings → Environments → github-pages → Deployment branches**: add `korean` (the environment is created on the first run and may only allow the default branch).
 
-The site is then at `https://<user>.github.io/<repo>/`. The deploy stamps the commit SHA into the service worker, so installed copies pick up changes on their next online launch without anyone bumping a version by hand.
+The Korean app is then at `https://<user>.github.io/<repo>/korean/` and the Cantonese app at `…/yue/`. The bare `https://<user>.github.io/<repo>/` forwards to `/korean/`, so home-screen icons saved from the old address keep working with their progress. The deploy stamps the commit SHA into the service worker, so installed copies pick up changes on their next online launch without anyone bumping a version by hand.
 
 ## Install on iPhone
 
-1. Open the hosted page in Safari.
+1. Open the hosted page (`…/korean/`) in Safari.
 2. Share → **Add to Home Screen**.
 3. Open it from the home screen once so the offline cache fills. The home-screen app keeps its own progress, separate from Safari's.
 

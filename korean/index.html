@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한자 Korean</title>
+<meta name="description" content="Korean vocabulary and grammar with hanja, spaced repetition, TOPIK study track.">
+<meta name="theme-color" content="#1b2a41" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1722" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="한자 Korean">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="../icons/icon-180.png">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="top">
+  <h1 id="title">한자 Korean</h1>
+  <span id="due-badge" class="badge" hidden></span>
+</header>
+<main id="view" class="view"></main>
+<nav class="tabs" id="tabs">
+  <button data-tab="home" class="active"><span class="ic">⌂</span>Home</button>
+  <button data-tab="learn"><span class="ic">✎</span>Learn</button>
+  <button data-tab="review"><span class="ic">↻</span>Review</button>
+  <button data-tab="browse"><span class="ic">☰</span>Browse</button>
+  <button data-tab="settings"><span class="ic">⚙</span>Settings</button>
+</nav>
+<dialog id="dlg"></dialog>
+<script type="module">
+  import { start } from "../app.js";
+  import { koPack } from "../packs/ko.js";
+  start(koPack);
+</script>
+</body>
+</html>
