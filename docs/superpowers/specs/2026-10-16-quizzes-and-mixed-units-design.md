@@ -2,7 +2,7 @@
 
 Date: 16 October 2026
 Branch: `korean`
-Apps: Korean (`/`, pack `ko-zh`) and Cantonese (`/yue/`, pack `yue-ko`)
+Apps: Korean (`/korean/`, pack `ko-zh`) and Cantonese (`/yue/`, pack `yue-ko`)
 
 ## Purpose
 
@@ -217,7 +217,7 @@ quiz: {
 | `app.js` | Adds the `quiz` tab to `render()`, routes `data-quiz*` clicks to `quiz-view.js`, adds the Home "test ready" card and the 🏅 marker | `quiz-view.js` |
 | `packs/ko.js`, `packs/yue.js` | `quiz: { types }` | `quiz/*.js` |
 | `ui/en.js`, `ui/ko.js` | New strings, keeping key parity (enforced by a test) | — |
-| `index.html`, `yue/index.html` | Sixth tab button | — |
+| `korean/index.html`, `yue/index.html` | Sixth tab button | — |
 | `style.css` | Option buttons, right/wrong states, tone buttons, results list | — |
 | `data/vocab.js` | Interleaved unit assignment | — |
 

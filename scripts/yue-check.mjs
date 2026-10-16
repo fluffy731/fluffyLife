@@ -51,7 +51,7 @@ async function speechRun(voices, path = "yue/") {
   // iPhone home-screen app: speech ran (start/end fired) but was inaudible — the default audio session
   // obeys the ring/silent switch. "playback" must be set before speak() is called.
   ok("Cantonese: audio session set to playback before speaking", hk.order.join(",") === "type=playback,speak@playback");
-  const ko = await speechRun(["ko-KR"], "");
+  const ko = await speechRun(["ko-KR"], "korean/");
   ok("Korean: audio session set to playback before speaking", ko.order.join(",") === "type=playback,speak@playback");
   const yue = await speechRun(["yue-HK", "ko-KR"]);
   ok("Android yue-HK voice accepted", yue.spoken[0]?.lang === "yue-HK");
@@ -88,7 +88,7 @@ async function speechRun(voices, path = "yue/") {
   }
   const y = await clipRun("yue/", yuePack, true);
   ok("Cantonese 🔊 plays the recorded clip, not the speech engine", y.played.length === 1 && /\/audio\/yue\/[0-9a-f]{16}\.mp3$/.test(y.played[0]) && y.spoken.length === 0);
-  const k = await clipRun("", koPack, true);
+  const k = await clipRun("korean/", koPack, true);
   ok("Korean 🔊 plays the recorded clip, not the speech engine", k.played.length === 1 && /\/audio\/ko\/[0-9a-f]{16}\.mp3$/.test(k.played[0]) && k.spoken.length === 0);
   const none = await clipRun("yue/", yuePack, false);
   ok("no recordings deployed → falls back to the speech engine", none.played.length === 0 && none.spoken.length === 1);

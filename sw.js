@@ -4,7 +4,8 @@ const VERSION = "dev";
 const PREFIX = "hanja-korean-";
 const CACHE = `${PREFIX}${VERSION}`;
 const FILES = [
-  "./", "./index.html", "./style.css", "./app.js", "./manifest.json",
+  "./", "./index.html", "./style.css", "./app.js",
+  "./korean/", "./korean/index.html", "./korean/manifest.json",
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
   "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js",
   "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
@@ -38,6 +39,6 @@ self.addEventListener("fetch", (e) => {
     fetch(fresh).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
       return res;
-    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match(new URL(e.request.url).pathname.includes("/yue") ? "./yue/index.html" : "./index.html")))
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match(new URL(e.request.url).pathname.includes("/yue") ? "./yue/index.html" : "./korean/index.html")))
   );
 });
