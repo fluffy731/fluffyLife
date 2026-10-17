@@ -133,7 +133,7 @@ async function speechRun(voices, path = "yue/") {
   const { yuePack } = await import("../packs/yue.js");
   const names = buildJobs(yuePack).map((j) => j.file.split("/").pop().replace(".mp3", ""));
   const wav = Buffer.from("UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=", "base64");
-  async function quizPage(seed) {
+  async function quizPage(seed, offline = false) {
     // Service workers blocked: after the reload the worker would fetch the clip index itself, past these routes.
     const qctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
     const page = await qctx.newPage();
@@ -151,6 +151,7 @@ async function speechRun(voices, path = "yue/") {
     });
     await page.reload({ waitUntil: "networkidle" });
     await page.waitForTimeout(300); // clip index loads in the background
+    if (offline) await qctx.setOffline(true);
     await page.click('[data-tab="quiz"]'); await page.click('[data-qstart="a0-1"]');
     return page;
   }
@@ -176,6 +177,15 @@ async function speechRun(voices, path = "yue/") {
   ok("say option 🔊 plays without selecting", sayChecked === true);
   ok("unit test finishes with a pass", (await page.textContent(".qverdict")).includes("합격"));
   await page.context().close();
+  // Offline, the clip index may be cached but the mp3s are not: audio questions must not be asked.
+  const off = await quizPage(SEED, true);
+  const captions = [];
+  for (let i = 0; i < 15 && (await off.locator("[data-qopt]").count()); i++) {
+    captions.push(await off.locator(".qprompt .small").textContent());
+    await off.click(`[data-qopt="${await off.evaluate(() => window.__quizAnswer())}"]`, { position: { x: 12, y: 12 } }); await off.click("[data-qnext]");
+  }
+  ok("offline: no listening or tone questions", captions.length === 15 && !captions.some((c) => c.includes("몇 성") || c.includes("들은 말")));
+  await off.context().close();
 }
 await b.close(); srv.close();
 console.log(out.join("\n"));

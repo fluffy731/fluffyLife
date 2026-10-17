@@ -15,7 +15,7 @@ const unitTest = (pack, types, key, env, seed = 1) => {
 const unique = (q, type) => new Set(q.options.map((o) => (typeof o === "string" ? o : type.answerText(o)))).size === q.options.length;
 
 test("ko: grammarCore", () => {
-  assert.equal(grammarCore("-(으)ㄴ/는 반면(에)"), "ㄴ");
+  assert.equal(grammarCore("-(으)ㄴ/는 반면(에)"), "는 반면");
   assert.equal(grammarCore("-기 위해(서)"), "기 위해");
 });
 
@@ -90,5 +90,39 @@ test("yue: a0-1 unit test with clips has unique options", () => {
     const qs = unitTest(yuePack, yueTypes, "a0-1", { hasClip: () => true }, seed);
     assert.equal(qs.length, 15);
     for (const q of qs) assert.ok(unique(q, yueTypes.find((t) => t.key === q.type)), `${q.type} ${q.item.id}`);
+  }
+});
+
+// Final-review fixes
+test("ko: two spellings of the same grammar point never appear together", () => {
+  const dupes = [["-(으)ㄴ/는 반면(에)", "-(으)ㄴ/는 반면"], ["-(으)ㄴ/는 데다(가)", "-(으)ㄴ/는 데다가"], ["-는 바람에", "-(으)ㄴ/는 바람에"]];
+  const g = koTypes.find((t) => t.key === "grammar");
+  for (const [a, b] of dupes) {
+    const target = koPack.grammar.find((x) => x.form === a), twin = koPack.grammar.find((x) => x.form === b);
+    assert.ok(target && twin, `${a} / ${b} in data`);
+    for (let seed = 1; seed <= 200; seed++) {
+      const [q] = buildQuestions([target], koPack.grammar, [g], { rand: rng(seed), env: { hasClip: () => true }, n: 1, isGrammar });
+      assert.ok(!q.options.includes(twin), `${a} with ${b}, seed ${seed}`);
+    }
+  }
+});
+
+test("ko: a homograph never sits beside the word in a meaning question", () => {
+  const meaning = koTypes.find((t) => t.key === "meaning");
+  const it = koPack.vocab[0], twin = { ...it, id: "u1", zh: "別的", en: "something else" };
+  for (let seed = 1; seed <= 50; seed++) {
+    const [q] = buildQuestions([it], [twin, ...koPack.vocab], [meaning], { rand: rng(seed), env: { hasClip: () => true }, n: 1, isGrammar });
+    assert.ok(!q.options.includes(twin), `seed ${seed}`);
+  }
+});
+
+test("yue: a same-sound word never sits beside the word in sound/listen questions", () => {
+  const it = yuePack.vocab.find((v) => v.zh === "三"), twin = { ...it, id: "y:衫x", zh: "衫", ko: "옷", en: "clothes" };
+  for (const key of ["sound", "listen"]) {
+    const type = yueTypes.find((t) => t.key === key);
+    for (let seed = 1; seed <= 50; seed++) {
+      const [q] = buildQuestions([it], [twin, ...yuePack.vocab], [type], { rand: rng(seed), env: { hasClip: () => true }, n: 1, isGrammar });
+      assert.ok(!q.options.includes(twin), `${key} seed ${seed}`);
+    }
   }
 });

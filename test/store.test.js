@@ -56,10 +56,16 @@ test("bad quiz falls back", () => {
 
 test("quiz with non-object units falls back per field", () => {
   assert.deepEqual(load(withQuiz({ units: [], practice: {} })).quiz, QD);
-  assert.deepEqual(load(withQuiz({ units: { a: {} }, practice: "x" })).quiz, { units: { a: {} }, practice: [] });
+  assert.deepEqual(load(withQuiz({ units: { a: {} }, practice: "x" })).quiz, { units: { a: { best: 0, total: 0, passedAt: null, attempts: [] } }, practice: [] });
 });
 
 test("importJSON keeps quiz", () => {
   const quiz = { units: { "a0-1": { best: 12, total: 15, passedAt: 9, attempts: [] } }, practice: [] };
   assert.deepEqual(importJSON(exportJSON({ progress: {}, custom: [], settings: {}, quiz })).quiz, quiz);
+});
+
+test("imported quiz history is coerced to plain numbers (no markup reaches the page)", () => {
+  const bad = { units: { "int-1": { passedAt: "x", best: "<img src=x onerror=alert(1)>", total: "15", attempts: [{ at: 1, score: "<b>", total: 15 }, "junk"] }, "int-2": "nope" }, practice: [{ at: 2, score: 3, total: 10 }, 7] };
+  const q = importJSON(exportJSON({ progress: {}, custom: [], settings: {}, quiz: bad })).quiz;
+  assert.deepEqual(q, { units: { "int-1": { passedAt: null, best: 0, total: 15, attempts: [{ at: 1, score: 0, total: 15 }] } }, practice: [{ at: 2, score: 3, total: 10 }] });
 });

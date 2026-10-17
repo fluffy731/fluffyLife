@@ -403,7 +403,8 @@ export function start(p) {
     pack, t, esc, ctx, persist, isGrammar, tierLabel, unitTitle, speak, cardHTML,
     state: () => state, units: () => units, items: () => items,
     isLearned: (u) => isLearned(u, state.progress), unseenCount: (u) => unseenItems(u, state.progress).length,
-    hasClip: (text) => !!clipFor(text),
+    // Offline the clip index can still be cached while the mp3s (never cached) are not: no audio questions then.
+    hasClip: (text) => navigator.onLine !== false && !!clipFor(text),
   });
   document.querySelectorAll("#tabs button").forEach((b) => { b.lastChild.textContent = t.tabs[b.dataset.tab]; });
   bindEvents();
