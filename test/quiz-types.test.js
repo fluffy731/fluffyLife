@@ -50,3 +50,45 @@ test("ko: listen needs a clip", () => {
   assert.equal(listen.applies(koPack.vocab[0], { hasClip: () => false }), false);
   assert.equal(listen.applies(koPack.vocab[0], { hasClip: () => true }), true);
 });
+
+import { yuePack } from "../packs/yue.js";
+import { types as yueTypes, isMono } from "../quiz/yue.js";
+import { syllables } from "../lib/jyutping.js";
+
+test("yue: isMono", () => {
+  assert.equal(isMono({ jp: "si1" }), true);
+  assert.equal(isMono({ jp: "nei5 hou2" }), false);
+  assert.equal(isMono({ jp: "hai6!" }), true);
+});
+
+test("yue: pack wires the types", () => {
+  assert.equal(yuePack.quiz.types, yueTypes);
+  assert.deepEqual(yueTypes.map((t) => t.key).sort(), ["gsound", "listen", "say", "sound", "tone"]);
+});
+
+test("yue: tone answer is the syllable's tone digit, six options", () => {
+  const tone = yueTypes.find((t) => t.key === "tone");
+  const monos = yuePack.vocab.filter(isMono);
+  assert.ok(monos.length > 100);
+  const qs = buildQuestions(monos, yuePack.vocab, [tone], { rand: rng(1), env: { hasClip: () => true }, n: monos.length, isGrammar });
+  assert.equal(qs.length, monos.length);
+  for (const q of qs) {
+    assert.equal(q.options.length, 6);
+    assert.equal(q.options[q.answer], String(syllables(q.item.jp).find((s) => !s.punct).tone));
+  }
+});
+
+test("yue: audio types do not apply without a clip", () => {
+  for (let seed = 1; seed <= 10; seed++) {
+    const qs = unitTest(yuePack, yueTypes, "a0-1", { hasClip: () => false }, seed);
+    assert.ok(qs.every((q) => q.type !== "listen" && q.type !== "tone"));
+  }
+});
+
+test("yue: a0-1 unit test with clips has unique options", () => {
+  for (let seed = 1; seed <= 10; seed++) {
+    const qs = unitTest(yuePack, yueTypes, "a0-1", { hasClip: () => true }, seed);
+    assert.equal(qs.length, 15);
+    for (const q of qs) assert.ok(unique(q, yueTypes.find((t) => t.key === q.type)), `${q.type} ${q.item.id}`);
+  }
+});

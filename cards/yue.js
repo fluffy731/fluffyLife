@@ -5,7 +5,7 @@ import { bridge, hasBridge } from "../lib/bridge.js";
 import { HANJA_KO } from "../data/yue/hanja-ko.js";
 
 // Tone-coloured 한글 syllables with the tone digit as a superscript.
-function sylHTML(jp, esc) {
+export function sylHTML(jp, esc) {
   return syllables(jp)
     .map((s) => (s.punct ? esc(s.hg) : `<span class="syl${s.tone ? ` t${s.tone}` : ""}">${esc(s.hg)}${s.tone && s.ok ? `<sup>${s.tone}</sup>` : ""}</span>`))
     .join(" ")
