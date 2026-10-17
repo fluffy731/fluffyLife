@@ -1,6 +1,7 @@
 // Advanced (TOPIK 5–6). [ko, hanja|null, zh, en, pos, ex, exZh, exEn, check?]
+// "Topic" lines are section labels; units are assigned in data/vocab.js (mixed by word type).
 export const ADV = [
-// Unit 1 — Abstract concepts
+// Topic — Abstract concepts
 ["개념","槪念","概念","concept","n","기본 개념부터 이해해야 한다.","要先從基本概念理解起。","You need to understand the basic concept first."],
 ["본질","本質","本質","essence","n","문제의 본질을 파악하자.","掌握問題的本質吧。","Let's grasp the essence of the problem."],
 ["원리","原理","原理","principle","n","작동 원리를 설명했다.","說明了運作原理。","I explained the operating principle."],
@@ -21,7 +22,7 @@ export const ADV = [
 ["추상적","抽象的","抽象的","abstract","adj","설명이 너무 추상적이다.","說明太抽象了。","The explanation is too abstract."],
 ["구체적","具體的","具體的","concrete, specific","adj","구체적인 예를 들어 주세요.","請舉具體的例子。","Please give a concrete example."],
 ["객관적","客觀的","客觀的","objective","adj","객관적으로 판단하자.","客觀地判斷吧。","Let's judge objectively."],
-// Unit 2 — Economy & finance
+// Topic — Economy & finance
 ["금융","金融","金融","finance","n","금융 위기가 닥쳤다.","金融危機來襲。","A financial crisis struck."],
 ["투자","投資","投資","investment","n","주식에 투자했다.","投資了股票。","I invested in stocks."],
 ["주식","株式","股票","stocks","n","주식 시장이 급락했다.","股市暴跌。","The stock market plunged."],
@@ -42,7 +43,7 @@ export const ADV = [
 ["적자","赤字","赤字","deficit","n","올해도 적자다.","今年也是赤字。","It's a deficit again this year."],
 ["흑자","黑字","盈餘","surplus","n","처음으로 흑자를 냈다.","首次出現盈餘。","We posted a surplus for the first time."],
 ["예산","豫算","預算","budget","n","예산이 부족하다.","預算不足。","The budget is insufficient."],
-// Unit 3 — Politics & international
+// Topic — Politics & international
 ["외교","外交","外交","diplomacy","n","외교 관계를 강화했다.","強化了外交關係。","Diplomatic relations were strengthened."],
 ["협상","協商","協商、談判","negotiation","n","협상이 결렬되었다.","談判破裂了。","The negotiations broke down."],
 ["조약","條約","條約","treaty","n","조약을 체결했다.","締結了條約。","A treaty was concluded."],
@@ -63,7 +64,7 @@ export const ADV = [
 ["난민","難民","難民","refugee","n","난민을 수용했다.","接納了難民。","They accepted refugees."],
 ["제재","制裁","制裁","sanctions","n","경제 제재를 가했다.","施加了經濟制裁。","Economic sanctions were imposed."],
 ["긴장","緊張","緊張","tension","n","양국 간 긴장이 고조되었다.","兩國之間的緊張升高。","Tensions between the two countries rose."],
-// Unit 4 — Science & research
+// Topic — Science & research
 ["연구","硏究","研究","research","n","연구 결과를 발표했다.","發表了研究結果。","The research results were announced."],
 ["실험","實驗","實驗","experiment","n","실험이 성공했다.","實驗成功了。","The experiment succeeded."],
 ["가설","假說","假說","hypothesis","n","가설을 검증했다.","驗證了假說。","The hypothesis was tested."],
@@ -84,7 +85,7 @@ export const ADV = [
 ["화학","化學","化學","chemistry","n","화학 반응이 일어났다.","發生了化學反應。","A chemical reaction occurred."],
 ["물리","物理","物理","physics","n","물리 법칙을 따른다.","遵循物理法則。","It follows the laws of physics."],
 ["논문","論文","論文","thesis, paper","n","논문을 제출했다.","提交了論文。","I submitted my thesis."],
-// Unit 5 — Philosophy & psychology
+// Topic — Philosophy & psychology
 ["인식","認識","認識、認知","perception, awareness","n","인식의 전환이 필요하다.","需要認知的轉變。","A shift in awareness is needed."],
 ["의식","意識","意識","consciousness","n","의식을 잃었다.","失去了意識。","They lost consciousness."],
 ["무의식","無意識","無意識","the unconscious","n","무의식이 행동에 영향을 준다.","無意識影響行為。","The unconscious influences behaviour."],
@@ -105,7 +106,7 @@ export const ADV = [
 ["좌절","挫折","挫折","frustration, setback","n","좌절을 극복했다.","克服了挫折。","I overcame the setback."],
 ["극복","克服","克服","overcoming","n","극복 방법을 찾았다.","找到了克服的方法。","I found a way to overcome it."],
 ["통찰","洞察","洞察","insight","n","깊은 통찰을 얻었다.","獲得了深刻的洞察。","I gained deep insight."],
-// Unit 6 — Formal Sino-Korean verbs
+// Topic — Formal Sino-Korean verbs
 ["수행하다","遂行—","執行","to carry out","v","임무를 수행했다.","執行了任務。","I carried out the mission."],
 ["도입하다","導入—","引進","to introduce (a system)","v","새 제도를 도입했다.","引進了新制度。","A new system was introduced."],
 ["시행하다","施行—","施行","to implement","v","정책을 시행한다.","施行政策。","To implement the policy."],
@@ -126,7 +127,7 @@ export const ADV = [
 ["부여하다","附與—","賦予","to grant","v","권한을 부여했다.","賦予了權限。","Authority was granted."],
 ["전환하다","轉換—","轉換","to convert, switch","v","방향을 전환했다.","轉換了方向。","We changed direction."],
 ["축소하다","縮小—","縮小","to reduce","v","규모를 축소했다.","縮小了規模。","The scale was reduced."],
-// Unit 7 — Literature & expression
+// Topic — Literature & expression
 ["문학","文學","文學","literature","n","문학을 전공했다.","主修文學。","I majored in literature."],
 ["비유","比喩","比喻","metaphor, analogy","n","비유를 들어 설명했다.","用比喻來說明。","I explained with an analogy."],
 ["상징","象徵","象徵","symbol","n","비둘기는 평화의 상징이다.","鴿子是和平的象徵。","The dove is a symbol of peace."],
@@ -147,7 +148,7 @@ export const ADV = [
 ["요약","要約","摘要","summary","n","내용을 요약했다.","摘要了內容。","I summarised the content."],
 ["인용","引用","引用","quotation","n","출처를 인용했다.","引用了出處。","I cited the source."],
 ["번역","飜譯","翻譯","translation","n","소설을 번역했다.","翻譯了小說。","I translated the novel."],
-// Unit 8 — Social issues
+// Topic — Social issues
 ["양극화","兩極化","兩極化","polarisation","n","양극화가 심화되었다.","兩極化加劇了。","Polarisation has deepened."],
 ["저출산","低出産","低出生率","low birth rate","n","저출산 문제가 심각하다.","低出生率問題很嚴重。","The low birth rate is a serious problem."],
 ["소외","疏外","疏離、邊緣化","alienation","n","소외 계층을 돕는다.","幫助邊緣族群。","To help marginalised groups."],
@@ -168,7 +169,7 @@ export const ADV = [
 ["학대","虐待","虐待","abuse","n","아동 학대를 신고했다.","舉報了兒童虐待。","Child abuse was reported."],
 ["편향","偏向","偏向","bias","n","보도가 편향되었다.","報導有所偏向。","The coverage was biased."],
 ["혐오","嫌惡","厭惡、仇恨","hatred, disgust","n","혐오 표현을 금지한다.","禁止仇恨言論。","Hate speech is banned."],
-// Unit 9 — Advanced native adjectives & verbs
+// Topic — Advanced native adjectives & verbs
 ["어엿하다",null,"堂堂正正、像樣","to be respectable, proper","adj","어엿한 어른이 되었다.","成為堂堂正正的大人了。","They became a proper adult."],
 ["막막하다","漠漠—","茫然","to feel at a loss","adj","앞길이 막막하다.","前路茫然。","The road ahead looks bleak."],
 ["빈번하다","頻繁—","頻繁","to be frequent","adj","사고가 빈번하다.","事故頻繁。","Accidents are frequent."],
@@ -189,7 +190,7 @@ export const ADV = [
 ["되새기다",null,"反覆回味","to reflect on","v","교훈을 되새겼다.","反覆回味教訓。","I reflected on the lesson."],
 ["누리다",null,"享受","to enjoy (a benefit)","v","자유를 누린다.","享受自由。","To enjoy freedom."],
 ["저버리다",null,"辜負","to betray, forsake","v","기대를 저버렸다.","辜負了期待。","They betrayed expectations."],
-// Unit 10 — Advanced adverbs & idiomatic
+// Topic — Advanced adverbs & idiomatic
 ["비로소",null,"才、終於","only then","adv","비로소 깨달았다.","這才領悟到。","Only then did I realise."],
 ["무릇",null,"凡是","generally speaking","adv","무릇 사람은 꿈이 있어야 한다.","凡是人都應該有夢想。","Every person ought to have a dream."],
 ["자칫",null,"稍一不慎","if not careful","adv","자칫 사고가 날 뻔했다.","稍一不慎差點出事故。","It nearly ended in an accident."],
@@ -210,7 +211,7 @@ export const ADV = [
 ["일부러",null,"故意","on purpose","adv","일부러 그런 건 아니다.","不是故意的。","It wasn't on purpose."],
 ["모처럼",null,"難得","after a long while","adv","모처럼 쉬는 날이다.","難得的休息日。","It's a rare day off."],
 ["가령","假令","假如","for instance, supposing","adv","가령 비가 오면 어쩌지?","假如下雨怎麼辦？","Supposing it rains, what then?"],
-// Unit 11 — Advanced native verbs (literary, formal)
+// Topic — Advanced native verbs (literary, formal)
 ["아우르다",null,"涵蓋、兼容","to encompass","v","동서양을 아우르는 작품이다.","是兼容東西方的作品。","It's a work that encompasses East and West."],
 ["빚다",null,"釀、捏製、釀成","to brew, mould, bring about","v","오해가 갈등을 빚었다.","誤會釀成了衝突。","Misunderstanding brought about conflict."],
 ["스미다",null,"滲入","to seep in","v","향기가 옷에 스몄다.","香氣滲進了衣服。","The scent seeped into my clothes."],
@@ -231,7 +232,7 @@ export const ADV = [
 ["내비치다",null,"流露、透露","to hint at, show","v","불만을 내비쳤다.","流露出不滿。","He hinted at dissatisfaction."],
 ["들추다",null,"揭露、翻出","to dig up, expose","v","과거를 들추지 마라.","別翻舊帳。","Don't dig up the past."],
 ["여미다",null,"整理（衣襟）、端正","to straighten (collar, mind)","v","옷깃을 여미었다.","整了整衣襟。","I straightened my collar."],
-// Unit 12 — Advanced native adjectives
+// Topic — Advanced native adjectives
 ["어설프다",null,"笨拙、半吊子","to be clumsy, half-baked","adj","어설픈 변명이다.","是蹩腳的藉口。","It's a lame excuse."],
 ["미덥다",null,"可靠","to be trustworthy","adj","미더운 사람이다.","是個可靠的人。","He is a trustworthy person."],
 ["애틋하다",null,"戀戀不捨、深情","to be tender and wistful","adj","애틋한 마음이 담겼다.","蘊含著深情。","It holds a tender longing."],
@@ -252,7 +253,7 @@ export const ADV = [
 ["살갑다",null,"親切體貼","to be warm, affectionate","adj","살갑게 대해 줬다.","親切地對待。","She treated me warmly."],
 ["쌀쌀맞다",null,"冷淡","to be cold, curt","adj","쌀쌀맞게 대답했다.","冷淡地回答。","He answered curtly."],
 ["버겁다",null,"吃力、難以承受","to be too much to handle","adj","혼자 하기엔 버겁다.","一個人做太吃力。","It's too much to do alone."],
-// Unit 13 — Advanced native nouns
+// Topic — Advanced native nouns
 ["굴레",null,"枷鎖、束縛","yoke, bondage","n","가난의 굴레를 벗어났다.","擺脫了貧窮的枷鎖。","They escaped the yoke of poverty."],
 ["밑거름",null,"基礎、養分","foundation, groundwork","n","실패가 밑거름이 되었다.","失敗成為了養分。","Failure became the groundwork."],
 ["실마리",null,"線索、頭緒","clue, lead","n","실마리를 찾았다.","找到了線索。","We found a lead."],
@@ -273,7 +274,7 @@ export const ADV = [
 ["앙금",null,"芥蒂、沉澱","lingering resentment; sediment","n","앙금이 남아 있다.","還留有芥蒂。","There's lingering resentment."],
 ["가닥",null,"頭緒、線","strand; thread (of thought)","n","가닥이 잡혔다.","有了頭緒。","It's starting to come together."],
 ["틀",null,"框架、模子","frame, mould","n","틀에 박힌 생각이다.","是刻板的想法。","It's a stereotyped idea."],
-// Unit 14 — Idioms (관용어)
+// Topic — Idioms (관용어)
 ["발이 넓다",null,"人脈廣","to be well-connected","idiom","그는 발이 넓다.","他人脈很廣。","He knows everyone."],
 ["눈이 높다",null,"眼光高","to have high standards","idiom","눈이 높아서 결혼을 못 한다.","眼光太高結不了婚。","Her standards are too high to marry."],
 ["손이 크다",null,"出手大方","to be generous (with portions, money)","idiom","어머니는 손이 크시다.","媽媽出手很大方。","Mum always makes too much."],
