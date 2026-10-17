@@ -1,6 +1,7 @@
 // Intermediate (TOPIK 3–4). [ko, hanja|null, zh, en, pos, ex, exZh, exEn, check?]
+// "Topic" lines are section labels; units are assigned in data/vocab.js (mixed by word type).
 export const INT = [
-// Unit 1 — Society & economy
+// Topic — Society & economy
 ["경제","經濟","經濟","economy","n","한국 경제가 빠르게 성장했다.","韓國經濟快速成長了。","The Korean economy grew quickly."],
 ["사회","社會","社會","society","n","사회가 점점 복잡해지고 있다.","社會變得越來越複雜。","Society is becoming more and more complex."],
 ["정부","政府","政府","government","n","정부는 새로운 정책을 발표했다.","政府發表了新政策。","The government announced a new policy."],
@@ -21,7 +22,7 @@ export const INT = [
 ["빈부","貧富","貧富","rich and poor","n","빈부 격차가 커지고 있다.","貧富差距正在擴大。","The gap between rich and poor is widening."],
 ["격차","隔差","差距","gap, disparity","n","지역 간 격차를 줄여야 한다.","要縮小地區之間的差距。","Regional disparities must be reduced."],
 ["성장","成長","成長","growth","n","경제 성장률이 둔화되었다.","經濟成長率放緩了。","The economic growth rate has slowed."],
-// Unit 2 — Work & career
+// Topic — Work & career
 ["취업","就業","就業","getting a job","n","취업 준비 때문에 바쁘다.","因為準備就業而很忙。","I'm busy preparing for job hunting."],
 ["면접","面接","面試","interview","n","내일 면접이 있어서 긴장된다.","明天有面試，很緊張。","I'm nervous because I have an interview tomorrow."],
 ["이력서","履歷書","履歷","résumé","n","이력서를 다시 써야겠다.","我得重寫履歷。","I should rewrite my résumé."],
@@ -42,7 +43,7 @@ export const INT = [
 ["성과","成果","成果","achievement, results","n","올해 좋은 성과를 거두었다.","今年取得了好成果。","We achieved good results this year."],
 ["사표","辭表","辭呈","resignation letter","n","사표를 내고 회사를 그만뒀다.","遞了辭呈離開公司。","I handed in my resignation and left."],
 ["자격증","資格證","證照","certificate, licence","n","자격증을 따려고 공부 중이다.","為了考證照正在讀書。","I'm studying to get a certificate."],
-// Unit 3 — Education
+// Topic — Education
 ["교육","敎育","教育","education","n","교육은 국가의 미래다.","教育是國家的未來。","Education is the future of a nation."],
 ["학문","學問","學問","scholarship, academics","n","그는 학문에 뜻을 두었다.","他立志於學問。","He devoted himself to scholarship."],
 ["전공","專攻","主修","major","n","전공이 뭐예요?","你主修什麼？","What's your major?"],
@@ -63,7 +64,7 @@ export const INT = [
 ["노력","努力","努力","effort","n","노력한 만큼 결과가 나온다.","付出多少努力就有多少結果。","You get results in proportion to your effort."],
 ["목표","目標","目標","goal","n","올해 목표는 TOPIK 5급이다.","今年的目標是TOPIK五級。","This year's goal is TOPIK level 5."],
 ["학습","學習","學習","learning, study","n","자기 주도 학습이 중요하다.","自主學習很重要。","Self-directed learning is important."],
-// Unit 4 — Health & body
+// Topic — Health & body
 ["건강","健康","健康","health","n","건강이 제일 중요하다.","健康最重要。","Health is the most important thing."],
 ["질병","疾病","疾病","disease","n","질병을 예방해야 한다.","要預防疾病。","Diseases must be prevented."],
 ["증상","症狀","症狀","symptom","n","감기 증상이 심하다.","感冒症狀很嚴重。","The cold symptoms are severe."],
@@ -84,7 +85,7 @@ export const INT = [
 ["회복","回復","恢復","recovery","n","회복이 빨라서 다행이다.","恢復得快，真是萬幸。","Luckily the recovery was fast."],
 ["응급실","應急室","急診室","emergency room","n","급히 응급실로 갔다.","急忙去了急診室。","We rushed to the emergency room."],
 ["검사","檢査","檢查","test, examination","n","건강 검사를 받아야 한다.","要做健康檢查。","I need to get a health check."],
-// Unit 5 — Emotions & personality
+// Topic — Emotions & personality
 ["감정","感情","感情","emotion","n","감정을 솔직하게 표현하세요.","請坦率表達感情。","Express your feelings honestly."],
 ["성격","性格","性格","personality","n","성격이 밝고 긍정적이다.","性格開朗又正面。","Their personality is bright and positive."],
 ["긍정적","肯定的","正面的","positive","adj","긍정적인 태도가 중요하다.","正面的態度很重要。","A positive attitude is important."],
@@ -105,7 +106,7 @@ export const INT = [
 ["부끄럽다",null,"害羞、丟臉","to be embarrassed, shy","adj","실수해서 부끄러웠다.","因為犯錯而感到丟臉。","I was embarrassed because I made a mistake."],
 ["답답하다",null,"鬱悶、憋得慌","to feel stifled, frustrated","adj","말이 안 통해서 답답하다.","話講不通，很鬱悶。","I can't communicate and it's frustrating."],
 ["서운하다",null,"失落、難過（因他人）","to feel let down","adj","연락이 없어서 서운했다.","沒有聯絡，覺得失落。","I felt let down because they didn't contact me."],
-// Unit 6 — Environment & nature
+// Topic — Environment & nature
 ["환경","環境","環境","environment","n","환경을 보호해야 한다.","要保護環境。","We must protect the environment."],
 ["오염","汚染","污染","pollution","n","대기 오염이 심각하다.","空氣污染很嚴重。","Air pollution is serious."],
 ["기후","氣候","氣候","climate","n","기후 변화가 문제다.","氣候變遷是個問題。","Climate change is a problem."],
@@ -126,7 +127,7 @@ export const INT = [
 ["미세먼지","微細—","細懸浮微粒（PM2.5）","fine dust","n","미세먼지가 심해서 마스크를 썼다.","細懸浮微粒嚴重，所以戴了口罩。","The fine dust was bad so I wore a mask.",1],
 ["공기","空氣","空氣","air","n","산속 공기가 맑다.","山裡空氣很清新。","The mountain air is clean."],
 ["보호","保護","保護","protection","n","동물 보호 단체에서 일한다.","在動物保護團體工作。","I work at an animal protection group."],
-// Unit 7 — Technology & media
+// Topic — Technology & media
 ["기술","技術","技術","technology","n","기술이 빠르게 발전한다.","技術發展迅速。","Technology develops fast."],
 ["발전","發展","發展","development","n","과학의 발전은 놀랍다.","科學的發展令人驚訝。","The development of science is amazing."],
 ["인공지능","人工知能","人工智慧","artificial intelligence","n","인공지능이 일자리를 바꾼다.","人工智慧改變了工作。","AI is changing jobs."],
@@ -147,7 +148,7 @@ export const INT = [
 ["개인정보","個人情報","個人資料","personal data","n","개인정보를 보호해야 한다.","要保護個人資料。","Personal data must be protected."],
 ["온라인",null,"線上","online","n","온라인으로 수업을 들었다.","上了線上課程。","I took the class online."],
 ["편리하다","便利—","方便","to be convenient","adj","스마트폰은 정말 편리하다.","智慧型手機真的很方便。","Smartphones are really convenient."],
-// Unit 8 — Culture & tradition
+// Topic — Culture & tradition
 ["문화","文化","文化","culture","n","한국 문화에 관심이 많다.","對韓國文化很有興趣。","I'm very interested in Korean culture."],
 ["전통","傳統","傳統","tradition","n","전통을 지켜야 한다.","要守護傳統。","We must preserve tradition."],
 ["명절","名節","節日","traditional holiday","n","명절에 가족이 모인다.","節日時家人團聚。","Family gathers on holidays."],
@@ -168,7 +169,7 @@ export const INT = [
 ["한복","韓服","韓服","hanbok","n","명절에 한복을 입는다.","節日穿韓服。","People wear hanbok on holidays."],
 ["차례","茶禮","祭祀（節日）","ancestral rite","n","추석 아침에 차례를 지낸다.","中秋早上舉行祭祀。","We hold the rite on Chuseok morning."],
 ["체험","體驗","體驗","hands-on experience","n","김치 만들기 체험을 했다.","體驗了做泡菜。","I did a kimchi-making experience."],
-// Unit 9 — Daily life & housing
+// Topic — Daily life & housing
 ["생활","生活","生活","life, living","n","서울 생활에 익숙해졌다.","習慣了首爾的生活。","I've gotten used to life in Seoul."],
 ["주거","住居","居住","housing, residence","n","주거 환경이 좋다.","居住環境很好。","The living environment is good."],
 ["월세","月貰","月租","monthly rent","n","월세가 너무 비싸다.","月租太貴了。","The monthly rent is too high."],
@@ -189,7 +190,7 @@ export const INT = [
 ["편의점","便宜店","便利商店","convenience store","n","편의점에서 삼각김밥을 샀다.","在便利商店買了三角飯糰。","I bought a triangle gimbap at the convenience store."],
 ["배달","配達","外送","delivery","n","저녁은 배달로 시켰다.","晚餐叫了外送。","I ordered delivery for dinner."],
 ["할인","割引","折扣","discount","n","할인 기간이라 싸게 샀다.","因為是折扣期間，買得很便宜。","It was the sale period so I got it cheap."],
-// Unit 10 — Relationships
+// Topic — Relationships
 ["관계","關係","關係","relationship","n","인간관계가 어렵다.","人際關係很難。","Human relationships are hard."],
 ["소통","疏通","溝通","communication","n","소통이 잘 안 된다.","溝通不順。","Communication isn't going well."],
 ["오해","誤解","誤會","misunderstanding","n","오해를 풀었다.","解開了誤會。","We cleared up the misunderstanding."],
@@ -210,7 +211,7 @@ export const INT = [
 ["친척","親戚","親戚","relative","n","명절에 친척들이 모였다.","節日時親戚們聚在一起。","Relatives gathered for the holiday."],
 ["사이",null,"關係、之間","relationship, between","n","두 사람 사이가 좋다.","兩人關係很好。","The two get along well."],
 ["인연","因緣","緣分","fateful connection","n","좋은 인연을 만났다.","遇到了好緣分。","I met a good connection."],
-// Unit 11 — Travel & transport
+// Topic — Travel & transport
 ["여행","旅行","旅行","travel","n","해외여행을 계획 중이다.","正在計劃出國旅行。","I'm planning a trip abroad."],
 ["관광","觀光","觀光","sightseeing","n","관광객이 많이 늘었다.","觀光客增加了很多。","Tourists have increased a lot."],
 ["숙박","宿泊","住宿","accommodation","n","숙박 시설을 예약했다.","預訂了住宿設施。","I booked accommodation."],
@@ -231,7 +232,7 @@ export const INT = [
 ["길",null,"路","road, way","n","길을 잃었다.","迷路了。","I got lost."],
 ["경치","景致","景色","scenery","n","경치가 아름답다.","景色很美。","The scenery is beautiful."],
 ["기념품","紀念品","紀念品","souvenir","n","기념품을 샀다.","買了紀念品。","I bought souvenirs."],
-// Unit 12 — Law, politics, government
+// Topic — Law, politics, government
 ["법","法","法律","law","n","법을 지켜야 한다.","要守法。","We must obey the law."],
 ["권리","權利","權利","right","n","모든 사람은 권리가 있다.","每個人都有權利。","Everyone has rights."],
 ["의무","義務","義務","duty","n","의무를 다해야 한다.","要盡義務。","One must fulfil one's duties."],
@@ -252,7 +253,7 @@ export const INT = [
 ["평등","平等","平等","equality","n","남녀 평등이 중요하다.","男女平等很重要。","Gender equality matters."],
 ["차별","差別","歧視","discrimination","n","차별을 없애야 한다.","要消除歧視。","Discrimination must be eliminated."],
 ["공정","公正","公正","fairness","n","공정한 사회를 원한다.","希望有公正的社會。","We want a fair society."],
-// Unit 13 — Sino-Korean 하다 verbs
+// Topic — Sino-Korean 하다 verbs
 ["참여하다","參與—","參與","to participate","v","봉사 활동에 참여했다.","參與了志工活動。","I participated in volunteer work."],
 ["제공하다","提供—","提供","to provide","v","무료로 정보를 제공한다.","免費提供資訊。","They provide information for free."],
 ["요구하다","要求—","要求","to demand","v","환불을 요구했다.","要求退款。","I demanded a refund."],
@@ -273,7 +274,7 @@ export const INT = [
 ["발견하다","發見—","發現","to discover","v","새로운 사실을 발견했다.","發現了新事實。","I discovered a new fact."],
 ["기대하다","期待—","期待","to expect, look forward to","v","좋은 결과를 기대한다.","期待好結果。","I expect good results."],
 ["강조하다","強調—","強調","to emphasise","v","선생님이 복습을 강조했다.","老師強調複習。","The teacher emphasised revision."],
-// Unit 14 — Native verbs & adjectives
+// Topic — Native verbs & adjectives
 ["깨닫다",null,"領悟","to realise","v","실수를 깨달았다.","領悟到了錯誤。","I realised my mistake."],
 ["다루다",null,"處理、操作","to handle, deal with","v","기계를 다룰 줄 안다.","會操作機器。","I know how to handle the machine."],
 ["견디다",null,"忍受","to endure","v","추위를 견디기 힘들다.","很難忍受寒冷。","It's hard to endure the cold."],
@@ -294,7 +295,7 @@ export const INT = [
 ["지루하다",null,"無聊","to be boring","adj","영화가 지루했다.","電影很無聊。","The film was boring."],
 ["엄청나다",null,"巨大、驚人","to be enormous","adj","엄청난 인기를 얻었다.","獲得了驚人的人氣。","It gained enormous popularity."],
 ["드물다",null,"罕見","to be rare","adj","이런 일은 드물다.","這種事很罕見。","Such things are rare."],
-// Unit 15 — Adverbs & connectors
+// Topic — Adverbs & connectors
 ["오히려",null,"反而","on the contrary","adv","오히려 더 나빠졌다.","反而變得更糟了。","It got worse, if anything."],
 ["게다가",null,"而且","moreover","adv","비가 오고 게다가 춥다.","下雨而且還很冷。","It's raining and, moreover, it's cold."],
 ["결국","結局","結果、終究","in the end","adv","결국 포기했다.","最後放棄了。","In the end I gave up."],
@@ -315,7 +316,7 @@ export const INT = [
 ["그러므로",null,"所以","hence","adv","그러므로 노력이 필요하다.","所以需要努力。","Hence effort is needed."],
 ["반면","反面","相反地","on the other hand","n","반면에 단점도 있다.","相反地也有缺點。","On the other hand, there are drawbacks."],
 ["한편","—便","另一方面","meanwhile","n","한편 정부는 대책을 마련했다.","另一方面，政府制定了對策。","Meanwhile, the government prepared measures.",1],
-// Unit 16 — Native verbs: motion & handling
+// Topic — Native verbs: motion & handling
 ["옮기다",null,"搬、移動","to move (something)","v","책상을 창가로 옮겼다.","把書桌搬到窗邊。","I moved the desk to the window."],
 ["떠올리다",null,"想起","to recall, bring to mind","v","옛 친구를 떠올렸다.","想起了老朋友。","I recalled an old friend."],
 ["돌보다",null,"照顧","to look after","v","아픈 동생을 돌봤다.","照顧了生病的弟弟。","I looked after my sick brother."],
@@ -336,7 +337,7 @@ export const INT = [
 ["되돌리다",null,"恢復、退回","to turn back, restore","v","시간을 되돌릴 수 없다.","無法讓時間倒流。","You can't turn back time."],
 ["밀어내다",null,"推開、排擠","to push out","v","경쟁자를 밀어냈다.","排擠了競爭者。","They pushed out the competitor."],
 ["떨어뜨리다",null,"使掉落、降低","to drop, lower","v","휴대폰을 떨어뜨렸다.","把手機摔了。","I dropped my phone."],
-// Unit 17 — Native verbs: thought, feeling, speech
+// Topic — Native verbs: thought, feeling, speech
 ["여기다",null,"認為、看作","to consider, regard","v","친구를 가족처럼 여긴다.","把朋友當家人。","I regard my friend as family."],
 ["꺼리다",null,"忌諱、不願","to be reluctant, avoid","v","사람 만나기를 꺼린다.","不願見人。","He avoids meeting people."],
 ["뉘우치다",null,"悔改","to repent","v","잘못을 뉘우쳤다.","悔改了過錯。","He repented of his wrongdoing."],
@@ -357,7 +358,7 @@ export const INT = [
 ["질리다",null,"厭膩","to be sick of","v","라면에 질렸다.","吃泡麵吃膩了。","I'm sick of instant noodles."],
 ["벅차다",null,"吃力、（心情）激動滿溢","to be overwhelming; overflowing","adj","기쁨으로 가슴이 벅차다.","心中充滿喜悅。","My heart overflows with joy."],
 ["애쓰다",null,"盡力","to make an effort","v","이해하려고 애썼다.","盡力去理解。","I tried hard to understand."],
-// Unit 18 — Native adjectives: feelings & qualities
+// Topic — Native adjectives: feelings & qualities
 ["뿌듯하다",null,"心滿意足、自豪","to feel proud and full","adj","합격해서 뿌듯하다.","考上了，心裡很滿足。","I passed and feel proud."],
 ["섭섭하다",null,"捨不得、失落","to feel sad at parting, let down","adj","헤어지기 섭섭하다.","捨不得分開。","I'm sad to part."],
 ["억울하다",null,"冤枉","to feel wronged","adj","억울하게 혼났다.","被冤枉地罵了。","I was scolded unfairly."],
@@ -378,7 +379,7 @@ export const INT = [
 ["흐릿하다",null,"模糊","to be blurry","adj","기억이 흐릿하다.","記憶模糊。","My memory is hazy."],
 ["또렷하다",null,"清晰","to be clear, distinct","adj","글씨가 또렷하다.","字跡清晰。","The writing is clear."],
 ["널찍하다",null,"寬敞","to be spacious","adj","방이 널찍하다.","房間很寬敞。","The room is spacious."],
-// Unit 19 — Native nouns
+// Topic — Native nouns
 ["보람",null,"意義、成就感","worthwhileness","n","보람 있는 일을 하고 싶다.","想做有意義的工作。","I want to do worthwhile work."],
 ["다짐",null,"決心","resolution","n","새해 다짐을 했다.","下了新年決心。","I made a New Year's resolution."],
 ["깨달음",null,"領悟","realisation","n","큰 깨달음을 얻었다.","獲得了很大的領悟。","I gained a great realisation."],
@@ -399,7 +400,7 @@ export const INT = [
 ["터",null,"場地、地基","site, lot","n","집 지을 터를 샀다.","買了蓋房子的地。","I bought a lot to build a house."],
 ["앞날",null,"前途、未來","the future (one's)","n","앞날이 밝다.","前途光明。","The future is bright."],
 ["보탬",null,"幫助、補益","help, contribution","n","작은 보탬이 되고 싶다.","想盡一點綿薄之力。","I'd like to be of some small help."],
-// Unit 20 — Native adverbs
+// Topic — Native adverbs
 ["문득",null,"忽然","suddenly (a thought)","adv","문득 네 생각이 났다.","忽然想起了你。","I suddenly thought of you."],
 ["자꾸",null,"老是","repeatedly","adv","자꾸 실수한다.","老是出錯。","I keep making mistakes."],
 ["온통",null,"全部、滿","entirely","adv","온통 눈으로 덮였다.","到處覆蓋著雪。","It was entirely covered in snow."],

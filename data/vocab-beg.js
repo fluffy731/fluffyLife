@@ -1,6 +1,7 @@
 // Beginner (TOPIK 1–2) backfill. [ko, hanja|null, zh, en, pos, ex, exZh, exEn, check?]
+// "Topic" lines are section labels; units are assigned in data/vocab.js (mixed by word type).
 export const BEG = [
-// Unit 1 — Time & numbers
+// Topic — Time & numbers
 ["시간","時間","時間","time","n","시간이 없어요.","沒有時間。","There's no time."],
 ["오전","午前","上午","morning (a.m.)","n","오전에 수업이 있어요.","上午有課。","I have class in the morning."],
 ["오후","午後","下午","afternoon","n","오후에 만나요.","下午見。","Let's meet in the afternoon."],
@@ -21,7 +22,7 @@ export const BEG = [
 ["계절","季節","季節","season","n","좋아하는 계절은 가을이에요.","喜歡的季節是秋天。","My favourite season is autumn."],
 ["방학","放學","放假（學校）","school holiday","n","방학에 여행 가요.","放假時去旅行。","I travel during the holidays."],
 ["휴가","休暇","休假","leave, holiday","n","휴가 때 집에서 쉬어요.","休假時在家休息。","I rest at home on leave."],
-// Unit 2 — Places
+// Topic — Places
 ["학교","學校","學校","school","n","학교에 가요.","去學校。","I go to school."],
 ["회사","會社","公司","company","n","회사가 멀어요.","公司很遠。","The company is far."],
 ["병원","病院","醫院","hospital","n","병원에 갔어요.","去了醫院。","I went to the hospital."],
@@ -42,7 +43,7 @@ export const BEG = [
 ["백화점","百貨店","百貨公司","department store","n","백화점은 비싸요.","百貨公司很貴。","Department stores are expensive."],
 ["주소","住所","地址","address","n","주소를 알려 주세요.","請告訴我地址。","Please tell me the address."],
 ["근처","近處","附近","nearby","n","근처에 카페가 있어요.","附近有咖啡廳。","There's a café nearby."],
-// Unit 3 — People & family
+// Topic — People & family
 ["가족","家族","家人","family","n","가족이 네 명이에요.","家裡有四個人。","There are four in my family."],
 ["부모님","父母—","父母","parents","n","부모님께 전화했어요.","打電話給父母。","I called my parents."],
 ["남편","男便","丈夫","husband","n","남편은 회사원이에요.","丈夫是上班族。","My husband is an office worker."],
@@ -63,7 +64,7 @@ export const BEG = [
 ["아저씨",null,"大叔","middle-aged man","n","아저씨, 여기요.","大叔，這裡。","Excuse me, sir."],
 ["아주머니",null,"大嬸","middle-aged woman","n","아주머니가 김치를 주셨어요.","大嬸給了泡菜。","The lady gave me kimchi."],
 ["아이",null,"小孩","child","n","아이가 귀여워요.","小孩很可愛。","The child is cute."],
-// Unit 4 — Daily verbs
+// Topic — Daily verbs
 ["공부하다","工夫—","讀書、學習","to study","v","한국어를 공부해요.","學韓語。","I study Korean."],
 ["운동하다","運動—","運動","to exercise","v","아침에 운동해요.","早上運動。","I exercise in the morning."],
 ["전화하다","電話—","打電話","to phone","v","친구에게 전화해요.","打電話給朋友。","I call my friend."],
@@ -84,7 +85,7 @@ export const BEG = [
 ["도착하다","到着—","到達","to arrive","v","집에 도착했어요.","到家了。","I arrived home."],
 ["출발하다","出發—","出發","to depart","v","아홉 시에 출발해요.","九點出發。","We leave at nine."],
 ["졸업하다","卒業—","畢業","to graduate","v","작년에 졸업했어요.","去年畢業了。","I graduated last year."],
-// Unit 5 — Basic adjectives & misc
+// Topic — Basic adjectives & misc
 ["중요하다","重要—","重要","to be important","adj","건강이 중요해요.","健康很重要。","Health is important."],
 ["필요하다","必要—","需要","to be necessary","adj","돈이 필요해요.","需要錢。","I need money."],
 ["유명하다","有名—","有名","to be famous","adj","이 식당은 유명해요.","這家餐廳很有名。","This restaurant is famous."],
@@ -105,7 +106,7 @@ export const BEG = [
 ["관심","關心","興趣、關心","interest","n","음악에 관심이 있어요.","對音樂有興趣。","I'm interested in music."],
 ["취미","趣味","興趣愛好","hobby","n","취미가 뭐예요?","你的興趣是什麼？","What's your hobby?"],
 ["기분","氣分","心情","mood","n","기분이 좋아요.","心情很好。","I'm in a good mood."],
-// Unit 6 — Basic native verbs
+// Topic — Basic native verbs
 ["먹다",null,"吃","to eat","v","밥을 먹어요.","吃飯。","I eat."],
 ["마시다",null,"喝","to drink","v","물을 마셔요.","喝水。","I drink water."],
 ["자다",null,"睡","to sleep","v","일찍 자요.","早點睡。","I sleep early."],
@@ -126,7 +127,7 @@ export const BEG = [
 ["닫다",null,"關","to close","v","창문을 닫아요.","關窗。","I close the window."],
 ["앉다",null,"坐","to sit","v","여기 앉으세요.","請坐這裡。","Please sit here."],
 ["걷다",null,"走路","to walk","v","공원을 걸어요.","在公園散步。","I walk in the park."],
-// Unit 7 — Basic native adjectives
+// Topic — Basic native adjectives
 ["크다",null,"大","to be big","adj","집이 커요.","房子很大。","The house is big."],
 ["작다",null,"小","to be small","adj","방이 작아요.","房間很小。","The room is small."],
 ["많다",null,"多","to be many","adj","사람이 많아요.","人很多。","There are many people."],
@@ -147,7 +148,7 @@ export const BEG = [
 ["빠르다",null,"快","to be fast","adj","기차가 빨라요.","火車很快。","The train is fast."],
 ["느리다",null,"慢","to be slow","adj","버스가 느려요.","公車很慢。","The bus is slow."],
 ["쉽다",null,"容易","to be easy","adj","한국어는 쉬워요?","韓語容易嗎？","Is Korean easy?"],
-// Unit 8 — Basic native nouns
+// Topic — Basic native nouns
 ["집",null,"家","house, home","n","집에 가요.","回家。","I go home."],
 ["물",null,"水","water","n","물 주세요.","請給我水。","Water, please."],
 ["밥",null,"飯","rice, meal","n","밥 먹었어요?","吃飯了嗎？","Have you eaten?"],
