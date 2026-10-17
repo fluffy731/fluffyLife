@@ -10,7 +10,7 @@ export const ui = {
   dueNow: "복습할 것", ofSeen: (n) => `/ ${n}개 학습`, unit: "단원", wordOfHour: "지금 이 시간의 단어", noItems: "항목이 없어요",
   changesAt: (hh) => `${hh}:00에 바뀌어요`, currentUnit: "현재 단원", unitN: (n) => `${n}단원`,
   introduced: (a, b, g) => `${b}개 중 ${a}개 학습 · 문법 ${g}개`,
-  learnNew: "새로 배우기", review: "복습",
+  learnNew: "새로 배우기", review: "복습", phrases: "표현", noKindLeft: (k) => `이 단원에 새 ${k}이(가) 더 없어요.`,
   hourlyTip: `<h2>매시간 알림 (아이폰)</h2>
     <div class="card tip">
       아이폰은 웹앱이 스스로 알람을 울리게 해 주지 않고, 단축어(Shortcuts)에는 "매시간 반복"도 없어요. 그래서 원하는 시각마다 <b>매일</b> 반복 자동화를 하나씩 만들어야 해요 (예: 9:00, 10:00 … 21:00):

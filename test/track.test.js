@@ -64,3 +64,11 @@ test("Again keeps an item seen: still due, unit still learned", async () => {
   assert.deepEqual(dueItems(units[0].items, p, now).map(i => i.id), ["v1"]);
   assert.deepEqual(unseenItems(units[0], p), []);
 });
+
+import { kindOf } from "../lib/track.js";
+test("kindOf: word, phrase (incl. idiom) or grammar", () => {
+  assert.equal(kindOf({ ko: "경제", pos: "n" }), "word");
+  assert.equal(kindOf({ ko: "그러게요", pos: "phrase" }), "phrase");
+  assert.equal(kindOf({ ko: "발이 넓다", pos: "idiom" }), "phrase");
+  assert.equal(kindOf({ form: "-기 위해" }), "grammar");
+});

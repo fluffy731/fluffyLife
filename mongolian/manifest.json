@@ -1,0 +1,15 @@
+{
+  "name": "蒙古语 · Монгол хэл",
+  "short_name": "蒙古语",
+  "description": "用中文学蒙古语 — 单词、常用语、语法，间隔复习。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f6fa",
+  "theme_color": "#1f4e8c",
+  "icons": [
+    { "src": "../icons/mn.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/mn-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/mn-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

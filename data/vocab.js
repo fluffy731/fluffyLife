@@ -7,7 +7,11 @@
 import { INT } from "./vocab-int.js";
 import { ADV } from "./vocab-adv.js";
 import { BEG } from "./vocab-beg.js";
+import { PH_INT } from "./phrases-int.js";
+import { PH_ADV } from "./phrases-adv.js";
+import { PH_BEG } from "./phrases-beg.js";
 import { mixOrder, bucketOf } from "../lib/mix.js";
+import { interleave } from "../lib/interleave.js";
 
 const PER_UNIT = 20;
 
@@ -22,4 +26,24 @@ function expand(rows, tier) {
   return mixOrder(items, bucketOf).map((it, i) => ({ ...it, unit: Math.floor(i / PER_UNIT) + 1 }));
 }
 
-export const vocab = [...expand(INT, "int"), ...expand(ADV, "adv"), ...expand(BEG, "beg")];
+// Phrases (ids p-<tier>-NNN, pos "phrase") are spread evenly over the tier's units and through each
+// unit's words, so the word units above never change when phrases are added.
+function withPhrases(words, rows, tier) {
+  const units = Math.max(...words.map((w) => w.unit));
+  const phrases = rows.map((r, i) => ({
+    id: `p-${tier}-${String(i + 1).padStart(3, "0")}`,
+    ko: r[0], hanja: r[1], zh: r[2], en: r[3], pos: "phrase",
+    tier, unit: Math.floor((i * units) / rows.length) + 1,
+    ex: r[4], exZh: r[5], exEn: r[6], ...(r[7] ? { note: r[7] } : {}),
+    check: r[8] === 1,
+  }));
+  const out = [];
+  for (let u = 1; u <= units; u++) out.push(...interleave(words.filter((w) => w.unit === u), phrases.filter((p) => p.unit === u)));
+  return out;
+}
+
+export const vocab = [
+  ...withPhrases(expand(INT, "int"), PH_INT, "int"),
+  ...withPhrases(expand(ADV, "adv"), PH_ADV, "adv"),
+  ...withPhrases(expand(BEG, "beg"), PH_BEG, "beg"),
+];

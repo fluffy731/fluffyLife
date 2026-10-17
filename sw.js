@@ -7,10 +7,14 @@ const FILES = [
   "./", "./index.html", "./style.css", "./app.js",
   "./korean/", "./korean/index.html", "./korean/manifest.json",
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
-  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js",
+  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js", "./lib/interleave.js", "./lib/mongol.js", "./lib/validate-mn.js",
   "./quiz-view.js", "./quiz/ko.js", "./quiz/yue.js",
   "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
+  "./packs/mn.js", "./cards/mn.js", "./ui/zh.js", "./quiz/mn.js",
+  "./mongolian/", "./mongolian/index.html", "./mongolian/manifest.json", "./icons/mn.svg", "./icons/mn-180.png", "./icons/mn-512.png",
+  "./data/mn/pack.js", "./data/mn/vocab.js", "./data/mn/vocab-a0.js", "./data/mn/vocab-a1.js", "./data/mn/vocab-a2.js", "./data/mn/grammar.js",
+  "./data/yue/phrases.js", "./data/phrases-int.js", "./data/phrases-adv.js", "./data/phrases-beg.js",
   "./yue/", "./yue/index.html", "./yue/manifest.json", "./icons/yue.svg", "./icons/yue-180.png", "./icons/yue-512.png",
   "./data/yue/pack.js", "./data/yue/vocab.js", "./data/yue/vocab-a0.js", "./data/yue/vocab-a1.js", "./data/yue/vocab-a2.js", "./data/yue/grammar.js", "./data/yue/hanja-ko.js", "./data/yue/legacy-ids.js",
   "./data/pack.js", "./data/vocab.js", "./data/vocab-int.js", "./data/vocab-adv.js", "./data/vocab-beg.js", "./data/grammar.js",
@@ -29,6 +33,8 @@ self.addEventListener("activate", (e) => {
   );
 });
 
+const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : "./korean/index.html");
+
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
   // Recorded clips: iOS fetches media with Range requests; let the browser handle those directly.
@@ -40,6 +46,6 @@ self.addEventListener("fetch", (e) => {
     fetch(fresh).then((res) => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
       return res;
-    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match(new URL(e.request.url).pathname.includes("/yue") ? "./yue/index.html" : "./korean/index.html")))
+    }).catch(() => caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || caches.match(fallbackPage(new URL(e.request.url).pathname))))
   );
 });

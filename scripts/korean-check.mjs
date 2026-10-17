@@ -43,6 +43,13 @@ ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".stat:
 // Add defaults to current unit
 await page.click('[data-tab="browse"]'); await page.click("[data-add]");
 ok("add defaults to unit 2", (await page.inputValue('input[name="unit"]')) === "2");
+// Learn switch: Phrases / Grammar chips filter what Learn shows.
+await page.click('[data-tab="learn"]');
+await page.click('[data-lkind="phrase"]');
+ok("Learn Phrases chip shows a phrase", (await page.textContent("#card .pos")).trim() === "phrase");
+await page.click('[data-lkind="grammar"]');
+ok("Learn Grammar chip shows a grammar point", (await page.locator("#card .front.grammar").count()) === 1);
+await page.click('[data-lkind="all"]');
 // Quiz: unit test pass/fail, misses due now, leaving mid-test records nothing.
 {
   const q = await b.newPage({ viewport: { width: 390, height: 844 } });

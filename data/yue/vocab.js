@@ -7,12 +7,16 @@
 import { A0 } from "./vocab-a0.js";
 import { A1 } from "./vocab-a1.js";
 import { A2 } from "./vocab-a2.js";
+import { PHRASES } from "./phrases.js";
+import { interleave } from "../../lib/interleave.js";
 
 export const tierOfUnit = (u) => (u <= 4 ? "a0" : u <= 9 ? "a1" : "a2");
 
-export const vocab = Object.entries({ ...A0, ...A1, ...A2 })
-  .map(([u, rows]) => [Number(u), rows])
-  .sort((a, b) => a[0] - b[0])
+const WORDS = { ...A0, ...A1, ...A2 };
+const units = [...new Set([...Object.keys(WORDS), ...Object.keys(PHRASES)].map(Number))].sort((a, b) => a - b);
+
+export const vocab = units
+  .map((unit) => [unit, interleave(WORDS[unit] || [], PHRASES[unit] || [])])
   .flatMap(([unit, rows]) => rows.map((r) => ({
     id: `y:${r[0]}`,
     zh: r[0], jp: r[1], ko: r[2], en: r[3], pos: r[4], exZh: r[5], exJp: r[6], exKo: r[7],

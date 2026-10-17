@@ -156,3 +156,10 @@ dialog::backdrop { background: rgba(0,0,0,.5); }
 .qverdict.pass { color: var(--ok); } .qverdict.notyet { color: var(--warn); }
 .qmiss { padding: 10px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
 .qhome { margin-top: 12px; }
+
+/* Mongolian: Latin reading aid and the letter key */
+.mnlat { color: var(--muted); font-size: 14px; letter-spacing: .02em; }
+.flash .mnlat { margin-top: 2px; }
+.letters { display: grid; gap: 6px; }
+.letters .lt { display: grid; grid-template-columns: 44px 36px 1fr auto; align-items: center; gap: 8px; }
+.letters .lt b { font-size: 20px; }
