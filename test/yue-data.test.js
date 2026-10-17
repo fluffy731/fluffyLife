@@ -113,7 +113,7 @@ test("release content: ≥ 300 words, 12 units each ≥ 24 words, ≥ 40 grammar
 import { HANJA_KO } from "../data/yue/hanja-ko.js";
 import { bridge, hasBridge } from "../lib/bridge.js";
 
-const CANTONESE_ONLY = [..."唔冇咗嘅啲嗰呢佢哋睇瞓攰嬲啦喎嘛呀㗎囉咋乜嘢畀搵咁餸靚嗎闆找"];
+const CANTONESE_ONLY = [..."唔冇咗嘅啲嗰呢佢哋睇瞓攰嬲啦喎嘛呀㗎囉咋乜嘢畀搵咁餸靚嗎闆找咩喇嚟吓掂碌"];
 const LOANWORD_ONLY = [..."巴士的咖啡卡"];
 
 test("bridge table: every reading is one 한글 syllable keyed by a Han character", () => {
