@@ -56,9 +56,8 @@ from the row's position: `id = v-<tier>-<index>` and `unit = floor(index / 20) +
 - **Unit counts per tier are unchanged:** int 20, adv 14, beg 8.
 - **Within a unit,** items appear in merged order, so Learn alternates word
   types. Nouns are about 64% of the intermediate list, so two nouns in a row
-  can still occur. A run of three or more same-bucket items in the merged
-  sequence should only happen when the other buckets have run out, and the
-  test allows for that (see Testing).
+  can still occur. On the real data, the longest run of one bucket is 3
+  (intermediate) and 2 (advanced and beginner).
 - **Grammar is unchanged.** Grammar items keep their stated `unit`.
 - **Custom (user-added) items** keep the tier and unit the user chose.
 - **File comments.** The `// Unit N — …` comments in `vocab-int/adv/beg.js`
@@ -266,8 +265,7 @@ quiz: {
   - every unit has at least 3 buckets;
   - every int and adv unit has at least one verb or adjective and at least one
     native word;
-  - in the merged sequence, no run of 3 or more of the same bucket occurs while
-    another bucket still has rows left.
+  - in each tier's merged sequence, no run of the same bucket is longer than 3.
 - **UI parity test.** The new strings exist in both `ui/en.js` and `ui/ko.js`.
 - **Browser checks:**
   - `scripts/korean-check.mjs` and `scripts/yue-check.mjs` gain a quiz pass:
