@@ -77,8 +77,8 @@ export const A0 = {
     ["дүү", "弟弟；妹妹", "younger sibling", "n", "Би хоёр дүүтэй.", "我有两个弟弟妹妹。", "I have two younger siblings."],
     ["гэр бүл", "家庭；家人", "family", "n", "Манай гэр бүл таван хүнтэй.", "我们家有五口人。", "My family has five people."],
     ["танай гэр бүл хэдэн хүнтэй вэ", "你家有几口人？", "how many people are in your family?", "phrase", "Танай гэр бүл хэдэн хүнтэй вэ? — Дөрвөн хүнтэй.", "你家有几口人？——四口人。", "How many are in your family? — Four."],
-    ["Хятад хүн", "中国人", "Chinese (person)", "n", "Би Хятад хүн.", "我是中国人。", "I am Chinese."],
-    ["Монгол хүн", "蒙古人", "Mongolian (person)", "n", "Миний найз Монгол хүн.", "我的朋友是蒙古人。", "My friend is Mongolian."],
+    ["хятад хүн", "中国人", "Chinese (person)", "n", "Би хятад хүн.", "我是中国人。", "I am Chinese."],
+    ["монгол хүн", "蒙古人", "Mongolian (person)", "n", "Миний найз монгол хүн.", "我的朋友是蒙古人。", "My friend is Mongolian."],
     ["Монгол", "蒙古（国）", "Mongolia", "n", "Би Монголд амьдардаг.", "我住在蒙古。", "I live in Mongolia."],
     ["Хятад", "中国", "China", "n", "Тэр Хятадаас ирсэн.", "他从中国来。", "He came from China."],
     ["та хаанаас ирсэн бэ", "您从哪里来？", "where are you from?", "phrase", "Та хаанаас ирсэн бэ? — Би Хятадаас ирсэн.", "您从哪里来？——我从中国来。", "Where are you from? — I'm from China."],
@@ -89,7 +89,7 @@ export const A0 = {
     ["хүү", "儿子；男孩", "son; boy", "n", "Энэ миний хүү.", "这是我儿子。", "This is my son."],
     ["охин", "女儿；女孩", "daughter; girl", "n", "Миний охин долоон настай.", "我女儿七岁。", "My daughter is seven."],
     ["нөхөр", "丈夫", "husband", "n", "Миний нөхөр жолооч.", "我丈夫是司机。", "My husband is a driver."],
-    ["эхнэр", "妻子", "wife", "n", "Түүний эхнэр Хятад хүн.", "他的妻子是中国人。", "His wife is Chinese."],
+    ["эхнэр", "妻子", "wife", "n", "Түүний эхнэр хятад хүн.", "他的妻子是中国人。", "His wife is Chinese."],
     ["та гэрлэсэн үү", "您结婚了吗？", "are you married?", "phrase", "Та гэрлэсэн үү? — Тийм, гэрлэсэн.", "您结婚了吗？——是的，结婚了。", "Are you married? — Yes, I am."],
     ["багш", "老师", "teacher", "n", "Манай багш их сайн.", "我们老师很好。", "Our teacher is very good."],
     ["оюутан", "大学生", "(university) student", "n", "Би их сургуулийн оюутан.", "我是大学生。", "I am a university student."],
@@ -97,7 +97,7 @@ export const A0 = {
     ["та ямар ажил хийдэг вэ", "您做什么工作？", "what do you do (for work)?", "phrase", "Та ямар ажил хийдэг вэ? — Би багш.", "您做什么工作？——我是老师。", "What do you do? — I'm a teacher."],
     ["эрэгтэй", "男（的）；男人", "male; man", "adj", "Тэр эрэгтэй хүн бол миний багш.", "那位男士是我的老师。", "That man is my teacher."],
     ["эмэгтэй", "女（的）；女人", "female; woman", "adj", "Тэр эмэгтэй хэн бэ?", "那位女士是谁？", "Who is that woman?"],
-    ["би Монгол хэл сурч байна", "我在学蒙古语", "I am learning Mongolian", "phrase", "Би Монгол хэл сурч байна, бага зэрэг ойлгоно.", "我在学蒙古语，懂一点儿。", "I'm learning Mongolian and understand a little."],
+    ["би монгол хэл сурч байна", "我在学蒙古语", "I am learning Mongolian", "phrase", "Би монгол хэл сурч байна, бага зэрэг ойлгоно.", "我在学蒙古语，懂一点儿。", "I'm learning Mongolian and understand a little."],
   ],
   // Unit 4 · 食物与饮料
   4: [
