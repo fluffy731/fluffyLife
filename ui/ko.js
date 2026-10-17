@@ -4,7 +4,7 @@ const POS = { n: "명사", v: "동사", adj: "형용사", adv: "부사", pron: "
 const THEME = { auto: "자동", light: "밝게", dark: "어둡게" };
 
 export const ui = {
-  tabs: { home: "홈", learn: "학습", review: "복습", browse: "찾아보기", settings: "설정" },
+  tabs: { home: "홈", learn: "학습", review: "복습", quiz: "퀴즈", browse: "찾아보기", settings: "설정" },
   now: "지금", minutes: (n) => `${n}분`, hours: (n) => `${n}시간`, days: (n) => `${n}일`,
   listen: "듣기", listenBtn: "🔊 듣기", edit: "수정", resetProgress: "진도 초기화", tapToFlip: "카드를 눌러서 뜻을 확인하세요",
   dueNow: "복습할 것", ofSeen: (n) => `/ ${n}개 학습`, unit: "단원", wordOfHour: "지금 이 시간의 단어", noItems: "항목이 없어요",
@@ -38,6 +38,14 @@ export const ui = {
   noVoice: "광둥어(홍콩) 음성이 설치되어 있지 않아요. 표준중국어 음성으로 읽으면 소리가 틀려서 읽지 않았어요. 설정 → 손쉬운 사용 → 말하기 콘텐츠 → 음성 → 중국어 → 광둥어에서 내려받아 주세요. (메뉴 이름은 iOS 버전에 따라 조금 달라요.)",
   speechCheck: "음성 점검",
   speechCheckBtn: "🔊 음성 테스트하고 자세히 보기",
+  quizPractice: "연습 퀴즈", quizPracticeHint: "배운 단어에서 10문제, 약한 것부터 나와요. 합격 기준은 없어요.",
+  quizNeedSeen: "먼저 4개 이상 배워 보세요.", quizUnits: "단원 시험", quizNotReady: (n) => `배울 것 ${n}개 남음`,
+  quizReady: "시험 볼 수 있어요", quizPassed: (b, n) => `🏅 합격 · 최고 ${b}/${n}`, quizStart: "시작", quizNext: "다음",
+  quizQn: (i, n) => `${n}문제 중 ${i}번`, quizResult: (s, n) => `${s}/${n} · ${Math.round((s / n) * 100)}%`,
+  quizPass: "합격! 80% 이상이에요 🏅", quizNotYet: "아직이에요 — 80%면 합격이에요. 틀린 단어는 지금 복습에 나와요.",
+  quizMissed: "틀린 문제", quizRetake: "다시 보기", quizBack: "시험 목록", quizTestReady: (label) => `${label} — 시험을 볼 수 있어요`, quizReplay: "다시 듣기",
+  qMeaning: "무슨 뜻일까요?", qReverse: "어떤 단어일까요?", qHanja: "어떻게 읽을까요?", qListen: "들은 말은 무슨 뜻일까요?",
+  qGrammar: "어떤 문법이 쓰였을까요?", qSound: "무슨 뜻일까요?", qSay: "광동어로 어떻게 말할까요?", qTone: "몇 성일까요?", qGsound: "무슨 뜻일까요?",
   // Cantonese-only strings
   posName: (p) => POS[p] ?? p,
   cantoneseOnly: "광동어에만 있는 글자",
@@ -51,5 +59,6 @@ export const ui = {
   sayIt: "광동어로 어떻게 말할까요?",
   bridgeTitle: "한국 한자음과 연결",
   grammarLabel: "문법",
+  toneN: (n) => ["높고 평평", "올라감", "중간 평평", "낮게 내려감", "낮게 올라감", "낮고 평평"][n - 1],
   toneKey: ["1성 · 높고 평평", "2성 · 올라감", "3성 · 중간 평평", "4성 · 낮게 내려감", "5성 · 낮게 올라감", "6성 · 낮고 평평"],
 };

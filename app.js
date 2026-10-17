@@ -6,9 +6,10 @@ import { wordOfHour } from "./lib/hour.js";
 import { load, save, exportJSON, importJSON } from "./lib/store.js";
 import { mergeItems } from "./lib/validate.js";
 import { clipName } from "./lib/audio.js";
+import { createQuiz } from "./quiz-view.js";
 
 // ---------- state ----------
-let pack, t, ctx, ls, state, items, vocab, grammar, units;
+let pack, t, ctx, ls, state, items, vocab, grammar, units, quiz;
 let tab = "home";
 let learnUnitKey = null;   // null = current unit
 let flipped = false;
@@ -71,6 +72,7 @@ function renderHome() {
         <button class="btn" data-go="review">${t.review} ${due.length ? `(${due.length})` : ""}</button>
       </div>
     </div>
+    ${quiz.homeCard()}
     ${t.hourlyTip}</div>`;
 }
 
@@ -79,7 +81,7 @@ function renderLearn() {
   const unlocked = isUnlocked(units, units.indexOf(unit), state.progress);
   if (!queue.length || queue._key !== unit.key) { queue = unseenItems(unit, state.progress); queue._key = unit.key; flipped = false; }
   const header = `<div class="row" style="margin-bottom:10px">
-      <select id="unit-pick">${units.map((u) => `<option value="${esc(u.key)}" ${u.key === unit.key ? "selected" : ""}>${esc(tierLabel(u.tier))} · ${t.unitN(esc(u.unit))}${unitTitle(u.unit)}${isLearned(u, state.progress) ? " ✓" : ""}</option>`).join("")}</select>
+      <select id="unit-pick">${units.map((u) => `<option value="${esc(u.key)}" ${u.key === unit.key ? "selected" : ""}>${esc(tierLabel(u.tier))} · ${t.unitN(esc(u.unit))}${unitTitle(u.unit)}${isLearned(u, state.progress) ? " ✓" : ""}${quiz.passed(u.key) ? " 🏅" : ""}</option>`).join("")}</select>
     </div>`;
   if (!queue.length) return header + `<div class="card empty"><b>${t.unitDone}</b>${isLearned(unit, state.progress) ? t.unitDoneHint : ""}</div>`;
   const it = queue[0];
@@ -162,7 +164,7 @@ function renderSettings() {
     <div class="card"><button class="btn" data-speechtest style="width:100%">${t.speechCheckBtn}</button><pre id="speech-log" class="speech-log"></pre></div>`;
 }
 
-const VIEWS = { home: renderHome, learn: renderLearn, review: renderReview, browse: renderBrowse, settings: renderSettings };
+const VIEWS = { home: renderHome, learn: renderLearn, review: renderReview, quiz: () => quiz.render(), browse: renderBrowse, settings: renderSettings };
 
 function render() {
   $("#view").innerHTML = VIEWS[tab]();
@@ -230,14 +232,19 @@ function openEditor(existing) {
 }
 
 // ---------- events ----------
+const Q_KEYS = ["qstart", "qopt", "qnext", "qretake", "qback", "qreplay", "qmiss"];
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],#card,.item");
+    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],#card,.item");
     if (!el) return;
     if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
     if (el.dataset.speechtest !== undefined) return speechCheck();
+    if (Q_KEYS.some((k) => el.dataset[k] !== undefined)) {
+      if (el.dataset.qstart !== undefined && tab !== "quiz") { tab = "quiz"; window.scrollTo(0, 0); }
+      quiz.click(el); return render();
+    }
     if (el.dataset.setting) { state.settings[el.dataset.setting] = el.dataset.value; persist(); queue = []; flipped = false; return render(); }
-    if (el.dataset.tab || el.dataset.go) { tab = el.dataset.tab || el.dataset.go; if (el.dataset.go === "learn") learnUnitKey = null; flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
+    if (el.dataset.tab || el.dataset.go) { tab = el.dataset.tab || el.dataset.go; if (el.dataset.go === "learn") learnUnitKey = null; if (tab !== "quiz") quiz.reset(); flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
     if (el.dataset.flip !== undefined || el.id === "card") { flipped = !flipped; return render(); }
     if (el.dataset.grade) {
       const it = queue.shift(); if (!it) return;
@@ -262,7 +269,7 @@ function bindEvents() {
       a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 30000); return;
     }
     if (el.dataset.import !== undefined) return $("#file").click();
-    if (el.dataset.wipe !== undefined) { if (confirm(t.confirmWipe)) { state.progress = {}; persist(); render(); } return; }
+    if (el.dataset.wipe !== undefined) { if (confirm(t.confirmWipe)) { state.progress = {}; state.quiz = { units: {}, practice: [] }; persist(); render(); } return; }
     if (el.dataset.theme !== undefined) {
       const order = ["auto", "light", "dark"]; const next = order[(order.indexOf(state.settings.theme || "auto") + 1) % 3];
       state.settings.theme = next; persist(); applyTheme(); return render();
@@ -392,6 +399,12 @@ export function start(p) {
   if (pack.migrate) { state = pack.migrate(state); persist(); }
   rebuild();
   loadClips();
+  quiz = createQuiz({
+    pack, t, esc, ctx, persist, isGrammar, tierLabel, unitTitle, speak, cardHTML,
+    state: () => state, units: () => units, items: () => items,
+    isLearned: (u) => isLearned(u, state.progress), unseenCount: (u) => unseenItems(u, state.progress).length,
+    hasClip: (text) => !!clipFor(text),
+  });
   document.querySelectorAll("#tabs button").forEach((b) => { b.lastChild.textContent = t.tabs[b.dataset.tab]; });
   bindEvents();
   applyTheme();

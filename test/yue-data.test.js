@@ -65,6 +65,13 @@ test("Korean UI has every key the English UI has (no undefined strings)", () => 
   assert.deepEqual(Object.keys(enUi.tabs).sort(), Object.keys(yuePack.ui.tabs).sort());
 });
 
+test("quiz strings exist in both UIs", () => {
+  for (const k of ["quizPractice", "quizTestReady", "qMeaning", "qTone", "qGsound"]) { assert.ok(k in enUi, `en ${k}`); assert.ok(k in yuePack.ui, `ko ${k}`); }
+  assert.ok(enUi.tabs.quiz && yuePack.ui.tabs.quiz);
+  for (const tp of yuePack.quiz.types) assert.ok(yuePack.ui[tp.caption], tp.caption);
+  assert.equal(typeof yuePack.ui.toneN, "function");
+});
+
 test("vocab card: front is tone-coloured 한글, back adds Jyutping, characters and the bridge", () => {
   const w = word("十");
   const front = yuePack.cards.card(w, false, ctx);

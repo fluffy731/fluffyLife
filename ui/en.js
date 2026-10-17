@@ -1,6 +1,6 @@
 // English UI strings for the Korean app. Functions take the values they interpolate.
 export const ui = {
-  tabs: { home: "Home", learn: "Learn", review: "Review", browse: "Browse", settings: "Settings" },
+  tabs: { home: "Home", learn: "Learn", review: "Review", quiz: "Quiz", browse: "Browse", settings: "Settings" },
   now: "now", minutes: (n) => `${n} min`, hours: (n) => `${n} h`, days: (n) => `${n} d`,
   listen: "Listen", listenBtn: "🔊 Listen", edit: "Edit", resetProgress: "Reset progress", tapToFlip: "tap to flip",
   dueNow: "due now", ofSeen: (n) => `of ${n} seen`, unit: "unit", wordOfHour: "Word of the hour", noItems: "No items",
@@ -31,4 +31,12 @@ export const ui = {
   confirmImport: "Replace the progress AND custom words on this device with the backup?",
   noSpeech: "This browser has no speech voices.", noVoice: "No matching voice is installed.",
   speechCheck: "Speech check", speechCheckBtn: "🔊 Test speech and show details",
+  quizPractice: "Practice quiz", quizPracticeHint: "10 questions from words you've seen, weakest first. No pass mark.",
+  quizNeedSeen: "Learn at least 4 items first.", quizUnits: "Unit tests", quizNotReady: (n) => `${n} left to learn`,
+  quizReady: "Test ready", quizPassed: (b, n) => `🏅 Passed · best ${b}/${n}`, quizStart: "Start", quizNext: "Next",
+  quizQn: (i, n) => `Question ${i} of ${n}`, quizResult: (s, n) => `${s}/${n} · ${Math.round((s / n) * 100)}%`,
+  quizPass: "Passed — 80% or more 🏅", quizNotYet: "Not yet — 80% passes. Missed words are due in Review now.",
+  quizMissed: "Missed", quizRetake: "Retake", quizBack: "All tests", quizTestReady: (label) => `${label} — test ready`, quizReplay: "Play again",
+  qMeaning: "What does it mean?", qReverse: "Which Korean word?", qHanja: "How is it read?", qListen: "Which word did you hear?",
+  qGrammar: "Which grammar point is used?", qSound: "What does it mean?", qSay: "How do you say it?", qTone: "Which tone?", qGsound: "What does it mean?",
 };
