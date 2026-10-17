@@ -126,6 +126,57 @@ async function speechRun(voices, path = "yue/") {
   ok("renders offline", (await page.locator("#view .stat").count()) === 3 && (await page.title()).includes("광동어"));
   await ctx.close();
 }
+
+// 5. quiz: tone question with recorded clips; 🔊 inside an option plays without answering
+{
+  const { buildJobs } = await import("../lib/audio-jobs.js");
+  const { yuePack } = await import("../packs/yue.js");
+  const names = buildJobs(yuePack).map((j) => j.file.split("/").pop().replace(".mp3", ""));
+  const wav = Buffer.from("UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=", "base64");
+  async function quizPage(seed) {
+    // Service workers blocked: after the reload the worker would fetch the clip index itself, past these routes.
+    const qctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+    const page = await qctx.newPage();
+    await page.route("**/audio/*/index.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ clips: names }) }));
+    await page.route("**/audio/*/*.mp3", (r) => r.fulfill({ contentType: "audio/mpeg", body: wav }));
+    await page.addInitScript((seed) => {
+      globalThis.__QUIZ_TEST__ = true; globalThis.__QUIZ_SEED__ = seed; window.__played = [];
+      HTMLMediaElement.prototype.play = function () { window.__played.push(this.src); return Promise.resolve(); };
+    }, seed);
+    await page.goto(base + "yue/", { waitUntil: "networkidle" });
+    await page.evaluate(async () => {
+      const { buildUnits } = await import("/lib/track.js"); const { yuePack: p } = await import("/packs/yue.js");
+      const u = buildUnits(p.vocab, p.grammar, p.tiers.map((x) => x.key)).find((x) => x.key === "a0-1");
+      localStorage.setItem("yue.v1", JSON.stringify({ progress: Object.fromEntries(u.items.map((i) => [i.id, { ease: 2.5, interval: 6, reps: 2, due: Date.now() + 9e9 }])), custom: [], settings: {} }));
+    });
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForTimeout(300); // clip index loads in the background
+    await page.click('[data-tab="quiz"]'); await page.click('[data-qstart="a0-1"]');
+    return page;
+  }
+  const SEED = 1;
+  const page = await quizPage(SEED);
+  let tone = null, sayChecked = false;
+  for (let i = 0; i < 15 && (await page.locator("[data-qopt]").count()); i++) {
+    if (!tone && (await page.locator(".qtones").count())) {
+      const before = await page.evaluate(() => window.__played.length);
+      tone = { opts: await page.locator(".qtones .qopt").count(), playedOnOpen: before > 0 };
+    }
+    if (!sayChecked && (await page.locator(".qopt button.say").count())) {
+      await page.locator(".qopt button.say").first().click();
+      sayChecked = (await page.locator(".qopt.right, .qopt.wrong").count()) === 0 && (await page.evaluate(() => window.__played.length)) > 0;
+      if (!sayChecked) sayChecked = "failed";
+    }
+    const a = await page.evaluate(() => window.__quizAnswer());
+    await page.evaluate(() => { window.__played = []; });
+    await page.click(`[data-qopt="${a}"]`, { position: { x: 12, y: 12 } }); await page.click("[data-qnext]");
+  }
+  ok(`tone question shows 6 options (seed ${SEED})`, tone?.opts === 6);
+  ok("tone question plays its clip when it opens", tone?.playedOnOpen === true);
+  ok("say option 🔊 plays without selecting", sayChecked === true);
+  ok("unit test finishes with a pass", (await page.textContent(".qverdict")).includes("합격"));
+  await page.context().close();
+}
 await b.close(); srv.close();
 console.log(out.join("\n"));
 if (out.some((l) => l.startsWith("FAIL"))) process.exit(1);
