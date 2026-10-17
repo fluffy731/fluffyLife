@@ -20,7 +20,7 @@ export function card(it, open, { esc, say, t, isGrammar }) {
       it.ex.map((e) => `<div class="ex"><div class="k">${esc(e.ko)} ${say(e.ko)}</div><div class="t" lang="zh-Hant">${esc(e.zh)}</div><div class="t">${esc(e.en)}</div></div>`).join("");
   } else {
     back = pronHTML(it, esc) +
-      (it.hanja ? `<div class="hanja" lang="zh-Hant">${esc(it.hanja)}</div>` : `<div class="hanja none">고유어 · native word</div>`) +
+      (it.hanja ? `<div class="hanja" lang="zh-Hant">${esc(it.hanja)}</div>` : it.pos === "phrase" || it.pos === "idiom" ? "" : `<div class="hanja none">고유어 · native word</div>`) +
       `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div><div class="en">${esc(it.en)}</div>` +
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +
       `<div class="ex"><div class="k">${esc(it.ex)} ${say(it.ex)}</div><div class="t" lang="zh-Hant">${esc(it.exZh)}</div><div class="t">${esc(it.exEn)}</div></div>`;

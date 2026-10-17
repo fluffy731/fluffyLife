@@ -44,6 +44,7 @@ ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".stat:
 await page.click('[data-tab="browse"]'); await page.click("[data-add]");
 ok("add defaults to unit 2", (await page.inputValue('input[name="unit"]')) === "2");
 // Learn switch: Phrases / Grammar chips filter what Learn shows.
+await page.keyboard.press("Escape"); // close the Add dialog left open above
 await page.click('[data-tab="learn"]');
 await page.click('[data-lkind="phrase"]');
 ok("Learn Phrases chip shows a phrase", (await page.textContent("#card .pos")).trim() === "phrase");
