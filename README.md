@@ -35,6 +35,7 @@ Units run **Intermediate (TOPIK 3–4) → Advanced (TOPIK 5–6) → Beginner (
 - **Learn** introduces unseen items of a unit. "Got it" and "Already knew" both schedule the first review for tomorrow; the buttons show the exact interval, and "Already knew" raises the card's ease so later gaps grow faster.
 - **Review** shows everything due. Again / Hard / Good / Easy.
 - **Quiz** (both apps): *Practice* asks 10 multiple-choice questions from words you have seen, weakest first. *Unit tests* open once every item in a unit has been seen: 15 questions, and 12 right (80%) passes and marks the unit 🏅 (also shown in the Learn picker). Passing records a badge but does not lock or unlock anything. A wrong answer makes that word due in Review now, without the ease penalty "Again" gives; a right answer changes nothing. Best score, pass date and the last 10 attempts are kept per unit and travel with Export/Import. Listening and tone questions use the recorded clips; without clips, or while offline (the clips are not stored on the phone), they are simply not asked.
+- **Phrases:** 210 Korean phrases (everyday reactions, polite set phrases, idioms, proverbs and 사자성어 with hanja), 5 in every unit, spread through the words. Learn and Browse have **All · Words · Phrases · Grammar** chips, so you can study one kind at a time; Review stays mixed. Phrases are in `data/phrases-int.js`, `phrases-adv.js`, `phrases-beg.js` (append new rows at the end — ids are positional).
 - **Mixed units (Korean):** every unit interleaves hanja and native words, nouns, verbs, adjectives and adverbs (`lib/mix.js`), so you never get a block of 20 nouns. Ids did not change, so reviews are kept, but your current unit may move back to pick up a few unseen verbs or adjectives.
 - **Browse** searches by 한글, 漢字, 中文 or English; tap an item to see examples, edit it, or reset its progress. **+ Add** creates your own words or grammar points.
 - **Settings** exports and imports a JSON backup. Progress lives in the browser's localStorage only, so export before clearing Safari data.
@@ -79,8 +80,20 @@ A second home-screen app on the same engine, for a Korean speaker who is a compl
 ```
 npm test                                   # unit tests: scheduler, track, storage, Korean & Cantonese data, Jyutping engine
 node scripts/snapshot.mjs --check          # Korean app HTML identical to the golden snapshot
+node scripts/mn-check.mjs                  # Mongolian app behaviour (Chinese UI, Learn chips, quiz, offline)
 node scripts/korean-check.mjs              # Korean app behaviour (search IME, dialog, Again keeps progress …)
 node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
 node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
 ```
 The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.
+
+## 蒙古语 · Монгол хэл — Mongolian for Mandarin speakers (`/mongolian/`)
+
+A third home-screen app on the same engine, for a Mandarin + English speaker starting Mongolian from zero. The interface is Simplified Chinese.
+
+- **URL:** `https://<user>.github.io/<repo>/mongolian/` — its own icon (蒙), name and progress (`mn.v1`).
+- **Khalkha Mongolian in Cyrillic.** Every word and example shows a grey Latin reading aid computed from the Cyrillic (`lib/mongol.js`); it spells the letters, so the 🔊 recording (Microsoft voice Yesui) is the reference for sounds. Home has a key to the letters a Chinese reader needs help with (ө ү х ц ч ш ж з э ы л), each tappable.
+- **Track:** 12 units, about 350 words and phrases, 34 grammar points with notes in Chinese — A0 (1 问候与基本 · 2 数字与时间 · 3 家人与人 · 4 食物与饮料), A1 (5 购物与钱 · 6 交通与方向 · 7 日常动词 · 8 常用形容词), A2 (9 身体与健康 · 10 天气与自然 · 11 家与生活 · 12 社交与文化). Every unit starts with basic words and includes set phrases.
+- **Quiz:** meaning, Chinese → Mongolian, **reading practice** (Cyrillic → Latin spelling), listening, and grammar.
+- **Content:** rows live in `data/mn/vocab-a0/a1/a2.js` as `[mn, zh, en, pos, exMn, exZh, exEn, check?]`; grammar in `data/mn/grammar.js`. `node scripts/check-data.mjs mn` checks Cyrillic, Simplified Chinese and required fields. Written by Claude; rows marked `?` and the first units deserve a native speaker's check.
+
