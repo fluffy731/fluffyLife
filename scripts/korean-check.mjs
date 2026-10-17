@@ -43,4 +43,40 @@ ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".stat:
 // Add defaults to current unit
 await page.click('[data-tab="browse"]'); await page.click("[data-add]");
 ok("add defaults to unit 2", (await page.inputValue('input[name="unit"]')) === "2");
+// Quiz: unit test pass/fail, misses due now, leaving mid-test records nothing.
+{
+  const q = await b.newPage({ viewport: { width: 390, height: 844 } });
+  await q.addInitScript(() => { globalThis.__QUIZ_TEST__ = true; globalThis.__QUIZ_SEED__ = 1; });
+  await q.goto(base + "korean/", { waitUntil: "networkidle" });
+  await q.evaluate(async () => {
+    const { buildUnits } = await import("/lib/track.js"); const { koPack: p } = await import("/packs/ko.js");
+    const u = buildUnits(p.vocab, p.grammar, p.tiers.map((x) => x.key)).find((x) => x.key === "int-1");
+    localStorage.setItem("korean.v1", JSON.stringify({ progress: Object.fromEntries(u.items.map((i) => [i.id, { ease: 2.5, interval: 6, reps: 2, due: Date.now() + 9e9 }])), custom: [], settings: {} }));
+  });
+  await q.reload({ waitUntil: "networkidle" });
+  const saved = () => q.evaluate(() => JSON.parse(localStorage.getItem("korean.v1")));
+  const runTest = async (right) => {
+    await q.click('[data-tab="quiz"]'); await q.click('[data-qstart="int-1"]');
+    while (await q.locator("[data-qopt]").count()) {
+      const a = await q.evaluate(() => window.__quizAnswer());
+      const pick = right ? a : (a + 1) % (await q.locator("[data-qopt]").count());
+      await q.click(`[data-qopt="${pick}"]`, { position: { x: 12, y: 12 } }); await q.click("[data-qnext]");
+    }
+  };
+  await runTest(true);
+  const s1 = await saved();
+  await q.click('[data-tab="learn"]');
+  ok("unit test passes with all-correct answers", (await q.textContent(".qresult").catch(() => "")) !== null && typeof s1.quiz.units["int-1"].passedAt === "number" && s1.quiz.units["int-1"].best === 15
+    && (await q.locator('#unit-pick option[value="int-1"]').textContent()).includes("🏅"));
+  await runTest(false);
+  const s2 = await saved(), missed = Object.values(s2.progress).filter((p) => p.due <= Date.now()).length;
+  ok("wrong answers bring items due; pass kept", missed === 15 && s2.quiz.units["int-1"].passedAt === s1.quiz.units["int-1"].passedAt && s2.quiz.units["int-1"].attempts.length === 2
+    && (await q.textContent(".qverdict")).includes("Not yet"));
+  await q.click('[data-qstart="int-1"]').catch(() => {}); await q.click("[data-qback]"); await q.click('[data-qstart="int-1"]');
+  await q.click('[data-qopt="0"]', { position: { x: 12, y: 12 } }); await q.click('[data-tab="home"]'); await q.click('[data-tab="quiz"]');
+  ok("leaving mid-test records nothing", (await q.locator("[data-qopt]").count()) === 0 && (await q.locator(".qunit").count()) > 0 && (await saved()).quiz.units["int-1"].attempts.length === 2);
+  ok("no horizontal scroll on the Quiz tab", (await q.evaluate(() => document.documentElement.scrollWidth)) <= 390);
+  await q.close();
+}
 await b.close(); srv.close(); console.log(out.join("\n"));
+if (out.some((l) => l.startsWith("FAIL"))) process.exit(1);
