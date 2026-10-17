@@ -4,6 +4,7 @@ import { TIER_ORDER, TIER_LABEL } from "../lib/track.js";
 import { validateItem } from "../lib/validate.js";
 import { ui } from "../ui/en.js";
 import { cards } from "../cards/ko.js";
+import { types as quizTypes } from "../quiz/ko.js";
 
 export const koPack = {
   ...data,
@@ -17,4 +18,5 @@ export const koPack = {
   speechClean: (text) => text.replace(/^-|\(.*?\)/g, "").trim(),
   tiers: TIER_ORDER.map((key) => ({ key, label: TIER_LABEL[key], short: TIER_LABEL[key].split(" ·")[0] })),
   ui, cards, editable: true, validate: validateItem,
+  quiz: { types: quizTypes },
 };
