@@ -1,7 +1,7 @@
 // Pack-driven study engine. `start(pack)` runs one app (Korean or Cantonese); the pack supplies
 // data, tiers, UI strings, card renderers, storage key and speech languages.
 import { grade } from "./lib/sm2.js";
-import { buildUnits, isLearned, currentUnit, isUnlocked, dueItems, unseenItems, pickHourItems, seen } from "./lib/track.js";
+import { buildUnits, isLearned, currentUnit, isUnlocked, dueItems, unseenItems, pickHourItems, seen, kindOf } from "./lib/track.js";
 import { wordOfHour } from "./lib/hour.js";
 import { load, save, exportJSON, importJSON } from "./lib/store.js";
 import { mergeItems } from "./lib/validate.js";
@@ -15,6 +15,7 @@ let learnUnitKey = null;   // null = current unit
 let flipped = false;
 let queue = [];            // current learn/review queue
 let browse = { q: "", tier: "all", kind: "all" };
+const KINDS = () => [["all", t.all], ["word", t.words], ["phrase", t.phrases], ["grammar", t.grammar]];
 
 function rebuild() {
   const custom = state.custom || [];
@@ -79,10 +80,16 @@ function renderHome() {
 function renderLearn() {
   const unit = (learnUnitKey && units.find((u) => u.key === learnUnitKey)) || currentUnit(units, state.progress);
   const unlocked = isUnlocked(units, units.indexOf(unit), state.progress);
-  if (!queue.length || queue._key !== unit.key) { queue = unseenItems(unit, state.progress); queue._key = unit.key; flipped = false; }
-  const header = `<div class="row" style="margin-bottom:10px">
+  const kind = state.settings.learnKind || "all";
+  const qkey = `${unit.key}:${kind}`;
+  if (!queue.length || queue._key !== qkey) { queue = unseenItems(unit, state.progress).filter((i) => kind === "all" || kindOf(i) === kind); queue._key = qkey; flipped = false; }
+  const chips = `<div class="chips">${KINDS().map(([k, l]) => `<button data-lkind="${k}" class="${kind === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
+  const header = chips + `<div class="row" style="margin-bottom:10px">
       <select id="unit-pick">${units.map((u) => `<option value="${esc(u.key)}" ${u.key === unit.key ? "selected" : ""}>${esc(tierLabel(u.tier))} · ${t.unitN(esc(u.unit))}${unitTitle(u.unit)}${isLearned(u, state.progress) ? " ✓" : ""}${quiz.passed(u.key) ? " 🏅" : ""}</option>`).join("")}</select>
     </div>`;
+  if (!queue.length && kind !== "all" && unseenItems(unit, state.progress).length) {
+    return header + `<div class="card empty"><b>${t.noKindLeft(KINDS().find(([k]) => k === kind)[1])}</b><div class="actions" style="grid-template-columns:1fr"><button class="btn" data-lkind="all">${t.all}</button></div></div>`;
+  }
   if (!queue.length) return header + `<div class="card empty"><b>${t.unitDone}</b>${isLearned(unit, state.progress) ? t.unitDoneHint : ""}</div>`;
   const it = queue[0];
   return header + (unlocked ? "" : `<div class="small muted" style="margin-bottom:8px">${t.jumpedAhead}</div>`) +
@@ -117,7 +124,7 @@ const preview = (it, g) => { const s = grade(state.progress[it.id], g, Date.now(
 function renderBrowse() {
   const list = browseList();
   return `<input type="search" id="q" placeholder="${t.searchPlaceholder}" value="${esc(browse.q)}">
-    <div class="chips">${[["all", t.all], ["vocab", t.words], ["grammar", t.grammar]].map(([k, l]) => `<button data-kind="${k}" class="${browse.kind === k ? "on" : ""}">${l}</button>`).join("")}
+    <div class="chips">${KINDS().map(([k, l]) => `<button data-kind="${k}" class="${browse.kind === k ? "on" : ""}">${l}</button>`).join("")}
       ${pack.editable ? `<button data-add style="margin-left:auto">${t.add}</button>` : ""}</div>
     <div class="chips">${["all", ...pack.tiers.map((x) => x.key)].map((k) => `<button data-tier="${k}" class="${browse.tier === k ? "on" : ""}">${k === "all" ? t.anyLevel : pack.tiers.find((x) => x.key === k).short}</button>`).join("")}</div>
     <div id="browse-list">${browseListHTML(list)}</div>`;
@@ -126,7 +133,7 @@ function renderBrowse() {
 function browseList() {
   const q = browse.q.trim().toLowerCase();
   return items.filter((i) => (browse.tier === "all" || i.tier === browse.tier) &&
-    (browse.kind === "all" || (browse.kind === "grammar") === isGrammar(i)) &&
+    (browse.kind === "all" || kindOf(i) === browse.kind) &&
     (!q || pack.cards.searchText(i).some((f) => f && String(f).toLowerCase().includes(q))));
 }
 
@@ -235,7 +242,7 @@ function openEditor(existing) {
 const Q_KEYS = ["qstart", "qopt", "qnext", "qretake", "qback", "qreplay", "qmiss"];
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],#card,.item");
+    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],[data-lkind],#card,.item");
     if (!el) return;
     if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
     if (el.dataset.speechtest !== undefined) return speechCheck();
@@ -254,6 +261,7 @@ function bindEvents() {
     }
     if (el.dataset.tier) { browse.tier = el.dataset.tier; return render(); }
     if (el.dataset.kind) { browse.kind = el.dataset.kind; return render(); }
+    if (el.dataset.lkind) { state.settings.learnKind = el.dataset.lkind; persist(); queue = []; flipped = false; return render(); }
     if (el.dataset.add !== undefined) return openEditor(null);
     if (el.dataset.edit) { e.stopPropagation(); return openEditor(items.find((i) => i.id === el.dataset.edit)); }
     if (el.dataset.reset) { e.stopPropagation(); delete state.progress[el.dataset.reset]; persist(); return render(); }

@@ -6,7 +6,7 @@ export const ui = {
   dueNow: "due now", ofSeen: (n) => `of ${n} seen`, unit: "unit", wordOfHour: "Word of the hour", noItems: "No items",
   changesAt: (hh) => `Changes at ${hh}:00`, currentUnit: "Current unit", unitN: (n) => `Unit ${n}`,
   introduced: (a, b, g) => `${a}/${b} introduced · ${g} grammar points`,
-  learnNew: "Learn new", review: "Review",
+  learnNew: "Learn new", review: "Review", phrases: "Phrases", noKindLeft: (k) => `No new ${k.toLowerCase()} left in this unit.`,
   hourlyTip: `<h2>Hourly reminder on iPhone</h2>
     <div class="card tip">
       iOS won't let a web app set its own alarm, and Shortcuts has no "hourly" repeat — so make one <b>Daily</b> automation per hour you want (e.g. 9:00, 10:00 … 21:00):

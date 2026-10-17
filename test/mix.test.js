@@ -2,7 +2,10 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { mixOrder, bucketOf, BUCKETS } from "../lib/mix.js";
-import { vocab } from "../data/vocab.js";
+import { vocab as all } from "../data/vocab.js";
+
+// Words only: phrases (p-*) are spread over the same units separately and are tested in phrases.test.js.
+const vocab = all.filter((v) => v.id.startsWith("v-"));
 
 const GOLD = JSON.parse(readFileSync(new URL("./golden/ko-ids.json", import.meta.url), "utf8"));
 const TIERS = { int: 20, adv: 14, beg: 8 };

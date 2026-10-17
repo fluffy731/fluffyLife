@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>蒙古语 · Монгол хэл</title>
+<meta name="description" content="用中文学蒙古语 — 单词、常用语、语法，间隔复习。">
+<meta name="theme-color" content="#1f4e8c" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1722" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="蒙古语">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="../icons/mn-180.png">
+<link rel="icon" href="../icons/mn.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="top">
+  <h1 id="title">蒙古语 · Монгол хэл</h1>
+  <span id="due-badge" class="badge" hidden></span>
+</header>
+<main id="view" class="view"></main>
+<nav class="tabs" id="tabs">
+  <button data-tab="home" class="active"><span class="ic">⌂</span>홈</button>
+  <button data-tab="learn"><span class="ic">✎</span>학습</button>
+  <button data-tab="review"><span class="ic">↻</span>복습</button>
+  <button data-tab="quiz"><span class="ic">✓</span>퀴즈</button>
+  <button data-tab="browse"><span class="ic">☰</span>찾아보기</button>
+  <button data-tab="settings"><span class="ic">⚙</span>설정</button>
+</nav>
+<dialog id="dlg"></dialog>
+<script type="module">
+  import { start } from "../app.js";
+  import { mnPack } from "../packs/mn.js";
+  start(mnPack);
+</script>
+</body>
+</html>
