@@ -21,9 +21,9 @@ export function card(it, open, { esc, say, t, isGrammar }) {
   } else {
     back = pronHTML(it, esc) +
       (it.hanja ? `<div class="hanja" lang="zh-Hant">${esc(it.hanja)}</div>` : it.pos === "phrase" || it.pos === "idiom" ? "" : `<div class="hanja none">고유어 · native word</div>`) +
-      `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div><div class="en">${esc(it.en)}</div>` +
+      (it.zh ? `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div>` : "") + `<div class="en">${esc(it.en)}</div>` +
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +
-      `<div class="ex"><div class="k">${esc(it.ex)} ${say(it.ex)}</div><div class="t" lang="zh-Hant">${esc(it.exZh)}</div><div class="t">${esc(it.exEn)}</div></div>`;
+      (it.ex && it.ex !== "—" ? `<div class="ex"><div class="k">${esc(it.ex)} ${say(it.ex)}</div>${it.exZh !== "—" ? `<div class="t" lang="zh-Hant">${esc(it.exZh)}</div>` : ""}${it.exEn !== "—" ? `<div class="t">${esc(it.exEn)}</div>` : ""}</div>` : "");
   }
   return `<div class="card flash" id="card">${front}${back}</div>`;
 }

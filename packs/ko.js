@@ -17,6 +17,8 @@ export const koPack = {
   audio: { voice: "ko-KR-SunHiNeural", dir: "ko", base: "../audio/ko/" },
   speechClean: (text) => text.replace(/^-|\(.*?\)/g, "").trim(),
   tiers: TIER_ORDER.map((key) => ({ key, label: TIER_LABEL[key], short: TIER_LABEL[key].split(" ·")[0] })),
+  // Offline dictionary built at deploy by scripts/build-dict.mjs (Browse search shows it under your own items).
+  dict: { url: "../dict/ko.json" },
   ui, cards, editable: true, validate: validateItem,
   quiz: { types: quizTypes },
 };

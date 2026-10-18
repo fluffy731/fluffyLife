@@ -1,0 +1,7 @@
+{"word": "학교", "lang_code": "ko", "pos": "noun", "forms": [{"form": "hakgyo", "tags": ["romanization"]}, {"form": "學校", "tags": ["hanja"]}], "sounds": [{"ipa": "[ha̠k̚k͈jo]"}, {"hangeul": "학꾜"}], "senses": [{"examples": [{"text": "학교에 가요.", "english": "I go to school."}], "glosses": ["school"]}], "head_templates": [{"name": "ko-noun", "args": {"hanja": "學校"}, "expansion": "학교 • (hakgyo) (hanja 學校)"}]}
+{"word": "눈치", "lang_code": "ko", "pos": "noun", "forms": [{"form": "nunchi", "tags": ["romanization"]}], "sounds": [{"hangeul": "눈치"}], "senses": [{"glosses": ["one's ability to sense what are the correct/wrong things to do in a situation"]}, {"glosses": ["one's state of mind inferred from the facial expressions; hint given with the eyes"]}]}
+{"word": "먹다", "lang_code": "ko", "pos": "verb", "sounds": [{"hangeul": "먹따"}], "senses": [{"glosses": ["to eat"]}, {"glosses": ["to drink"]}]}
+{"word": "經", "lang_code": "ko", "pos": "character", "senses": [{"glosses": ["to pass through"]}], "head_templates": [{"name": "ko-hanja", "expansion": "經 (eumhun 지날 경)"}]}
+{"word": "김", "lang_code": "ko", "pos": "name", "senses": [{"glosses": ["a surname"]}]}
+{"word": "갔다", "lang_code": "ko", "pos": "verb", "senses": [{"glosses": ["past of 가다"], "tags": ["form-of"]}]}
+{"word": "경제", "lang_code": "ko", "pos": "noun", "forms": [{"form": "經濟", "tags": ["hanja"]}], "sounds": [{"hangeul": "경제"}], "senses": [{"glosses": ["economy"]}]}

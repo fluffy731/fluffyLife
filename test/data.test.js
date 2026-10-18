@@ -20,6 +20,10 @@ test("every seed item validates", () => {
   assert.deepEqual(errs.slice(0, 10), []);
 });
 
+test("every seed word has a Chinese meaning (zh is optional only for words you add)", () => {
+  assert.deepEqual(vocab.filter((v) => !v.zh).map((v) => v.id), []);
+});
+
 test("ids unique across vocab and grammar", () => {
   const ids = [...vocab, ...grammar].map(i => i.id);
   const dup = ids.filter((x, i) => ids.indexOf(x) !== i);

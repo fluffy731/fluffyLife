@@ -35,6 +35,7 @@ export const ui = {
   confirmImport: "用备份文件覆盖这台设备上的进度吗？",
   noSpeech: "这个浏览器没有语音功能。",
   noVoice: "这台设备没有蒙古语语音。录音片段部署完成后，🔊 会直接播放录音（静音模式下也能听到）。",
+  dictTitle: "词典", dictLoading: "正在加载词典…", dictError: "词典不可用——请联网时打开一次。", dictNone: "词典里没有。", dictAdd: "+ 加入学习", dictSource: "词典：Wiktionary（kaikki.org），CC BY-SA 4.0。",
   speechCheck: "语音检查", speechCheckBtn: "🔊 测试语音并显示详情",
   quizPractice: "练习测验", quizPracticeHint: "从学过的内容里出 10 题，先考最不熟的。不设及格线。",
   quizNeedSeen: "请先学至少 4 个。", quizUnits: "单元测验", quizNotReady: (n) => `还有 ${n} 个没学`,

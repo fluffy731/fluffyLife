@@ -2,3 +2,4 @@
 node_modules/
 audio/*/*.mp3
 audio-jobs.json
+dict/
