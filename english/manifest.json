@@ -1,0 +1,15 @@
+{
+  "name": "English · 영어",
+  "short_name": "English",
+  "description": "한국어로 배우는 중·고급 영어 — 단어, 표현, 문법, 간격 반복 복습.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f8f6",
+  "theme_color": "#2e6b4f",
+  "icons": [
+    { "src": "../icons/en.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/en-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/en-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

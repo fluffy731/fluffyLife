@@ -163,3 +163,7 @@ dialog::backdrop { background: rgba(0,0,0,.5); }
 .letters { display: grid; gap: 6px; }
 .letters .lt { display: grid; grid-template-columns: 44px 36px 1fr auto; align-items: center; gap: 8px; }
 .letters .lt b { font-size: 20px; }
+
+/* English: IPA line */
+.ipa { color: var(--muted); font-size: 15px; font-family: "Charis SIL", "Doulos SIL", "Lucida Sans Unicode", system-ui, sans-serif; }
+.flash .ipa { margin-top: 2px; }

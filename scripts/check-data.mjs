@@ -1,8 +1,9 @@
-// Validates a pack's seed data and prints every problem: node scripts/check-data.mjs ko|yue|mn
+// Validates a pack's seed data and prints every problem: node scripts/check-data.mjs ko|yue|mn|en
 const which = process.argv[2];
 const PACKS = {
   ko: async () => { const { pack } = await import("../data/pack.js"); const { validateItem } = await import("../lib/validate.js"); return [pack, validateItem]; },
   yue: async () => { const { pack } = await import("../data/yue/pack.js"); const { validateYue } = await import("../lib/validate-yue.js"); return [pack, validateYue]; },
+  en: async () => { const { pack } = await import("../data/en/pack.js"); const { validateEn } = await import("../lib/validate-en.js"); return [pack, validateEn]; },
   mn: async () => { const { vocab } = await import("../data/mn/vocab.js"); const { grammar } = await import("../data/mn/grammar.js"); const { validateMn } = await import("../lib/validate-mn.js"); return [{ vocab, grammar }, validateMn]; },
 };
 const [pack, validate] = await PACKS[which]();

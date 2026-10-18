@@ -4,7 +4,8 @@ import { buildJobs } from "../lib/audio-jobs.js";
 import { koPack } from "../packs/ko.js";
 import { yuePack } from "../packs/yue.js";
 import { mnPack } from "../packs/mn.js";
+import { enPack } from "../packs/en.js";
 
-const jobs = [...buildJobs(koPack), ...buildJobs(yuePack), ...buildJobs(mnPack)];
+const jobs = [...buildJobs(koPack), ...buildJobs(yuePack), ...buildJobs(mnPack), ...buildJobs(enPack)];
 await writeFile("audio-jobs.json", JSON.stringify(jobs, null, 1));
 console.log(`audio-jobs.json: ${jobs.length} clips`);
