@@ -7,11 +7,14 @@ const FILES = [
   "./", "./index.html", "./style.css", "./app.js",
   "./korean/", "./korean/index.html", "./korean/manifest.json",
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
-  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js", "./lib/interleave.js", "./lib/mongol.js", "./lib/validate-mn.js",
+  "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js", "./lib/interleave.js", "./lib/mongol.js", "./lib/validate-mn.js", "./lib/validate-en.js",
   "./quiz-view.js", "./quiz/ko.js", "./quiz/yue.js",
   "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
   "./packs/mn.js", "./cards/mn.js", "./ui/zh.js", "./quiz/mn.js",
+  "./packs/en.js", "./cards/en.js", "./ui/ko-en.js", "./quiz/en.js",
+  "./english/", "./english/index.html", "./english/manifest.json", "./icons/en.svg", "./icons/en-180.png", "./icons/en-512.png",
+  "./data/en/pack.js", "./data/en/vocab.js", "./data/en/grammar.js", "./data/en/part1.js", "./data/en/part2.js", "./data/en/part3.js", "./data/en/part4.js",
   "./mongolian/", "./mongolian/index.html", "./mongolian/manifest.json", "./icons/mn.svg", "./icons/mn-180.png", "./icons/mn-512.png",
   "./data/mn/pack.js", "./data/mn/vocab.js", "./data/mn/vocab-a0.js", "./data/mn/vocab-a1.js", "./data/mn/vocab-a2.js", "./data/mn/grammar.js",
   "./data/yue/phrases.js", "./data/phrases-int.js", "./data/phrases-adv.js", "./data/phrases-beg.js",
@@ -33,7 +36,7 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : "./korean/index.html");
+const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : "./korean/index.html");
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;

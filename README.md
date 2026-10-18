@@ -97,3 +97,14 @@ A third home-screen app on the same engine, for a Mandarin + English speaker sta
 - **Quiz:** meaning, Chinese → Mongolian, **reading practice** (Cyrillic → Latin spelling), listening, and grammar.
 - **Content:** rows live in `data/mn/vocab-a0/a1/a2.js` as `[mn, zh, en, pos, exMn, exZh, exEn, check?]`; grammar in `data/mn/grammar.js`. `node scripts/check-data.mjs mn` checks Cyrillic, Simplified Chinese and required fields. Written by Claude; rows marked `?` and the first units deserve a native speaker's check.
 
+
+## English · 영어 — English for Korean speakers (`/english/`)
+
+A fourth home-screen app on the same engine, for a Korean speaker at intermediate level moving to advanced. Everything is explained in Korean.
+
+- **URL:** `https://<user>.github.io/<repo>/english/` — its own icon (Aa), name and progress (`en.v1`).
+- **Track:** 20 units — 중급 B1–B2 (1 일상 대화와 감정 · 2 일과 직장 · 3 학교와 공부 · 4 여행과 교통 · 5 건강과 생활 · 6 쇼핑과 돈 · 7 관계와 성격 · 8 미디어와 기술 · 9 환경과 사회 · 10 의견 말하기), then 고급 C1 (11 비즈니스 회의와 협상 · 12 학술 글쓰기 · 13 경제와 금융 · 14 정치와 법 · 15 과학과 연구 · 16 심리와 행동 · 17 문화와 예술 · 18 뉘앙스 있는 형용사·부사 · 19 관용구와 은유 · 20 토론과 설득). Each unit mixes words, phrases (phrasal verbs, idioms, collocations) and 3 grammar points explained in Korean.
+- **Pronunciation:** General American IPA with stress marks, plus a recorded clip (Microsoft voice Jenny) for every word and example; the iPhone's own English voice is the fallback.
+- **Usage notes** in Korean where Korean speakers usually slip: Konglish (핸드폰 ✗ → cell phone), ✗/✓ pairs (✗ I'm boring ✓ I'm bored), prepositions, articles, register and near-synonym nuance.
+- **Quiz:** meaning, Korean → English, **fill in the blank** (the word removed from its example), listening, and grammar.
+- **Content:** `data/en/part1–4.js`; vocab rows `[en, ipa, ko, pos, ex, exKo, note|null, check?]`, grammar rows `[form, unit, ko, note, [[en, ko], …]]`. `node scripts/check-data.mjs en` checks it; `node scripts/en-check.mjs` checks the app in a browser.
