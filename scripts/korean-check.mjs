@@ -51,6 +51,32 @@ ok("Learn Phrases chip shows a phrase", (await page.textContent("#card .pos")).t
 await page.click('[data-lkind="grammar"]');
 ok("Learn Grammar chip shows a grammar point", (await page.locator("#card .front.grammar").count()) === 1);
 await page.click('[data-lkind="all"]');
+// Dictionary: Browse search shows dictionary hits under your own items; "+ Add to study" saves one.
+{
+  // Service worker blocked: it claims the page and would fetch the dictionary itself, past this mock.
+  const dctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  const d = await dctx.newPage();
+  const rows = [["經", "經", "字", "지날 경", "to pass through", "", ""], ["실험실", "實驗室", "n", "", "laboratory; lab", "실험실에서 일해요.", "I work in a lab."]];
+  await d.route("**/dict/ko.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ source: "test", rows }) }));
+  d.on("dialog", (x) => x.accept());
+  await d.goto(base + "korean/", { waitUntil: "networkidle" });
+  await d.click('[data-tab="browse"]');
+  await d.fill("#q", "실험실");
+  await d.waitForSelector(".item.dict");
+  ok("dictionary hit shows hanja and meaning", (await d.textContent(".item.dict")).includes("實驗室") && (await d.textContent(".item.dict")).includes("laboratory"));
+  await d.fill("#q", "經");
+  await d.waitForSelector(".item.dict");
+  ok("hanja search finds the character with its 훈음", (await d.textContent(".item.dict")).includes("지날 경"));
+  await d.fill("#q", "실험실");
+  await d.click(".item.dict"); await d.click("[data-dictadd]");
+  ok("+ Add to study opens the editor prefilled", (await d.inputValue('input[name="ko"]')) === "실험실" && (await d.inputValue('input[name="hanja"]')) === "實驗室" && (await d.inputValue('input[name="en"]')) === "laboratory");
+  await d.click('#edit button[value="save"]');
+  const saved = await d.evaluate(() => JSON.parse(localStorage.getItem("korean.v1")).custom.find((c) => c.ko === "실험실"));
+  ok("added word is saved as a custom card", !!saved && saved.hanja === "實驗室" && saved.ex === "실험실에서 일해요.");
+  await d.fill("#q", "실험실");
+  ok("once added it appears in your list, not twice", (await d.locator(".item:not(.dict)").count()) === 1 && (await d.locator(".item.dict").count()) === 0);
+  await dctx.close();
+}
 // Quiz: unit test pass/fail, misses due now, leaving mid-test records nothing.
 {
   const q = await b.newPage({ viewport: { width: 390, height: 844 } });

@@ -44,6 +44,9 @@ jobs:
         continue-on-error: true
         timeout-minutes: 30
         run: pip install --quiet "edge-tts>=6.1,<8" && python scripts/gen_audio.py audio-jobs.json
+      - name: Build the offline Korean dictionary (Wiktionary via kaikki.org)
+        continue-on-error: true
+        run: node scripts/build-dict.mjs
       - name: Stamp service-worker cache version with the commit SHA
         run: sed -i "s/const VERSION = \"dev\";/const VERSION = \"${GITHUB_SHA::12}\";/" sw.js && grep -q "${GITHUB_SHA::12}" sw.js
       - uses: actions/configure-pages@v5

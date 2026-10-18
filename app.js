@@ -7,6 +7,7 @@ import { load, save, exportJSON, importJSON } from "./lib/store.js";
 import { mergeItems } from "./lib/validate.js";
 import { clipName } from "./lib/audio.js";
 import { createQuiz } from "./quiz-view.js";
+import { searchDict } from "./lib/dict.js";
 
 // ---------- state ----------
 let pack, t, ctx, ls, state, items, vocab, grammar, units, quiz;
@@ -15,6 +16,30 @@ let learnUnitKey = null;   // null = current unit
 let flipped = false;
 let queue = [];            // current learn/review queue
 let browse = { q: "", tier: "all", kind: "all" };
+// Offline dictionary (Korean app): loaded on first Browse search, then served offline by the service worker.
+let dict = { state: "idle", rows: null, hits: [] };
+function loadDict() {
+  if (!pack.dict || dict.state !== "idle") return;
+  dict.state = "loading";
+  fetch(pack.dict.url).then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+    .then((j) => { dict = { state: "ready", rows: j.rows, hits: [] }; })
+    .catch(() => { dict.state = "error"; })
+    .finally(() => { const l = $("#browse-list"); if (tab === "browse" && l) l.innerHTML = browseListHTML(browseList()); });
+}
+function dictHTML(list) {
+  const q = browse.q.trim();
+  if (!pack.dict || !q) return "";
+  loadDict();
+  if (dict.state !== "ready") return `<h2>${t.dictTitle}</h2><div class="small muted">${dict.state === "error" ? t.dictError : t.dictLoading}</div>`;
+  const have = new Set(list.map((i) => i.ko).filter(Boolean));
+  dict.hits = searchDict(dict.rows, q).filter((r) => !have.has(r[0]));
+  return `<h2>${t.dictTitle}</h2>` + (dict.hits.length ? `<div class="list">${dict.hits.map((r, i) => `<div class="item dict">
+      <div class="row"><div><b>${esc(r[0])}</b>${r[1] && r[1] !== r[0] ? `<span class="hj" lang="zh-Hant">${esc(r[1])}</span>` : ""}${r[3] ? ` <span class="rr">[${esc(r[3])}]</span>` : ""}</div><span class="meta"><span class="pill">${esc(r[2])}</span></span></div>
+      <div class="meta" lang="en">${esc(r[4])}</div>
+      <div class="more">${r[5] ? `<div><b>${esc(r[5])}</b> ${say(r[5])}<br><span class="muted">${esc(r[6])}</span></div>` : ""}
+        <div class="actions"><button class="btn" data-say="${esc(r[0])}">${t.listenBtn}</button>${r[2] === "字" ? "" : `<button class="btn primary" data-dictadd="${i}">${t.dictAdd}</button>`}</div></div></div>`).join("")}</div>` : `<div class="small muted">${t.dictNone}</div>`);
+}
+
 const KINDS = () => [["all", t.all], ["word", t.words], ["phrase", t.phrases], ["grammar", t.grammar]];
 
 function rebuild() {
@@ -143,7 +168,7 @@ function browseListHTML(list) {
       const p = state.progress[i.id];
       const status = !p ? t.statusNew : p.due <= Date.now() ? t.statusDue : t.statusIn(fmtDue(p.due));
       return pack.cards.browseRow(i, status, ctx);
-    }).join("")}${list.length > 200 ? `<div class="small muted">${t.showingFirst}</div>` : ""}</div>`;
+    }).join("")}${list.length > 200 ? `<div class="small muted">${t.showingFirst}</div>` : ""}</div>${dictHTML(list)}`;
 }
 
 function renderSettings() {
@@ -165,7 +190,7 @@ function renderSettings() {
       <input type="file" id="file" accept="application/json" hidden>
       <div class="actions"><button class="btn" data-theme>${t.theme(esc(state.settings.theme || "auto"))}</button><button class="btn" data-wipe style="color:var(--bad)">${t.resetAll}</button></div>
       <p class="small muted">${t.progressNote}</p>
-      <p class="small muted">${t.packLine(esc(pack.id), pack.vocab.length, pack.grammar.length, (state.custom || []).length)}</p>
+      <p class="small muted">${t.packLine(esc(pack.id), pack.vocab.length, pack.grammar.length, (state.custom || []).length)}</p>${pack.dict ? `<p class="small muted">${t.dictSource}</p>` : ""}
     </div>
     <h2>${t.speechCheck}</h2>
     <div class="card"><button class="btn" data-speechtest style="width:100%">${t.speechCheckBtn}</button><pre id="speech-log" class="speech-log"></pre></div>`;
@@ -181,9 +206,9 @@ function render() {
 }
 
 // ---------- editing ----------
-function openEditor(existing) {
+function openEditor(existing, prefill = {}) {
   const cur = currentUnit(units, state.progress);
-  const it = existing || { kind: "vocab", tier: cur.tier, unit: cur.unit };
+  const it = existing || { kind: "vocab", tier: cur.tier, unit: cur.unit, ...prefill };
   const g = existing ? isGrammar(existing) : false;
   const ex = g ? (it.ex || []).map((e) => `${e.ko} | ${e.zh} | ${e.en}`).join("\n") : "";
   $("#dlg").innerHTML = `<form method="dialog" class="form" id="edit">
@@ -242,7 +267,7 @@ function openEditor(existing) {
 const Q_KEYS = ["qstart", "qopt", "qnext", "qretake", "qback", "qreplay", "qmiss"];
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],[data-lkind],#card,.item");
+    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],[data-lkind],[data-dictadd],#card,.item");
     if (!el) return;
     if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
     if (el.dataset.speechtest !== undefined) return speechCheck();
@@ -263,6 +288,12 @@ function bindEvents() {
     if (el.dataset.kind) { browse.kind = el.dataset.kind; return render(); }
     if (el.dataset.lkind) { state.settings.learnKind = el.dataset.lkind; persist(); queue = []; flipped = false; return render(); }
     if (el.dataset.add !== undefined) return openEditor(null);
+    if (el.dataset.dictadd !== undefined) {
+      e.stopPropagation();
+      const r = dict.hits[Number(el.dataset.dictadd)]; if (!r) return;
+      const POS = { n: "n", v: "v", adj: "adj", adv: "adv" };
+      return openEditor(null, { ko: r[0], hanja: r[1] && r[1] !== r[0] ? r[1] : null, zh: r[1] && r[1] !== r[0] ? r[1] : "", en: r[4].split("; ")[0], pos: POS[r[2]] || "n", ex: r[5], exEn: r[6] });
+    }
     if (el.dataset.edit) { e.stopPropagation(); return openEditor(items.find((i) => i.id === el.dataset.edit)); }
     if (el.dataset.reset) { e.stopPropagation(); delete state.progress[el.dataset.reset]; persist(); return render(); }
     if (el.classList.contains("item")) { el.classList.toggle("open"); return; }

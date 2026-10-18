@@ -36,6 +36,7 @@ export const ui = {
   confirmImport: "백업 파일로 이 기기의 진도를 덮어쓸까요?",
   noSpeech: "이 브라우저에는 음성 기능이 없어요.",
   noVoice: "광둥어(홍콩) 음성이 설치되어 있지 않아요. 표준중국어 음성으로 읽으면 소리가 틀려서 읽지 않았어요. 설정 → 손쉬운 사용 → 말하기 콘텐츠 → 음성 → 중국어 → 광둥어에서 내려받아 주세요. (메뉴 이름은 iOS 버전에 따라 조금 달라요.)",
+  dictTitle: "사전", dictLoading: "사전을 불러오는 중…", dictError: "사전을 쓸 수 없어요 — 인터넷에 연결된 상태로 한 번 열어 주세요.", dictNone: "사전에 없어요.", dictAdd: "+ 학습에 추가", dictSource: "사전: Wiktionary (kaikki.org), CC BY-SA 4.0.",
   speechCheck: "음성 점검",
   speechCheckBtn: "🔊 음성 테스트하고 자세히 보기",
   quizPractice: "연습 퀴즈", quizPracticeHint: "배운 단어에서 10문제, 약한 것부터 나와요. 합격 기준은 없어요.",
