@@ -44,9 +44,26 @@ jobs:
         continue-on-error: true
         timeout-minutes: 30
         run: pip install --quiet "edge-tts>=6.1,<8" && python scripts/gen_audio.py audio-jobs.json
-      - name: Build the offline Korean dictionary (Wiktionary via kaikki.org)
+      # Offline dictionaries (Korean, Cantonese, English): rebuilt weekly or when the converter changes.
+      - name: Restore dictionaries
+        uses: actions/cache@v4
+        with:
+          path: dict
+          key: dict-v2-${{ hashFiles('scripts/build-dict.mjs') }}-${{ github.run_id }}
+          restore-keys: dict-v2-${{ hashFiles('scripts/build-dict.mjs') }}-
+      - name: Build dictionaries
         continue-on-error: true
-        run: node scripts/build-dict.mjs
+        run: |
+          fresh() { [ -s "$1" ] && [ -n "$(find "$1" -mtime -7)" ]; }
+          fresh dict/ko.json || node scripts/build-dict.mjs ko
+          if ! fresh dict/yue.json; then
+            mkdir -p /tmp/canto && cd /tmp/canto
+            curl -sSfL -o cedict_ts.u8.gz https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.txt.gz && gunzip -f cedict_ts.u8.gz
+            curl -sSfLO https://cantonese.org/cccanto-170202.zip && curl -sSfLO https://cantonese.org/cccedict-canto-readings-150923.zip
+            unzip -oq '*.zip' && cd - && node scripts/build-dict.mjs yue /tmp/canto
+          fi
+          fresh dict/en.json || node scripts/build-dict.mjs en
+          ls -la dict | tee dict/stats.txt
       - name: Stamp service-worker cache version with the commit SHA
         run: sed -i "s/const VERSION = \"dev\";/const VERSION = \"${GITHUB_SHA::12}\";/" sw.js && grep -q "${GITHUB_SHA::12}" sw.js
       - uses: actions/configure-pages@v5
@@ -55,3 +72,6 @@ jobs:
         with: { path: . }
       - id: deployment
         uses: actions/deploy-pages@v4
+      - name: Dictionary sizes (for the log tail)
+        if: always()
+        run: cat dict/stats.txt 2>/dev/null; for f in dict/*.json; do echo "$f: $(grep -c '^\[' "$f") entries"; done

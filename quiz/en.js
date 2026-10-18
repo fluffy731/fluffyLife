@@ -4,7 +4,7 @@ const replay = (t) => `<button class="say qreplay" data-qreplay aria-label="${t.
 const enOption = (o, { esc }) => `<span class="qko">${esc(o.en)}</span>`;
 const rx = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 // The headword as it appears in its own example (case-insensitive, whole words), for fill-in-the-blank.
-export const inExample = (it) => new RegExp(`\\b${rx(it.en)}\\b`, "i").test(it.ex);
+export const inExample = (it) => !!it.ex && new RegExp(`\\b${rx(it.en)}\\b`, "i").test(it.ex);
 export const blanked = (it) => it.ex.replace(new RegExp(`\\b${rx(it.en)}\\b`, "i"), "_____");
 
 export const types = [
@@ -13,7 +13,7 @@ export const types = [
     applies: () => true,
     answerText: (it) => it.ko,
     reject: sameMeaning,
-    promptHTML: (it, { esc }) => `<div class="qword">${esc(it.en)}</div><div class="ipa">/${esc(it.ipa)}/</div>`,
+    promptHTML: (it, { esc }) => `<div class="qword">${esc(it.en)}</div>${it.ipa ? `<div class="ipa">/${esc(it.ipa)}/</div>` : ""}`,
     optionHTML: (o, { esc }) => `<span>${esc(o.ko)}</span>`,
   },
   {

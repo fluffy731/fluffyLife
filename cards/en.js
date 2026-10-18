@@ -1,6 +1,7 @@
 // Card and Browse-row renderers for the English pack (Korean-speaking learner): English word with IPA,
 // Korean meaning, a Korean usage note (Konglish, ✗/✓ pairs, nuance) and an example.
 const ipa = (s, esc) => (s ? `<div class="ipa">/${esc(s)}/</div>` : "");
+const ipaInline = (s, esc) => (s ? ` <span class="ipa">/${esc(s)}/</span>` : "");
 const noteHTML = (n, esc) => (n ? `<div class="note">${esc(n)}</div>` : "");
 
 export function card(it, open, ctx) {
@@ -13,7 +14,7 @@ export function card(it, open, ctx) {
     ? `<div class="zh">${esc(it.ko)}</div>${noteHTML(it.note, esc)}` +
       it.ex.map((e) => `<div class="ex"><div class="k">${esc(e.en)} ${say(e.en)}</div><div class="t">${esc(e.ko)}</div></div>`).join("")
     : `<div class="zh">${esc(it.ko)}</div>${noteHTML(it.note, esc)}` +
-      `<div class="ex"><div class="k">${esc(it.ex)} ${say(it.ex)}</div><div class="t">${esc(it.exKo)}</div></div>`;
+      (it.ex ? `<div class="ex"><div class="k">${esc(it.ex)} ${say(it.ex)}</div><div class="t">${esc(it.exKo)}</div></div>` : "");
   return `<div class="card flash" id="card">${front}${back}</div>`;
 }
 
@@ -22,9 +23,9 @@ export function browseRow(i, status, ctx) {
   const g = isGrammar(i);
   const more = g
     ? noteHTML(i.note, esc) + i.ex.map((e) => `<div><b>${esc(e.en)}</b> ${say(e.en)}<br><span class="muted">${esc(e.ko)}</span></div>`).join("")
-    : noteHTML(i.note, esc) + `<b>${esc(i.ex)}</b> ${say(i.ex)}<br><span class="muted">${esc(i.exKo)}</span>`;
+    : noteHTML(i.note, esc) + (i.ex ? `<b>${esc(i.ex)}</b> ${say(i.ex)}<br><span class="muted">${esc(i.exKo)}</span>` : "");
   return `<div class="item" data-id="${esc(i.id)}">
-        <div class="row"><div><b>${esc(g ? i.form : i.en)}</b>${g ? "" : ` <span class="ipa">/${esc(i.ipa)}/</span>`}${i.check ? '<span class="check">?</span>' : ""}</div>
+        <div class="row"><div><b>${esc(g ? i.form : i.en)}</b>${g ? "" : ipaInline(i.ipa, esc)}${i.check ? '<span class="check">?</span>' : ""}</div>
           <span class="meta"><span class="pill ${esc(i.tier)}">${esc(i.tier)} ${esc(i.unit)}</span> ${status}</span></div>
         <div class="meta">${esc(i.ko)}</div>
         <div class="more">${more}

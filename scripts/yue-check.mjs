@@ -187,6 +187,27 @@ async function speechRun(voices, path = "yue/") {
   ok("offline: no listening or tone questions", captions.length === 15 && !captions.some((c) => c.includes("몇 성") || c.includes("들은 말")));
   await off.context().close();
 }
+// 6. dictionary: search by Korean meaning (via hanja), add a word to study
+{
+  const dctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  const d = await dctx.newPage();
+  const rows = [["冇問題", "mou5 man6 tai4", "no problem", ""], ["經濟", "ging1 zai3", "economy; economic", "경제"]];
+  await d.route("**/dict/yue.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ source: "test", rows }) }));
+  d.on("dialog", (x) => x.accept());
+  await d.goto(base + "yue/", { waitUntil: "networkidle" });
+  await d.click('[data-tab="browse"]');
+  await d.fill("#q", "경제");
+  await d.waitForSelector(".item.dict");
+  const txt = await d.textContent(".item.dict");
+  ok("dictionary: Korean meaning finds 經濟 with its 한글 spelling", txt.includes("經濟") && txt.includes("낑") && txt.includes("경제"));
+  await d.click(".item.dict"); await d.click("[data-dictadd]");
+  const saved = await d.evaluate(() => JSON.parse(localStorage.getItem("yue.v1")).custom.find((c) => c.zh === "經濟"));
+  ok("dictionary: + 학습에 추가 saves a study card", !!saved && saved.jp === "ging1 zai3" && saved.ko === "경제");
+  await d.fill("#q", "mou5man");
+  await d.waitForSelector(".item.dict");
+  ok("dictionary: Jyutping search without spaces", (await d.textContent(".item.dict")).includes("冇問題"));
+  await dctx.close();
+}
 await b.close(); srv.close();
 console.log(out.join("\n"));
 if (out.some((l) => l.startsWith("FAIL"))) process.exit(1);

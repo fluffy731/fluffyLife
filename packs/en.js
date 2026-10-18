@@ -4,6 +4,7 @@ import { validateEn, EN_TIERS } from "../lib/validate-en.js";
 import { ui } from "../ui/ko-en.js";
 import { cards } from "../cards/en.js";
 import { types as quizTypes } from "../quiz/en.js";
+import { dictEn } from "./dict-en.js";
 
 const TIER = { int: ["중급 · B1–B2", "중급"], adv: ["고급 · C1", "고급"] };
 
@@ -24,4 +25,6 @@ export const enPack = {
     16: "심리와 행동", 17: "문화와 예술", 18: "뉘앙스 있는 형용사·부사", 19: "관용구와 은유", 20: "토론과 설득" },
   ui, cards, editable: false, validate: validateEn,
   quiz: { types: quizTypes },
+  // Offline English→Korean dictionary (built at deploy from Wiktionary translations).
+  dict: dictEn,
 };
