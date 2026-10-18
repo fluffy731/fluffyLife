@@ -7,7 +7,6 @@ import { load, save, exportJSON, importJSON } from "./lib/store.js";
 import { mergeItems } from "./lib/validate.js";
 import { clipName } from "./lib/audio.js";
 import { createQuiz } from "./quiz-view.js";
-import { searchDict } from "./lib/dict.js";
 
 // ---------- state ----------
 let pack, t, ctx, ls, state, items, vocab, grammar, units, quiz;
@@ -26,18 +25,17 @@ function loadDict() {
     .catch(() => { dict.state = "error"; })
     .finally(() => { const l = $("#browse-list"); if (tab === "browse" && l) l.innerHTML = browseListHTML(browseList()); });
 }
+// Each pack supplies search, row rendering and how a hit becomes a study card (pack.dict).
 function dictHTML(list) {
   const q = browse.q.trim();
   if (!pack.dict || !q) return "";
   loadDict();
   if (dict.state !== "ready") return `<h2>${t.dictTitle}</h2><div class="small muted">${dict.state === "error" ? t.dictError : t.dictLoading}</div>`;
-  const have = new Set(list.map((i) => i.ko).filter(Boolean));
-  dict.hits = searchDict(dict.rows, q).filter((r) => !have.has(r[0]));
-  return `<h2>${t.dictTitle}</h2>` + (dict.hits.length ? `<div class="list">${dict.hits.map((r, i) => `<div class="item dict">
-      <div class="row"><div><b>${esc(r[0])}</b>${r[1] && r[1] !== r[0] ? `<span class="hj" lang="zh-Hant">${esc(r[1])}</span>` : ""}${r[3] ? ` <span class="rr">[${esc(r[3])}]</span>` : ""}</div><span class="meta"><span class="pill">${esc(r[2])}</span></span></div>
-      <div class="meta" lang="en">${esc(r[4])}</div>
-      <div class="more">${r[5] ? `<div><b>${esc(r[5])}</b> ${say(r[5])}<br><span class="muted">${esc(r[6])}</span></div>` : ""}
-        <div class="actions"><button class="btn" data-say="${esc(r[0])}">${t.listenBtn}</button>${r[2] === "字" ? "" : `<button class="btn primary" data-dictadd="${i}">${t.dictAdd}</button>`}</div></div></div>`).join("")}</div>` : `<div class="small muted">${t.dictNone}</div>`);
+  const have = new Set(list.map(pack.dict.itemKey).filter(Boolean));
+  dict.hits = pack.dict.search(dict.rows, q).filter((r) => !have.has(pack.dict.rowKey(r)));
+  return `<h2>${t.dictTitle}</h2>` + (dict.hits.length ? `<div class="list">${dict.hits.map((r, i) => `<div class="item dict">${pack.dict.rowHTML(r, ctx)}
+      <div class="more">${pack.dict.moreHTML(r, ctx)}
+        <div class="actions"><button class="btn" data-say="${esc(pack.dict.sayText(r))}">${t.listenBtn}</button>${pack.dict.canAdd(r) ? `<button class="btn primary" data-dictadd="${i}">${t.dictAdd}</button>` : ""}</div></div></div>`).join("")}</div>` : `<div class="small muted">${t.dictNone}</div>`);
 }
 
 const KINDS = () => [["all", t.all], ["word", t.words], ["phrase", t.phrases], ["grammar", t.grammar]];
@@ -291,8 +289,13 @@ function bindEvents() {
     if (el.dataset.dictadd !== undefined) {
       e.stopPropagation();
       const r = dict.hits[Number(el.dataset.dictadd)]; if (!r) return;
-      const POS = { n: "n", v: "v", adj: "adj", adv: "adv" };
-      return openEditor(null, { ko: r[0], hanja: r[1] && r[1] !== r[0] ? r[1] : null, zh: r[1] && r[1] !== r[0] ? r[1] : "", en: r[4].split("; ")[0], pos: POS[r[2]] || "n", ex: r[5], exEn: r[6] });
+      const cur = currentUnit(units, state.progress);
+      // Editable packs open the editor prefilled; the others save the card straight away.
+      if (pack.editable) return openEditor(null, pack.dict.prefill(r));
+      const item = { ...pack.dict.toItem(r), id: `u${Date.now().toString(36)}`, kind: "vocab", tier: cur.tier, unit: cur.unit };
+      const errs = pack.validate(item, "vocab");
+      if (errs.length) { alert(errs.join(", ")); return; }
+      state.custom = [...(state.custom || []), item]; persist(); rebuild(); render(); alert(t.dictAdded(t.unitN(cur.unit))); return;
     }
     if (el.dataset.edit) { e.stopPropagation(); return openEditor(items.find((i) => i.id === el.dataset.edit)); }
     if (el.dataset.reset) { e.stopPropagation(); delete state.progress[el.dataset.reset]; persist(); return render(); }

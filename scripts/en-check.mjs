@@ -66,6 +66,26 @@ const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} $
   ok("renders offline", (await page.locator("#view .stat").count()) === 3 && (await page.title()).includes("English"));
   await ctx.close();
 }
+// 4. dictionary: English→Korean lookup, add a word to study
+{
+  const dctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  const d = await dctx.newPage();
+  const rows = [["reluctantly", "rɪˈlʌktəntli", "adv", "마지못해", "In a reluctant manner."], ["serendipity", "ˌsɛrənˈdɪpɪti", "n", "뜻밖의 행운", "A happy accident."]];
+  await d.route("**/dict/en.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ source: "test", rows }) }));
+  d.on("dialog", (x) => x.accept());
+  await d.goto(base + "english/", { waitUntil: "networkidle" });
+  await d.click('[data-tab="browse"]');
+  await d.fill("#q", "serendip");
+  await d.waitForSelector(".item.dict");
+  ok("dictionary: English prefix shows the Korean meaning and IPA", (await d.textContent(".item.dict")).includes("뜻밖의 행운") && (await d.textContent(".item.dict")).includes("/ˌsɛrənˈdɪpɪti/"));
+  await d.fill("#q", "마지못해");
+  await d.waitForSelector(".item.dict");
+  ok("dictionary: Korean search finds the English word", (await d.textContent(".item.dict")).includes("reluctantly"));
+  await d.click(".item.dict"); await d.click("[data-dictadd]");
+  const saved = await d.evaluate(() => JSON.parse(localStorage.getItem("en.v1")).custom.find((c) => c.en === "reluctantly"));
+  ok("dictionary: + 학습에 추가 saves a study card", !!saved && saved.ko === "마지못해" && saved.pos === "adv");
+  await dctx.close();
+}
 await b.close(); srv.close();
 console.log(out.join("\n"));
 if (out.some((l) => l.startsWith("FAIL"))) process.exit(1);

@@ -43,7 +43,7 @@ export function card(it, open, ctx) {
   if (!open) return `<div class="card flash" id="card">${front}<div class="hint">${t.tapToFlip}</div></div>`;
   const back = `<div class="zh">${esc(it.ko)}</div><div class="en">${esc(it.en)}</div><div class="jp">${esc(it.jp)}</div>` +
     `<div class="hanja" lang="zh-Hant">${esc(it.zh)}</div>` + bridgeHTML(it.zh, it.jp, ctx, it.loan) +
-    exampleHTML(it.exZh, it.exJp, it.exKo, ctx);
+    (it.exZh ? exampleHTML(it.exZh, it.exJp, it.exKo, ctx) : "");
   return `<div class="card flash" id="card">${front}${back}</div>`;
 }
 
@@ -53,7 +53,7 @@ export function browseRow(i, status, ctx) {
   const jp = g ? i.formJp : i.jp, zh = g ? i.form : i.zh, ko = i.ko, en = i.en;
   const more = g
     ? (i.note ? `<div class="muted">${esc(i.note)}</div>` : "") + i.ex.map((e) => `<div class="exrow"><div class="hg">${sylHTML(e.jp, esc)}</div><span class="muted" lang="zh-Hant">${esc(e.zh)}</span><br><span class="muted">${esc(e.ko)}</span></div>`).join("")
-    : `<div class="hg">${sylHTML(i.exJp, esc)} ${say(i.exZh)}</div><span class="muted" lang="zh-Hant">${esc(i.exZh)}</span><br><span class="muted">${esc(i.exKo)}</span>`;
+    : i.exZh ? `<div class="hg">${sylHTML(i.exJp, esc)} ${say(i.exZh)}</div><span class="muted" lang="zh-Hant">${esc(i.exZh)}</span><br><span class="muted">${esc(i.exKo)}</span>` : "";
   return `<div class="item" data-id="${esc(i.id)}">
         <div class="row"><div><b class="hg">${sylHTML(jp, esc)}</b> <span class="hj" lang="zh-Hant">${esc(zh)}</span>${i.check ? '<span class="check">?</span>' : ""}</div>
           <span class="meta"><span class="pill ${esc(i.tier)}">${esc(i.tier.toUpperCase())} · ${esc(i.unit)}</span> ${status}</span></div>

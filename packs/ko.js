@@ -4,6 +4,7 @@ import { TIER_ORDER, TIER_LABEL } from "../lib/track.js";
 import { validateItem } from "../lib/validate.js";
 import { ui } from "../ui/en.js";
 import { cards } from "../cards/ko.js";
+import { dictKo } from "./dict-ko.js";
 import { types as quizTypes } from "../quiz/ko.js";
 
 export const koPack = {
@@ -18,7 +19,7 @@ export const koPack = {
   speechClean: (text) => text.replace(/^-|\(.*?\)/g, "").trim(),
   tiers: TIER_ORDER.map((key) => ({ key, label: TIER_LABEL[key], short: TIER_LABEL[key].split(" ·")[0] })),
   // Offline dictionary built at deploy by scripts/build-dict.mjs (Browse search shows it under your own items).
-  dict: { url: "../dict/ko.json" },
+  dict: dictKo,
   ui, cards, editable: true, validate: validateItem,
   quiz: { types: quizTypes },
 };

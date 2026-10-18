@@ -9,7 +9,7 @@ const FILES = [
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
   "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js", "./lib/interleave.js", "./lib/mongol.js", "./lib/validate-mn.js", "./lib/validate-en.js",
   "./quiz-view.js", "./quiz/ko.js", "./quiz/yue.js",
-  "./packs/ko.js", "./cards/ko.js", "./ui/en.js",
+  "./packs/ko.js", "./packs/dict-ko.js", "./packs/dict-yue.js", "./packs/dict-en.js", "./cards/ko.js", "./ui/en.js", "./lib/dict.js",
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
   "./packs/mn.js", "./cards/mn.js", "./ui/zh.js", "./quiz/mn.js",
   "./packs/en.js", "./cards/en.js", "./ui/ko-en.js", "./quiz/en.js",

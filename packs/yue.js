@@ -6,6 +6,7 @@ import { migrateProgress } from "../lib/store.js";
 import { ui } from "../ui/ko.js";
 import { cards, homeExtra, settingsExtra } from "../cards/yue.js";
 import { types as quizTypes } from "../quiz/yue.js";
+import { dictYue } from "./dict-yue.js";
 
 const TIER = { a0: ["A0 · 생존 광동어", "A0"], a1: ["A1 · 일상 생활", "A1"], a2: ["A2 · 한 걸음 더", "A2"] };
 
@@ -29,4 +30,6 @@ export const yuePack = {
   migrate: (state) => ({ ...state, progress: migrateProgress(state.progress, LEGACY_IDS) }),
   ui, cards, editable: false, validate: validateYue,
   quiz: { types: quizTypes },
+  // Offline Cantonese dictionary (built at deploy): 한글 spelling, characters, Korean meaning via hanja, English.
+  dict: dictYue,
 };
