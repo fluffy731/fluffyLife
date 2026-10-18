@@ -74,4 +74,6 @@ jobs:
         uses: actions/deploy-pages@v4
       - name: Dictionary sizes (for the log tail)
         if: always()
-        run: cat dict/stats.txt 2>/dev/null; for f in dict/*.json; do echo "$f: $(grep -c '^\[' "$f") entries"; done
+        run: |
+          cat dict/stats.txt 2>/dev/null || true
+          for f in dict/*.json; do echo "$f -> $(grep -c '^\[' "$f") entries"; done
