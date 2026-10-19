@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Briefing · 뉴스</title>
+<meta name="description" content="Free-to-read news from across the spectrum, opinion pieces removed, the same story side by side.">
+<meta name="theme-color" content="#faf6ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16131c" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Briefing">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="../icons/news-180.png">
+<link rel="icon" href="../icons/news.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./news.css">
+</head>
+<body>
+<header class="mast">
+  <div class="mast-row">
+    <h1>Briefing</h1>
+    <button class="icon-btn" id="refresh" aria-label="Refresh">↻</button>
+    <button class="icon-btn" id="about" aria-label="Sources and method">ⓘ</button>
+  </div>
+  <div class="dateline" id="dateline"></div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+<main id="feed" class="feed"></main>
+<dialog id="sheet" class="sheet"></dialog>
+<script type="module" src="./news.js"></script>
+</body>
+</html>

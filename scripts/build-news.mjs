@@ -96,6 +96,9 @@ export function clusterStories(items, lang) {
   return stories.sort((a, b) => score(b) - score(a));
 }
 
+// Stories carried only by "corroborate" (tabloid) sources are dropped.
+export const dropUncorroborated = (stories, solo) => stories.filter((st) => !st.items.every((i) => solo.has(i.s)));
+
 // ---------- fetching ----------
 async function get(url, ms = 15000) {
   const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), ms);
@@ -125,9 +128,11 @@ export async function build(out = "news/feed.json") {
       all.push({ ...it, s: src.id, time: it.time || now, topics: [...new Set([...(src.topic ? [src.topic] : []), ...topicsOf(it)])] });
     }
   }
-  const stories = [...clusterStories(all.filter((i) => i.s && SOURCES.find((x) => x.id === i.s).lang === "en"), "en"), ...clusterStories(all.filter((i) => SOURCES.find((x) => x.id === i.s).lang === "ko"), "ko")];
+  let stories = [...clusterStories(all.filter((i) => i.s && SOURCES.find((x) => x.id === i.s).lang === "en"), "en"), ...clusterStories(all.filter((i) => SOURCES.find((x) => x.id === i.s).lang === "ko"), "ko")];
+  // Tabloid sources only count when another outlet covers the same story.
+  stories = dropUncorroborated(stories, new Set(SOURCES.filter((x) => x.corroborate).map((x) => x.id)));
   // Pictures: feeds without one get the article's og:image (top stories only, to stay quick).
-  const missing = stories.filter((s) => !s.image).slice(0, 80);
+  const missing = stories.filter((s) => !s.image).slice(0, 120);
   await pool(missing, 8, async (s) => { for (const it of s.items.slice(0, 2)) { const r = await get(it.l, 8000); const img = r.text && ogImage(r.text); if (img) { s.image = img; return; } } });
   const json = {
     built: new Date(now).toISOString(),

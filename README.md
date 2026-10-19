@@ -86,6 +86,7 @@ node scripts/mn-check.mjs                  # Mongolian app behaviour (Chinese UI
 node scripts/korean-check.mjs              # Korean app behaviour (search IME, dialog, Again keeps progress …)
 node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
 node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
+node scripts/news-check.mjs                # Briefing news app against a fixture feed
 ```
 The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.
 
@@ -111,3 +112,15 @@ A fourth home-screen app on the same engine, for a Korean speaker at intermediat
 - **사전 (dictionary):** 찾아보기 search also looks up an offline English→Korean dictionary built from Wiktionary's Korean translations (kaikki.org, CC BY-SA 4.0): word, IPA, part of speech, Korean meanings (with hanja where given) and a short English definition. Search in English (exact, then prefix) or Korean. **+ 학습에 추가** saves the word as a study card.
 - **Quiz:** meaning, Korean → English, **fill in the blank** (the word removed from its example), listening, and grammar.
 - **Content:** `data/en/part1–4.js`; vocab rows `[en, ipa, ko, pos, ex, exKo, note|null, check?]`, grammar rows `[form, unit, ko, note, [[en, ko], …]]`. `node scripts/check-data.mjs en` checks it; `node scripts/en-check.mjs` checks the app in a browser.
+
+## Briefing · 뉴스 — news without paywalls or opinion (`/news/`)
+
+A fifth home-screen app. It reads only free-to-read outlets and never bypasses a paywall.
+
+- **URL:** `https://<user>.github.io/<repo>/news/` — its own icon and name (Briefing).
+- **How it works:** every hour GitHub Actions runs `scripts/build-news.mjs`, which reads the outlets' public RSS feeds (`scripts/news-sources.mjs`), drops anything older than 48 hours, removes opinion, commentary, editorials, analysis and columns (by URL, title prefix, feed category and Korean tags such as [사설] [칼럼]), groups the same story across outlets, and writes `news/feed.json`. The phone only reads that file; nothing is summarised by AI.
+- **Tabs:** Top · Australia · World · Asia · 한국어 · Construction · Engineering · Property · Regulation. Top is English only; topic tabs combine trade press with general stories matched by keyword.
+- **Lean labels:** each outlet carries an approximate left/centre/right label (AllSides, Media Bias/Fact Check; Korean outlets by the usual 진보·중도·보수 split). Every story shows a lean bar, a note when coverage is lopsided, and **Compare N headlines** to read each outlet's headline and open the original. Tabloid-only stories (Daily Mail) are shown only when another outlet also covers them.
+- **Korean learning:** in 한국어 stories every word is tappable and looked up in the Korean app's offline dictionary.
+- **Checks:** `node --test test/news*.test.js`; `node scripts/build-news.mjs --probe` prints each feed's status; `node scripts/news-check.mjs` checks the app in a browser against a fixture feed.
+- **Note:** GitHub pauses scheduled workflows after 60 days without repository activity; any push (or re-enabling the workflow in Actions) restarts the hourly updates.
