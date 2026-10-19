@@ -3,6 +3,9 @@ on:
   push:
     branches: [korean]
   workflow_dispatch:
+  # Hourly: refresh the News app (everything else is cached, so this is quick).
+  schedule:
+    - cron: "17 * * * *"
 permissions:
   contents: read
   pages: write
@@ -64,6 +67,9 @@ jobs:
           fi
           fresh dict/en.json || node scripts/build-dict.mjs en
           ls -la dict | tee dict/stats.txt
+      - name: Collect news (free-to-read feeds, opinion removed)
+        continue-on-error: true
+        run: node scripts/build-news.mjs
       - name: Stamp service-worker cache version with the commit SHA
         run: sed -i "s/const VERSION = \"dev\";/const VERSION = \"${GITHUB_SHA::12}\";/" sw.js && grep -q "${GITHUB_SHA::12}" sw.js
       - uses: actions/configure-pages@v5
@@ -77,3 +83,4 @@ jobs:
         run: |
           cat dict/stats.txt 2>/dev/null || true
           for f in dict/*.json; do echo "$f -> $(grep -c '^\[' "$f") entries"; done
+          node -e 'const f=JSON.parse(require("fs").readFileSync("news/feed.json"));const by={};for(const s of f.stories)for(const t of s.topics.concat(s.lang))by[t]=(by[t]||0)+1;console.log("news:",f.stories.length,"stories",JSON.stringify(by));console.log("feeds down:",f.sources.filter(s=>!s.ok).map(s=>s.id).join(" ")||"none")' || true

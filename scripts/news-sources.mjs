@@ -8,9 +8,9 @@ export const SOURCES = [
   { id: "abc", name: "ABC News", region: "au", lang: "en", lean: "LL", url: "https://www.abc.net.au/news/feed/2942460/rss.xml" },
   { id: "sbs", name: "SBS News", region: "au", lang: "en", lean: "LL", url: "https://www.sbs.com.au/news/feed" },
   { id: "guardian-au", name: "Guardian Australia", region: "au", lang: "en", lean: "LL", url: "https://www.theguardian.com/australia-news/rss" },
-  { id: "newscomau", name: "news.com.au", region: "au", lang: "en", lean: "LR", url: "https://www.news.com.au/content-feeds/latest-news-national/" },
-  { id: "9news", name: "9News", region: "au", lang: "en", lean: "C", url: "https://www.9news.com.au/rss" },
-  { id: "skynews-au", name: "Sky News Australia", region: "au", lang: "en", lean: "R", url: "https://www.skynews.com.au/rss" },
+  { id: "7news", name: "7NEWS", region: "au", lang: "en", lean: "C", url: "https://7news.com.au/feed" },
+  // Tabloid: its stories appear only when another outlet covers the same story (corroborate).
+  { id: "dailymail-au", name: "Daily Mail Australia", region: "au", lang: "en", lean: "R", corroborate: true, url: "https://www.dailymail.co.uk/auhome/index.rss" },
   // World
   { id: "bbc", name: "BBC News", region: "world", lang: "en", lean: "C", url: "https://feeds.bbci.co.uk/news/world/rss.xml" },
   { id: "aljazeera", name: "Al Jazeera", region: "world", lang: "en", lean: "LL", url: "https://www.aljazeera.com/xml/rss/all.xml" },
@@ -24,10 +24,10 @@ export const SOURCES = [
   // Asia (English)
   { id: "yonhap-en", name: "Yonhap", region: "asia", lang: "en", lean: "C", url: "https://en.yna.co.kr/RSS/news.xml" },
   { id: "koreaherald", name: "Korea Herald", region: "asia", lang: "en", lean: "LR", url: "https://www.koreaherald.com/rss/newsAll" },
-  { id: "hani-en", name: "Hankyoreh (EN)", region: "asia", lang: "en", lean: "L", url: "https://english.hani.co.kr/rss/" },
   { id: "rthk", name: "RTHK", region: "asia", lang: "en", lean: "C", url: "https://rthk.hk/rthk/news/rss/e_expressnews_einternational.xml" },
   { id: "cna", name: "CNA", region: "asia", lang: "en", lean: "C", url: "https://www.channelnewsasia.com/rssfeeds/8395986" },
-  { id: "nhk", name: "NHK World", region: "asia", lang: "en", lean: "C", url: "https://www3.nhk.or.jp/rss/news/cat0.xml" },
+  { id: "hkfp", name: "Hong Kong Free Press", region: "asia", lang: "en", lean: "LL", url: "https://hongkongfp.com/feed/" },
+  { id: "koreatimes", name: "Korea Times", region: "asia", lang: "en", lean: "C", url: "https://www.koreatimes.co.kr/www/rss/nation.xml" },
   // 한국어
   { id: "yna", name: "연합뉴스", region: "ko", lang: "ko", lean: "C", url: "https://www.yna.co.kr/rss/news.xml" },
   { id: "hani", name: "한겨레", region: "ko", lang: "ko", lean: "L", url: "https://www.hani.co.kr/rss/" },
@@ -40,11 +40,8 @@ export const SOURCES = [
   { id: "sourceable", name: "Sourceable", region: "topic", topic: "construction", lang: "en", lean: "T", url: "https://sourceable.net/feed/" },
   { id: "gcr", name: "Global Construction Review", region: "topic", topic: "construction", lang: "en", lean: "T", url: "https://www.globalconstructionreview.com/feed/" },
   { id: "constructiondive", name: "Construction Dive", region: "topic", topic: "construction", lang: "en", lean: "T", url: "https://www.constructiondive.com/feeds/news/" },
-  { id: "archdesign", name: "Architecture & Design", region: "topic", topic: "construction", lang: "en", lean: "T", url: "https://www.architectureanddesign.com.au/rss" },
-  { id: "createdigital", name: "create (Engineers Australia)", region: "topic", topic: "engineering", lang: "en", lean: "T", url: "https://createdigital.org.au/feed/" },
   { id: "inframag", name: "Infrastructure Magazine", region: "topic", topic: "engineering", lang: "en", lean: "T", url: "https://infrastructuremagazine.com.au/feed/" },
+  { id: "roadsonline", name: "Roads & Infrastructure Australia", region: "topic", topic: "engineering", lang: "en", lean: "T", url: "https://roadsonline.com.au/feed/" },
   { id: "nce", name: "New Civil Engineer", region: "topic", topic: "engineering", lang: "en", lean: "T", url: "https://www.newcivilengineer.com/feed" },
-  { id: "urbandev", name: "The Urban Developer", region: "topic", topic: "property", lang: "en", lean: "T", url: "https://www.theurbandeveloper.com/rss" },
   { id: "rea-news", name: "realestate.com.au News", region: "topic", topic: "property", lang: "en", lean: "T", url: "https://www.realestate.com.au/news/feed/" },
-  { id: "domain", name: "Domain News", region: "topic", topic: "property", lang: "en", lean: "T", url: "https://www.domain.com.au/news/feed/" },
 ];

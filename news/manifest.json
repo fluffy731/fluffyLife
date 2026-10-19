@@ -1,0 +1,15 @@
+{
+  "name": "Briefing · 뉴스",
+  "short_name": "Briefing",
+  "description": "Free-to-read news across the spectrum, opinion removed.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#faf6ef",
+  "theme_color": "#5b3cc4",
+  "icons": [
+    { "src": "../icons/news.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/news-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/news-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -79,3 +79,9 @@ test("article URLs with /view/ (Yonhap) are not mistaken for opinion", () => {
   assert.equal(isOpinion({ title: "Lee meets reporters", link: "https://en.yna.co.kr/view/AEN20261019000300315", categories: [] }), false);
   assert.equal(isOpinion({ title: "x", link: "https://site.com/views/why-x", categories: [] }), true);
 });
+
+import { dropUncorroborated } from "../scripts/build-news.mjs";
+test("tabloid-only stories are dropped; tabloid + another outlet kept", () => {
+  const st = [{ items: [{ s: "dailymail-au" }] }, { items: [{ s: "dailymail-au" }, { s: "abc" }] }, { items: [{ s: "abc" }] }];
+  assert.equal(dropUncorroborated(st, new Set(["dailymail-au"])).length, 2);
+});
