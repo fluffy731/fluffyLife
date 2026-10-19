@@ -74,3 +74,8 @@ test("tokens: plural stemming keeps rate/rates together; Korean particles stripp
   assert.ok(tokens("Policies change", "en").has("policy"));
   assert.ok(tokens("정부가 금리를 동결했다", "ko").has("정부") && tokens("정부가 금리를 동결했다", "ko").has("금리"));
 });
+
+test("article URLs with /view/ (Yonhap) are not mistaken for opinion", () => {
+  assert.equal(isOpinion({ title: "Lee meets reporters", link: "https://en.yna.co.kr/view/AEN20261019000300315", categories: [] }), false);
+  assert.equal(isOpinion({ title: "x", link: "https://site.com/views/why-x", categories: [] }), true);
+});

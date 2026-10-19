@@ -53,7 +53,7 @@ export function parseFeed(xml) {
 }
 
 // ---------- opinion filter ----------
-const OP_URL = /\/(opinions?|commentisfree|comment|editorials?|columns?|columnists?|op-?ed|views?|analysis|blogs?|letters|perspectives?|sasul|column)\//i;
+const OP_URL = /\/(opinions?|commentisfree|comment|editorials?|columns?|columnists?|op-?ed|views|analysis|blogs?|letters|perspectives?|sasul|column)\//i;
 const OP_TITLE = /^\s*(opinion|comment|commentary|analysis|editorial|column|op-ed|view|letters?|perspective|explainer opinion)\s*[:|–—-]/i;
 const OP_KO = /^\s*[\[【(〈<]\s*(사설|칼럼|시론|기고|오피니언|논설|기자수첩|데스크|시평|만물상|천자칼럼|여적|횡설수설|분수대|포럼|인터뷰|기자의 눈|특파원)/;
 const OP_CAT = /^(opinion|comment|commentary|editorials?|columns?|columnists?|analysis|op-?ed|오피니언|사설|칼럼)$/i;
@@ -140,7 +140,8 @@ export async function build(out = "news/feed.json") {
 }
 
 async function probe() {
-  const rows = await pool(SOURCES, 8, async (src) => {
+  const extra = process.argv.includes("--candidates") ? (await import("./news-candidates.mjs")).CANDIDATES : [];
+  const rows = await pool(extra.length ? extra : SOURCES, 8, async (src) => {
     const r = await get(src.url); const items = r.text ? parseFeed(r.text) : [];
     const op = items.filter(isOpinion).length, img = items.filter((i) => i.image).length;
     return `${r.status === 200 && items.length ? "OK  " : "FAIL"} ${src.id.padEnd(16)} http=${r.status} items=${items.length} opinion=${op} images=${img} ${r.error || ""} ${items[0] ? "| " + items[0].title.slice(0, 60) : ""}`;
