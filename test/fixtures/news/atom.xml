@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
+<entry><title type="html">Reserve Bank keeps interest rates on hold, warns on inflation</title><link rel="alternate" href="https://other.example.org/business/rba"/>
+<updated>2026-10-18T22:30:00Z</updated><summary>Rates unchanged at 4.1 per cent.</summary><media:content url="https://img.other.example.org/rba.png" medium="image"/></entry>
+<entry><title>[사설] 금리 동결의 의미</title><link href="https://ko.example.kr/opinion/1"/><updated>2026-10-18T22:00:00Z</updated></entry>
+</feed>

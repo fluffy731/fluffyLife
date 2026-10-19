@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel><title>Sample</title>
+<item><title><![CDATA[Reserve Bank holds interest rates steady at 4.1%]]></title><link>https://example.com/news/rba-holds-rates</link>
+<pubDate>Sun, 18 Oct 2026 22:00:00 GMT</pubDate><description><![CDATA[<p>The Reserve Bank of Australia has kept the cash rate on hold &amp; signalled caution.</p>]]></description>
+<media:thumbnail url="https://img.example.com/rba.jpg" width="240"/></item>
+<item><title>Opinion: The RBA got it wrong again</title><link>https://example.com/opinion/rba-wrong</link><pubDate>Sun, 18 Oct 2026 21:00:00 GMT</pubDate><description>A column.</description></item>
+<item><title>Flooding hits northern NSW towns</title><link>https://example.com/commentisfree/2026/oct/18/floods</link><pubDate>Sun, 18 Oct 2026 20:00:00 GMT</pubDate></item>
+<item><title>Earthquake strikes off Japan coast</title><link>https://example.com/world/quake</link><dc:date>2026-10-18T19:00:00Z</dc:date>
+<content:encoded><![CDATA[<img src="https://img.example.com/quake.jpg"> A magnitude 6.8 earthquake…]]></content:encoded><category>World</category></item>
+</channel></rss>

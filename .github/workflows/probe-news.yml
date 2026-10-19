@@ -1,0 +1,15 @@
+name: Probe news feeds
+on:
+  push:
+    branches: [korean]
+    paths: [scripts/news-sources.mjs, .github/workflows/probe-news.yml]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node scripts/build-news.mjs --probe
