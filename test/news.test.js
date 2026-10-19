@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { parseFeed, isOpinion, clusterStories, decode } from "../scripts/build-news.mjs";
+import { parseFeed, isOpinion, isSport, geoOf, clusterStories, decode } from "../scripts/build-news.mjs";
 import { SOURCES } from "../scripts/news-sources.mjs";
 
 const rss = readFileSync(new URL("./fixtures/news/rss.xml", import.meta.url), "utf8");
@@ -84,4 +84,24 @@ import { dropUncorroborated } from "../scripts/build-news.mjs";
 test("tabloid-only stories are dropped; tabloid + another outlet kept", () => {
   const st = [{ items: [{ s: "dailymail-au" }] }, { items: [{ s: "dailymail-au" }, { s: "abc" }] }, { items: [{ s: "abc" }] }];
   assert.equal(dropUncorroborated(st, new Set(["dailymail-au"])).length, 2);
+});
+
+test("sport is left out (URL, category, league names, Korean)", () => {
+  const it = (title, link = "https://x.com/news/1", categories = []) => ({ title, link, categories });
+  assert.ok(isSport(it("Lakers beat Celtics as NBA season opens")));
+  assert.ok(isSport(it("Cats through to the grand final")));
+  assert.ok(isSport(it("Late goal", "https://www.theguardian.com/football/2026/oct/19/x")));
+  assert.ok(isSport(it("Late goal", "https://x.com/1", ["Sport"])));
+  assert.ok(isSport(it("손흥민, 시즌 5호 골")));
+  assert.ok(!isSport(it("Melbourne tram strike called off")));
+  assert.ok(!isSport(it("Reserve Bank holds rates at 3.6%")));
+});
+
+test("places: Victoria, Australia, Asia", () => {
+  assert.deepEqual(geoOf("Melbourne commuters face Metro Tunnel delays"), ["vic"]);
+  assert.deepEqual(geoOf("Sydney house prices hit record as NSW stamp duty changes"), ["au"]);
+  assert.deepEqual(geoOf("Victorian premier and Albanese meet on housing"), ["vic", "au"]);
+  assert.deepEqual(geoOf("Seoul and Tokyo agree on trade talks"), ["asia"]);
+  assert.deepEqual(geoOf("Ceasefire talks resume in Cairo"), []);
+  assert.deepEqual(geoOf("Washington braces for storm"), [], "WA is matched only in capitals");
 });

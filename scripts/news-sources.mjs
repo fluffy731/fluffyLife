@@ -2,6 +2,7 @@
 // lean: L (left) · LL (lean left) · C (centre) · LR (lean right) · R (right) — approximate, following
 // the widely cited AllSides / Media Bias/Fact Check ratings; Korean outlets follow the common
 // 진보/중도/보수 classification; trade press is T (no political lean).
+// as: a section feed of another listed outlet (its items count as that outlet).
 // region: au · world · asia · ko (Korean-language) · topic. topic sources carry topic: construction · engineering · property.
 export const SOURCES = [
   // Australia
@@ -9,6 +10,9 @@ export const SOURCES = [
   { id: "sbs", name: "SBS News", region: "au", lang: "en", lean: "LL", url: "https://www.sbs.com.au/news/feed" },
   { id: "guardian-au", name: "Guardian Australia", region: "au", lang: "en", lean: "LL", url: "https://www.theguardian.com/australia-news/rss" },
   { id: "7news", name: "7NEWS", region: "au", lang: "en", lean: "C", url: "https://7news.com.au/feed" },
+  // Victoria section feeds: more Melbourne news; "as" counts them as the main outlet when grouping.
+  { id: "guardian-vic", name: "Guardian Australia · Victoria", region: "au", lang: "en", lean: "LL", as: "guardian-au", url: "https://www.theguardian.com/australia-news/victoria/rss" },
+  { id: "7news-vic", name: "7NEWS · Melbourne", region: "au", lang: "en", lean: "C", as: "7news", url: "https://7news.com.au/news/vic/feed" },
   // Tabloid: its stories appear only when another outlet covers the same story (corroborate).
   { id: "dailymail-au", name: "Daily Mail Australia", region: "au", lang: "en", lean: "R", corroborate: true, url: "https://www.dailymail.co.uk/auhome/index.rss" },
   // World

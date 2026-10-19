@@ -59,6 +59,23 @@ const OP_KO = /^\s*[\[【(〈<]\s*(사설|칼럼|시론|기고|오피니언|논�
 const OP_CAT = /^(opinion|comment|commentary|editorials?|columns?|columnists?|analysis|op-?ed|오피니언|사설|칼럼)$/i;
 export const isOpinion = (i) => OP_URL.test(i.link) || OP_TITLE.test(i.title) || OP_KO.test(i.title) || i.categories.some((c) => OP_CAT.test(c.trim()));
 
+// ---------- sport (left out: the app is for news) ----------
+const SPORT_URL = /\/(sports?|football|soccer|cricket|afl|nrl|nba|nfl|tennis|golf|rugby[\w-]*|motorsports?|racing|basketball|baseball|horse-racing)\//i;
+const SPORT_CAT = /^(sports?|football|soccer|cricket|afl|nrl|nba|nfl|tennis|golf|rugby[\w ]*|motorsport|basketball|baseball|horse racing|스포츠|야구|축구|농구|배구|골프)$/i;
+const SPORT_EN = /\b(NBA|WNBA|NFL|MLB|NHL|AFLW?|NRLW?|A-League|KBO|PGA|LPGA|UFC|MotoGP|F1|Supercars|Socceroos|Matildas|Wallabies|Kangaroos|All Blacks|Big Bash|Brownlow|Super Bowl|Stanley Cup|World Series|Melbourne Cup|Caulfield Cup|Cox Plate)\b|\b(Premier League|Champions League|La Liga|Serie A|Bundesliga|Grand Prix|Formula One|Wimbledon|Australian Open|US Open|French Open|grand final|Test (match|series)|the Ashes|ODI|T20|playoffs?|quarterbacks?|touchdowns?|goalkeeper|striker|batsman|wickets?|innings)\b/i;
+const SPORT_KO = /(프로야구|프로축구|프로농구|프로배구|K리그|KBO|MLB|NBA|EPL|LPGA|PGA|손흥민|이강인|김하성|이정후|올림픽 대표)/;
+export const isSport = (i) => SPORT_URL.test(i.link) || i.categories.some((c) => SPORT_CAT.test(c.trim())) || SPORT_EN.test(i.title) || SPORT_KO.test(i.title);
+
+// ---------- places (Australia tab: Victoria first; Asia tab: stories about Asia) ----------
+const GEO_RE = {
+  vic: [/\b(Melbourne|Melburnians?|Victorian?s?|Geelong|Ballarat|Bendigo|Shepparton|Mildura|Warrnambool|Wodonga|Gippsland|Latrobe Valley|Mornington|Dandenong|Frankston|Werribee|Footscray|Box Hill|Yarra|Jacinta Allan|Allan government|Spring Street|Metro Tunnel|Suburban Rail Loop|West Gate|North East Link)\b/i, /\bVic\b/],
+  au: [/\b(Australian?s?|Aussies?|Sydney|New South Wales|Queensland(ers?)?|Brisbane|Gold Coast|Perth|Western Australia|Adelaide|South Australia|Tasmanian?s?|Hobart|Darwin|Northern Territory|Canberra|Albanese|Sussan Ley|Chalmers|Centrelink|Reserve Bank|First Nations|Aboriginal|Torres Strait|Great Barrier Reef)\b/i, /\b(NSW|WA|Qld|ATO|RBA|ASX|ACCC|ASIC|CFMEU|NDIS)\b/],
+  asia: [/\b(China|Chinese|Beijing|Shanghai|Shenzhen|Hong Kong|Macau|Taiwan(ese)?|Taipei|Japan(ese)?|Tokyo|Osaka|Korean?s?|Seoul|Busan|Pyongyang|Kim Jong|Lee Jae|Singapore(an)?|Malaysian?|Kuala Lumpur|Indonesian?|Jakarta|Bali|Thailand|Thai|Bangkok|Vietnam(ese)?|Hanoi|Philippines|Filipinos?|Manila|Cambodian?|Myanmar|Laos|Brunei|Timor|India|Indians|Delhi|Mumbai|Pakistan(i)?|Bangladesh|Sri Lanka|Nepal|Mongolian?|Xi Jinping|Modi|Prabowo|Anwar|ASEAN|APEC)\b/i, /\bPRC\b/],
+};
+export function geoOf(text) {
+  return Object.entries(GEO_RE).filter(([, res]) => res.some((re) => re.test(text))).map(([k]) => k);
+}
+
 // ---------- topics ----------
 const TOPIC_RE = {
   construction: /\b(construction|builders?|building (industry|site|works|approvals?|code|defects?)|cladding|developers?|tradies|scaffold\w*|concrete|NCC|National Construction Code|Building Commission\w*|certifiers?|high-?rise|apartment (block|tower|defects?))\b/i,
@@ -122,10 +139,14 @@ export async function build(out = "news/feed.json") {
     return { src, status: r.status, error: r.error, items };
   });
   const sources = results.map(({ src, status, items }) => ({ id: src.id, name: src.name, region: src.region, topic: src.topic, lang: src.lang, lean: src.lean, ok: status === 200 && items.length > 0, count: items.length }));
-  const all = [];
+  const all = [], links = new Set();
   for (const { src, items } of results) {
-    for (const it of items.filter((i) => !isOpinion(i) && (!i.time || now - i.time < MAX_AGE)).slice(0, PER_SOURCE)) {
-      all.push({ ...it, s: src.id, time: it.time || now, topics: [...new Set([...(src.topic ? [src.topic] : []), ...topicsOf(it)])] });
+    for (const it of items.filter((i) => !isOpinion(i) && !isSport(i) && (!i.time || now - i.time < MAX_AGE)).slice(0, PER_SOURCE)) {
+      // A section feed (src.as) counts as its main outlet; the same article in two feeds is kept once.
+      const key = it.link.replace(/[?#].*$/, "");
+      if (links.has(key)) continue;
+      links.add(key);
+      all.push({ ...it, s: src.as || src.id, time: it.time || now, topics: [...new Set([...(src.topic ? [src.topic] : []), ...topicsOf(it)])] });
     }
   }
   let stories = [...clusterStories(all.filter((i) => i.s && SOURCES.find((x) => x.id === i.s).lang === "en"), "en"), ...clusterStories(all.filter((i) => SOURCES.find((x) => x.id === i.s).lang === "ko"), "ko")];
@@ -137,7 +158,7 @@ export async function build(out = "news/feed.json") {
   const json = {
     built: new Date(now).toISOString(),
     sources,
-    stories: stories.map((s, k) => ({ id: k, lang: s.lang, topics: s.topics, image: s.image || null, time: s.time, items: s.items })),
+    stories: stories.map((s, k) => ({ id: k, lang: s.lang, topics: s.topics, geo: s.lang === "en" ? geoOf(s.items.map((i) => `${i.t} ${i.d || ""}`).join(" ")) : [], image: s.image || null, time: s.time, items: s.items })),
   };
   mkdirSync(out.replace(/\/[^/]+$/, ""), { recursive: true });
   writeFileSync(out, JSON.stringify(json));
@@ -145,11 +166,10 @@ export async function build(out = "news/feed.json") {
 }
 
 async function probe() {
-  const extra = process.argv.includes("--candidates") ? (await import("./news-candidates.mjs")).CANDIDATES : [];
-  const rows = await pool(extra.length ? extra : SOURCES, 8, async (src) => {
+  const rows = await pool(SOURCES, 8, async (src) => {
     const r = await get(src.url); const items = r.text ? parseFeed(r.text) : [];
-    const op = items.filter(isOpinion).length, img = items.filter((i) => i.image).length;
-    return `${r.status === 200 && items.length ? "OK  " : "FAIL"} ${src.id.padEnd(16)} http=${r.status} items=${items.length} opinion=${op} images=${img} ${r.error || ""} ${items[0] ? "| " + items[0].title.slice(0, 60) : ""}`;
+    const op = items.filter(isOpinion).length, sp = items.filter(isSport).length, img = items.filter((i) => i.image).length;
+    return `${r.status === 200 && items.length ? "OK  " : "FAIL"} ${src.id.padEnd(16)} http=${r.status} items=${items.length} opinion=${op} sport=${sp} images=${img} ${r.error || ""} ${items[0] ? "| " + items[0].title.slice(0, 60) : ""}`;
   });
   console.log(rows.join("\n"));
 }

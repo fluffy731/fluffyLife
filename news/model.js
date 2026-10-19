@@ -12,7 +12,18 @@ export function storiesFor(tab, stories, byId) {
   const en = stories.filter((s) => s.lang === "en");
   if (TOPIC_TABS.has(tab)) return en.filter((s) => s.topics.includes(tab));
   if (tab === "top") return en.filter((s) => s.items.some((i) => byId[i.s]?.region !== "topic"));
-  return en.filter((s) => s.items.some((i) => byId[i.s]?.region === tab));
+  const fromRegion = (s, r) => s.items.some((i) => byId[i.s]?.region === r);
+  if (!en.some((s) => s.geo)) return en.filter((s) => fromRegion(s, tab)); // feed built before place tags
+  // Australia: Victorian stories first, then the rest of Australia, then Australian outlets' other
+  // local stories (no place named, no overseas outlet covering it). World news from Australian
+  // outlets stays in Top and World.
+  if (tab === "au") {
+    const rank = (s) => (s.geo.includes("vic") ? 0 : s.geo.includes("au") ? 1 : s.items.every((i) => byId[i.s]?.region === "au") ? 2 : 3);
+    return en.filter((s) => fromRegion(s, "au")).map((s, k) => [rank(s), k, s]).filter(([r]) => r < 3).sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(([, , s]) => s);
+  }
+  // Asia: stories about Asia, from any outlet.
+  if (tab === "asia") return en.filter((s) => s.geo.includes("asia"));
+  return en.filter((s) => fromRegion(s, tab));
 }
 
 // How many distinct outlets of each lean covered the story (trade press counted separately).
