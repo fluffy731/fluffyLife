@@ -41,3 +41,12 @@ test("Korean word lookup strips particles and verb endings", () => {
   assert.equal(koLookup("「금리를」", rows)[0], "금리");
   assert.equal(koLookup("없는말", rows), null);
 });
+
+test("Australia tab: Victoria first, then Australia, then local-only; overseas stories out. Asia tab: about Asia", () => {
+  const ids = { ...byId, cna: { lean: "C", region: "asia" } };
+  const G = (srcs, geo, t) => ({ lang: "en", topics: [], geo, items: srcs.map((s) => ({ s, t })) });
+  const list = [G(["abc", "bbc"], [], "Gaza"), G(["abc"], ["au"], "Sydney"), G(["abc"], [], "Local fire"), G(["abc"], ["vic", "au"], "Melbourne"), G(["cna"], [], "NBA"), G(["bbc"], ["asia"], "Seoul")];
+  assert.deepEqual(storiesFor("au", list, ids).map((s) => s.items[0].t), ["Melbourne", "Sydney", "Local fire"]);
+  assert.deepEqual(storiesFor("asia", list, ids).map((s) => s.items[0].t), ["Seoul"]);
+  assert.equal(storiesFor("au", stories, byId).length, 2, "feeds without place tags fall back to outlet region");
+});

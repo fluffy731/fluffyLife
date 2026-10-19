@@ -42,7 +42,7 @@ function storyHTML(s, i) {
   return `<article class="story${i === 0 ? " lead" : ""}${ko ? " ko" : ""}" data-story="${s.id}">
     ${s.image ? `<img class="pic" src="${esc(s.image)}" alt="" loading="${i < 3 ? "eager" : "lazy"}" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}
     <div class="body">
-      ${topic && tab !== topic ? `<div class="tag">${esc(topic)}</div>` : ""}
+      ${tab === "au" && s.geo?.includes("vic") ? `<div class="tag">Victoria</div>` : topic && tab !== topic ? `<div class="tag">${esc(topic)}</div>` : ""}
       <h2>${ko ? koWords(title) : esc(title)}</h2>
       ${lead.d ? `<p class="dek">${ko ? koWords(lead.d) : esc(lead.d)}</p>` : ""}
       <div class="meta"><span class="n">${n} ${n === 1 ? "outlet" : "outlets"}</span>${barHTML(c)}<span>${ago(s.time)}</span></div>
