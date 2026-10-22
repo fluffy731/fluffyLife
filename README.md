@@ -9,7 +9,7 @@ The workflow in `.github/workflows/pages.yml` runs the tests and deploys the rep
 1. Repo **Settings → Pages → Source: GitHub Actions**.
 2. Repo **Settings → Environments → github-pages → Deployment branches**: add `korean` (the environment is created on the first run and may only allow the default branch).
 
-The Korean app is then at `https://<user>.github.io/<repo>/korean/` and the Cantonese app at `…/yue/`. The bare `https://<user>.github.io/<repo>/` forwards to `/korean/`, so home-screen icons saved from the old address keep working with their progress. The deploy stamps the commit SHA into the service worker, so installed copies pick up changes on their next online launch without anyone bumping a version by hand.
+The Korean app is then at `https://<user>.github.io/<repo>/korean/` and the Cantonese app at `…/yue/`. The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final is at `…/mc/` (names typed into its 名单 tab stay in that browser only). The bare `https://<user>.github.io/<repo>/` forwards to `/korean/`, so home-screen icons saved from the old address keep working with their progress. The deploy stamps the commit SHA into the service worker, so installed copies pick up changes on their next online launch without anyone bumping a version by hand.
 
 ## Install on iPhone
 
