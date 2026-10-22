@@ -14,6 +14,7 @@ const FILES = [
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
   "./packs/mn.js", "./cards/mn.js", "./ui/zh.js", "./quiz/mn.js",
   "./packs/en.js", "./cards/en.js", "./ui/ko-en.js", "./quiz/en.js",
+  "./mc/", "./mc/index.html", "./mc/mc.js", "./mc/mc.css", "./icons/mc.svg", "./icons/mc-180.png",
   "./english/", "./english/index.html", "./english/manifest.json", "./icons/en.svg", "./icons/en-180.png", "./icons/en-512.png",
   "./data/en/pack.js", "./data/en/vocab.js", "./data/en/grammar.js", "./data/en/part1.js", "./data/en/part2.js", "./data/en/part3.js", "./data/en/part4.js",
   "./mongolian/", "./mongolian/index.html", "./mongolian/manifest.json", "./icons/mn.svg", "./icons/mn-180.png", "./icons/mn-512.png",
@@ -37,7 +38,7 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : "./korean/index.html");
+const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : path.includes("/mc/") ? "./mc/index.html" : "./korean/index.html");
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
