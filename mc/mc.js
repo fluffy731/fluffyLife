@@ -6,11 +6,12 @@ const N = 16;
 const FIELDS = [
   ["上午", [
     ["chair", "商会会长", "郭子宁"],
-    ["consul", "领馆嘉宾姓名", "朱月"],
+    ["consul", "领馆嘉宾姓名", "张月"],
     ["consulTitle", "领馆嘉宾职衔", "领事"],
     ["mayor", "白马市市长", "Andrew Davenport"],
     ["vmes", "维省多元文化教育协会代表"],
-    ["violinist", "小提琴演奏者"],
+    ["spk1", "特邀嘉宾①", "施丹挺"],
+    ["spk1Org", "嘉宾①机构", "东莞英凯教育"],
     ["sponsors", "赞助商上台名单"],
     ["captain", "匹克球队长"],
     ["pbTime", "匹克球训练时间地点"],
@@ -31,6 +32,14 @@ const FIELDS = [
     ["second", "亚军"],
     ["champ", "冠军"],
   ]],
+];
+// 成年组出场顺序表 as given; [name, song, reading hint for the MC].
+const LINEUP = [
+  ["区烽乐", "櫻花樹下", "区 读「欧」au1"], ["摇滚麦克", "餓狼傳說"], ["韦祎 Cici", "Where Did You Go", "祎 读「衣」ji1"],
+  ["顾惠佳 Mia", "月半小夜曲"], ["Issy Voon", "情誡"], ["Vincent Mok", "用背脊唱情歌"],
+  ["吴可贞 Ko Chen", "今宵多珍重"], ["李兆祥 Charlie", "一生中最愛"], ["Kin Yiu", "浮誇"],
+  ["高麗雅 Gloria", "這麼近那麼遠"], ["林靖杰 JJ Lin", "用背脊唱情歌"], ["David Ho", "愛是永恆"],
+  ["Alex Ng", "狌小子"], ["冯建强 Feng Sam", "情深說話未曾講"], ["司徒大叔 Danny Situ", "數字人生"], ["Yolanda Li", "搜神記"],
 ];
 const LABEL = {}, DEFAULT = {};
 for (const [, rows] of FIELDS) for (const [k, label, d] of rows) { LABEL[k] = label; if (d) DEFAULT[k] = d; }
@@ -54,13 +63,13 @@ function paintFills() {
 }
 
 function paintRoster() {
-  const who = (i) => (S.r[i]?.n || "").trim();
+  const who = (i) => (S.r[i]?.n ?? LINEUP[i]?.[0] ?? "").trim();
   const html = [];
   for (let i = 0; i < N; i++) {
-    const no = `${i + 1}号选手`, name = who(i), song = (S.r[i]?.s || "").trim();
+    const no = `${i + 1}号选手`, name = who(i), song = (S.r[i]?.s ?? LINEUP[i]?.[1] ?? "").trim(), hint = LINEUP[i]?.[2];
     const next = i + 1 < N ? `下一位，${i + 2}号选手${who(i + 1) ? " " + mark(who(i + 1)) : ""}，请准备。` : "十六位选手全部唱完！";
     html.push(`<div class="call">
-      <div class="call-h"><span class="no">${i + 1}</span>${name ? esc(name) : `<span class="todo">[${no}]</span>`}${song ? ` · 《${esc(song)}》` : ""}<span class="dur">3:00</span></div>
+      <div class="call-h"><span class="no">${i + 1}</span>${name ? esc(name) : `<span class="todo">[${no}]</span>`}${song ? ` · 《${esc(song)}》` : ""}${hint ? `<span class="py">${esc(hint)}</span>` : ""}<span class="dur">3:00</span></div>
       <p class="say yue">有请 ${no}${name ? "，" + mark(name) : ""}${song ? `，为大家带嚟《${esc(song)}》` : ""}！掌声欢迎！</p>
       <p class="say yue">多谢${name ? " " + mark(name) : " " + no}！${next}</p>
       ${i + 2 < N ? `<p class="cue">后台叫号：${i + 3}号准备。</p>` : ""}
@@ -73,7 +82,7 @@ function buildForms() {
   $("#fields").innerHTML = FIELDS.map(([group, rows]) => `<h3>${group}</h3>` + rows.map(([k, label, d]) =>
     `<label class="field"><span>${label}</span><input data-f="${k}" value="${esc(S.f[k] ?? d ?? "")}" placeholder="${esc(label)}"></label>`).join("")).join("");
   $("#rosterForm").innerHTML = Array.from({ length: N }, (_, i) =>
-    `<div class="rrow"><span class="no">${i + 1}</span><input data-r="${i}" data-p="n" value="${esc(S.r[i]?.n || "")}" placeholder="姓名"><input data-r="${i}" data-p="s" value="${esc(S.r[i]?.s || "")}" placeholder="歌名"></div>`).join("");
+    `<div class="rrow"><span class="no">${i + 1}</span><input data-r="${i}" data-p="n" value="${esc(S.r[i]?.n ?? LINEUP[i][0])}" placeholder="姓名"><input data-r="${i}" data-p="s" value="${esc(S.r[i]?.s ?? LINEUP[i][1])}" placeholder="歌名"></div>`).join("");
 }
 
 document.addEventListener("input", (e) => {
