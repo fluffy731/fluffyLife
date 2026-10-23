@@ -10,7 +10,7 @@ const FIELDS = [
     ["consulTitle", "领馆嘉宾职衔", "领事"],
     ["mayor", "白马市市长", "Andrew Davenport"],
     ["vmes", "维省多元文化教育协会代表"],
-    ["spk1", "特邀嘉宾①", "施丹挺"],
+    ["spk1", "特邀嘉宾①", "Deanna 施丹挺"],
     ["spk1Org", "嘉宾①机构", "东莞英凯教育"],
     ["sponsors", "赞助商上台名单"],
     ["captain", "匹克球队长"],
