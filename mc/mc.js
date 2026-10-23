@@ -6,8 +6,8 @@ const N = 16;
 const FIELDS = [
   ["上午", [
     ["chair", "商会会长", "郭子宁"],
-    ["consul", "领馆嘉宾姓名", "张月"],
-    ["consulTitle", "领馆嘉宾职衔", "领事"],
+    ["cllr", "政府要员姓名", "廖婵娥"],
+    ["cllrTitle", "政府要员职衔", "墨尔本市议员"],
     ["mayor", "白马市市长", "Andrew Davenport"],
     ["vmes", "维省多元文化教育协会代表"],
     ["spk1", "特邀嘉宾①", "Deanna 施丹挺"],
@@ -15,6 +15,7 @@ const FIELDS = [
     ["sponsors", "赞助商上台名单"],
     ["captain", "匹克球队长"],
     ["pbTime", "匹克球训练时间地点"],
+    ["unveil", "揭牌嘉宾（会长以外）"],
     ["foodArea", "取餐区位置"],
   ]],
   ["下午", [
