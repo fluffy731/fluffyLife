@@ -74,6 +74,8 @@ b.todo, span.todo, [data-k].todo { background: var(--todo); color: var(--todo-in
 
 .call { border-top: 1px solid var(--rule); padding: 12px 0 4px; }
 .call-h { display: flex; align-items: center; gap: 8px; font-weight: 700; margin-bottom: 6px; font-size: 15px; }
+.orig { margin: -2px 0 6px; font-size: 13px; color: var(--gold); }
+.orig::before { content: "♪ "; }
 .call-h .dur { margin-left: auto; color: var(--muted); font-weight: 400; font-size: 12px; }
 .no { display: inline-grid; place-items: center; min-width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--paper); font-size: 13px; font-weight: 700; flex: 0 0 auto; }
 

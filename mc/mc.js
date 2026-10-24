@@ -23,9 +23,10 @@ const FIELDS = [
     ["consul", "领事姓名", "王晓庆"],
     ["advisors", "顾问团 / 组委会 / 赞助商名单"],
     ["presenter", "颁奖嘉宾"],
-    ["youth1", "青少年组代表 1"],
-    ["youth2", "青少年组代表 2"],
-    ["seniors", "乐龄组代表"],
+    ["youth1", "少年组表演 1", "Luciana Liu"],
+    ["youth2", "少年组表演 2", "Chloe Pang"],
+    ["seniors1", "乐龄组表演 1", "Chang Soo Far / Wilson Chang"],
+    ["seniors2", "乐龄组表演 2", "何金华 Ivan Ho"],
     ["judgeRep", "评委代表"],
   ]],
   ["获奖名单（当场填）", [
@@ -35,13 +36,17 @@ const FIELDS = [
     ["champ", "冠军"],
   ]],
 ];
-// 成年组出场顺序表 as given; [name, song, reading hint for the MC].
+// 决赛节目单 (adult group): [name, song, reading hint, original singer, singer unconfirmed?].
+// Song titles follow the official releases where the programme sheet has a typo (see 提醒 tab).
 const LINEUP = [
-  ["区烽乐", "櫻花樹下", "区 读「欧」au1"], ["摇滚麦克", "餓狼傳說"], ["韦祎 Cici", "Where Did You Go", "祎 读「衣」ji1"],
-  ["顾惠佳 Mia", "月半小夜曲"], ["Issy Voon", "情誡"], ["Vincent Mok", "用背脊唱情歌"],
-  ["吴可贞 Ko Chen", "今宵多珍重"], ["李兆祥 Charlie", "一生中最愛"], ["Kin Yiu", "浮誇"],
-  ["高麗雅 Gloria", "這麼近那麼遠"], ["林靖杰 JJ Lin", "用背脊唱情歌"], ["David Ho", "愛是永恆"],
-  ["Alex Ng", "狌小子"], ["冯建强 Feng Sam", "情深說話未曾講"], ["司徒大叔 Danny Situ", "數字人生"], ["Yolanda Li", "搜神記"],
+  ["区焕乐 Blake Ou", "櫻花樹下", "区 读「欧」au1", "张敬轩"], ["摇滚麦克", "餓狼傳說", "", "张学友"],
+  ["韦梓 Cici", "Where Did U Go", "梓 读「子」zi2", "邓紫棋"], ["顾惠佳 Mia", "月半小夜曲", "", "李克勤"],
+  ["Issy Voon", "情誡", "", "王菲", true], ["Vincent Mok 莫晓锋", "用背脊唱情歌", "", "汤令山 Gareth.T"],
+  ["吴可真 Ko Chen", "今宵多珍重", "", "陈百强"], ["李兆祥 Charlie", "一生中最愛", "", "谭咏麟"],
+  ["Yiu Kin Cheung", "浮誇", "", "陈奕迅"], ["高麗雅 Gloria", "這麼近那麼遠", "", "容祖儿"],
+  ["林靖杰 JJ Lin", "用背脊唱情歌", "", "汤令山 Gareth.T"], ["David Ho 何德伟", "愛是永恆", "", "张学友"],
+  ["Alex Ng", "狂小子", "", "刘德华", true], ["冯建强 Sam Feng", "情深說話未曾講", "", "黎明"],
+  ["司徒大叔 Danny Situ", "數字人生", "", "林子祥"], ["Yolanda Li", "搜神記", "", "容祖儿"],
 ];
 const LABEL = {}, DEFAULT = {};
 for (const [, rows] of FIELDS) for (const [k, label, d] of rows) { LABEL[k] = label; if (d) DEFAULT[k] = d; }
@@ -68,11 +73,14 @@ function paintRoster() {
   const who = (i) => (S.r[i]?.n ?? LINEUP[i]?.[0] ?? "").trim();
   const html = [];
   for (let i = 0; i < N; i++) {
-    const no = `${i + 1}号选手`, name = who(i), song = (S.r[i]?.s ?? LINEUP[i]?.[1] ?? "").trim(), hint = LINEUP[i]?.[2];
+    const no = `${i + 1}号选手`, name = who(i), song = (S.r[i]?.s ?? LINEUP[i]?.[1] ?? "").trim(), [, dsong, hint, singer, unsure] = LINEUP[i] || [];
+    const orig = singer && song === dsong ? singer : "";
+    const by = orig && !unsure ? `${esc(orig)}嘅` : "";
     const next = i + 1 < N ? `下一位，${i + 2}号选手${who(i + 1) ? " " + mark(who(i + 1)) : ""}，请准备。` : "十六位选手全部唱完！";
     html.push(`<div class="call">
       <div class="call-h"><span class="no">${i + 1}</span>${name ? esc(name) : `<span class="todo">[${no}]</span>`}${song ? ` · 《${esc(song)}》` : ""}${hint ? `<span class="py">${esc(hint)}</span>` : ""}<span class="dur">3:00</span></div>
-      <p class="say yue">有请 ${no}${name ? "，" + mark(name) : ""}${song ? `，为大家带嚟《${esc(song)}》` : ""}！掌声欢迎！</p>
+      ${orig ? `<p class="orig">原唱：${esc(orig)}${unsure ? "（待核实，先唔好讲出口）" : ""}</p>` : ""}
+      <p class="say yue">有请 ${no}${name ? "，" + mark(name) : ""}${song ? `，为大家带嚟${by}《${esc(song)}》` : ""}！掌声欢迎！</p>
       <p class="say yue">多谢${name ? " " + mark(name) : " " + no}！${next}</p>
       ${i + 2 < N ? `<p class="cue">后台叫号：${i + 3}号准备。</p>` : ""}
     </div>`);
