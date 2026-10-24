@@ -20,6 +20,7 @@ const FIELDS = [
   ]],
   ["下午", [
     ["contestChair", "大赛主席"],
+    ["consul", "领事姓名", "王晓庆"],
     ["advisors", "顾问团 / 组委会 / 赞助商名单"],
     ["presenter", "颁奖嘉宾"],
     ["youth1", "青少年组代表 1"],
