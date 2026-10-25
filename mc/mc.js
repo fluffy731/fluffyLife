@@ -6,7 +6,7 @@ const N = 16;
 const FIELDS = [
   ["上午", [
     ["chair", "商会会长", "郭子宁"],
-    ["cllr", "政府要员姓名", "廖婵娥"],
+    ["cllr", "政府要员姓名", "廖婵娥 Gladys Liu"],
     ["cllrTitle", "政府要员职衔", "墨尔本市议员"],
     ["mayor", "白马市市长", "Andrew Davenport"],
     ["vmes", "维省多元文化教育协会代表"],
@@ -18,9 +18,9 @@ const FIELDS = [
     ["foodArea", "取餐区位置", "后方"],
   ]],
   ["下午", [
-    ["contestChair", "大赛主席"],
+    ["contestChair", "大赛主席", "郭子宁"],
+    ["execChair", "大赛执行主席", "Angie Law"],
     ["consul", "领事姓名", "王晓庆"],
-    ["advisors", "顾问团 / 组委会 / 赞助商名单"],
     ["presenter", "颁奖嘉宾"],
     ["youth1", "少年组表演 1", "Luciana Liu"],
     ["youth2", "少年组表演 2", "Chloe Pang"],
@@ -54,6 +54,15 @@ const SPONSORS = [
   "CACB 中澳通讯社", "Australia365d", "MSJ Media 禾子传媒", "史宾威中华公学 Springvale Chinese Ethnic School",
   "澳洲墨尔本箐华狮子会", "澳大利亚维州粤商会", "Cantonese Student Association 墨大廣東学生会", "东方演艺学校",
 ];
+// 顾问委员会 and 组委会成员名单, read out in the 2:27 photo segment.
+const LISTS = {
+  advisors: ["陈杨国生教授（RMIT 皇家墨尔本理工大学终身荣誉学者）", "王晓老师（澳大利亚东方表演艺术基金会主席、联盟澳中合唱团艺术总监）",
+    "Mark Law（维州多元文化教育协会荣誉顾问）", "王玉博士（EIDC 情感智能发展中心创始人、澳大利亚东方表演艺术基金会副会长）",
+    "黄百平老师（知名书画家、澳洲文教协名誉会长）", "Angie Law（澳大利亚广东总商会前常务副会长）"],
+  firms: ["指定法律顾问律所：TRIO LAWYERS 方元律师，Wade Ho", "指定会计师事务所：Eight Group，Andrew Liu"],
+  committee: ["Karyn Huang（组委会执行主席）", "Leanne Ho（娱乐部总监）", "Tom（组委会统筹）", "Doris 沈彤（活动策划）",
+    "Joe Chan（造型总监）", "Eason Liu（创意总监）", "Winnie（宣传负责人）", "Zoe（时尚负责人）"],
+};
 // Pinyin shown beside Chinese names (looked up by each run of Chinese characters in a name).
 const PY = {
   郭子宁: "Guō Zǐníng", 廖婵娥: "Liào Chán'é", 施丹挺: "Shī Dāntǐng", 张超: "Zhāng Chāo", 王鑫: "Wáng Xīn", 王晓庆: "Wáng Xiǎoqìng",
@@ -63,6 +72,7 @@ const PY = {
   张敬轩: "Zhāng Jìngxuān", 张学友: "Zhāng Xuéyǒu", 邓紫棋: "Dèng Zǐqí", 李克勤: "Lǐ Kèqín", 王菲: "Wáng Fēi", 汤令山: "Tāng Lìngshān",
   陈百强: "Chén Bǎiqiáng", 谭咏麟: "Tán Yǒnglín", 陈奕迅: "Chén Yìxùn", 容祖儿: "Róng Zǔ'ér", 刘德华: "Liú Déhuá", 黎明: "Lí Míng",
   林子祥: "Lín Zǐxiáng", 张国荣: "Zhāng Guóróng",
+  陈杨国生教授: "Chén Yáng Guóshēng", 王晓老师: "Wáng Xiǎo", 王玉博士: "Wáng Yù", 黄百平老师: "Huáng Bǎipíng", 沈彤: "Shěn Tóng",
   榕熙堂: "Róngxī Táng", 海底捞: "Hǎidǐlāo", M记茶室: "M Jì Cháshì", 会所: "Huìsuǒ", 澳富资本: "Àofù Zīběn", 世通地产集团: "Shìtōng Dìchǎn Jítuán",
   方元律师: "Fāngyuán Lǜshī", 蒸汽石锅鱼: "Zhēngqì Shíguō Yú", 澳洲讯报: "Àozhōu Xùnbào", 中澳通讯社: "Zhōng-Ào Tōngxùnshè",
   禾子传媒: "Hézǐ Chuánméi", 史宾威中华公学: "Shǐbīnwēi Zhōnghuá Gōngxué", 澳洲墨尔本箐华狮子会: "Àozhōu Mò'ěrběn Jīnghuá Shīzǐhuì",
@@ -113,6 +123,7 @@ function paintRoster() {
 
 function paintSponsors() {
   for (const ul of $$(".sponsors")) ul.innerHTML = SPONSORS.map((n) => `<li>${esc(n)}${pyTag(n)}</li>`).join("");
+  for (const ul of $$("[data-list]")) ul.innerHTML = LISTS[ul.dataset.list].map((n) => { const [who, role] = n.split("（"); return `<li><b>${esc(who)}</b>${pyTag(who)}${role ? `<span class="role">（${esc(role)}</span>` : ""}</li>`; }).join("");
 }
 
 function buildForms() {
