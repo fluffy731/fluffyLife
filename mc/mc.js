@@ -26,7 +26,6 @@ const FIELDS = [
     ["youth2", "少年组表演 2", "Chloe Pang"],
     ["seniors1", "乐龄组表演 1", "Wilson Chang"],
     ["seniors2", "乐龄组表演 2", "Ivan Ho（何金華）"],
-    ["judgeRep", "评委代表"],
   ]],
   ["获奖名单（当场填）", [
     ["merit", "优异奖"],
@@ -112,6 +111,7 @@ function paintRoster() {
     html.push(`<div class="call">
       <div class="call-h"><span class="no">${i + 1}</span>${name ? esc(name) : `<span class="todo">[${no}]</span>`}${song ? ` · 《${esc(song)}》` : ""}${hint ? `<span class="py">${esc(hint)}</span>` : ""}<span class="dur">3:00</span></div>
       ${orig ? `<p class="orig">原唱：${esc(orig)}${pyTag(orig)}${unsure ? "（待核实）" : ""}</p>` : ""}
+      ${i === 10 && song === LINEUP[5][1] && song === (S.r[5]?.s ?? LINEUP[5][1]) ? `<p class="say yue fun">同一首《用背脊唱情歌》，今日第二次出现——即场 PK，大家竖起耳仔听清楚！</p>` : ""}
       <p class="say yue">接下来有请第 ${i + 1} 号选手：${name ? mark(name) + pyTag(name) : ""}，带来歌曲《${esc(song)}》。掌声有请！</p>
       <p class="cue">演唱结束后：</p>
       <p class="say yue">感谢${name ? " " + mark(name) + " " : "这位选手"}的精彩演唱！</p>

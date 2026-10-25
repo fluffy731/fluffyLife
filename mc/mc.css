@@ -56,6 +56,9 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px calc(env(safe-area-i
 
 .say { font-size: var(--fs); line-height: 1.6; margin: 0 0 0.7em; }
 .say.en { color: var(--en); font-style: italic; }
+.say.fun::before { content: "😄 "; }
+.say.fun { opacity: 0.92; }
+.lg.fun { color: var(--gold); }
 .say.yue { color: var(--ink); }
 #pm .say.yue, .say.yue { border-left: 3px solid color-mix(in srgb, var(--yue) 45%, transparent); padding-left: 10px; }
 ul.say, ol.say { padding-left: 1.3em; }
