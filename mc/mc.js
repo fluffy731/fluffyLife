@@ -37,14 +37,14 @@ const FIELDS = [
 // 决赛节目单 (adult group): [name, song, reading hint, original singer, singer unconfirmed?].
 // Song titles follow the official releases where the programme sheet has a typo (see 提醒 tab).
 const LINEUP = [
-  ["区焕乐 Blake Ou", "櫻花樹下", "区 读「欧」au1", "张敬轩"], ["摇滚麦克", "餓狼傳說", "", "张学友"],
-  ["韦梓 Cici", "Where Did U Go", "梓 读「子」zi2", "邓紫棋"], ["顾惠佳 Mia", "月半小夜曲", "", "李克勤"],
-  ["Issy Voon", "情誡", "", "王菲", true], ["Vincent Mok 莫晓锋", "用背脊唱情歌", "", "汤令山 Gareth.T"],
-  ["吴可真 Ko Chen", "今宵多珍重", "", "陈百强"], ["李兆祥 Charlie", "一生中最愛", "", "谭咏麟"],
-  ["Yiu Kin Cheung", "浮誇", "", "陈奕迅"], ["高麗雅 Gloria", "這麼近那麼遠", "", "容祖儿"],
-  ["林靖杰 JJ Lin", "用背脊唱情歌", "", "汤令山 Gareth.T"], ["David Ho 何德伟", "愛是永恆", "", "张学友"],
-  ["Alex Ng", "狂小子", "", "刘德华", true], ["冯建强 Sam Feng", "情深說話未曾講", "", "黎明"],
-  ["司徒大叔 Danny Situ", "數字人生", "", "林子祥"], ["Yolanda Li", "搜神記", "", "容祖儿"],
+  ["區煥樂 Blake Ou", "櫻花樹下", "區 讀「歐」au1", "張敬軒"], ["搖滾麥克", "餓狼傳說", "", "張學友"],
+  ["韋梓 Cici", "Where Did U Go", "梓 讀「子」zi2", "鄧紫棋"], ["顧惠佳 Mia", "月半小夜曲", "", "李克勤"],
+  ["Issy Voon", "情誡", "", "王菲", true], ["Vincent Mok 莫曉鋒", "用背脊唱情歌", "", "湯令山 Gareth.T"],
+  ["吳可真 Ko Chen", "今宵多珍重", "", "陳百強"], ["李兆祥 Charlie", "一生中最愛", "", "譚詠麟"],
+  ["Yiu Kin Cheung", "浮誇", "", "陳奕迅"], ["高麗雅 Gloria", "這麼近那麼遠", "", "容祖兒"],
+  ["林靖傑 JJ Lin", "用背脊唱情歌", "", "湯令山 Gareth.T"], ["David Ho 何德偉", "愛是永恆", "", "張學友"],
+  ["Alex Ng", "狂小子", "", "劉德華", true], ["馮建強 Sam Feng", "情深說話未曾講", "", "黎明"],
+  ["司徒大叔 Danny Situ", "數字人生", "", "林子祥"], ["Yolanda Li", "搜神記", "", "容祖兒"],
 ];
 const SPONSORS = [
   "HUB-M Cafe", "DY·5", "榕熙堂 Vitalis Sanctum", "海底捞 The Glen", "M记茶室 Mkee Tea House", "AUMINA 会所", "Apapaya",
@@ -55,12 +55,12 @@ const SPONSORS = [
 ];
 // 顾问委员会 and 组委会成员名单, read out in the 2:27 photo segment.
 const LISTS = {
-  advisors: ["陈杨国生教授（RMIT 皇家墨尔本理工大学终身荣誉学者）", "王晓老师（澳大利亚东方表演艺术基金会主席、联盟澳中合唱团艺术总监）",
-    "Mark Law（维州多元文化教育协会荣誉顾问）", "王玉博士（EIDC 情感智能发展中心创始人、澳大利亚东方表演艺术基金会副会长）",
-    "黄百平老师（知名书画家、澳洲文教协名誉会长）", "Angie Law（澳大利亚广东总商会前常务副会长）"],
-  firms: ["指定法律顾问律所：TRIO LAWYERS 方元律师，Wade Ho", "指定会计师事务所：Eight Group，Andrew Liu"],
-  committee: ["Karyn Huang（组委会执行主席）", "Leanne Ho（娱乐部总监）", "Tom（组委会统筹）", "Doris 沈彤（活动策划）",
-    "Joe Chan（造型总监）", "Eason Liu（创意总监）", "Winnie（宣传负责人）", "Zoe（时尚负责人）"],
+  advisors: ["陳楊國生教授（RMIT 皇家墨爾本理工大學終身榮譽學者）", "王曉老師（澳大利亞東方表演藝術基金會主席、聯盟澳中合唱團藝術總監）",
+    "Mark Law（維州多元文化教育協會榮譽顧問）", "王玉博士（EIDC 情感智能發展中心創始人、澳大利亞東方表演藝術基金會副會長）",
+    "黃百平老師（知名書畫家、澳洲文教協名譽會長）", "Angie Law（澳大利亞廣東總商會前常務副會長）"],
+  firms: ["指定法律顧問律所：TRIO LAWYERS 方元律師，Wade Ho", "指定會計師事務所：Eight Group，Andrew Liu"],
+  committee: ["Karyn Huang（組委會執行主席）", "Leanne Ho（娛樂部總監）", "Tom（組委會統籌）", "Doris 沈彤（活動策劃）",
+    "Joe Chan（造型總監）", "Eason Liu（創意總監）", "Winnie（宣傳負責人）", "Zoe（時尚負責人）"],
 };
 // Pinyin shown beside Chinese names (looked up by each run of Chinese characters in a name).
 const PY = {
@@ -77,8 +77,18 @@ const PY = {
   禾子传媒: "Hézǐ Chuánméi", 史宾威中华公学: "Shǐbīnwēi Zhōnghuá Gōngxué", 澳洲墨尔本箐华狮子会: "Àozhōu Mò'ěrběn Jīnghuá Shīzǐhuì",
   澳大利亚维州粤商会: "Àodàlìyà Wéizhōu Yuè Shānghuì", 墨大廣東学生会: "Mòdà Guǎngdōng Xuéshēnghuì", 东方演艺学校: "Dōngfāng Yǎnyì Xuéxiào",
 };
-const pyOf = (name) => (String(name).match(/M记茶室|[\u3400-\u9fff]+/g) || []).map((w) => PY[w]).filter(Boolean).join(" · ");
+const pyOf = (name) => (String(name).match(/M[记記]茶室|[\u3400-\u9fff]+/g) || []).map((w) => PY[w]).filter(Boolean).join(" · ");
 Object.assign(PY, { 何金華: "Hé Jīnhuá", 王晓: "Wáng Xiǎo", 李如歌: "Lǐ Rúgē", 谢昉益: "Xiè Fǎngyì", 邓志: "Dèng Zhì" });
+const SPONSORS_HK = [
+  "HUB-M Cafe", "DY·5", "榕熙堂 Vitalis Sanctum", "海底撈 The Glen", "M記茶室 Mkee Tea House", "AUMINA 會所", "Apapaya",
+  "澳富資本 AOFU Capital", "STONEBRIDGE 世通地產集團", "EIGHT PTY LTD", "MAQ Finance", "StayAU", "Warmy Nest",
+  "TRIO LAWYERS 方元律師", "LOULOU CREATIVE", "Fishing Season Catch & Cook 蒸汽石鍋魚", "澳洲訊報 Asian Multimedia",
+  "CACB 中澳通訊社", "Australia365d", "MSJ Media 禾子傳媒", "史賓威中華公學 Springvale Chinese Ethnic School",
+  "澳洲墨爾本箐華獅子會", "澳大利亞維州粵商會", "Cantonese Student Association 墨大廣東學生會", "東方演藝學校",
+];
+// Traditional (HK) forms: pinyin lookup keys, and default names shown in the afternoon panel.
+Object.assign(PY, {"郭子寧": "Guō Zǐníng", "廖嬋娥": "Liào Chán'é", "張超": "Zhāng Chāo", "王曉慶": "Wáng Xiǎoqìng", "東莞英凱教育": "Dōngguǎn Yīngkǎi Jiàoyù", "何金華": "Hé Jīnhuá", "區煥樂": "Ōu Huànlè", "搖滾麥克": "Yáogǔn Màikè", "韋梓": "Wéi Zǐ", "顧惠佳": "Gù Huìjiā", "莫曉鋒": "Mò Xiǎofēng", "吳可真": "Wú Kězhēn", "林靖傑": "Lín Jìngjié", "何德偉": "Hé Déwěi", "馮建強": "Féng Jiànqiáng", "張敬軒": "Zhāng Jìngxuān", "張學友": "Zhāng Xuéyǒu", "鄧紫棋": "Dèng Zǐqí", "湯令山": "Tāng Lìngshān", "陳百強": "Chén Bǎiqiáng", "譚詠麟": "Tán Yǒnglín", "陳奕迅": "Chén Yìxùn", "容祖兒": "Róng Zǔ'ér", "劉德華": "Liú Déhuá", "張國榮": "Zhāng Guóróng", "陳楊國生教授": "Chén Yáng Guóshēng", "王曉老師": "Wáng Xiǎo", "黃百平老師": "Huáng Bǎipíng", "海底撈": "Hǎidǐlāo", "M記茶室": "M Jì Cháshì", "會所": "Huìsuǒ", "澳富資本": "Àofù Zīběn", "世通地產集團": "Shìtōng Dìchǎn Jítuán", "方元律師": "Fāngyuán Lǜshī", "蒸汽石鍋魚": "Zhēngqì Shíguō Yú", "澳洲訊報": "Àozhōu Xùnbào", "中澳通訊社": "Zhōng-Ào Tōngxùnshè", "禾子傳媒": "Hézǐ Chuánméi", "史賓威中華公學": "Shǐbīnwēi Zhōnghuá Gōngxué", "澳洲墨爾本箐華獅子會": "Àozhōu Mò'ěrběn Jīnghuá Shīzǐhuì", "澳大利亞維州粵商會": "Àodàlìyà Wéizhōu Yuè Shānghuì", "墨大廣東學生會": "Mòdà Guǎngdōng Xuéshēnghuì", "東方演藝學校": "Dōngfāng Yǎnyì Xuéxiào", "王曉": "Wáng Xiǎo", "謝昉益": "Xiè Fǎngyì", "鄧志": "Dèng Zhì"});
+const HK = {"郭子宁": "郭子寧", "廖婵娥 Gladys Liu": "廖嬋娥 Gladys Liu", "墨尔本市议员": "墨爾本市議員", "东莞英凯教育": "東莞英凱教育", "后方": "後方", "王晓庆": "王曉慶"};
 const LABEL = {}, DEFAULT = {};
 for (const [, rows] of FIELDS) for (const [k, label, d] of rows) { LABEL[k] = label; if (d) DEFAULT[k] = d; }
 
@@ -95,7 +105,7 @@ const pyTag = (name) => { const p = pyOf(name); return p ? ` <span class="py">${
 
 function paintFills() {
   for (const el of $$("[data-k]")) {
-    const v = val(el.dataset.k);
+    const v0 = val(el.dataset.k), v = el.closest("#pm") ? HK[v0] ?? v0 : v0;
     el.textContent = v || `[${LABEL[el.dataset.k]}]`;
     if (v && !el.closest("h2, .crew, .cue, .toc")) el.insertAdjacentHTML("beforeend", pyTag(v));
     el.classList.toggle("todo", !v);
@@ -106,23 +116,23 @@ function paintRoster() {
   const who = (i) => (S.r[i]?.n ?? LINEUP[i]?.[0] ?? "").trim();
   const html = [];
   for (let i = 0; i < N; i++) {
-    const no = `${i + 1}号选手`, name = who(i), song = (S.r[i]?.s ?? LINEUP[i]?.[1] ?? "").trim(), [, dsong, hint, singer, unsure] = LINEUP[i] || [];
+    const no = `${i + 1}號選手`, name = who(i), song = (S.r[i]?.s ?? LINEUP[i]?.[1] ?? "").trim(), [, dsong, hint, singer, unsure] = LINEUP[i] || [];
     const orig = singer && song === dsong ? singer : "";
     html.push(`<div class="call">
       <div class="call-h"><span class="no">${i + 1}</span>${name ? esc(name) : `<span class="todo">[${no}]</span>`}${song ? ` · 《${esc(song)}》` : ""}${hint ? `<span class="py">${esc(hint)}</span>` : ""}<span class="dur">3:00</span></div>
-      ${orig ? `<p class="orig">原唱：${esc(orig)}${pyTag(orig)}${unsure ? "（待核实）" : ""}</p>` : ""}
-      ${i === 10 && song === LINEUP[5][1] && song === (S.r[5]?.s ?? LINEUP[5][1]) ? `<p class="say yue fun">同一首《用背脊唱情歌》，今日第二次出现——即场 PK，大家竖起耳仔听清楚！</p>` : ""}
-      <p class="say yue">接下来有请第 ${i + 1} 号选手：${name ? mark(name) + pyTag(name) : ""}，带来歌曲《${esc(song)}》。掌声有请！</p>
-      <p class="cue">演唱结束后：</p>
-      <p class="say yue">感谢${name ? " " + mark(name) + " " : "这位选手"}的精彩演唱！</p>
-      ${i + 2 < N ? `<p class="cue">后台叫号：${i + 3}号准备。</p>` : ""}
+      ${orig ? `<p class="orig">原唱：${esc(orig)}${pyTag(orig)}${unsure ? "（待核實）" : ""}</p>` : ""}
+      ${i === 10 && song === LINEUP[5][1] && song === (S.r[5]?.s ?? LINEUP[5][1]) ? `<p class="say yue fun">同一首《用背脊唱情歌》，今日第二次出現——即場 PK，大家豎起耳仔聽清楚！</p>` : ""}
+      <p class="say yue">接住落嚟，有請第 ${i + 1} 號選手：${name ? mark(name) + pyTag(name) : ""}，為大家帶嚟《${esc(song)}》，掌聲有請！</p>
+      <p class="cue">演唱結束後：</p>
+      <p class="say yue">多謝${name ? " " + mark(name) + " " : "呢位選手"}嘅精彩演唱！</p>
+      ${i + 2 < N ? `<p class="cue">後台叫號：${i + 3}號準備。</p>` : ""}
     </div>`);
   }
   $("#roster").innerHTML = html.join("");
 }
 
 function paintSponsors() {
-  for (const ul of $$(".sponsors")) ul.innerHTML = SPONSORS.map((n) => `<li>${esc(n)}${pyTag(n)}</li>`).join("");
+  for (const ul of $$(".sponsors")) ul.innerHTML = (ul.closest("#pm") ? SPONSORS_HK : SPONSORS).map((n) => `<li>${esc(n)}${pyTag(n)}</li>`).join("");
   for (const ul of $$("[data-list]")) ul.innerHTML = LISTS[ul.dataset.list].map((n) => { const [who, role] = n.split("（"); return `<li><b>${esc(who)}</b>${pyTag(who)}${role ? `<span class="role">（${esc(role)}</span>` : ""}</li>`; }).join("");
 }
 
@@ -237,7 +247,7 @@ function paintPager() {
   if (pager.hidden) return;
   const { list, i } = where(), p = panelOrder.indexOf(S.tab);
   const next = list[i + 1], prev = list[i - 1];
-  $("#nextName").textContent = next ? stopName(next) : p + 1 < panelOrder.length ? "下午 · 粤语" : "—";
+  $("#nextName").textContent = next ? stopName(next) : p + 1 < panelOrder.length ? "下午 · 粵語" : "—";
   $("#prevName").textContent = prev ? stopName(prev) : p > 0 ? "上午 · 普/EN" : "—";
 }
 $("#next").addEventListener("click", () => step(1));
