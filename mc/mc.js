@@ -21,17 +21,17 @@ const FIELDS = [
     ["contestChair", "大赛主席", "郭子宁"],
     ["execChair", "大赛执行主席", "Angie Law"],
     ["consul", "领事姓名", "王晓庆"],
-    ["presenter", "颁奖嘉宾"],
     ["youth1", "少年组表演 1", "Luciana Liu"],
     ["youth2", "少年组表演 2", "Chloe Pang"],
     ["seniors1", "乐龄组表演 1", "Wilson Chang"],
     ["seniors2", "乐龄组表演 2", "Ivan Ho（何金華）"],
   ]],
   ["获奖名单（当场填）", [
-    ["merit", "优异奖"],
-    ["third", "季军"],
-    ["second", "亚军"],
-    ["champ", "冠军"],
+    ["p5", "第五名（Andrew Liu 颁）"],
+    ["p4", "第四名（Wade Ho 颁）"],
+    ["p3", "第三名（Gladys Liu 颁）"],
+    ["p2", "第二名（Angie Law 颁）"],
+    ["p1", "第一名（郭子宁 颁）"],
   ]],
 ];
 // 决赛节目单 (adult group): [name, song, reading hint, original singer, singer unconfirmed?].
