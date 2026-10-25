@@ -48,7 +48,7 @@ const LINEUP = [
 ];
 const SPONSORS = [
   "HUB-M Cafe", "DY·5", "榕熙堂 Vitalis Sanctum", "海底捞 The Glen", "M记茶室 Mkee Tea House", "AUMINA 会所", "Apapaya",
-  "澳富资本 AOFU Capital", "STONEBRIDGE 世通地产集团", "EIGHT PTY LTD", "MAQ Finance", "StayAU", "Warmy Nest",
+  "澳富资本 AOFU Capital", "STONEBRIDGE 世通地产集团", "EIGHT PTY LTD", "MAQ Finance", "Mao Finance", "StayAU", "Warmy Nest",
   "TRIO LAWYERS 方元律师", "LOULOU CREATIVE", "Fishing Season Catch & Cook 蒸汽石锅鱼", "澳洲讯报 Asian Multimedia",
   "CACB 中澳通讯社", "Australia365d", "MSJ Media 禾子传媒", "史宾威中华公学 Springvale Chinese Ethnic School",
   "澳洲墨尔本箐华狮子会", "澳大利亚维州粤商会", "Cantonese Student Association 墨大廣東学生会", "东方演艺学校",
@@ -81,7 +81,7 @@ const pyOf = (name) => (String(name).match(/M[记記]茶室|[\u3400-\u9fff]+/g) 
 Object.assign(PY, { 何金華: "Hé Jīnhuá", 王晓: "Wáng Xiǎo", 李如歌: "Lǐ Rúgē", 谢昉益: "Xiè Fǎngyì", 邓志: "Dèng Zhì" });
 const SPONSORS_HK = [
   "HUB-M Cafe", "DY·5", "榕熙堂 Vitalis Sanctum", "海底撈 The Glen", "M記茶室 Mkee Tea House", "AUMINA 會所", "Apapaya",
-  "澳富資本 AOFU Capital", "STONEBRIDGE 世通地產集團", "EIGHT PTY LTD", "MAQ Finance", "StayAU", "Warmy Nest",
+  "澳富資本 AOFU Capital", "STONEBRIDGE 世通地產集團", "EIGHT PTY LTD", "MAQ Finance", "Mao Finance", "StayAU", "Warmy Nest",
   "TRIO LAWYERS 方元律師", "LOULOU CREATIVE", "Fishing Season Catch & Cook 蒸汽石鍋魚", "澳洲訊報 Asian Multimedia",
   "CACB 中澳通訊社", "Australia365d", "MSJ Media 禾子傳媒", "史賓威中華公學 Springvale Chinese Ethnic School",
   "澳洲墨爾本箐華獅子會", "澳大利亞維州粵商會", "Cantonese Student Association 墨大廣東學生會", "東方演藝學校",
