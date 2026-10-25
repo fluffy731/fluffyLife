@@ -24,8 +24,8 @@ const FIELDS = [
     ["presenter", "颁奖嘉宾"],
     ["youth1", "少年组表演 1", "Luciana Liu"],
     ["youth2", "少年组表演 2", "Chloe Pang"],
-    ["seniors1", "乐龄组表演 1", "Chang Soo Far / Wilson Chang"],
-    ["seniors2", "乐龄组表演 2", "何金华 Ivan Ho"],
+    ["seniors1", "乐龄组表演 1", "Wilson Chang"],
+    ["seniors2", "乐龄组表演 2", "Ivan Ho（何金華）"],
     ["judgeRep", "评委代表"],
   ]],
   ["获奖名单（当场填）", [
@@ -79,6 +79,7 @@ const PY = {
   澳大利亚维州粤商会: "Àodàlìyà Wéizhōu Yuè Shānghuì", 墨大廣東学生会: "Mòdà Guǎngdōng Xuéshēnghuì", 东方演艺学校: "Dōngfāng Yǎnyì Xuéxiào",
 };
 const pyOf = (name) => (String(name).match(/M记茶室|[\u3400-\u9fff]+/g) || []).map((w) => PY[w]).filter(Boolean).join(" · ");
+Object.assign(PY, { 何金華: "Hé Jīnhuá", 王晓: "Wáng Xiǎo", 李如歌: "Lǐ Rúgē", 谢昉益: "Xiè Fǎngyì", 邓志: "Dèng Zhì" });
 const LABEL = {}, DEFAULT = {};
 for (const [, rows] of FIELDS) for (const [k, label, d] of rows) { LABEL[k] = label; if (d) DEFAULT[k] = d; }
 
@@ -108,13 +109,12 @@ function paintRoster() {
   for (let i = 0; i < N; i++) {
     const no = `${i + 1}号选手`, name = who(i), song = (S.r[i]?.s ?? LINEUP[i]?.[1] ?? "").trim(), [, dsong, hint, singer, unsure] = LINEUP[i] || [];
     const orig = singer && song === dsong ? singer : "";
-    const by = orig && !unsure ? `${esc(orig)}嘅` : "";
-    const next = i + 1 < N ? `下一位，${i + 2}号选手${who(i + 1) ? " " + mark(who(i + 1)) : ""}，请准备。` : "十六位选手全部唱完！";
     html.push(`<div class="call">
       <div class="call-h"><span class="no">${i + 1}</span>${name ? esc(name) : `<span class="todo">[${no}]</span>`}${song ? ` · 《${esc(song)}》` : ""}${hint ? `<span class="py">${esc(hint)}</span>` : ""}<span class="dur">3:00</span></div>
-      ${orig ? `<p class="orig">原唱：${esc(orig)}${pyTag(orig)}${unsure ? "（待核实，先唔好讲出口）" : ""}</p>` : ""}
-      <p class="say yue">有请 ${no}${name ? "，" + mark(name) + pyTag(name) : ""}${song ? `，为大家带嚟${by}《${esc(song)}》` : ""}！掌声欢迎！</p>
-      <p class="say yue">多谢${name ? " " + mark(name) : " " + no}！${next}</p>
+      ${orig ? `<p class="orig">原唱：${esc(orig)}${pyTag(orig)}${unsure ? "（待核实）" : ""}</p>` : ""}
+      <p class="say yue">接下来有请第 ${i + 1} 号选手：${name ? mark(name) + pyTag(name) : ""}，带来歌曲《${esc(song)}》。掌声有请！</p>
+      <p class="cue">演唱结束后：</p>
+      <p class="say yue">感谢${name ? " " + mark(name) + " " : "这位选手"}的精彩演唱！</p>
       ${i + 2 < N ? `<p class="cue">后台叫号：${i + 3}号准备。</p>` : ""}
     </div>`);
   }

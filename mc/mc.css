@@ -103,6 +103,8 @@ input { width: 100%; min-width: 0; padding: 9px 11px; border: 1px solid var(--ru
 .call { scroll-margin-top: 150px; }
 .sponsors li, [data-list] li { margin-bottom: 0.2em; }
 .role { color: var(--muted); font-size: 0.75em; }
+.judges .role { display: block; }
+.poem { font-weight: 600; letter-spacing: 0.05em; }
 details.cue summary { cursor: pointer; font-weight: 600; }
 .py { font-weight: 400; margin: 0 0.25em; }
 
