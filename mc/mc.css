@@ -101,7 +101,8 @@ input { width: 100%; min-width: 0; padding: 9px 11px; border: 1px solid var(--ru
 .pager button span { font-weight: 700; font-size: 16px; }
 .pager small { font-size: 12px; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .call { scroll-margin-top: 150px; }
-.sponsors li { margin-bottom: 0.2em; }
+.sponsors li, [data-list] li { margin-bottom: 0.2em; }
+.role { color: var(--muted); font-size: 0.75em; }
 details.cue summary { cursor: pointer; font-weight: 600; }
 .py { font-weight: 400; margin: 0 0.25em; }
 
