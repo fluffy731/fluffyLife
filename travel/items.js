@@ -79,6 +79,7 @@ export const SECTIONS = [
     icon: "🧴",
     always: [
       "Toothbrush and toothpaste",
+      "Retainer",
       "Skincare and sunscreen",
       "Medicine/supplements",
       "Shavers",
