@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Travel Checklist</title>
+<meta name="description" content="Packing checklist with short and long trip modes. Ticks stay on this device.">
+<meta name="theme-color" content="#f3f7f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1d24" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Packing">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="../icons/travel.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/travel-180.png">
+<link rel="stylesheet" href="./travel.css">
+</head>
+<body>
+<header class="mast">
+  <div class="mast-row">
+    <h1>Packing</h1>
+    <div class="seg-ctl" role="radiogroup" aria-label="Trip length">
+      <button type="button" role="radio" data-mode="short">Short trip</button>
+      <button type="button" role="radio" data-mode="long">Long trip</button>
+    </div>
+  </div>
+  <div class="prog">
+    <div class="bar"><i id="bar"></i></div>
+    <span id="count">0 / 0</span>
+  </div>
+  <div class="tools">
+    <label class="chip"><input type="checkbox" id="hideDone"> Hide packed</label>
+    <button type="button" class="chip" id="expand">Collapse all</button>
+    <button type="button" class="chip danger" id="reset">Reset ticks</button>
+  </div>
+</header>
+
+<main id="list"></main>
+
+<template id="mine-form">
+  <form class="add" autocomplete="off">
+    <input type="text" name="text" placeholder="Add your own item" enterkeyhint="done" aria-label="New item">
+    <button type="submit">＋ Add</button>
+  </form>
+</template>
+
+<script type="module" src="./travel.js"></script>
+</body>
+</html>
