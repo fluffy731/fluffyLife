@@ -1,0 +1,15 @@
+{
+  "name": "Travel Checklist",
+  "short_name": "Packing",
+  "description": "Packing checklist with short and long trip modes.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f7f8",
+  "theme_color": "#0e7c86",
+  "icons": [
+    { "src": "../icons/travel.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/travel-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/travel-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
