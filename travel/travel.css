@@ -23,6 +23,8 @@ button { cursor: pointer; }
 .mast h1 { margin: 0; font-size: 22px; flex: 1; }
 .seg-ctl { display: inline-flex; background: var(--soft); border-radius: 10px; padding: 3px; }
 .seg-ctl button { border: 0; background: none; padding: 6px 12px; border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.seg-ctl.trips { display: flex; max-width: 680px; margin: 10px auto 0; }
+.seg-ctl.trips button { flex: 1; }
 .seg-ctl button[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); }
 
 .prog { display: flex; align-items: center; gap: 10px; max-width: 680px; margin: 10px auto 0; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
