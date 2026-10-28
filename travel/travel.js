@@ -1,4 +1,4 @@
-import { SECTIONS } from "./items.js";
+import { SECTIONS, TRIPS } from "./items.js";
 import { load, save, visible, progress } from "./model.js";
 
 const $ = (q) => document.querySelector(q);
@@ -14,7 +14,7 @@ function el(tag, props = {}, kids = []) {
 }
 
 function render() {
-  const shown = visible(SECTIONS, S.mode, S.mine);
+  const shown = visible(SECTIONS, S.mode, S.mine, S.trip);
   list.replaceChildren();
   for (const sec of shown) {
     const items = S.hideDone ? sec.items.filter((it) => !S.ticked[it.key]) : sec.items;
@@ -49,6 +49,7 @@ function render() {
   $("#count").textContent = `${done} / ${total} packed`;
   $("#bar").style.width = total ? `${(100 * done) / total}%` : "0";
   for (const b of document.querySelectorAll("[data-mode]")) b.setAttribute("aria-checked", String(b.dataset.mode === S.mode));
+  for (const b of document.querySelectorAll("[data-trip]")) b.setAttribute("aria-checked", String(b.dataset.trip === S.trip));
   $("#hideDone").checked = S.hideDone;
   paintExpand();
 }
@@ -65,15 +66,23 @@ function mineForm() {
   return f;
 }
 
+const allClosed = () => list.children.length > 0 && [...list.children].every((d) => !d.open);
 function paintExpand() {
-  $("#expand").textContent = collapsed.size === SECTIONS.length + 1 ? "Expand all" : "Collapse all";
+  $("#expand").textContent = allClosed() ? "Expand all" : "Collapse all";
 }
 
+if (!TRIPS.some((t) => t.id === S.trip)) S.trip = TRIPS[0].id;
+$("#trips").append(...TRIPS.map((t) => {
+  const b = el("button", { type: "button", textContent: t.label });
+  b.setAttribute("role", "radio"); b.dataset.trip = t.id;
+  b.addEventListener("click", () => { S.trip = t.id; persist(); render(); });
+  return b;
+}));
 for (const b of document.querySelectorAll("[data-mode]")) b.addEventListener("click", () => { S.mode = b.dataset.mode; persist(); render(); });
 $("#hideDone").addEventListener("change", (e) => { S.hideDone = e.target.checked; persist(); render(); });
 $("#expand").addEventListener("click", () => {
-  if (collapsed.size === SECTIONS.length + 1) collapsed.clear();
-  else for (const s of visible(SECTIONS, S.mode, S.mine)) collapsed.add(s.title);
+  if (allClosed()) collapsed.clear();
+  else for (const s of visible(SECTIONS, S.mode, S.mine, S.trip)) collapsed.add(s.title);
   render();
 });
 

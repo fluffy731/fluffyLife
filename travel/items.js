@@ -1,27 +1,60 @@
-// Packing list. Edit freely: each section has `always` (every trip) and `long` (shown only in Long trip mode).
+// Packing list. Edit freely.
+// Each section has `always` (every trip) and `long` (shown only in Long trip mode).
+// An item is plain text, shown on every trip type, or [text, "trip ids"] to show it only on those trip types,
+// e.g. ["Passport", "overseas"] or ["Online check-in done", "overseas domestic"].
+// A section with `trips: [...]` only appears on those trip types.
 // Ticks are remembered by the item's wording, so rewording an item clears its tick; nothing else breaks.
 // Items you add on the phone (＋ Add in the app) are kept in that browser and are not written here.
+export const TRIPS = [
+  { id: "overseas", label: "Overseas" },
+  { id: "domestic", label: "Domestic" },
+  { id: "road", label: "Road trip" },
+];
+
 export const SECTIONS = [
   {
     title: "Documents & money",
     icon: "🛂",
     always: [
-      "Passport (valid 6+ months past your return date)",
-      "Visa / ETA / ESTA checked for each country",
-      "Travel insurance: policy and emergency number saved on phone",
-      "Flight and accommodation bookings (offline copies)",
+      ["Passport (valid 6+ months past your return date)", "overseas"],
+      ["Visa / ETA / ESTA checked for each country", "overseas"],
+      ["Travel insurance: policy and emergency number saved on phone", "overseas"],
+      ["Flight and accommodation bookings (offline copies)", "overseas domestic"],
       "Driver licence/IDP",
-      "Card - make sure international",
+      ["Card - make sure international", "overseas"],
       "Cash",
-      "身份証/回鄉証",
-      "China bank devices",
+      ["身份証/回鄉証", "overseas"],
+      ["China bank devices", "overseas"],
       "Medicare",
-      "Passport photo page saved to cloud / emailed to yourself",
+      ["Passport photo page saved to cloud / emailed to yourself", "overseas"],
     ],
     long: [
       "Backup card kept separate from wallet",
-      "Register trip on Smartraveller",
-      "Frequent flyer / hotel loyalty numbers",
+      ["Register trip on Smartraveller", "overseas"],
+      ["Frequent flyer / hotel loyalty numbers", "overseas domestic"],
+    ],
+  },
+  {
+    title: "Road trip",
+    icon: "🚗",
+    trips: ["road"],
+    always: [
+      "Accommodation / campsite bookings",
+      "Rego current and roadside assistance number saved",
+      "Toll account / e-tag topped up",
+      "Fuel up (or charge) before you leave",
+      "Tyres (incl. spare), oil and water checked",
+      "Car phone charger and phone mount",
+      "Water and snacks for the drive",
+      "Playlist / podcasts downloaded",
+      "Rubbish bag for the car",
+    ],
+    long: [
+      "Esky and ice",
+      "Jumper leads",
+      "Torch",
+      "Paper map for no-reception stretches",
+      "Car serviced before the trip",
     ],
   },
   {
@@ -30,9 +63,9 @@ export const SECTIONS = [
     always: [
       "Chargers and correct connector",
       "Portable charger (carry-on only, not checked bag)",
-      "Travel adapter (check the plug type)",
+      ["Travel adapter (check the plug type)", "overseas"],
       "AirPods + wired earphones",
-      "SIM roaming setup",
+      ["SIM roaming setup", "overseas"],
       "Gimbal/action",
       "Offline maps downloaded",
     ],
@@ -73,7 +106,8 @@ export const SECTIONS = [
       "Toothbrush and toothpaste",
       "Deodorant",
       "Skincare and sunscreen",
-      "Liquids under 100 mL, in one clear resealable bag",
+      // Australian domestic flights have no liquids limit; international ones do.
+      ["Liquids under 100 mL, in one clear resealable bag", "overseas"],
       "Medicine/supplements (prescriptions in original packaging, with script)",
       "Glasses / contacts",
       "Shavers",
@@ -93,9 +127,10 @@ export const SECTIONS = [
   {
     title: "Carry-on comfort",
     icon: "✈️",
+    trips: ["overseas", "domestic"],
     always: [
       "Empty water bottle (fill after security)",
-      "Pen for arrival cards",
+      ["Pen for arrival cards", "overseas"],
       "Book",
       "Snacks",
     ],
@@ -109,8 +144,8 @@ export const SECTIONS = [
     title: "Before you leave home",
     icon: "🏠",
     always: [
-      "Online check-in done",
-      "Check Smartraveller advice for destination",
+      ["Online check-in done", "overseas domestic"],
+      ["Check Smartraveller advice for destination", "overseas"],
       "Bins out",
       "Fridge cleared of anything that will spoil",
       "Windows and doors locked",
