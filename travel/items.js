@@ -53,6 +53,7 @@ export const SECTIONS = [
       "AirPods + wired earphones",
       ["SIM roaming setup", "overseas"],
       "Gimbal/action",
+      "Plaud",
     ],
     long: [
       "Laptop / tablet and charger",
