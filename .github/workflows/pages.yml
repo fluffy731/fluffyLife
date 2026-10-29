@@ -12,9 +12,11 @@ permissions:
   contents: read
   pages: write
   id-token: write
+# A newer run waits for the one in progress instead of cancelling it, so the hourly news refresh can
+# never kill a long deploy (e.g. one re-recording every audio clip after the cache is lost).
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   test:
     runs-on: ubuntu-latest
