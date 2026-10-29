@@ -1,7 +1,7 @@
 import { TRIPS } from "./items.js";
 import { load as loadPacking, save as savePacking } from "./model.js";
 import { KINDS, kindOf, load, save, uid, todayISO, fixRange, reschedule, itinerary, tripDays, nights, dayLabel, rangeLabel,
-  status, sortTrips, current, packingFor, toText, exportJSON, importJSON } from "./plan-model.js";
+  status, sortTrips, current, packingFor, toText, exportJSON, importJSON, linkedTrip } from "./plan-model.js";
 
 const $ = (q, root = document) => root.querySelector(q);
 let S = load(localStorage);
@@ -227,13 +227,34 @@ itemForm.addEventListener("submit", (e) => {
   persist(); render();
 });
 
-// ---------- start ----------
-window.addEventListener("hashchange", render);
-// Opening the planner mid-trip goes straight to that trip; ‹ Trips still lists them all.
-if (!findTrip(openId())) {
-  const now = current(S.trips, todayISO());
-  if (now) history.replaceState(null, "", `#t=${encodeURIComponent(now.id)}`);
+// ---------- trips from a link ----------
+// plan.html#import=<name> loads travel/trips/<name>.json into this phone's planner, then opens it.
+// A trip already here is only replaced if you say so, since that would undo edits made on the phone.
+async function importFromLink(name) {
+  let r;
+  try {
+    const res = await fetch(`./trips/${name}.json`, { cache: "no-cache" });
+    if (!res.ok) throw new Error(`Couldn't find the trip "${name}" on the website.`);
+    r = importJSON(await res.text(), S);
+  } catch (err) { alert(err.message); history.replaceState(null, "", "#"); return render(); }
+  const linked = r.trips.slice(r.trips.length - r.added - r.replaced);
+  const keep = r.replaced && !confirm("This trip is already on this phone. Replace it with the website's version? Changes made on the phone will be lost.");
+  if (!keep) { S = { trips: r.trips }; persist(); }
+  history.replaceState(null, "", linked[0] ? `#t=${encodeURIComponent(linked[0].id)}` : "#");
+  render();
 }
-render();
+
+// ---------- start ----------
+window.addEventListener("hashchange", () => { const name = linkedTrip(location.hash); name ? importFromLink(name) : render(); });
+const linkName = linkedTrip(location.hash);
+if (linkName) { render(); importFromLink(linkName); }
+else {
+  // Opening the planner mid-trip goes straight to that trip; ‹ Trips still lists them all.
+  if (!findTrip(openId())) {
+    const now = current(S.trips, todayISO());
+    if (now) history.replaceState(null, "", `#t=${encodeURIComponent(now.id)}`);
+  }
+  render();
+}
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js").catch(() => {});

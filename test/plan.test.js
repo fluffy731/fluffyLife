@@ -1,7 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
 import { KEY, MAX_DAYS, load, save, fixRange, reschedule, itinerary, tripDays, nights, dayLabel, rangeLabel, status, sortTrips, current,
-  packingFor, toText, exportJSON, importJSON, isDate, todayISO } from "../travel/plan-model.js";
+  packingFor, toText, exportJSON, importJSON, isDate, todayISO, linkedTrip } from "../travel/plan-model.js";
 
 const fakeLS = (init = {}) => { const m = { ...init }; return { getItem: k => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); } }; };
 const item = (id, day, time = "", title = id) => ({ id, day, time, kind: "do", title, place: "", note: "" });
@@ -102,4 +103,23 @@ test("restoring a backup adds new trips and replaces ones with the same id", () 
   assert.deepEqual(r.trips.map(t => [t.id, t.name]), [["b", "HK"], ["a", "New"], ["c", "HK"]]);
   assert.throws(() => importJSON("{}", mine), /isn't a trip plan backup/);
   assert.throws(() => importJSON("not json", mine), /isn't a trip plan backup/);
+});
+
+test("import links name a trip file and nothing else", () => {
+  assert.equal(linkedTrip("#import=example-trip"), "example-trip");
+  assert.equal(linkedTrip("import=hk_2027"), "hk_2027");
+  for (const bad of ["#import=../sw", "#import=a/b", "#import=", "#t=abc", "", "#import=x.json"]) assert.equal(linkedTrip(bad), null, bad);
+});
+
+test("every trip published in travel/trips restores cleanly", () => {
+  const dir = new URL("../travel/trips/", import.meta.url);
+  const files = readdirSync(dir).filter(f => f.endsWith(".json"));
+  assert.ok(files.length, "no trip files");
+  for (const f of files) {
+    assert.ok(linkedTrip(`#import=${f.slice(0, -5)}`), `${f}: name must be letters, digits, - or _`);
+    const raw = JSON.parse(readFileSync(new URL(f, dir), "utf8"));
+    const r = importJSON(readFileSync(new URL(f, dir), "utf8"), { trips: [] });
+    assert.equal(r.trips.length, raw.trips.length, `${f}: a trip was dropped as invalid`);
+    r.trips.forEach((t, i) => assert.equal(t.items.length, raw.trips[i].items.length, `${f}: an entry in "${t.name}" was dropped as invalid`));
+  }
 });
