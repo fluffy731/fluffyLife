@@ -10,13 +10,13 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Packing">
+<meta name="apple-mobile-web-app-title" content="Travel">
 <link rel="manifest" href="./manifest.json">
 <link rel="icon" href="../icons/travel.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../icons/travel-180.png">
 <link rel="stylesheet" href="./travel.css">
 </head>
-<body>
+<body class="tabbed">
 <header class="mast">
   <div class="mast-row">
     <h1>Packing</h1>
@@ -38,6 +38,11 @@
 </header>
 
 <main id="list"></main>
+
+<nav class="tabbar" aria-label="Travel">
+  <a href="./plan.html"><span aria-hidden="true">🗓️</span>Plan</a>
+  <a href="./" aria-current="page"><span aria-hidden="true">🧳</span>Packing</a>
+</nav>
 
 <template id="mine-form">
   <form class="add" autocomplete="off">
