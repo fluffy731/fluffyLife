@@ -47,8 +47,12 @@ function cleanItem(i) {
 function cleanTrip(t) {
   if (!t || typeof t !== "object" || typeof t.id !== "string" || !isDate(t.start)) return null;
   return { id: t.id, name: str(t.name) || "Trip", ...fixRange(t.start, t.end), type: TRIPS.some((x) => x.id === t.type) ? t.type : TRIPS[0].id,
-    items: (Array.isArray(t.items) ? t.items : []).map(cleanItem).filter(Boolean) };
+    items: (Array.isArray(t.items) ? t.items : []).map(cleanItem).filter(Boolean),
+    ...(Number.isInteger(t.rev) && t.rev > 0 ? { rev: t.rev } : {}) };
 }
+
+// Published trips carry a revision number; bump it in travel/trips/<name>.json and phones holding an older copy offer an update.
+export const isNewer = (site, mine) => (site.rev || 0) > (mine.rev || 0);
 
 const cleanTrips = (list) => (Array.isArray(list) ? list.map(cleanTrip).filter(Boolean) : []);
 

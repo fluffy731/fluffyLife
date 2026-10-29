@@ -87,6 +87,9 @@ body.tabbed main { padding-bottom: calc(env(safe-area-inset-bottom) + 84px); }
 .when.past { color: var(--muted); }
 .group { font-size: 13px; font-weight: 650; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin: 22px 2px 8px; }
 .trip.offer { border-style: dashed; }
+.trip .meta .tag { margin-left: 2px; }
+.update-bar { display: block; width: 100%; max-width: 680px; margin: 10px auto 0; border: 0; border-radius: 10px; padding: 9px 12px;
+  background: var(--accent); color: var(--accent-ink); font-weight: 650; font-size: 15px; }
 .hint { color: var(--muted); text-align: center; margin: 32px 16px; }
 .hint.small { font-size: 13px; margin: 10px 0; }
 .tools.foot { justify-content: center; margin-top: 20px; }
