@@ -1,7 +1,7 @@
 name: Deploy to GitHub Pages
 on:
   push:
-    branches: [korean]
+    branches: [languages]
   workflow_dispatch:
   # Hourly: refresh the News app (everything else is cached, so this is quick).
   schedule:

@@ -4,10 +4,10 @@ A personal Korean vocabulary and grammar trainer that shows **hanja (漢字)** a
 
 ## Hosting (one-time GitHub setup)
 
-The workflow in `.github/workflows/pages.yml` runs the tests and deploys the repo root on every push to `korean`. Before the first deploy works:
+The workflow in `.github/workflows/pages.yml` runs the tests and deploys the repo root on every push to `languages` (the default branch, renamed from `korean`). Before the first deploy works:
 
 1. Repo **Settings → Pages → Source: GitHub Actions**.
-2. Repo **Settings → Environments → github-pages → Deployment branches**: add `korean` (the environment is created on the first run and may only allow the default branch).
+2. Repo **Settings → Environments → github-pages → Deployment branches**: add `languages` (the environment is created on the first run and may only allow the default branch).
 
 The Korean app is then at `https://<user>.github.io/<repo>/korean/` and the Cantonese app at `…/yue/`. The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final is at `…/mc/` (names typed into its 名单 tab stay in that browser only). The travel packing checklist is at `…/travel/`: edit the list in `travel/items.js` (each section has `always` items and `long` items that only show in Long trip mode; tag an item `["text", "overseas domestic"]` to limit it to those trip types: Overseas, Domestic, Road trip); ticks and items added on the phone stay in that browser. The bare `https://<user>.github.io/<repo>/` forwards to `/korean/`, so home-screen icons saved from the old address keep working with their progress. The deploy stamps the commit SHA into the service worker, so installed copies pick up changes on their next online launch without anyone bumping a version by hand.
 
