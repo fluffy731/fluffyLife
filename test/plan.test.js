@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { KEY, MAX_DAYS, load, save, fixRange, reschedule, itinerary, tripDays, nights, dayLabel, rangeLabel, status, sortTrips, current,
-  packingFor, toText, exportJSON, importJSON, isDate, todayISO, linkedTrip } from "../travel/plan-model.js";
+  packingFor, toText, exportJSON, importJSON, isDate, todayISO, linkedTrip, isNewer } from "../travel/plan-model.js";
 
 const fakeLS = (init = {}) => { const m = { ...init }; return { getItem: k => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); } }; };
 const item = (id, day, time = "", title = id) => ({ id, day, time, kind: "do", title, place: "", note: "" });
@@ -124,4 +124,15 @@ test("every trip published in travel/trips restores cleanly", () => {
     assert.equal(r.trips.length, raw.trips.length, `${f}: a trip was dropped as invalid`);
     r.trips.forEach((t, i) => assert.equal(t.items.length, raw.trips[i].items.length, `${f}: an entry in "${t.name}" was dropped as invalid`));
   }
+});
+
+test("a published trip's revision survives loading, and a higher one counts as an update", () => {
+  const ls = fakeLS({ [KEY]: JSON.stringify({ trips: [trip("2026-11-05", "2026-11-06", [], { rev: 3 }), trip("2026-11-05", "2026-11-06", [], { id: "t2", rev: "9" })] }) });
+  const [a, b] = load(ls).trips;
+  assert.equal(a.rev, 3);
+  assert.ok(!("rev" in b), "only whole numbers count");
+  assert.ok(isNewer({ rev: 2 }, {}));
+  assert.ok(isNewer({ rev: 3 }, { rev: 2 }));
+  assert.ok(!isNewer({ rev: 2 }, { rev: 2 }));
+  assert.ok(!isNewer({}, {}));
 });
