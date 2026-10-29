@@ -155,6 +155,7 @@ Two tabs: **Plan** and **Packing**.
 - **Pack for this trip** sets the packing list to the trip's type, and to Long trip from 7 nights.
 - **Changing dates:** move both dates by the same amount and every plan moves with the trip. Change only one end and plans stay on their dates; any that now fall outside the trip show under "Not on a trip day" until you move them.
 - **Back up** (Trips page) now and then, because plans stay in that browser only.
+- **Trips from a link:** a backup file saved as `travel/trips/<name>.json` opens with `…/travel/plan.html#import=<name>`. The link loads the trip into that phone's planner, where it can be edited. If the trip is already there, it asks before replacing it. This repo is public, so anything in `travel/trips/` can be read by anyone who finds it, and stays in the history even after it's deleted.
 - **Packing** is the checklist. Edit the list in `travel/items.js`. Each section has `always` items, plus `long` items that only show in Long trip mode. Tag an item `["text", "overseas domestic"]` to limit it to those trip types (Overseas, Domestic, Road trip). Ticks, and items added on the phone, stay in that browser.
 - **Code:** planner logic is in `travel/plan-model.js` and packing logic in `travel/model.js`, both tested in `test/`.
 
