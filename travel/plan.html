@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trip Plan</title>
+<meta name="description" content="Day-by-day trip planner. Plans stay on this device; back them up from the Trips page.">
+<meta name="theme-color" content="#f3f7f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1d24" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Travel">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="../icons/travel.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/travel-180.png">
+<link rel="stylesheet" href="./travel.css">
+</head>
+<body class="tabbed">
+<header class="mast" id="mast"></header>
+
+<main id="view"></main>
+
+<nav class="tabbar" aria-label="Travel">
+  <a href="./plan.html" aria-current="page"><span aria-hidden="true">🗓️</span>Plan</a>
+  <a href="./"><span aria-hidden="true">🧳</span>Packing</a>
+</nav>
+
+<input type="file" id="file" accept="application/json,.json" hidden>
+
+<dialog id="trip-dlg" class="sheet">
+  <form method="dialog" autocomplete="off">
+    <h2 data-title>New trip</h2>
+    <label class="fld">Trip <input name="title" required pattern=".*\S.*" placeholder="e.g. Hong Kong & Shenzhen" enterkeyhint="next"></label>
+    <div class="two">
+      <label class="fld">From <input type="date" name="start" required></label>
+      <label class="fld">To <input type="date" name="end" required></label>
+    </div>
+    <fieldset class="fld"><legend>Type</legend><div class="seg-ctl pick" data-types></div></fieldset>
+    <div class="acts">
+      <button type="button" class="chip danger" data-delete hidden>Delete trip</button>
+      <button value="cancel" formnovalidate class="chip">Cancel</button>
+      <button value="save" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="item-dlg" class="sheet">
+  <form method="dialog" autocomplete="off">
+    <fieldset class="fld"><legend>Kind</legend><div class="kinds" data-kinds></div></fieldset>
+    <label class="fld">What <input name="title" required pattern=".*\S.*" placeholder="e.g. Victoria Peak, CX 100 SYD → HKG" enterkeyhint="next"></label>
+    <div class="two">
+      <label class="fld">Day <select name="day"></select></label>
+      <label class="fld">Time <input type="time" name="time"></label>
+    </div>
+    <label class="fld">Where <input name="place" placeholder="Name or address (opens in Maps)" enterkeyhint="next"></label>
+    <label class="fld">Notes <textarea name="note" rows="3" placeholder="Booking ref, check-in time, tips"></textarea></label>
+    <div class="acts">
+      <button type="button" class="chip danger" data-delete hidden>Delete</button>
+      <button value="cancel" formnovalidate class="chip">Cancel</button>
+      <button value="save" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module" src="./plan.js"></script>
+</body>
+</html>
