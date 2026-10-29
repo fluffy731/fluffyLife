@@ -112,22 +112,13 @@
      "id": "syd12",
      "day": "2026-10-30",
      "time": "14:00",
-     "kind": "eat",
-     "title": "Her bakery (TBC)",
-     "place": "",
-     "note": "Send the name; moves to Sat morning if it's out of the way."
-    },
-    {
-     "id": "syd13",
-     "day": "2026-10-30",
-     "time": "15:00",
      "kind": "do",
      "title": "Sculpture by the Sea: Bondi → Tamarama",
      "place": "Bondi Beach",
      "note": "Free, on until 2 Nov. T4 to Bondi Junction + bus 333.\n~2 km, about an hour with the sculptures. Sunset ~7:20pm.\nRain plan: Art Gallery of NSW + Botanic Garden."
     },
     {
-     "id": "syd14",
+     "id": "syd13",
      "day": "2026-10-30",
      "time": "19:00",
      "kind": "eat",
@@ -136,7 +127,7 @@
      "note": "Seoul street-food bar by Central.\nOr Chinatown Friday Night Market, Dixon St."
     },
     {
-     "id": "syd15",
+     "id": "syd14",
      "day": "2026-10-30",
      "time": "21:00",
      "kind": "do",
@@ -145,7 +136,7 @@
      "note": "29–31 Oct, ticketed. Train to Milsons Point."
     },
     {
-     "id": "syd16",
+     "id": "syd15",
      "day": "2026-10-30",
      "time": "",
      "kind": "stay",
@@ -154,7 +145,7 @@
      "note": ""
     },
     {
-     "id": "syd17",
+     "id": "syd16",
      "day": "2026-10-31",
      "time": "11:00",
      "kind": "do",
@@ -163,7 +154,7 @@
      "note": "30 min each way, best harbour view for a ferry fare.\nAlt: The Rocks Markets + walk the Harbour Bridge.\nBack in the city by 2:30pm."
     },
     {
-     "id": "syd18",
+     "id": "syd17",
      "day": "2026-10-31",
      "time": "15:00",
      "kind": "move",
@@ -172,7 +163,7 @@
      "note": "Grab the bag from Burwood if it's there.\nTrackwork on 31 Oct: check Trip Planner."
     },
     {
-     "id": "syd19",
+     "id": "syd18",
      "day": "2026-10-31",
      "time": "15:30",
      "kind": "eat",
@@ -181,7 +172,7 @@
      "note": "Myeong Dong (kalguksu), Red Pepper (fried chicken, in a club: bring ID), Jomaru hot pot.\nBeat the 5:30pm queues."
     },
     {
-     "id": "syd20",
+     "id": "syd19",
      "day": "2026-10-31",
      "time": "17:00",
      "kind": "move",
@@ -190,7 +181,7 @@
      "note": "Free with the concert ticket.\nStation → stadium ~10 min walk."
     },
     {
-     "id": "syd21",
+     "id": "syd20",
      "day": "2026-10-31",
      "time": "19:30",
      "kind": "do",
@@ -199,7 +190,7 @@
      "note": "Gates 5pm, show 7:30pm. Merch queues: go earlier if it matters.\nAfter: event trains home (free); expect a 30–60 min wait."
     },
     {
-     "id": "syd22",
+     "id": "syd21",
      "day": "2026-10-31",
      "time": "",
      "kind": "stay",
@@ -208,25 +199,43 @@
      "note": ""
     },
     {
+     "id": "syd22",
+     "day": "2026-11-01",
+     "time": "10:00",
+     "kind": "eat",
+     "title": "Weekend yum cha",
+     "place": "Marigold, Haymarket",
+     "note": "Trolley yum cha, 5 min walk to Central.\nOr Mr Wong (weekend yum cha, book). Bring your bags."
+    },
+    {
      "id": "syd23",
      "day": "2026-11-01",
-     "time": "10:30",
-     "kind": "eat",
-     "title": "Weekend yum cha, then the airport",
-     "place": "Marigold, Haymarket",
-     "note": "Trolley yum cha, 5 min walk to Central for the airport train.\nOr Mr Wong (weekend yum cha, book). Bring your bags."
+     "time": "11:30",
+     "kind": "move",
+     "title": "Train T8 Central → Green Square (1 stop)",
+     "place": "Green Square Station",
+     "note": "Same line as the airport. About a 10 min walk to the bakery."
     },
     {
      "id": "syd24",
      "day": "2026-11-01",
-     "time": "12:00",
-     "kind": "move",
-     "title": "Train T8 to Domestic Airport (~15 min)",
-     "place": "Central Station",
-     "note": "Airport station fee again (~$18.61).\nSunday trackwork: check Trip Planner."
+     "time": "11:45",
+     "kind": "eat",
+     "title": "Nap Nap! Bakery (her pick)",
+     "place": "Shop 2/6 Rose Valley Way, Zetland NSW 2017",
+     "note": "Cakes, pastries, coffee. Instagram @napnap_sydney says 7:30am–10:30pm daily: check before going.\nLeave by 12:20 for the train."
     },
     {
      "id": "syd25",
+     "day": "2026-11-01",
+     "time": "12:30",
+     "kind": "move",
+     "title": "Train T8 Green Square → Domestic Airport (2 stops)",
+     "place": "Green Square Station",
+     "note": "Airport station fee applies (~$18.61).\nSunday trackwork: check Trip Planner."
+    },
+    {
+     "id": "syd26",
      "day": "2026-11-01",
      "time": "14:00",
      "kind": "fly",
@@ -235,7 +244,7 @@
      "note": "Be at T2 by 12:45pm: bag drop closes 1:20pm (40 min before), gate 1:40pm (20 min).\nCheck the booking: Jetstar's JQ6xx Sydney flights often land at Avalon, not Tullamarine."
     }
    ],
-   "rev": 2
+   "rev": 3
   }
  ]
 }
