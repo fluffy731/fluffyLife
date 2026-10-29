@@ -6,7 +6,7 @@
    "id": "sydney-bigbang-2026",
    "name": "Sydney + BIGBANG",
    "start": "2026-10-29",
-   "end": "2026-10-31",
+   "end": "2026-11-01",
    "type": "domestic",
    "items": [
     {
@@ -206,8 +206,36 @@
      "title": "Her friend's place (TBC)",
      "place": "",
      "note": ""
+    },
+    {
+     "id": "syd23",
+     "day": "2026-11-01",
+     "time": "10:30",
+     "kind": "eat",
+     "title": "Weekend yum cha, then the airport",
+     "place": "Marigold, Haymarket",
+     "note": "Trolley yum cha, 5 min walk to Central for the airport train.\nOr Mr Wong (weekend yum cha, book). Bring your bags."
+    },
+    {
+     "id": "syd24",
+     "day": "2026-11-01",
+     "time": "12:00",
+     "kind": "move",
+     "title": "Train T8 to Domestic Airport (~15 min)",
+     "place": "Central Station",
+     "note": "Airport station fee again (~$18.61).\nSunday trackwork: check Trip Planner."
+    },
+    {
+     "id": "syd25",
+     "day": "2026-11-01",
+     "time": "14:00",
+     "kind": "fly",
+     "title": "JQ615 SYD T2 → Melbourne",
+     "place": "Sydney Airport T2",
+     "note": "Be at T2 by 12:45pm: bag drop closes 1:20pm (40 min before), gate 1:40pm (20 min).\nCheck the booking: Jetstar's JQ6xx Sydney flights often land at Avalon, not Tullamarine."
     }
-   ]
+   ],
+   "rev": 2
   }
  ]
 }
