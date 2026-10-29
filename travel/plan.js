@@ -43,7 +43,8 @@ function renderTrips() {
   const today = todayISO();
   mast.replaceChildren(el("div", { className: "mast-row" }, [el("h1", { textContent: "Trips" }), btn("＋ New trip", "primary", () => editTrip())]));
   view.replaceChildren();
-  if (!S.trips.length) view.append(el("p", { className: "hint", textContent: "No trips yet. Tap ＋ New trip, then add each day's plans." }));
+  const offers = (website || []).filter((w) => !findTrip(w.trip.id));
+  if (!S.trips.length && !offers.length) view.append(el("p", { className: "hint", textContent: "No trips yet. Tap ＋ New trip, then add each day's plans." }));
   for (const t of sortTrips(S.trips, today)) {
     const st = status(t, today);
     view.append(el("a", { className: `trip ${st.when}`, href: `#t=${encodeURIComponent(t.id)}` }, [
@@ -52,9 +53,17 @@ function renderTrips() {
       el("span", { className: "meta", textContent: `${rangeLabel(t)} · ${nightsLabel(t)} · ${typeLabel(t.type)}` }),
     ]));
   }
+  if (offers.length) view.append(el("h2", { className: "group", textContent: "On the website" }));
+  for (const { name, trip: t } of offers) {
+    view.append(el("a", { className: "trip offer", href: `#import=${name}` }, [
+      el("span", { className: "tn", textContent: t.name }),
+      el("span", { className: "when", textContent: "＋ Add" }),
+      el("span", { className: "meta", textContent: `${rangeLabel(t)} · ${nightsLabel(t)} · ${typeLabel(t.type)}` }),
+    ]));
+  }
   view.append(
     el("div", { className: "tools foot" }, [btn("Back up", "chip", backup), btn("Restore", "chip", () => $("#file").click())]),
-    el("p", { className: "hint small", textContent: "Plans are kept in this browser only. Back up now and then, and before clearing Safari data or changing phones." }),
+    el("p", { className: "hint small", textContent: "Your trips and edits are kept on this phone only (Safari and the home-screen app separately). Back up now and then." }),
   );
 }
 
@@ -244,6 +253,24 @@ async function importFromLink(name) {
   render();
 }
 
+// Trips published in travel/trips/ (listed in index.json) and not on this phone yet are offered on the Trips page.
+// A home-screen app keeps its own storage and tapped links open in Safari, so this is how it gets them.
+let website = null;
+async function loadWebsiteTrips() {
+  try {
+    const res = await fetch("./trips/index.json", { cache: "no-cache" });
+    if (!res.ok) return;
+    const names = ((await res.json()).trips || []).filter((n) => linkedTrip(`#import=${n}`));
+    const found = [];
+    for (const name of names) {
+      const r = await fetch(`./trips/${name}.json`, { cache: "no-cache" });
+      if (r.ok) for (const trip of importJSON(await r.text(), { trips: [] }).trips) found.push({ name, trip });
+    }
+    website = found;
+    if (!findTrip(openId())) render();
+  } catch { /* offline or no index: nothing to offer */ }
+}
+
 // ---------- start ----------
 window.addEventListener("hashchange", () => { const name = linkedTrip(location.hash); name ? importFromLink(name) : render(); });
 const linkName = linkedTrip(location.hash);
@@ -256,5 +283,6 @@ else {
   }
   render();
 }
+loadWebsiteTrips();
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js").catch(() => {});
