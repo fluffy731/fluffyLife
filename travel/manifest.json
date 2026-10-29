@@ -1,7 +1,7 @@
 {
-  "name": "Travel Checklist",
-  "short_name": "Packing",
-  "description": "Packing checklist with short and long trip modes.",
+  "name": "Travel",
+  "short_name": "Travel",
+  "description": "Trip planner and packing checklist.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

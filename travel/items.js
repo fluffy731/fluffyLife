@@ -53,6 +53,7 @@ export const SECTIONS = [
       "AirPods + wired earphones",
       ["SIM roaming setup", "overseas"],
       "Gimbal/action",
+      "Plaud",
     ],
     long: [
       "Laptop / tablet and charger",
@@ -79,6 +80,7 @@ export const SECTIONS = [
     icon: "🧴",
     always: [
       "Toothbrush and toothpaste",
+      "Retainer",
       "Skincare and sunscreen",
       "Medicine/supplements",
       "Shavers",
