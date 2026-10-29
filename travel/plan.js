@@ -1,7 +1,7 @@
 import { TRIPS } from "./items.js";
 import { load as loadPacking, save as savePacking } from "./model.js";
 import { KINDS, kindOf, load, save, uid, todayISO, fixRange, reschedule, itinerary, tripDays, nights, dayLabel, rangeLabel,
-  status, sortTrips, current, packingFor, toText, exportJSON, importJSON, linkedTrip } from "./plan-model.js";
+  status, sortTrips, current, packingFor, toText, exportJSON, importJSON, linkedTrip, isNewer } from "./plan-model.js";
 
 const $ = (q, root = document) => root.querySelector(q);
 let S = load(localStorage);
@@ -50,7 +50,8 @@ function renderTrips() {
     view.append(el("a", { className: `trip ${st.when}`, href: `#t=${encodeURIComponent(t.id)}` }, [
       el("span", { className: "tn", textContent: t.name }),
       el("span", { className: `when ${st.when}`, textContent: st.text }),
-      el("span", { className: "meta", textContent: `${rangeLabel(t)} · ${nightsLabel(t)} · ${typeLabel(t.type)}` }),
+      el("span", { className: "meta" }, [`${rangeLabel(t)} · ${nightsLabel(t)} · ${typeLabel(t.type)} `,
+        siteUpdate(t) && el("span", { className: "tag", textContent: "update ready" })]),
     ]));
   }
   if (offers.length) view.append(el("h2", { className: "group", textContent: "On the website" }));
@@ -74,6 +75,7 @@ function renderTrip(t) {
     el("div", { className: "mast-row" }, [btn("‹ Trips", "back", () => go("")), el("h1", { textContent: t.name }), btn("Edit", "chip", () => editTrip(t))]),
     el("p", { className: "sub" }, [`${rangeLabel(t)} · ${nightsLabel(t)} · ${typeLabel(t.type)} · `, el("span", { className: `when ${st.when}`, textContent: st.text })]),
     el("div", { className: "tools" }, [btn("🧳 Pack for this trip", "chip", () => pack(t)), btn("Share", "chip", (e) => share(t, e.currentTarget))]),
+    siteUpdate(t) && btn("⟳ Updated on the website · tap to get it", "update-bar", () => takeUpdate(siteUpdate(t))),
   );
   view.replaceChildren();
   for (const d of itinerary(t)) {
@@ -267,8 +269,16 @@ async function loadWebsiteTrips() {
       if (r.ok) for (const trip of importJSON(await r.text(), { trips: [] }).trips) found.push({ name, trip });
     }
     website = found;
-    if (!findTrip(openId())) render();
+    render();
   } catch { /* offline or no index: nothing to offer */ }
+}
+
+// The website's copy of a trip when it is newer than this phone's.
+const siteUpdate = (t) => (website || []).map((w) => w.trip).find((w) => w.id === t.id && isNewer(w, t)) || null;
+
+function takeUpdate(site) {
+  if (!confirm("Replace this phone's copy with the website's updated version? Changes made on the phone will be lost.")) return;
+  S.trips = S.trips.map((t) => (t.id === site.id ? site : t)); persist(); render();
 }
 
 // ---------- start ----------
