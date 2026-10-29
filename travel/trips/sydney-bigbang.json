@@ -1,0 +1,213 @@
+{
+ "app": "travel-plan",
+ "version": 1,
+ "trips": [
+  {
+   "id": "sydney-bigbang-2026",
+   "name": "Sydney + BIGBANG",
+   "start": "2026-10-29",
+   "end": "2026-10-31",
+   "type": "domestic",
+   "items": [
+    {
+     "id": "syd1",
+     "day": "2026-10-29",
+     "time": "13:00",
+     "kind": "fly",
+     "title": "JQ514 MEL T4 → SYD T2",
+     "place": "",
+     "note": "Scheduled to land ~2:25pm. Check the Jetstar app for the gate and time."
+    },
+    {
+     "id": "syd2",
+     "day": "2026-10-29",
+     "time": "14:45",
+     "kind": "move",
+     "title": "Train T8 to Wynyard (no change)",
+     "place": "Domestic Airport Station",
+     "note": "Tap card/phone. Includes the ~$18.61 airport station fee.\nThen Wynyard Walk to Barangaroo, ~7 min."
+    },
+    {
+     "id": "syd3",
+     "day": "2026-10-29",
+     "time": "15:20",
+     "kind": "do",
+     "title": "Barangaroo foreshore walk",
+     "place": "Barangaroo Reserve",
+     "note": "Wulugul Walk to the headland, ~30 min."
+    },
+    {
+     "id": "syd4",
+     "day": "2026-10-29",
+     "time": "16:00",
+     "kind": "do",
+     "title": "Work: State Library of NSW",
+     "place": "State Library of NSW, Macquarie St",
+     "note": "Reading rooms open till 8pm Mon–Thu, free wifi.\nMetro Barangaroo → Martin Place, 1 stop.\nMost CBD cafés close 3–4pm."
+    },
+    {
+     "id": "syd5",
+     "day": "2026-10-29",
+     "time": "18:00",
+     "kind": "move",
+     "title": "Train to Burwood (~20–25 min)",
+     "place": "Burwood Station",
+     "note": "From Town Hall or Wynyard. Pick a train that stops at Burwood.\nDrop the bag at the hotel."
+    },
+    {
+     "id": "syd6",
+     "day": "2026-10-29",
+     "time": "18:45",
+     "kind": "eat",
+     "title": "Dinner with friend: Burwood Chinatown",
+     "place": "Burwood Chinatown",
+     "note": "Hawker-style: Lovin' Lamb skewers, 1915 Lanzhou noodles.\nIf the friend wants the city: Haymarket Chinatown, then train back."
+    },
+    {
+     "id": "syd7",
+     "day": "2026-10-29",
+     "time": "",
+     "kind": "stay",
+     "title": "The Park Oasis Burwood",
+     "place": "46 Park Rd, Burwood NSW 2134",
+     "note": "Check-in from 3–4pm. Message them about late arrival.\n6 min walk from Burwood Station. Check-out Fri 11am."
+    },
+    {
+     "id": "syd8",
+     "day": "2026-10-30",
+     "time": "",
+     "kind": "stay",
+     "title": "Check out, ask them to hold the bag",
+     "place": "The Park Oasis Burwood",
+     "note": "Burwood is 1 stop from Strathfield: grab it Sat on the way to the concert (or Fri evening)."
+    },
+    {
+     "id": "syd9",
+     "day": "2026-10-30",
+     "time": "08:00",
+     "kind": "move",
+     "title": "Train Burwood → Town Hall (~15 min)",
+     "place": "",
+     "note": ""
+    },
+    {
+     "id": "syd10",
+     "day": "2026-10-30",
+     "time": "08:30",
+     "kind": "eat",
+     "title": "Breakfast in the city",
+     "place": "Wynyard",
+     "note": "Or HK breakfast at Kowloon Cafe Burwood before you leave."
+    },
+    {
+     "id": "syd11",
+     "day": "2026-10-30",
+     "time": "12:00",
+     "kind": "eat",
+     "title": "Lunch with her: Cantonese / dim sum",
+     "place": "Mr Wong, 3 Bridge Ln, Sydney",
+     "note": "Book. Lunch from noon.\nWalk-in plan B: Marigold, Haymarket (trolley yum cha)."
+    },
+    {
+     "id": "syd12",
+     "day": "2026-10-30",
+     "time": "14:00",
+     "kind": "eat",
+     "title": "Her bakery (TBC)",
+     "place": "",
+     "note": "Send the name; moves to Sat morning if it's out of the way."
+    },
+    {
+     "id": "syd13",
+     "day": "2026-10-30",
+     "time": "15:00",
+     "kind": "do",
+     "title": "Sculpture by the Sea: Bondi → Tamarama",
+     "place": "Bondi Beach",
+     "note": "Free, on until 2 Nov. T4 to Bondi Junction + bus 333.\n~2 km, about an hour with the sculptures. Sunset ~7:20pm.\nRain plan: Art Gallery of NSW + Botanic Garden."
+    },
+    {
+     "id": "syd14",
+     "day": "2026-10-30",
+     "time": "19:00",
+     "kind": "eat",
+     "title": "Dinner: Korean pocha",
+     "place": "Hongdae Pocha, 5 Central Park Ave, Chippendale",
+     "note": "Seoul street-food bar by Central.\nOr Chinatown Friday Night Market, Dixon St."
+    },
+    {
+     "id": "syd15",
+     "day": "2026-10-30",
+     "time": "21:00",
+     "kind": "do",
+     "title": "Optional: Luna Park Halloscream",
+     "place": "Luna Park Sydney",
+     "note": "29–31 Oct, ticketed. Train to Milsons Point."
+    },
+    {
+     "id": "syd16",
+     "day": "2026-10-30",
+     "time": "",
+     "kind": "stay",
+     "title": "Her friend's place (TBC)",
+     "place": "",
+     "note": ""
+    },
+    {
+     "id": "syd17",
+     "day": "2026-10-31",
+     "time": "11:00",
+     "kind": "do",
+     "title": "Manly ferry + beach",
+     "place": "Circular Quay",
+     "note": "30 min each way, best harbour view for a ferry fare.\nAlt: The Rocks Markets + walk the Harbour Bridge.\nBack in the city by 2:30pm."
+    },
+    {
+     "id": "syd18",
+     "day": "2026-10-31",
+     "time": "15:00",
+     "kind": "move",
+     "title": "Train to Strathfield (~15 min from Central)",
+     "place": "Strathfield Station",
+     "note": "Grab the bag from Burwood if it's there.\nTrackwork on 31 Oct: check Trip Planner."
+    },
+    {
+     "id": "syd19",
+     "day": "2026-10-31",
+     "time": "15:30",
+     "kind": "eat",
+     "title": "Early Korean dinner, Strathfield",
+     "place": "Strathfield",
+     "note": "Myeong Dong (kalguksu), Red Pepper (fried chicken, in a club: bring ID), Jomaru hot pot.\nBeat the 5:30pm queues."
+    },
+    {
+     "id": "syd20",
+     "day": "2026-10-31",
+     "time": "17:00",
+     "kind": "move",
+     "title": "Event train/bus to Olympic Park",
+     "place": "Olympic Park Station",
+     "note": "Free with the concert ticket.\nStation → stadium ~10 min walk."
+    },
+    {
+     "id": "syd21",
+     "day": "2026-10-31",
+     "time": "19:30",
+     "kind": "do",
+     "title": "BIGBANG: XX : COSMOS",
+     "place": "Accor Stadium, Sydney Olympic Park",
+     "note": "Gates 5pm, show 7:30pm. Merch queues: go earlier if it matters.\nAfter: event trains home (free); expect a 30–60 min wait."
+    },
+    {
+     "id": "syd22",
+     "day": "2026-10-31",
+     "time": "",
+     "kind": "stay",
+     "title": "Her friend's place (TBC)",
+     "place": "",
+     "note": ""
+    }
+   ]
+  }
+ ]
+}
