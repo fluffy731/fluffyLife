@@ -129,6 +129,12 @@ export function toText(t) {
   return lines.join("\n");
 }
 
+// "plan.html#import=example-trip" names travel/trips/example-trip.json. Plain names only, so a link can't reach other files.
+export function linkedTrip(hash) {
+  const name = new URLSearchParams(String(hash).replace(/^#/, "")).get("import");
+  return name && /^[\w-]{1,60}$/.test(name) ? name : null;
+}
+
 export const exportJSON = (s) => JSON.stringify({ app: "travel-plan", version: 1, trips: s.trips }, null, 1);
 
 // A backup adds its trips; a trip already here with the same id is replaced by the backup's copy.
