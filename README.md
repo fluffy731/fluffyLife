@@ -1,21 +1,63 @@
-# 한자 Korean
+# fluffyLife
 
-A personal Korean vocabulary and grammar trainer that shows **hanja (漢字)** and Traditional Chinese beside every Sino-Korean word, so a Chinese reader gets the meaning at a glance. Spaced repetition (SM-2), a TOPIK-ordered study track, and a clock-driven "word of the hour". Static files only: no server, no account, works offline once installed.
+All things life, and whatever comes up next: language trainers, a no-opinion news briefing, a trip planner and packing list, and the odd MC script. Each one is a small web app you can add to your iPhone home screen. They are static files only, with no server and no account, and they work offline once installed.
+
+**Live at <https://fluffy731.github.io/fluffyLife/>**
+
+| App | Address | What it's for |
+|---|---|---|
+| 한자 Korean | [`/korean/`](https://fluffy731.github.io/fluffyLife/korean/) | Korean vocabulary and grammar with hanja beside every Sino-Korean word |
+| 粵語 Cantonese | [`/yue/`](https://fluffy731.github.io/fluffyLife/yue/) | Cantonese for a Korean speaker starting from zero |
+| 蒙古语 Mongolian | [`/mongolian/`](https://fluffy731.github.io/fluffyLife/mongolian/) | Mongolian for a Mandarin speaker starting from zero |
+| English · 영어 | [`/english/`](https://fluffy731.github.io/fluffyLife/english/) | Intermediate-to-advanced English for a Korean speaker |
+| Briefing · 뉴스 | [`/news/`](https://fluffy731.github.io/fluffyLife/news/) | Hourly news from free-to-read outlets, opinion removed |
+| Travel | [`/travel/`](https://fluffy731.github.io/fluffyLife/travel/) | Trip planner and packing checklist |
+| MC 主持稿 | [`/mc/`](https://fluffy731.github.io/fluffyLife/mc/) | MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final |
+
+The bare address forwards to `/korean/`, so home-screen icons saved from it before the other apps existed keep working.
+
+## How the branches work
+
+`mainFluffy` is the live site. Every push to it runs the tests and then deploys. Each project has its own branch for work in progress:
+
+| Branch | Holds work on |
+|---|---|
+| `mainFluffy` | The live site: every app |
+| `languages` | `korean/`, `yue/`, `mongolian/`, `english/` and their data |
+| `travel` | `travel/` |
+| `MCscript` | `mc/` |
+
+Every branch is a full copy of the site. A project branch is where that project's folder changes, not a copy with the other apps removed. Deleting another app's files on a project branch would delete them from the live site when the branch is merged.
+
+1. **Work** on the project's branch. Pushes there run the tests but never deploy.
+2. **Go live:** open a pull request with base `mainFluffy` and compare set to the project branch. Wait for the green tick, then **Merge**. The site updates in about two minutes.
+3. **Sync** the other project branches straight away: open a pull request with the project branch as base and `mainFluffy` as compare, then merge it.
+4. **One at a time:** merge one branch, sync, then merge the next. `sw.js`, `index.html` and this README are shared by every app, so two branches editing them is where conflicts come from.
+
+To add a new app: give it its own folder, list its files in `FILES` in `sw.js` so it works offline, add a link in `index.html` and a row in the table above, and put its tests in `test/`.
 
 ## Hosting (one-time GitHub setup)
 
-The workflow in `.github/workflows/pages.yml` runs the tests on every push to any branch, and deploys the repo root only from the default branch, whatever it is called (renaming it needs no change here). Before the first deploy works:
+The workflow in `.github/workflows/pages.yml` runs the tests on every push to any branch. It deploys the repo root only from the default branch, whatever that branch is called, so renaming it needs no change to the workflow. Before the first deploy works:
 
 1. Repo **Settings → Pages → Source: GitHub Actions**.
-2. Repo **Settings → Environments → github-pages → Deployment branches**: add the default branch by name, and again after renaming it (the environment is created on the first run and may only allow the default branch).
+2. Repo **Settings → Environments → github-pages → Deployment branches**: add the default branch by name, with matching capitals. Do this again after any rename, or the deploy is rejected.
 
-The Korean app is then at `https://<user>.github.io/<repo>/korean/` and the Cantonese app at `…/yue/`. The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final is at `…/mc/` (names typed into its 名单 tab stay in that browser only). The travel app is at `…/travel/`, with two tabs. **Plan** (`…/travel/plan.html`) holds trips: name, dates and type, then each day's plans (flights, stays, food, things to do, transport) with an optional time, a place that opens in Maps, and notes for booking refs. Opening it mid-trip goes straight to that trip, scrolled to today; *Share* sends the itinerary as text; *Pack for this trip* sets the packing list to the trip's type, and to Long trip from 7 nights. Moving both dates by the same amount moves every plan with the trip; changing only one end leaves plans on their dates, and any that fall outside show under "Not on a trip day" until moved. Plans stay in that browser, so use *Back up* (Trips page) now and then. **Packing** is the checklist: edit the list in `travel/items.js` (each section has `always` items and `long` items that only show in Long trip mode; tag an item `["text", "overseas domestic"]` to limit it to those trip types: Overseas, Domestic, Road trip); ticks and items added on the phone stay in that browser. The bare `https://<user>.github.io/<repo>/` forwards to `/korean/`, so home-screen icons saved from the old address keep working with their progress. The deploy stamps the commit SHA into the service worker, so installed copies pick up changes on their next online launch without anyone bumping a version by hand.
+The deploy stamps the commit SHA into the service worker, so installed copies pick up changes on their next online launch without anyone bumping a version by hand. Each app keeps its data in its own browser storage on the device. Nothing is sent anywhere, so use each app's backup or export before clearing Safari data or changing phones.
 
 ## Install on iPhone
 
-1. Open the hosted page (`…/korean/`) in Safari.
+1. Open the app's address in Safari.
 2. Share → **Add to Home Screen**.
-3. Open it from the home screen once so the offline cache fills. The home-screen app keeps its own progress, separate from Safari's.
+3. Open it from the home screen once so the offline cache fills. The home-screen app keeps its own data, separate from Safari's.
+
+Add each app separately. Each has its own icon, name and data.
+
+# Languages
+
+## 한자 Korean (`/korean/`)
+
+A personal Korean vocabulary and grammar trainer that shows **hanja (漢字)** and Traditional Chinese beside every Sino-Korean word, so a Chinese reader gets the meaning at a glance. Spaced repetition (SM-2), a TOPIK-ordered study track, and a clock-driven "word of the hour". Static files only: no server, no account, works offline once installed.
 
 ### Hourly reminder
 
@@ -27,7 +69,7 @@ iOS does not let a web app set its own alarm, and Shortcuts' *Time of Day* autom
 
 The Home tab shows a word of the hour, chosen from the current unit by the clock, so it is the same word for the whole hour and changes on the hour.
 
-## Study track
+### Study track
 
 Units run **Intermediate (TOPIK 3–4) → Advanced (TOPIK 5–6) → Beginner (TOPIK 1–2)**. Each unit has 20 words and 2–3 grammar points. A unit counts as learned once every item has been introduced; the next one unlocks then, but you can jump to any unit from Settings.
 
@@ -41,7 +83,7 @@ Units run **Intermediate (TOPIK 3–4) → Advanced (TOPIK 5–6) → Beginner (
 - **Browse** searches by 한글, 漢字, 中文 or English; tap an item to see examples, edit it, or reset its progress. **+ Add** creates your own words or grammar points.
 - **Settings** exports and imports a JSON backup. Progress lives in the browser's localStorage only, so export before clearing Safari data.
 
-## Editing the seed data
+### Editing the seed data
 
 Words are in `data/vocab-int.js`, `data/vocab-adv.js`, `data/vocab-beg.js` as compact rows:
 
@@ -52,14 +94,6 @@ Words are in `data/vocab-int.js`, `data/vocab-adv.js`, `data/vocab-beg.js` as co
 Grammar is in `data/grammar.js`. Ids and units are assigned by **position** (20 words per unit), so inserting a row in the middle shifts later ids and orphans their progress; append new rows at the end of a tier or add them inside the app instead. Entries marked `check: true` (shown with a `?` badge) are ones the author was unsure of.
 
 Installed copies refresh themselves: the deploy stamps the commit SHA into `sw.js`, and the service worker fetches network-first whenever it is online.
-
-## Development
-
-```
-npm test        # node --test: scheduler, track, storage, data validation
-```
-
-No build step. Serve the folder with any static server to try it locally.
 
 ## 광동어 · 粵語 — Cantonese for Korean speakers (`/yue/`)
 
@@ -77,19 +111,6 @@ A second home-screen app on the same engine, for a Korean speaker who is a compl
 - **Review direction:** Settings → 복습 방향 → 뜻 → 소리 turns Review into speaking practice (see the Korean meaning, say it, flip). Home shows a tone key; Unit 1 starts with a card on how to read the 한글.
 - Cantonese words live in `data/yue/vocab-a0.js`, `vocab-a1.js`, `vocab-a2.js`, grouped by unit: `[zh, jyutping, 한국어 뜻, English, pos, example zh, example jyutping, example 한국어, check?]`. `npm test` validates every syllable. Ids come from the characters (`y:你好`), so rows can be added, removed or reordered without disturbing progress; flag a loanword with `"loan"` in the last column.
 
-## Development checks
-
-```
-npm test                                   # unit tests: scheduler, track, storage, Korean & Cantonese data, Jyutping engine
-node scripts/snapshot.mjs --check          # Korean app HTML identical to the golden snapshot
-node scripts/mn-check.mjs                  # Mongolian app behaviour (Chinese UI, Learn chips, quiz, offline)
-node scripts/korean-check.mjs              # Korean app behaviour (search IME, dialog, Again keeps progress …)
-node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
-node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
-node scripts/news-check.mjs                # Briefing news app against a fixture feed
-```
-The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.
-
 ## 蒙古语 · Монгол хэл — Mongolian for Mandarin speakers (`/mongolian/`)
 
 A third home-screen app on the same engine, for a Mandarin + English speaker starting Mongolian from zero. The interface is Simplified Chinese.
@@ -99,7 +120,6 @@ A third home-screen app on the same engine, for a Mandarin + English speaker sta
 - **Track:** 12 units, about 350 words and phrases, 34 grammar points with notes in Chinese — A0 (1 问候与基本 · 2 数字与时间 · 3 家人与人 · 4 食物与饮料), A1 (5 购物与钱 · 6 交通与方向 · 7 日常动词 · 8 常用形容词), A2 (9 身体与健康 · 10 天气与自然 · 11 家与生活 · 12 社交与文化). Every unit starts with basic words and includes set phrases.
 - **Quiz:** meaning, Chinese → Mongolian, **reading practice** (Cyrillic → Latin spelling), listening, and grammar.
 - **Content:** rows live in `data/mn/vocab-a0/a1/a2.js` as `[mn, zh, en, pos, exMn, exZh, exEn, check?]`; grammar in `data/mn/grammar.js`. `node scripts/check-data.mjs mn` checks Cyrillic, Simplified Chinese and required fields. Written by Claude; rows marked `?` and the first units deserve a native speaker's check.
-
 
 ## English · 영어 — English for Korean speakers (`/english/`)
 
@@ -113,7 +133,7 @@ A fourth home-screen app on the same engine, for a Korean speaker at intermediat
 - **Quiz:** meaning, Korean → English, **fill in the blank** (the word removed from its example), listening, and grammar.
 - **Content:** `data/en/part1–4.js`; vocab rows `[en, ipa, ko, pos, ex, exKo, note|null, check?]`, grammar rows `[form, unit, ko, note, [[en, ko], …]]`. `node scripts/check-data.mjs en` checks it; `node scripts/en-check.mjs` checks the app in a browser.
 
-## Briefing · 뉴스 — news without paywalls or opinion (`/news/`)
+# Briefing · 뉴스 — news without paywalls or opinion (`/news/`)
 
 A fifth home-screen app. It reads only free-to-read outlets and never bypasses a paywall.
 
@@ -124,3 +144,35 @@ A fifth home-screen app. It reads only free-to-read outlets and never bypasses a
 - **Korean learning:** in 한국어 stories every word is tappable and looked up in the Korean app's offline dictionary.
 - **Checks:** `node --test test/news*.test.js`; `node scripts/build-news.mjs --probe` prints each feed's status; `node scripts/news-check.mjs` checks the app in a browser against a fixture feed.
 - **Note:** GitHub pauses scheduled workflows after 60 days without repository activity; any push (or re-enabling the workflow in Actions) restarts the hourly updates.
+
+# Travel (`/travel/`)
+
+Two tabs: **Plan** and **Packing**.
+
+- **Plan** (`/travel/plan.html`) holds trips. Each trip has a name, dates and type, then each day's plans: flights, stays, food, things to do and transport. A plan can have a time, a place that opens in Maps, and notes for booking refs.
+- **Opening mid-trip:** during a trip, Plan opens straight onto that trip, scrolled to today.
+- **Share** sends the itinerary as text.
+- **Pack for this trip** sets the packing list to the trip's type, and to Long trip from 7 nights.
+- **Changing dates:** move both dates by the same amount and every plan moves with the trip. Change only one end and plans stay on their dates; any that now fall outside the trip show under "Not on a trip day" until you move them.
+- **Back up** (Trips page) now and then, because plans stay in that browser only.
+- **Packing** is the checklist. Edit the list in `travel/items.js`. Each section has `always` items, plus `long` items that only show in Long trip mode. Tag an item `["text", "overseas domestic"]` to limit it to those trip types (Overseas, Domestic, Road trip). Ticks, and items added on the phone, stay in that browser.
+- **Code:** planner logic is in `travel/plan-model.js` and packing logic in `travel/model.js`, both tested in `test/`.
+
+# MC script (`/mc/`)
+
+The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final: morning in Mandarin and English, afternoon in Traditional Chinese with spoken Cantonese, with sponsors, judges, awards and a prev/next pager. Names typed into its 名单 tab stay in that browser only.
+
+# Development
+
+No build step. Serve the folder with any static server to try it locally.
+
+```
+npm test                                   # unit tests: scheduler, track, storage, Korean & Cantonese data, Jyutping engine
+node scripts/snapshot.mjs --check          # Korean app HTML identical to the golden snapshot
+node scripts/mn-check.mjs                  # Mongolian app behaviour (Chinese UI, Learn chips, quiz, offline)
+node scripts/korean-check.mjs              # Korean app behaviour (search IME, dialog, Again keeps progress …)
+node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
+node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
+node scripts/news-check.mjs                # Briefing news app against a fixture feed
+```
+The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.
