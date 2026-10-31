@@ -190,3 +190,4 @@ table.cmp th { text-align: right; }
 .trade-row { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--rule); padding: 7px 0; font-size: 14px; }
 .trade-row:first-of-type { border-top: 0; }
 h2.section { font-size: 18px; margin: 18px 0 4px; }
+.practice .done { color: var(--up); font-weight: 600; }

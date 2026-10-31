@@ -27,7 +27,7 @@ test("buying spends A$ including the fee, at the price in Australian dollars; pa
 test("buying is refused with a reason: no exchange rate, no more than the fee, more than the cash left", () => {
   const pf = newPractice("2026-11-01", [AAPL], FX);
   assert.throws(() => buy(pf, AAPL, 500, "2026-11-01", null), /exchange rate/);
-  assert.throws(() => buy(pf, AAPL, FEE, "2026-11-01", FX), /more than the A\$5 fee/);
+  assert.throws(() => buy(pf, AAPL, FEE, "2026-11-01", FX), /at least A\$10/);
   assert.throws(() => buy(pf, AAPL, START_CASH + 1, "2026-11-01", FX), /A\$10,000 of practice cash left/);
   assert.equal(pf.cash, START_CASH, "a refused trade changes nothing");
 });
@@ -89,4 +89,71 @@ test("comparing two stocks: both as % change from the range's first day, the sec
   assert.ok(m.lo <= -0.2 + 1e-9 && m.hi >= 0.21 - 1e-9);
   const late = compareModel(a, { d: ["D3", "D4"], p: [10, 12] }, Infinity);
   assert.deepEqual(late.d, ["D3", "D4"], "starts on the first day both have a price");
+});
+
+test("damaged saved data is refused whole, never half-read", () => {
+  const good = buy(newPractice("2026-11-01", [AAPL, VOO], FX), AAPL, 1005, "2026-11-01", FX);
+  const damaged = [
+    { ...good, holdings: { AAPL: null } },
+    { ...good, holdings: { AAPL: { units: 0, cost: 10, lastAud: 1 } } },
+    { ...good, trades: [null] },
+    { ...good, trades: [{ ...good.trades[0], amount: "<img src=x onerror=alert(1)>" }] },
+    { ...good, trades: [{ ...good.trades[0], side: "short" }] },
+    { ...good, trades: [{ ...good.trades[0], side: "sell" }] },          // a sale must carry its gain
+    { ...good, start: 0 },
+    { ...good, bench: { t: "VOO", aud: -1 } },
+    { ...good, cash: Infinity },
+  ];
+  for (const d of damaged) assert.equal(readPractice(JSON.stringify(d)), null, JSON.stringify(d).slice(0, 80));
+  assert.deepEqual(readPractice(JSON.stringify({ ...good, bench: null })).bench, null, "no benchmark is allowed");
+});
+
+test("buying needs at least A$10 and a price; a missing price is not blamed on the exchange rate", () => {
+  const pf = newPractice("2026-11-01", [AAPL], FX);
+  assert.throws(() => buy(pf, AAPL, 8, "2026-11-01", FX), /at least A\$10/);
+  assert.throws(() => buy(pf, s("AAPL", null), 100, "2026-11-01", FX), /no price/i);
+  assert.throws(() => buy(pf, s("X", 10, "EUR"), 100, "2026-11-01", FX), /exchange rate/);
+});
+
+test("repeat buys average the cost, and money is kept to the cent", () => {
+  let pf = newPractice("2026-11-01", [AAPL], FX);
+  pf = buy(pf, AAPL, 155, "2026-11-01", FX);                 // 1 share at A$150
+  pf = buy(pf, s("AAPL", 200), 305, "2026-11-02", FX);       // 1 share at A$300
+  assert.ok(Math.abs(pf.holdings.AAPL.units - 2) < 1e-9);
+  assert.equal(pf.holdings.AAPL.cost, 460);
+  pf = sell(pf, s("AAPL", 110), 1, "2026-11-03", FX);        // A$165 less the fee, against half the cost
+  assert.equal(pf.trades.at(-1).gain, 165 - FEE - 230);
+  const odd = buy(newPractice("2026-11-01", [AAPL], FX), AAPL, 333.333, "2026-11-01", FX);
+  assert.equal(odd.cash, 9666.67);
+});
+
+test("a holding worth less than the fee can still be sold in full; asking to sell nothing is refused", () => {
+  let pf = buy(newPractice("2026-11-01", [AAPL], FX), AAPL, 10, "2026-11-01", FX);   // A$5 of shares
+  const crash = s("AAPL", 40);                                                       // now worth A$2
+  pf = sell(pf, crash, Infinity, "2026-11-02", FX);
+  assert.equal(pf.holdings.AAPL, undefined);
+  assert.equal(pf.trades.at(-1).amount, 0, "the fee takes what is left, never more");
+  const again = buy(newPractice("2026-11-01", [AAPL], FX), AAPL, 100, "2026-11-01", FX);
+  assert.throws(() => sell(again, AAPL, NaN, "2026-11-02", FX), /how many/);
+  assert.throws(() => sell(again, s("AAPL", 1), 0.01, "2026-11-02", FX), /less than the A\$5 fee/, "a part-sale worth under the fee is refused");
+});
+
+test("valuation in pence, without a rate, and without a benchmark", () => {
+  let pf = newPractice("2026-11-01", [SHEL], FX);
+  assert.equal(pf.bench, null, "no VOO in the list: no benchmark");
+  pf = buy(pf, SHEL, 505, "2026-11-01", FX);                          // 10 shares at A$50
+  const v = valuation(pf, [s("SHEL.L", 3000, "GBp")], FX);
+  assert.ok(Math.abs(v.rows[0].value - 600) < 1e-9);
+  assert.equal(v.rows[0].stale, false);
+  assert.equal(v.bench, null);
+  const noRate = valuation(pf, [s("SHEL.L", 3000, "GBp")], { USD: 1.5 });
+  assert.equal(noRate.rows[0].value, 500, "no pound rate: the last trade price, marked as such");
+  assert.equal(noRate.rows[0].stale, true);
+});
+
+test("comparing over a range uses the range's first day as the start", () => {
+  const a = { d: ["D1", "D2", "D3"], p: [100, 200, 300] };
+  const m = compareModel(a, a, 2);
+  assert.deepEqual(m.d, ["D2", "D3"]);
+  assert.deepEqual(m.a, [0, 0.5]);
 });

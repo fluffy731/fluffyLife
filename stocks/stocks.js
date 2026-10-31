@@ -25,7 +25,7 @@ let feed = null, watch = store.json("stocks.watch"), seen = store.json("stocks.s
 let tab = store.get("stocks.tab") || (Object.keys(watch).length ? "watchlist" : "ideas");
 if (tab === "scorecard") tab = "learn";   // the scorecard moved into Learn
 let market = store.get("stocks.market") || "all", query = "", sort = "score", sector = "all", range = "1Y", openStock = null;
-let practice = readPractice(store.get("stocks.practice")), planAmount = 200;
+let practice = readPractice(store.get("stocks.practice")), planAmount = 200, lastTrade = "";
 
 const signed = (x, digits = 0) => (x == null ? "–" : pct(x, digits));
 const tone = (x) => (x == null ? "" : x >= 0 ? "pos" : "neg");
@@ -38,7 +38,7 @@ const pill = (r) => `<span class="pill ${esc(r)}">${r === REVIEW ? "Review" : es
 const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 10); };
 const bench = (s) => feed.markets[s.m]?.benchName || "index";
 const byT = (t) => feed.stocks.find((x) => x.t === t);
-const audFmt = (x) => (x == null ? "–" : `A$${x.toLocaleString("en-AU", { maximumFractionDigits: Math.abs(x) < 100 ? 2 : 0 })}`);
+const audFmt = (x) => { if (x == null) return "–"; const d = Math.abs(x) < 100 ? 2 : 0; return `A$${x.toLocaleString("en-AU", { minimumFractionDigits: d, maximumFractionDigits: d })}`; };
 const units = (n) => n.toLocaleString("en-AU", { maximumFractionDigits: n < 10 ? 3 : 1 });
 function ago(ms) {
   const m = Math.round((Date.now() - ms) / 60e3);
@@ -188,7 +188,7 @@ function practiceHTML() {
   const rows = v.rows.map((r) => {
     const s = byT(r.t);
     return `<div class="row">${s ? starButton(s) : "<span></span>"}<button class="row-main" data-open="${esc(r.t)}">
-      <span class="who"><span class="name">${esc(s?.n || r.t)}</span><span class="sub">${units(r.units)} units · cost ${audFmt(r.cost)}</span></span><span></span>
+      <span class="who"><span class="name">${esc(s?.n || r.t)}</span><span class="sub">${units(r.units)} units · cost ${audFmt(r.cost)}${r.stale ? " · at last trade price" : ""}</span></span><span></span>
       <span class="right"><span class="num">${audFmt(r.value)}</span><span class="ret num ${tone(r.gainPct)}">${signed(r.gainPct, 1)}</span></span></button></div>`;
   }).join("");
   const trades = practice.trades.slice(-15).reverse().map((t) => `<div class="trade-row"><span>${day(t.d)} · ${t.side === "buy" ? "Bought" : "Sold"} ${esc(byT(t.t)?.n || t.t)}</span>
@@ -209,16 +209,21 @@ function practiceCardHTML(s) {
   if (p == null) return `<div class="card"><h2>Practice</h2><p class="muted">Practice trading needs today's exchange rate, which isn't available yet.</p></div>`;
   const held = practice.holdings[s.t];
   const worth = held ? held.units * p : 0;
-  const suggest = Math.min(1000, Math.floor(practice.cash));
+  // Right after a trade the box starts empty, so a second tap cannot repeat it by accident.
+  const suggest = lastTrade ? "" : Math.min(1000, Math.floor(practice.cash));
   return `<div class="card practice"><h2>Practice</h2>
-    ${held ? `<p>You hold ${units(held.units)} units, worth <b>${audFmt(worth)}</b> <span class="num ${tone(worth / held.cost - 1)}">${signed(worth / held.cost - 1, 1)}</span>.</p>` : ""}
+    ${lastTrade ? `<p class="done">${esc(lastTrade)}</p>` : ""}
+    ${held ? `<p>You hold ${units(held.units)} units, worth <b>${audFmt(worth)}</b> <span class="num ${tone(held.cost > 0 ? worth / held.cost - 1 : 0)}">${signed(held.cost > 0 ? worth / held.cost - 1 : 0, 1)}</span>.</p>` : ""}
     <p class="muted">${audFmt(practice.cash)} practice cash left · one unit ≈ ${audFmt(p)} · A$${FEE} a trade</p>
-    <div class="trade"><label>A$ <input id="buy-amount" type="number" inputmode="decimal" min="10" step="10" value="${suggest > FEE ? suggest : ""}" aria-label="Amount to buy in Australian dollars"></label><button class="cta" data-buy="${esc(s.t)}">Buy</button></div>
+    <div class="trade"><label>A$ <input id="buy-amount" type="number" inputmode="decimal" min="10" step="10" value="${suggest !== "" && suggest >= 10 ? suggest : ""}" placeholder="amount" aria-label="Amount to buy in Australian dollars"></label><button class="cta" data-buy="${esc(s.t)}">Buy</button></div>
     ${held ? `<div class="btns"><button class="cta ghost" data-sell="${esc(s.t)}" data-part="0.5">Sell half</button><button class="cta ghost" data-sell="${esc(s.t)}" data-part="1">Sell all</button></div>` : ""}</div>`;
 }
 
 function practiseTrade(fn) {
+  const before = practice.trades.length;
   try { practice = fn(practice); } catch (err) { alert(err.message); return; }
+  const t = practice.trades[before];
+  if (t) lastTrade = `${t.side === "buy" ? "Bought" : "Sold"} ${audFmt(t.amount)} of ${byT(t.t)?.n || t.t}${t.side === "sell" ? ` (${t.gain >= 0 ? "gain" : "loss"} ${audFmt(Math.abs(t.gain))})` : ""}.`;
   savePractice();
   render();
   if (openStock) caseFile(openStock);
@@ -356,6 +361,7 @@ async function loadCompare(s, t) {
     if (compareT !== t || openStock !== s.t) return;
     compareData = h;
   } catch {
+    if (compareT !== t || openStock !== s.t) return;   // the reader has moved on: say nothing, draw nothing
     compareT = null;
     alert("That stock's price history isn't available right now.");
   }
@@ -422,7 +428,7 @@ function caseFile(t) {
   if (!s) return;
   const firstOpen = openStock !== t;
   openStock = t;
-  if (firstOpen) { compareT = null; compareData = null; }
+  if (firstOpen) { compareT = null; compareData = null; lastTrade = ""; }
   const m = feed.markets[s.m];
   const since = sinceWatching(watch[s.t], s);
   const [sector, does] = COMPANIES[s.t] || [];
@@ -514,8 +520,14 @@ document.addEventListener("click", (e) => {
   if (el.id === "backup") return backup();
   if (el.id === "practice-start" && feed) { practice = newPractice(today(), feed.stocks, feed.fx); savePractice(); render(); if (openStock) caseFile(openStock); return; }
   if (el.id === "practice-reset") { if (confirm("Start the practice portfolio again with A$10,000? Its holdings and trades will be cleared.")) { practice = null; store.set("stocks.practice", ""); render(); } return; }
-  if (el.dataset.buy) { const s = byT(el.dataset.buy), amount = Number($("#buy-amount")?.value); return practiseTrade((pf) => buy(pf, s, amount, today(), feed.fx)); }
-  if (el.dataset.sell) { const s = byT(el.dataset.sell), held = practice?.holdings[s.t]; if (!held) return; return practiseTrade((pf) => sell(pf, s, held.units * Number(el.dataset.part), today(), feed.fx)); }
+  if (el.dataset.buy || el.dataset.sell) {
+    const s = byT(el.dataset.buy || el.dataset.sell);
+    if (!s || !practice) return alert("That stock is no longer in the list.");
+    if (el.dataset.buy) return practiseTrade((pf) => buy(pf, s, Number($("#buy-amount")?.value), today(), feed.fx));
+    const held = practice.holdings[s.t];
+    if (!held) return;
+    return practiseTrade((pf) => sell(pf, s, el.dataset.part === "1" ? Infinity : held.units * Number(el.dataset.part), today(), feed.fx));
+  }
   if (el.id === "restore" && feed) return restore();
   if ((el.id === "about" || el.id === "method") && feed) return about();
 });
