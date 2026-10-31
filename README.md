@@ -147,7 +147,7 @@ A fifth home-screen app. It reads only free-to-read outlets and never bypasses a
 
 # Travel (`/travel/`, unlisted)
 
-Left off the home page and out of the table above, and its pages ask search engines not to index them. Open it from its own address or home-screen icon. Unlisted is not private: the address still opens for anyone who has it, and trip files in `travel/trips/` stay readable in this public repo.
+Left off the home page and out of the table above, and its pages ask search engines not to index them. Open it from its own address or home-screen icon. Unlisted is not private: the address still opens for anyone who has it. No trips are published in `travel/trips/`; personal trips live only on the phone (back them up from the Trips page).
 
 Two tabs: **Plan** and **Packing**.
 
