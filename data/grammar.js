@@ -320,7 +320,7 @@ const ROWS = [
  ["집에서 책을 읽어요.","在家看書。","I read at home."]]],
 // ---------- Added later: rows go at the end so existing ids stay put ----------
 // ---------- Intermediate, units 21–28 (everyday concrete words) ----------
-["-아/어 있다","int",21,"be in a state (the result of an action)","（動作結果）…著","Intransitive and passive verbs only: 앉아 있다, 열려 있다. Contrast -고 있다 (action in progress): 옷을 입고 있다.",[
+["-아/어 있다","int",21,"be in a state (the result of an action)","（動作結果）…著","Intransitive and passive verbs only: 앉아 있다, 열려 있다. Contrast -고 있다 (action in progress): 문을 열고 있다. Wearing verbs use -고 있다 for the state: 옷을 입고 있다 (is wearing).",[
  ["창문이 열려 있어서 방이 춥다.","窗戶開著，所以房間很冷。","The window is open, so the room is cold."],
  ["아이가 의자에 앉아 있다.","孩子坐在椅子上。","The child is sitting on the chair."]]],
 ["-다가","int",21,"while doing … (then something else)","…著…著；做…的途中","Same subject. The first action is interrupted or switched. -았/었다가 = after finishing it.",[
@@ -329,7 +329,7 @@ const ROWS = [
 ["피동 -이/히/리/기-","int",22,"passive verbs","被動詞（被…）","보다→보이다, 닫다→닫히다, 열다→열리다, 안다→안기다. The doer is often left out; 에게/에 marks it.",[
  ["바람 때문에 문이 저절로 닫혔다.","因為風，門自己關上了。","The door shut by itself because of the wind."],
  ["아기가 엄마 품에 안겨 잠들었다.","寶寶被媽媽抱在懷裡睡著了。","The baby fell asleep in its mother's arms."]]],
-["-아/어지다","int",22,"become …; get done (passive)","變得…；被…","With adjectives: a change of state (추워지다). With verbs: passive for verbs with no passive form (깨지다, 찢어지다).",[
+["-아/어지다","int",22,"become …; get done (passive)","變得…；被…","With adjectives: a change of state (추워지다). With verbs: passive for verbs with no passive form (깨지다, 만들어지다).",[
  ["떨어뜨린 컵이 깨졌다.","掉下去的杯子破了。","The cup I dropped broke."],
  ["날씨가 점점 추워진다.","天氣漸漸變冷。","The weather is getting colder."]]],
 ["사동 -이/히/리/기/우-","int",23,"causative verbs (make or help someone do)","使動詞（讓…、使…）","먹다→먹이다, 입다→입히다, 울다→울리다, 씻다→씻기다, 자다→재우다. Often doing it for someone in your care.",[
@@ -372,7 +372,7 @@ const ROWS = [
 ["-았/었어요","beg",9,"past tense (polite)","過去式（…了）","Stem + 았 (after ㅏ/ㅗ) / 었 (others) / 했 (하다): 갔어요, 먹었어요, 공부했어요.",[
  ["어제 친구하고 영화를 봤어요.","昨天和朋友看了電影。","I saw a film with a friend yesterday."],
  ["아침에 빵을 먹었어요.","早上吃了麵包。","I ate bread this morning."]]],
-["-(으)러 가다/오다","beg",9,"go / come to do","去／來（做）…","Only with 가다, 오다, 다니다: 밥 먹으러 가요.",[
+["-(으)러 가다/오다","beg",9,"go / come to do","去／來（做）…","Only with movement verbs (가다, 오다, 다니다, 나가다 …): 밥 먹으러 가요.",[
  ["점심 먹으러 식당에 가요.","去餐廳吃午餐。","I'm going to a restaurant for lunch."],
  ["책을 빌리러 도서관에 왔어요.","來圖書館借書。","I came to the library to borrow a book."]]],
 ["-(으)면","beg",10,"if, when","如果…就…","After a consonant -으면 (먹으면); after a vowel or ㄹ -면 (가면, 살면).",[
