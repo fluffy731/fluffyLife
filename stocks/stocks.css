@@ -26,8 +26,8 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .tabs, .chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 10px; }
 .tabs::-webkit-scrollbar, .chips::-webkit-scrollbar { display: none; }
 .tabs button, .chips button { flex: 0 0 auto; border: 1px solid var(--rule); background: var(--card); border-radius: 999px; padding: 6px 11px; font-size: 14px; white-space: nowrap; }
-.tabs { gap: 4px; }
-.tabs button { padding: 6px 9px; font-size: 13.5px; }
+.tabs { gap: 3px; }
+.tabs button { padding: 6px 8px; font-size: 13.5px; }
 .tabs button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 650; }
 .chips button { font-size: 13px; padding: 4px 11px; }
 .chips button.on { border-color: var(--accent); color: var(--accent); font-weight: 650; }
@@ -115,10 +115,10 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; border-top: 0; }
 @media (prefers-color-scheme: dark) { .star.on { color: #f2c94c; } }
 
 /* Ratings: search and sort (16px so iPhone does not zoom) */
-.controls { display: flex; gap: 8px; margin-bottom: 10px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
 .controls input, .controls select { font: inherit; font-size: 16px; color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 8px 10px; min-width: 0; }
-.controls input { flex: 1; }
-.controls select { flex: 0 0 auto; max-width: 46%; }
+.controls input { flex: 1 1 100%; }
+.controls select { flex: 1 1 0; min-width: 0; }
 
 /* Ideas and Learn */
 .idea-row { display: grid; grid-template-columns: 30px minmax(0, 1fr); align-items: center; gap: 4px; border-top: 1px solid var(--rule); }
@@ -171,3 +171,23 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; border-top: 0; }
 .keep .btns { display: flex; gap: 8px; }
 .cta.ghost { background: var(--card); color: var(--accent); border: 1px solid var(--accent); }
 .link { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; text-decoration: underline; }
+
+/* Compare two stocks */
+#compare { width: 100%; margin-top: 8px; font: inherit; font-size: 16px; color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 7px 10px; }
+.chart polyline.cmp-a { stroke: var(--accent); stroke-width: 2; }
+.chart polyline.cmp-b { stroke: #c9822b; stroke-width: 2; }
+.legend .cmp-a { --c: var(--accent); } .legend .cmp-b { --c: #c9822b; }
+table.cmp { margin-top: 10px; }
+table.cmp th { text-align: right; }
+
+/* Practice and investing every month */
+.trade { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.trade label { display: flex; align-items: center; gap: 6px; font-weight: 600; }
+.trade input { font: inherit; font-size: 16px; width: 120px; color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 10px; padding: 7px 10px; }
+.trade .cta { margin-top: 0; }
+.practice .btns, .keep .btns { display: flex; gap: 8px; }
+.practice-sum .big { margin: 4px 0 2px; }
+.trade-row { display: flex; justify-content: space-between; gap: 10px; border-top: 1px solid var(--rule); padding: 7px 0; font-size: 14px; }
+.trade-row:first-of-type { border-top: 0; }
+h2.section { font-size: 18px; margin: 18px 0 4px; }
+.practice .done { color: var(--up); font-weight: 600; }
