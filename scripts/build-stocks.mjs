@@ -7,7 +7,7 @@
 //   node scripts/build-stocks.mjs --force   rebuild now
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { MARKETS, UNIVERSE } from "../stocks/universe.js";
+import { MARKETS, UNIVERSE, ALSO_CALLED } from "../stocks/universe.js";
 import { analyse, replay, scorecard, sparkline, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
 import { isOpinion, parseFeed } from "./build-news.mjs";
 
@@ -81,18 +81,30 @@ export function mergeNews(lists) {
   return out.slice(0, NEWS_MAX);
 }
 
-// Yahoo search's articles tagged with one of `symbols` (the stock, and its US-listed shares).
-export function parseNews(json, symbols, nowMs) {
-  const want = new Set(symbols.map((s) => s.toUpperCase()));
+// Whether a headline names the stock's company: its name, a usual short name (ALSO_CALLED), or one of its
+// symbols of three letters or more, as a whole word. Yahoo pads thinly covered stocks' feeds with general
+// market stories (seen live: AMC and Alphabet headlines under China Mobile), and tags articles loosely.
+export function aboutCompany(s) {
+  const word = (x) => `(?:^|[^A-Za-z0-9])${x.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?=$|[^A-Za-z0-9])`;
+  const names = [s.n, ...(ALSO_CALLED[s.t] || [])].map(word);
+  const symbols = [s.t.replace(/\.(HK|L)$/, ""), s.adr].filter((x) => x && /^[A-Z][A-Z-]{2,}$/.test(x)).map(word);
+  const byName = new RegExp(names.join("|"), "i"), bySymbol = symbols.length ? new RegExp(symbols.join("|")) : null;
+  return (title) => byName.test(title) || Boolean(bySymbol?.test(title));
+}
+
+// Yahoo search's articles tagged with the stock or its US-listed shares, and naming its company.
+export function parseNews(json, s, nowMs) {
+  const want = new Set([s.t, s.adr].filter(Boolean).map((x) => x.toUpperCase())), about = aboutCompany(s);
   const items = (json?.news || [])
-    .filter((a) => (a.relatedTickers || []).some((t) => want.has(String(t).toUpperCase())))
+    .filter((a) => (a.relatedTickers || []).some((t) => want.has(String(t).toUpperCase())) && about(String(a.title)))
     .map((a) => ({ t: a.title, p: a.publisher || "", l: a.link, at: a.providerPublishTime * 1000 }));
   return mergeNews([recent(items, nowMs)]);
 }
 
-// Yahoo's per-stock RSS feed, read with the Briefing app's parser.
-export function newsFromRss(xml, nowMs) {
-  return mergeNews([recent(parseFeed(xml).map((i) => ({ t: i.title, p: VIA_YAHOO, l: i.link, at: i.time })), nowMs)]);
+// Yahoo's per-stock RSS feed, read with the Briefing app's parser, keeping headlines naming the company.
+export function newsFromRss(xml, s, nowMs) {
+  const about = aboutCompany(s);
+  return mergeNews([recent(parseFeed(xml).filter((i) => about(i.title)).map((i) => ({ t: i.title, p: VIA_YAHOO, l: i.link, at: i.time })), nowMs)]);
 }
 
 // ---------- the feed (pure) ----------
@@ -231,8 +243,8 @@ async function fetchNews(s, nowMs) {
   const search = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(s.adr || s.t)}&quotesCount=0&newsCount=25&enableFuzzyQuery=false`;
   const failed = (source) => (e) => { console.warn(`stocks: no ${source} news for ${s.t}: ${e.message}`); return null; };
   return mergeNews(await Promise.all([
-    getText(rss, "application/rss+xml, application/xml").then((xml) => newsFromRss(xml, nowMs)).catch(failed("RSS")),
-    getJson(search).then((json) => parseNews(json, [s.t, s.adr].filter(Boolean), nowMs)).catch(failed("search")),
+    getText(rss, "application/rss+xml, application/xml").then((xml) => newsFromRss(xml, s, nowMs)).catch(failed("RSS")),
+    getJson(search).then((json) => parseNews(json, s, nowMs)).catch(failed("search")),
   ]));
 }
 

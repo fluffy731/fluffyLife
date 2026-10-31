@@ -11,6 +11,16 @@ export const MARKETS = {
   UK: { label: "UK", bench: "^FTSE", benchName: "FTSE 100" },
 };
 
+// Other names headlines use for a company, where its display name alone would miss them. A headline must
+// name the company (or a symbol of three letters or more) to be shown with it.
+export const ALSO_CALLED = {
+  GOOGL: ["Google"], META: ["Meta"], "BRK-B": ["Berkshire"], JPM: ["JPMorgan", "JP Morgan"], LLY: ["Lilly"],
+  XOM: ["Exxon", "ExxonMobil"], PG: ["P&G", "Procter"], JNJ: ["J&J"], BAC: ["BofA"], GE: ["GE"], UNH: ["UnitedHealthcare"],
+  "0939.HK": ["CCB", "Construction Bank"], "0388.HK": ["Hong Kong Exchanges"], "9618.HK": ["JD"], "0016.HK": ["Sun Hung Kai", "SHKP"],
+  "2020.HK": ["Anta"], "0001.HK": ["Hutchison"],
+  "BATS.L": ["BAT", "British American"], "LSEG.L": ["LSEG", "London Stock Exchange"], "BA.L": ["BAE"], "RR.L": ["Rolls Royce"],
+};
+
 const list = (m, rows) => rows.map(([t, n, adr]) => (adr ? { t, n, m, adr } : { t, n, m }));
 
 export const UNIVERSE = [
