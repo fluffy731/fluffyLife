@@ -1,6 +1,7 @@
 // Builds stocks/feed.json for the Stocks page: daily prices from Yahoo Finance for every stock in
 // stocks/universe.js and each market's index, the rules' call on each stock, the rules replayed over the
-// past year and scored, and (when ANTHROPIC_API_KEY is set) one short note a day written by Claude Haiku.
+// past year and scored, each stock's recent headlines (shown, never rated), and (when ANTHROPIC_API_KEY is
+// set) one short note a day written by Claude Haiku.
 // Runs on GitHub Actions with the hourly deploy; the phone only downloads the finished JSON.
 //   node scripts/build-stocks.mjs           rebuild unless the feed is under 3 hours old
 //   node scripts/build-stocks.mjs --force   rebuild now
@@ -8,6 +9,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
 import { analyse, replay, scorecard, sparkline, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
+import { isOpinion } from "./build-news.mjs";
 
 export const FEED_VERSION = 1;
 // A fingerprint of the rules, the list and this script: a feed built by older rules is rebuilt, however fresh.
@@ -51,6 +53,32 @@ export function completedBars(bars, session, nowSec) {
   return bars;
 }
 
+// ---------- Yahoo search's news ----------
+// The news analyst reports and never rates: there is no record of what was published on each past day, so
+// headlines cannot be replayed, and a rating that used them could not be scored honestly.
+export const NEWS_DAYS = 7, NEWS_MAX = 6;
+
+// Articles tagged with one of `symbols` (the stock, and its US-listed shares), from the last NEWS_DAYS days,
+// opinion pieces and repeats left out, newest first. Search returns a sample, so none found is not "no news".
+export function parseNews(json, symbols, nowMs) {
+  const want = new Set(symbols.map((s) => s.toUpperCase()));
+  const seen = new Set(), out = [];
+  const items = (json?.news || [])
+    .filter((a) => (a.relatedTickers || []).some((t) => want.has(String(t).toUpperCase())))
+    .filter((a) => Number.isFinite(a.providerPublishTime) && nowMs - a.providerPublishTime * 1000 <= NEWS_DAYS * 864e5)
+    .filter((a) => typeof a.title === "string" && /^https?:\/\//i.test(a.link || ""))
+    .filter((a) => !isOpinion({ title: a.title, link: a.link, categories: [] }))
+    .sort((a, b) => b.providerPublishTime - a.providerPublishTime);
+  for (const a of items) {
+    const key = a.title.trim().toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push({ t: a.title.trim(), p: a.publisher || "", l: a.link, at: a.providerPublishTime * 1000 });
+    if (out.length === NEWS_MAX) break;
+  }
+  return out;
+}
+
 // ---------- the feed (pure) ----------
 function stockEntry(s, { bars, currency }, bench, benchName) {
   const calls = replay(bars, bench, { benchName });
@@ -75,12 +103,13 @@ function stockEntry(s, { bars, currency }, bench, benchName) {
 
 const order = (a, b) => (a.score == null) - (b.score == null) || (b.score ?? 0) - (a.score ?? 0) || (b.r6m ?? -9) - (a.r6m ?? -9);
 
-export function buildFeed({ universe, markets, prices, benches, builtAt }) {
+// `news` maps a symbol to its headlines, or to null when its news could not be fetched.
+export function buildFeed({ universe, markets, prices, benches, news = {}, builtAt }) {
   const stocks = [], failed = [], callsBy = { all: [] };
   for (const s of universe) {
     if (!prices[s.t]?.bars?.length) { failed.push(s.t); continue; }
     const { entry, calls } = stockEntry(s, prices[s.t], benches[s.m] || [], markets[s.m].benchName);
-    stocks.push(entry);
+    stocks.push({ ...entry, news: news[s.t] ?? null });
     callsBy.all.push(...calls);
     (callsBy[s.m] ||= []).push(...calls);
   }
@@ -105,13 +134,15 @@ const NOTE_SYSTEM = [
   "Use only the facts in the data you are given: do not add prices, news, events, reasons or forecasts of your own.",
   "Do not tell the reader to buy or sell; say what the rules rate highest and lowest and what changed since last week.",
   "Mention the scorecard only as how the rules have done in the past.",
+  "You may mention a listed headline for a stock you name, credited to its publisher; do not guess why a stock moved beyond what a headline says, and headlines do not affect the ratings.",
   "Write in Australian English, plain text, at most 120 words, no headings, no lists, no markdown.",
 ].join(" ");
 
 function notePayload(feed) {
   const rated = feed.stocks.filter((s) => s.rating !== REVIEW);
   const percent = (x) => (x == null ? null : pct(x, 1));
-  const brief = (s) => ({ t: s.t, name: s.n, market: s.m, rating: s.rating, lastWeek: s.prev, sixMonthReturn: percent(s.r6m), bull: s.bull.slice(0, 2), bear: s.bear.slice(0, 1) });
+  const brief = (s) => ({ t: s.t, name: s.n, market: s.m, rating: s.rating, lastWeek: s.prev, sixMonthReturn: percent(s.r6m), bull: s.bull.slice(0, 2), bear: s.bear.slice(0, 1),
+    headlines: (s.news || []).slice(0, 2).map((n) => `${n.t} (${n.p || "unknown publisher"})`) });
   const spread = feed.scorecard.all?.spread;
   return {
     highest: rated.slice(0, 8).map(brief),
@@ -176,6 +207,18 @@ async function fetchBars(symbol, nowSec) {
   return { error };
 }
 
+// A stock's headlines, searched by its US-listed shares when it has them (Yahoo tags those), or null when
+// Yahoo could not be asked; a missing headline list never stops the prices.
+async function fetchNews(s, nowMs) {
+  const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(s.adr || s.t)}&quotesCount=0&newsCount=25&enableFuzzyQuery=false`;
+  try {
+    return parseNews(await getJson(url), [s.t, s.adr].filter(Boolean), nowMs);
+  } catch (e) {
+    console.warn(`stocks: no news for ${s.t}: ${e.message}`);
+    return null;
+  }
+}
+
 async function pool(list, n, fn) {
   const out = new Array(list.length); let i = 0;
   await Promise.all(Array.from({ length: n }, async () => { while (i < list.length) { const k = i++; out[k] = await fn(list[k]); } }));
@@ -197,7 +240,8 @@ export async function build({ force = false } = {}) {
   const got = Object.fromEntries(await pool(symbols, 4, async (s) => [s, await fetchBars(s, nowSec)]));
   const benches = Object.fromEntries(Object.entries(MARKETS).filter(([, m]) => got[m.bench].bars).map(([k, m]) => [k, got[m.bench].bars]));
   const prices = Object.fromEntries(UNIVERSE.filter((s) => got[s.t].bars).map((s) => [s.t, got[s.t]]));
-  const feed = buildFeed({ universe: UNIVERSE, markets: MARKETS, prices, benches, builtAt: new Date().toISOString() });
+  const news = Object.fromEntries(await pool(UNIVERSE.filter((s) => prices[s.t]), 4, async (s) => [s.t, await fetchNews(s, Date.now())]));
+  const feed = buildFeed({ universe: UNIVERSE, markets: MARKETS, prices, benches, news, builtAt: new Date().toISOString() });
   if (!feed.stocks.length) throw new Error(`no stock prices fetched (${got[UNIVERSE[0].t].error}); the previous feed is kept`);
   feed.note = await writeNote(feed, previous?.note);
   mkdirSync("stocks", { recursive: true });
@@ -205,6 +249,7 @@ export async function build({ force = false } = {}) {
   return {
     stocks: feed.stocks.length, failed: Object.entries(got).filter(([, v]) => v.error).map(([s, v]) => `${s} (${v.error})`),
     indices: Object.keys(benches), scored: feed.scorecard.all.scored, spread: feed.scorecard.all.spread, note: feed.note ? feed.note.key : "none",
+    news: { withHeadlines: feed.stocks.filter((s) => s.news?.length).length, none: feed.stocks.filter((s) => s.news && !s.news.length).length, notFetched: feed.stocks.filter((s) => !s.news).length },
   };
 }
 

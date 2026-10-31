@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseChart, completedBars, buildFeed, noteFor, NOTE_MODEL, FEED_VERSION, SETTLE_SEC } from "../scripts/build-stocks.mjs";
+import { parseChart, completedBars, buildFeed, noteFor, parseNews, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
 
 // A Yahoo chart response in the v8 shape: sessions open 09:30 New York (13:30 UTC in summer).
@@ -89,7 +89,8 @@ test("a market whose index could not be fetched rates its stocks REVIEW rather t
   assert.match(feed.stocks[0].reason, /index/);
 });
 
-const feedFor = (key) => ({ noteKey: key, stocks: [{ t: "AAPL", n: "Apple", m: "US", rating: "Buy", score: 5, prev: "Overweight", r6m: 0.2, bull: ["x"], bear: [] }], scorecard: { all: { spread: 0.01, scored: 40 } }, markets: { US: MARKETS.US } });
+const feedFor = (key) => ({ noteKey: key, stocks: [{ t: "AAPL", n: "Apple", m: "US", rating: "Buy", score: 5, prev: "Overweight", r6m: 0.2, bull: ["x"], bear: [],
+  news: [{ t: "Apple unveils new chip", p: "Reuters", l: "https://example.com/a", at: 0 }] }], scorecard: { all: { spread: 0.01, scored: 40 } }, markets: { US: MARKETS.US } });
 const fakeClient = (reply) => {
   const calls = [];
   return { calls, messages: { create: async (req) => { calls.push(req); return reply; } } };
@@ -113,6 +114,66 @@ test("no API key means no note; a cut-off or refused reply is not published", as
   assert.equal(await noteFor(feedFor("2026-10-30"), { key: "2026-10-29", text: "old" }, null), null, "yesterday's note is not shown against today's ratings");
   assert.equal(await noteFor(feedFor("2026-10-30"), null, fakeClient({ ...ok, stop_reason: "max_tokens" })), null);
   assert.equal(await noteFor(feedFor("2026-10-30"), null, fakeClient({ stop_reason: "refusal", content: [] })), null);
+});
+
+// Yahoo search's news in its v1 shape: publish times in epoch seconds, tagged tickers per article.
+const NOW = Date.parse("2026-10-31T12:00:00Z");
+const ago = (h) => Math.floor((NOW - h * 3600e3) / 1000);
+const article = (title, tickers, hoursAgo, extra = {}) => ({ title, publisher: "Reuters", link: `https://finance.example.com/${encodeURIComponent(title)}`, providerPublishTime: ago(hoursAgo), relatedTickers: tickers, ...extra });
+
+test("news keeps only articles tagged with the stock or its US-listed shares, newest first", () => {
+  const json = { news: [
+    article("Tencent results beat", ["TCEHY"], 5),
+    article("Hang Seng closes higher", ["^HSI"], 1),
+    article("Tencent games licence", ["0700.HK", "NTES"], 2),
+    article("Untagged market wrap", undefined, 1),
+  ] };
+  assert.deepEqual(parseNews(json, ["0700.HK", "TCEHY"], NOW).map((n) => n.t), ["Tencent games licence", "Tencent results beat"]);
+  const first = parseNews(json, ["0700.HK", "TCEHY"], NOW)[0];
+  assert.deepEqual(Object.keys(first).sort(), ["at", "l", "p", "t"]);
+  assert.equal(first.at, ago(2) * 1000);
+});
+
+test("news leaves out stale, opinion, duplicate and non-web links, and keeps at most the cap", () => {
+  const json = { news: [
+    article("Apple shares rise", ["AAPL"], 1),
+    article("Apple shares rise", ["AAPL"], 3),
+    article("Opinion: Apple is overvalued", ["AAPL"], 2),
+    article("Old Apple story", ["AAPL"], 24 * 8),
+    article("Sneaky link", ["AAPL"], 1, { link: "javascript:alert(1)" }),
+    article("No time", ["AAPL"], 1, { providerPublishTime: undefined }),
+    ...Array.from({ length: 10 }, (_, i) => article(`Apple story ${i}`, ["aapl"], 10 + i)),
+  ] };
+  const news = parseNews(json, ["AAPL"], NOW);
+  assert.equal(news.length, NEWS_MAX);
+  assert.equal(news[0].t, "Apple shares rise");
+  assert.equal(news.filter((n) => n.t === "Apple shares rise").length, 1);
+  assert.ok(!news.some((n) => /Opinion|Old Apple|Sneaky|No time/.test(n.t)));
+  assert.deepEqual(parseNews({}, ["AAPL"], NOW), [], "no news array: nothing, not an error");
+});
+
+test("the feed carries each stock's headlines, null when its news could not be fetched", () => {
+  const bars = sessions(300, (i) => 100 + i);
+  const universe = [{ t: "AAPL", n: "Apple", m: "US" }, { t: "MSFT", n: "Microsoft", m: "US" }];
+  const prices = { AAPL: { bars, currency: "USD" }, MSFT: { bars, currency: "USD" } };
+  const items = [{ t: "Apple unveils new chip", p: "Reuters", l: "https://example.com/a", at: NOW }];
+  const feed = buildFeed({ universe, markets: { US: MARKETS.US }, prices, benches: { US: sessions(300, () => 100) }, news: { AAPL: items, MSFT: null }, builtAt: "2026-10-31T00:00:00Z" });
+  assert.deepEqual(feed.stocks.find((s) => s.t === "AAPL").news, items);
+  assert.equal(feed.stocks.find((s) => s.t === "MSFT").news, null);
+});
+
+test("the daily note sees the named stocks' headlines, credited, and is told not to guess causes", async () => {
+  const client = fakeClient(ok);
+  await noteFor(feedFor("2026-10-31"), null, client);
+  assert.match(client.calls[0].messages[0].content, /Apple unveils new chip \(Reuters\)/);
+  assert.match(client.calls[0].system, /credit/i);
+  assert.match(client.calls[0].system, /do not guess/i);
+});
+
+test("US-listed shares for news are set only on Hong Kong and UK stocks, never the stock's own symbol", () => {
+  const withAdr = UNIVERSE.filter((s) => s.adr);
+  assert.ok(withAdr.length >= 25);
+  assert.ok(withAdr.every((s) => s.m !== "US" && s.adr !== s.t && /^[A-Z]{1,5}$/.test(s.adr)));
 });
 
 test("the universe covers US, Hong Kong and UK with no symbol twice", () => {

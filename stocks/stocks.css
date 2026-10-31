@@ -97,3 +97,8 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; border-top: 0; }
 .strip i.Underweight { --c: var(--Underweight); } .strip i.Sell { --c: var(--Sell); } .strip i.REVIEW { --c: var(--REVIEW); }
 .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; font-size: 14px; }
 .facts div { display: flex; justify-content: space-between; gap: 6px; border-top: 1px solid var(--rule); padding-top: 5px; }
+.headline { display: block; text-decoration: none; color: inherit; border-top: 1px solid var(--rule); padding: 8px 0; }
+.headline:first-of-type { border-top: 0; }
+.headline .ht { display: block; font-weight: 600; font-size: 14.5px; line-height: 1.35; }
+.headline .muted { font-size: 12.5px; }
+.card h2 .muted { font-weight: 500; }

@@ -102,6 +102,15 @@ function planHTML(s) {
   return `<div class="card"><h2>Trader's levels</h2><p>${line}</p></div>`;
 }
 
+// The news analyst reports headlines; they are never part of the rating (past headlines cannot be replayed).
+function newsHTML(s) {
+  const items = (s.news || []).filter((n) => /^https?:\/\//i.test(n.l));
+  const body = s.news == null ? `<p class="muted">News wasn't fetched this time.</p>`
+    : !items.length ? `<p class="muted">No headlines tagged with ${esc(s.n)} in the last week. Yahoo's search returns a sample, so this doesn't mean nothing happened.</p>`
+      : items.map((n) => `<a class="headline" href="${esc(n.l)}" target="_blank" rel="noopener noreferrer"><span class="ht">${esc(n.t)}</span><span class="muted">${esc(n.p)}${n.p ? " · " : ""}${ago(n.at)} ago ↗</span></a>`).join("");
+  return `<div class="card"><h2>News <span class="muted">· not part of the rating</span></h2>${body}</div>`;
+}
+
 function caseFile(t) {
   const s = feed.stocks.find((x) => x.t === t);
   if (!s) return;
@@ -117,6 +126,7 @@ function caseFile(t) {
     <div class="card"><h2>The analysts</h2>${s.analysts.map((a) => `<div class="analyst"><span>${esc(a.label)}</span>${dots(a.score)}</div>`).join("")}
       <p class="muted">Buy at +4 or more, Overweight +2 to +3, Hold −1 to +1, Underweight −2 to −3, Sell −4 or less.</p></div>
     ${planHTML(s)}`}
+    ${newsHTML(s)}
     <div class="card"><h2>The last ${s.history.length} weekly calls</h2>
       <div class="strip">${s.history.map((h) => `<i class="${esc(h.rating)}" title="${day(h.d)}: ${esc(h.rating)}"></i>`).join("")}</div>
       <div class="muted" style="display:flex;justify-content:space-between;margin-top:4px"><span>${day(s.history[0]?.d)}</span><span>${day(s.history.at(-1)?.d)}</span></div></div>
@@ -132,6 +142,7 @@ function about() {
   sheet(`<h3>Method</h3>
     <p>A small, rule-based take on a multi-agent trading desk. Four analysts each argue one angle from daily closing prices: <b>Trend</b> (200- and 50-day averages), <b>Momentum</b> (12 months leaving out the last, and 3 months), <b>Against the index</b> (6 months against the S&P 500, Hang Seng or FTSE 100) and <b>Risk</b> (stretched RSI, distance from the 50-day average and the 52-week high, volatility). The judge adds their scores into a rating. A stock with under ${MIN_BARS} sessions of history, or no index prices, is marked Review instead of rated.</p>
     <p>The <b>Scorecard</b> replays the same rules over the past year using only prices known on each day, so it is an honest test of the rules, not of hindsight.</p>
+    <p>The <b>News</b> card on each stock lists up to six headlines from the last week that Yahoo Finance has tagged with the company (or, for Hong Kong and UK stocks, its US-listed shares), with opinion pieces left out. News is shown, never rated: there is no record of what was published on each past day, so it could not be scored honestly.</p>
     <p class="muted">Prices: Yahoo Finance, adjusted for dividends and splits, refreshed every few hours. The daily note is written by Claude (${esc(feed.note?.model || "when an API key is set")}) from these ratings only, once per US session.</p>
     ${feed.failed.length ? `<p class="muted">Not fetched this time: ${feed.failed.map(esc).join(", ")}.</p>` : ""}
     <p class="muted">Personal research. Not financial advice: no account is taken of anyone's objectives, finances or needs.</p>`);
