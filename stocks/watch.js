@@ -27,3 +27,21 @@ export function markSeen(seen, watch, stocks) {
   for (const s of stocks) if (watch[s.t]) next[s.t] = s.rating;
   return next;
 }
+
+// A backup file of the watchlist, for keeping it safe or moving it to another phone.
+export const backupText = (watch) => JSON.stringify({ app: "stocks-watchlist", version: 1, saved: new Date().toISOString(), watch }, null, 1);
+
+// The watchlist in a backup file, checked entry by entry; anything else is refused with a reason.
+export function readBackup(text) {
+  const notOurs = new Error("This file is not a Stocks watchlist backup.");
+  let j;
+  try { j = JSON.parse(text); } catch { throw notOurs; }
+  if (j?.app !== "stocks-watchlist" || !j.watch || typeof j.watch !== "object") throw notOurs;
+  const out = {};
+  for (const [t, e] of Object.entries(j.watch)) {
+    if (!/^[A-Z0-9^][A-Z0-9.^-]{0,11}$/.test(t)) throw new Error(`"${t}" is not a stock symbol.`);
+    if (!e || !/^\d{4}-\d{2}-\d{2}$/.test(e.since) || !Number.isFinite(e.price) || e.price <= 0) throw new Error(`The entry for ${t} is damaged.`);
+    out[t] = { since: e.since, price: e.price };
+  }
+  return out;
+}

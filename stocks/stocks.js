@@ -1,9 +1,9 @@
 // Stocks: renders stocks/feed.json and each stock's stocks/history/<file> (built on GitHub Actions by
 // scripts/build-stocks.mjs). The watchlist lives in this phone's storage only.
 import { pct, REVIEW, MIN_BARS, historyFile } from "./model.js";
-import { plainEnglish, GLOSSARY } from "./explain.js";
+import { plainEnglish, GLOSSARY, audOf } from "./explain.js";
 import { ideas } from "./ideas.js";
-import { toggle, sinceWatching, ratingChanges, markSeen } from "./watch.js";
+import { toggle, sinceWatching, ratingChanges, markSeen, backupText, readBackup } from "./watch.js";
 import { chartModel, RANGES } from "./chart.js";
 import { COMPANIES } from "./companies.js";
 
@@ -93,7 +93,8 @@ function watchlistHTML() {
   if (!mine.length) {
     return `<div class="card intro"><h2>Your watchlist is empty</h2>
       <p>Tap ☆ beside any stock to watch it. It then shows here first, with how much it has moved since you started watching and any change in its rating since your last visit.</p>
-      <p class="muted">Saved on this phone only.</p><button class="cta" data-tab="ideas">Find ideas to watch →</button></div>`;
+      <p class="muted">Saved on this phone only.</p><button class="cta" data-tab="ideas">Find ideas to watch →</button>
+      <p class="muted">Have a backup file? <button class="link" id="restore">Restore it</button></p></div>`;
   }
   const changed = Object.entries(changes).filter(([t]) => byT(t));
   const banner = changed.length ? `<div class="note-card"><div class="k">Since your last look</div><p>${changed.map(([t, c]) => `${esc(byT(t).n)}: ${esc(c.from)} → <b>${esc(c.to)}</b>`).join(" · ")}</p></div>` : "";
@@ -104,7 +105,10 @@ function watchlistHTML() {
   seen = markSeen(seen, watch, feed.stocks);   // shown now, so the next visit reports only newer changes
   store.set("stocks.seen", JSON.stringify(seen));
   const missed = Object.keys(watch).filter((t) => feed.failed.includes(t));
-  return `${banner}<div class="list">${rows}</div>${missed.length ? `<p class="muted">Not fetched this time: ${missed.map(esc).join(", ")}.</p>` : ""}<p class="muted">Saved on this phone only. Tap ★ to remove a stock.</p>`;
+  return `${banner}<div class="list">${rows}</div>${missed.length ? `<p class="muted">Not fetched this time: ${missed.map(esc).join(", ")}.</p>` : ""}
+    <div class="card keep"><h2>Keep your list safe</h2>
+      <p class="muted">It is saved on this phone only. iPhone can clear a website's saved data after a week unused, so add this page to your Home Screen (Share → Add to Home Screen) and open it from there, and keep a backup.</p>
+      <div class="btns"><button class="cta" id="backup">Back up list</button><button class="cta ghost" id="restore">Restore</button></div></div>`;
 }
 
 function ideasHTML() {
@@ -289,9 +293,10 @@ function caseFile(t) {
   const m = feed.markets[s.m];
   const since = sinceWatching(watch[s.t], s);
   const [sector, does] = COMPANIES[s.t] || [];
+  const aud = audOf(s.price, s.cur, feed.fx);
   sheet(`<div class="hdr"><div class="title-row"><h3>${esc(s.n)}</h3>${starButton(s)}</div>
       ${does ? `<p class="does"><span class="sector">${esc(sector)}</span> ${esc(does)}</p>` : ""}
-      <div class="muted">${esc(s.t)} · ${esc(m.label)}${s.kind === "fund" ? " · index fund" : ""} · close ${day(s.d)}: <span class="num">${price(s.price, s.cur)}</span> <span class="num ${tone(s.r1d)}">${signed(s.r1d, 1)}</span></div>
+      <div class="muted">${esc(s.t)} · ${esc(m.label)}${s.kind === "fund" ? " · index fund" : ""} · close ${day(s.d)}: <span class="num">${price(s.price, s.cur)}</span> <span class="num ${tone(s.r1d)}">${signed(s.r1d, 1)}</span>${aud == null ? "" : ` · <span class="num">≈ A$${aud.toLocaleString("en-AU", { maximumFractionDigits: aud < 10 ? 2 : 0 })}</span>`}</div>
       ${since ? `<div class="watching">Watching since ${day(since.since)} at ${price(watch[s.t].price, s.cur)}: <span class="num ${tone(since.change)}">${signed(since.change, 1)}</span></div>` : ""}
       <div class="rating-line">${pill(s.rating)} <span class="muted">${esc(s.rating === REVIEW ? s.reason : s.summary)}</span></div></div>
     ${chartHTML()}
@@ -329,8 +334,40 @@ function star(t) {
   if ($("#sheet").open && openStock === t) caseFile(t);
 }
 
+// Backup: the phone's share sheet where it can take a file (save to Files, AirDrop), else a download.
+async function backup() {
+  const text = backupText(watch), name = `stocks-watchlist-${today()}.json`;
+  const file = new File([text], name, { type: "application/json" });
+  if (navigator.canShare?.({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Stocks watchlist" }); return; } catch (err) { if (err.name === "AbortError") return; }
+  }
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(file), download: name });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10e3);
+}
+
+// Restore adds the backup's stocks to the list; one already starred keeps its own date and price.
+function restore() {
+  const input = Object.assign(document.createElement("input"), { type: "file", accept: "application/json,.json" });
+  input.addEventListener("change", async () => {
+    const f = input.files?.[0];
+    if (!f) return;
+    let saved;
+    try { saved = readBackup(await f.text()); } catch (err) { alert(err.message); return; }
+    const added = Object.keys(saved).filter((t) => !watch[t]);
+    if (!added.length) { alert("Every stock in that backup is already on your list."); return; }
+    if (!confirm(`Add ${added.length} stock${added.length === 1 ? "" : "s"} from the backup to your watchlist?`)) return;
+    watch = { ...saved, ...watch };
+    store.set("stocks.watch", JSON.stringify(watch));
+    seen = markSeen(seen, watch, feed.stocks);
+    store.set("stocks.seen", JSON.stringify(seen));
+    render();
+  });
+  input.click();
+}
+
 document.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-star],[data-tab],[data-market],[data-range],[data-open],[data-close],#refresh,#about,#method");
+  const el = e.target.closest("[data-star],[data-tab],[data-market],[data-range],[data-open],[data-close],#refresh,#about,#method,#backup,#restore");
   if (!el) return;
   if (el.dataset.star) { e.stopPropagation(); return star(el.dataset.star); }
   if (el.dataset.tab) { tab = el.dataset.tab; store.set("stocks.tab", tab); window.scrollTo(0, 0); return render(); }
@@ -339,6 +376,8 @@ document.addEventListener("click", (e) => {
   if (el.dataset.open) return caseFile(el.dataset.open);
   if (el.dataset.close !== undefined) { openStock = null; return $("#sheet").close(); }
   if (el.id === "refresh") return load(true);
+  if (el.id === "backup") return backup();
+  if (el.id === "restore" && feed) return restore();
   if ((el.id === "about" || el.id === "method") && feed) return about();
 });
 document.addEventListener("input", (e) => {

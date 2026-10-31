@@ -123,3 +123,31 @@ test("the offline cache lists every module the Stocks page imports", async () =>
   assert.ok(modules.length >= 6);
   for (const m of modules) assert.ok(sw.includes(`"./stocks/${m}"`), `sw.js FILES is missing ./stocks/${m}`);
 });
+
+test("a thousand put in a year ago: in the stock's own currency, counting dividends", async () => {
+  const { plainEnglish: pe, moneyOf } = await import("../stocks/explain.js");
+  assert.match(pe(stock({ r12m: 0.25, cur: "USD" }), "S&P 500").join(" "), /US\$1,000 put into it a year ago would be worth about US\$1,250 now, counting dividends/);
+  assert.match(pe(stock({ r12m: -0.1, cur: "GBp" }), "FTSE 100").join(" "), /£1,000 .* about £900 now/);
+  assert.equal(moneyOf(1234.5, "HKD"), "HK$1,235");
+  assert.doesNotMatch(pe(stock({ r12m: null }), "S&P 500").join(" "), /a year ago/);
+});
+
+test("Australian dollar value: the day's rate for each currency, pence counted as hundredths of a pound", async () => {
+  const { audOf } = await import("../stocks/explain.js");
+  const fx = { USD: 1.5, HKD: 0.2, GBP: 2 };
+  assert.equal(audOf(100, "USD", fx), 150);
+  assert.equal(audOf(100, "HKD", fx), 20);
+  assert.equal(audOf(1000, "GBp", fx), 20, "1,000 pence is £10");
+  assert.equal(audOf(100, "USD", null), null);
+  assert.equal(audOf(100, "EUR", fx), null);
+});
+
+test("watchlist backup: written as JSON and read back, anything malformed refused", async () => {
+  const { backupText, readBackup } = await import("../stocks/watch.js");
+  const watch = { AAPL: { since: "2026-10-31", price: 112 }, "0700.HK": { since: "2026-10-01", price: 400 } };
+  assert.deepEqual(readBackup(backupText(watch)), watch);
+  assert.throws(() => readBackup("not json"), /not a Stocks watchlist backup/);
+  assert.throws(() => readBackup(JSON.stringify({ app: "travel", watch: {} })), /not a Stocks watchlist backup/);
+  assert.throws(() => readBackup(JSON.stringify({ app: "stocks-watchlist", watch: { AAPL: { since: "yesterday", price: 1 } } })), /AAPL/);
+  assert.throws(() => readBackup(JSON.stringify({ app: "stocks-watchlist", watch: { "<b>": { since: "2026-10-31", price: 1 } } })), /symbol/);
+});
