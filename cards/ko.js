@@ -1,5 +1,6 @@
 // Card and Browse-row renderers for the Korean pack (Korean target, Chinese/English support).
 import { pronounce, romanize } from "../lib/pron.js";
+import { picHTML } from "../data/pics-ko.js";
 
 // [pronounced form] + romanisation, only when a sound-change rule actually applies.
 function pronHTML(it, esc) {
@@ -19,7 +20,8 @@ export function card(it, open, { esc, say, t, isGrammar }) {
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +
       it.ex.map((e) => `<div class="ex"><div class="k">${esc(e.ko)} ${say(e.ko)}</div><div class="t" lang="zh-Hant">${esc(e.zh)}</div><div class="t">${esc(e.en)}</div></div>`).join("");
   } else {
-    back = pronHTML(it, esc) +
+    const pic = picHTML(it.ko, esc);
+    back = (pic ? `<div class="pic">${pic}</div>` : "") + pronHTML(it, esc) +
       (it.hanja ? `<div class="hanja" lang="zh-Hant">${esc(it.hanja)}</div>` : it.pos === "phrase" || it.pos === "idiom" ? "" : `<div class="hanja none">고유어 · native word</div>`) +
       (it.zh ? `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div>` : "") + `<div class="en">${esc(it.en)}</div>` +
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +
@@ -30,7 +32,7 @@ export function card(it, open, { esc, say, t, isGrammar }) {
 
 export function browseRow(i, status, { esc, say, t, isGrammar }) {
   return `<div class="item" data-id="${esc(i.id)}">
-        <div class="row"><div><b>${esc(i.ko ?? i.form)}</b>${i.hanja ? `<span class="hj" lang="zh-Hant">${esc(i.hanja)}</span>` : ""}${i.check ? '<span class="check">?</span>' : ""}</div>
+        <div class="row"><div>${i.ko ? picHTML(i.ko, esc, true) : ""}<b>${esc(i.ko ?? i.form)}</b>${i.hanja ? `<span class="hj" lang="zh-Hant">${esc(i.hanja)}</span>` : ""}${i.check ? '<span class="check">?</span>' : ""}</div>
           <span class="meta"><span class="pill ${esc(i.tier)}">${esc(i.tier)} ${esc(i.unit)}</span> ${status}</span></div>
         <div class="meta" lang="zh-Hant">${isGrammar(i) ? "" : `<span class="rr">${esc(romanize(i.ko, { sino: !!i.hanja }))}</span> · `}${esc(i.zh)} · <span lang="en">${esc(i.en)}</span></div>
         <div class="more">${isGrammar(i)

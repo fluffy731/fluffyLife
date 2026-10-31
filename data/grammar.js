@@ -318,6 +318,81 @@ const ROWS = [
  ["돈이 없어요.","沒有錢。","I have no money."]]],
 ["-에서 (장소)","beg",8,"at/in (action location)","在（動作地點）","Place where an action happens.",[
  ["집에서 책을 읽어요.","在家看書。","I read at home."]]],
+// ---------- Added later: rows go at the end so existing ids stay put ----------
+// ---------- Intermediate, units 21–28 (everyday concrete words) ----------
+["-아/어 있다","int",21,"be in a state (the result of an action)","（動作結果）…著","Intransitive and passive verbs only: 앉아 있다, 열려 있다. Contrast -고 있다 (action in progress): 옷을 입고 있다.",[
+ ["창문이 열려 있어서 방이 춥다.","窗戶開著，所以房間很冷。","The window is open, so the room is cold."],
+ ["아이가 의자에 앉아 있다.","孩子坐在椅子上。","The child is sitting on the chair."]]],
+["-다가","int",21,"while doing … (then something else)","…著…著；做…的途中","Same subject. The first action is interrupted or switched. -았/었다가 = after finishing it.",[
+ ["칼질을 하다가 손가락을 베었다.","切菜切到一半割到了手指。","I cut my finger while chopping."],
+ ["집에 가다가 친구를 만났다.","回家的路上遇到了朋友。","I ran into a friend on my way home."]]],
+["피동 -이/히/리/기-","int",22,"passive verbs","被動詞（被…）","보다→보이다, 닫다→닫히다, 열다→열리다, 안다→안기다. The doer is often left out; 에게/에 marks it.",[
+ ["바람 때문에 문이 저절로 닫혔다.","因為風，門自己關上了。","The door shut by itself because of the wind."],
+ ["아기가 엄마 품에 안겨 잠들었다.","寶寶被媽媽抱在懷裡睡著了。","The baby fell asleep in its mother's arms."]]],
+["-아/어지다","int",22,"become …; get done (passive)","變得…；被…","With adjectives: a change of state (추워지다). With verbs: passive for verbs with no passive form (깨지다, 찢어지다).",[
+ ["떨어뜨린 컵이 깨졌다.","掉下去的杯子破了。","The cup I dropped broke."],
+ ["날씨가 점점 추워진다.","天氣漸漸變冷。","The weather is getting colder."]]],
+["사동 -이/히/리/기/우-","int",23,"causative verbs (make or help someone do)","使動詞（讓…、使…）","먹다→먹이다, 입다→입히다, 울다→울리다, 씻다→씻기다, 자다→재우다. Often doing it for someone in your care.",[
+ ["엄마가 아기에게 우유를 먹였다.","媽媽餵寶寶喝牛奶。","The mother fed the baby milk."],
+ ["아이를 씻기고 재웠다.","幫孩子洗完澡，哄他睡了。","I bathed the child and put them to bed."]]],
+["-게 하다","int",23,"make or let someone do","讓…、使…","Works with any verb, unlike the fixed causative forms, and is less hands-on: 먹게 하다 (got them to eat) vs 먹이다 (fed them).",[
+ ["의사가 나를 일주일 동안 쉬게 했다.","醫生讓我休息了一個星期。","The doctor had me rest for a week."],
+ ["창문을 열어서 바람이 들어오게 했다.","打開窗戶讓風吹進來。","I opened the window to let the breeze in."]]],
+["-는 동안(에)","int",24,"while, during","在…期間","V-는 동안; N 동안 (방학 동안). Both things run over the same stretch of time.",[
+ ["빨래가 마르는 동안 청소를 했다.","在衣服晾乾的時候打掃了。","I cleaned while the washing dried."],
+ ["방학 동안 요리를 배웠다.","放假期間學了做菜。","I learnt to cook during the holidays."]]],
+["-(으)ㄹ 때까지","int",24,"until","直到…為止","The action carries on up to a point: 익을 때까지, 마를 때까지.",[
+ ["고기가 다 익을 때까지 기다렸다.","一直等到肉完全熟了。","I waited until the meat was cooked through."],
+ ["물이 끓을 때까지 불을 세게 해 주세요.","在水燒開之前請開大火。","Keep the heat high until the water boils."]]],
+["-(으)면서","int",25,"while (two things at once)","一邊…一邊…","Same subject, both at the same time. Also 'although': 알면서 모른 척하다.",[
+ ["음악을 들으면서 설거지를 했다.","一邊聽音樂一邊洗碗。","I did the dishes while listening to music."],
+ ["그는 웃으면서 고개를 끄덕였다.","他一邊笑一邊點頭。","He nodded with a smile."]]],
+["-지 말고","int",25,"don't …, (do …) instead","別…，（而是）…","V-지 말고 V-(으)세요. Replaces one action with another.",[
+ ["손으로 만지지 말고 집게를 쓰세요.","別用手摸，用夾子吧。","Don't touch it with your hands — use the tongs."],
+ ["그냥 버리지 말고 분리수거하세요.","別直接丟，請分類回收。","Don't just throw it out — sort it for recycling."]]],
+["-아/어 가지고","int",26,"and then (keeping the result); because (spoken)","…了之後（再）；因為（口語）","Spoken form of -아/어서. In sequence the result carries over: 사과를 깎아 가지고 먹었다.",[
+ ["감자를 삶아 가지고 으깼다.","把馬鈴薯煮好後壓成泥。","I boiled the potatoes and then mashed them."],
+ ["너무 피곤해 가지고 일찍 잤어.","太累了，所以早早就睡了。","I was so tired I went to bed early."]]],
+["-(으)ㄴ/는 대신(에)","int",26,"instead of; in return","代替…；相對地","N 대신에 / V-는 대신에. Also a trade-off: 비싼 대신 튼튼하다.",[
+ ["설탕 대신 꿀을 넣었다.","用蜂蜜代替了糖。","I used honey instead of sugar."],
+ ["이 의자는 비싼 대신 아주 튼튼하다.","這張椅子雖然貴，但相對地非常堅固。","This chair is expensive, but it's very sturdy."]]],
+["-기 쉽다/어렵다","int",27,"easy / hard to …","容易…／很難…","Also -기 편하다, -기 좋다. 쉽다 can mean 'likely to': 넘어지기 쉽다.",[
+ ["바닥이 젖어 있으면 미끄러지기 쉽다.","地板濕的話很容易滑倒。","It's easy to slip if the floor is wet."],
+ ["이 병은 뚜껑이 작아서 열기 어렵다.","這個瓶子的蓋子很小，很難打開。","The lid on this bottle is small, so it's hard to open."]]],
+["-(으)ㄴ/는 편이다","int",27,"tend to be, fairly","算是…、比較…","Softens a judgement. Adjective -(으)ㄴ 편이다; verb -는 편이다 (a habit).",[
+ ["우리 집은 시내에서 가까운 편이다.","我家算是離市區比較近。","Our place is fairly close to the city centre."],
+ ["나는 아침을 잘 안 먹는 편이다.","我不太吃早餐。","I tend not to eat breakfast."]]],
+["-(으)ㄹ 줄 알다/모르다","int",28,"know / not know how to","會…／不會…","A skill learnt by practice. Compare -(으)ㄹ 수 있다 (possible, allowed).",[
+ ["나는 김치를 담글 줄 안다.","我會醃泡菜。","I know how to make kimchi."],
+ ["동생은 아직 신발 끈을 묶을 줄 모른다.","弟弟還不會綁鞋帶。","My little brother can't tie his shoelaces yet."]]],
+["-았/었다가","int",28,"did … and then undid or changed it","…了又…","The first action is finished, then reversed or followed by a change: 입었다가 벗었다.",[
+ ["코트를 입었다가 더워서 벗었다.","穿上大衣後覺得熱又脫掉了。","I put my coat on, then took it off because it was hot."],
+ ["창문을 열었다가 시끄러워서 다시 닫았다.","打開窗戶後太吵又關上了。","I opened the window but shut it again because of the noise."]]],
+// ---------- Beginner, units 9–12 (everyday basics) ----------
+["-았/었어요","beg",9,"past tense (polite)","過去式（…了）","Stem + 았 (after ㅏ/ㅗ) / 었 (others) / 했 (하다): 갔어요, 먹었어요, 공부했어요.",[
+ ["어제 친구하고 영화를 봤어요.","昨天和朋友看了電影。","I saw a film with a friend yesterday."],
+ ["아침에 빵을 먹었어요.","早上吃了麵包。","I ate bread this morning."]]],
+["-(으)러 가다/오다","beg",9,"go / come to do","去／來（做）…","Only with 가다, 오다, 다니다: 밥 먹으러 가요.",[
+ ["점심 먹으러 식당에 가요.","去餐廳吃午餐。","I'm going to a restaurant for lunch."],
+ ["책을 빌리러 도서관에 왔어요.","來圖書館借書。","I came to the library to borrow a book."]]],
+["-(으)면","beg",10,"if, when","如果…就…","After a consonant -으면 (먹으면); after a vowel or ㄹ -면 (가면, 살면).",[
+ ["배가 고프면 이거 드세요.","肚子餓的話吃這個吧。","Have this if you're hungry."],
+ ["비가 오면 집에 있을 거예요.","下雨的話我會待在家。","If it rains, I'll stay home."]]],
+["-기 전에","beg",10,"before doing","在…之前","V-기 전에; N 전에 (식사 전에).",[
+ ["자기 전에 이를 닦아요.","睡覺前刷牙。","I brush my teeth before bed."],
+ ["밥 먹기 전에 손을 씻으세요.","吃飯前請洗手。","Wash your hands before you eat."]]],
+["-(으)ㄴ 후에","beg",11,"after doing","…之後","Same as -(으)ㄴ 다음에; N 후에 (수업 후에).",[
+ ["밥을 먹은 후에 산책해요.","吃完飯後散步。","I go for a walk after eating."],
+ ["수업이 끝난 후에 만나요.","下課後見吧。","Let's meet after class."]]],
+["-지 마세요","beg",11,"please don't","請不要…","Polite prohibition. Casual: -지 마.",[
+ ["여기에서 사진을 찍지 마세요.","請不要在這裡拍照。","Please don't take photos here."],
+ ["걱정하지 마세요.","請不要擔心。","Don't worry."]]],
+["-아/어도 되다","beg",12,"may; it's all right to","可以…","Permission. As a question it asks for permission: 앉아도 돼요?",[
+ ["여기 앉아도 돼요?","可以坐這裡嗎？","May I sit here?"],
+ ["창문을 열어도 돼요.","可以開窗戶。","You can open the window."]]],
+["-(으)ㄹ 때","beg",12,"when, at the time","…的時候","V/A-(으)ㄹ 때; N 때 (방학 때). Past: -았/었을 때.",[
+ ["심심할 때 음악을 들어요.","無聊的時候聽音樂。","I listen to music when I'm bored."],
+ ["어렸을 때 부산에 살았어요.","小時候住在釜山。","I lived in Busan when I was little."]]],
 ];
 
 const counters = { int: 0, adv: 0, beg: 0 };

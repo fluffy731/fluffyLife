@@ -8,7 +8,7 @@ import { interleave } from "../lib/interleave.js";
 import { kindOf } from "../lib/track.js";
 import { pack as yue } from "../data/yue/pack.js";
 
-const UNITS = { int: 20, adv: 14, beg: 8 };
+const UNITS = { int: 28, adv: 14, beg: 12 };
 const phrases = vocab.filter((v) => v.id.startsWith("p-"));
 
 test("interleave spreads extras evenly and keeps both orders", () => {
@@ -18,10 +18,10 @@ test("interleave spreads extras evenly and keeps both orders", () => {
 });
 
 test("Korean phrase counts per tier", () => {
-  assert.equal(PH_INT.length, 100);
+  assert.equal(PH_INT.length, 140);
   assert.equal(PH_ADV.length, 70);
-  assert.equal(PH_BEG.length, 40);
-  assert.equal(phrases.length, 210);
+  assert.equal(PH_BEG.length, 60);
+  assert.equal(phrases.length, 270);
 });
 
 test("every Korean unit gets phrases, and they are kind 'phrase'", () => {
