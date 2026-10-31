@@ -8,7 +8,7 @@ import { vocab as all } from "../data/vocab.js";
 const vocab = all.filter((v) => v.id.startsWith("v-"));
 
 const GOLD = JSON.parse(readFileSync(new URL("./golden/ko-ids.json", import.meta.url), "utf8"));
-const TIERS = { int: 20, adv: 14, beg: 8 };
+const TIERS = { int: 28, adv: 14, beg: 12 };
 const unitsOf = (tier) => {
   const m = new Map();
   for (const v of vocab.filter((x) => x.tier === tier)) { if (!m.has(v.unit)) m.set(v.unit, []); m.get(v.unit).push(v); }
@@ -33,8 +33,18 @@ test("bucketOf classifies by pos and hanja", () => {
   assert.equal(bucketOf({ pos: "adv", hanja: null }), "etc");
 });
 
-test("ids unchanged", () => {
-  assert.deepEqual(Object.fromEntries(vocab.map((v) => [v.id, v.ko])), GOLD);
+// Progress is stored by id, so an existing id must keep its word. New rows go at the end of a tier file.
+test("existing ids keep their word", () => {
+  const now = Object.fromEntries(vocab.map((v) => [v.id, v.ko]));
+  assert.deepEqual(Object.keys(GOLD).filter((id) => now[id] !== GOLD[id]), []);
+});
+
+// Unit membership as it was before words were first added in batches (words and phrases). A unit you
+// have learned or passed must not gain or lose items when new words arrive.
+test("existing words and phrases keep their unit", () => {
+  const UNITS = JSON.parse(readFileSync(new URL("./golden/ko-units.json", import.meta.url), "utf8"));
+  const now = Object.fromEntries(all.map((v) => [v.id, v.unit]));
+  assert.deepEqual(Object.keys(UNITS).filter((id) => now[id] !== UNITS[id]).slice(0, 10), []);
 });
 
 test("unit counts per tier", () => {

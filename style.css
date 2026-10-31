@@ -45,6 +45,12 @@ h2:first-child { margin-top: 0; }
 .flash .front { font-size: 40px; font-weight: 700; letter-spacing: .01em; }
 .flash .front.grammar { font-size: 28px; }
 .flash .pos { color: var(--muted); font-size: 13px; margin-top: 4px; }
+/* Pictograms are drawn for a white page, so they sit on a white tile in dark mode too. */
+.flash .pic { width: 132px; height: 132px; margin: 12px auto 6px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 14px; }
+.flash .pic .picimg { width: 118px; height: 118px; }
+.flash .pic .picemoji { font-size: 80px; line-height: 1; }
+.item .bpic { width: 28px; height: 28px; vertical-align: middle; margin-right: 6px; background: #fff; border-radius: 6px; }
+.item .bemoji { margin-right: 6px; }
 .flash .hint { color: var(--muted); font-size: 13px; margin-top: 24px; }
 .pron { font-size: 15px; color: var(--muted); margin-top: 4px; }
 .pron .said { color: var(--ink); }

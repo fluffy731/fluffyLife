@@ -24,7 +24,7 @@ const FILES = [
   "./data/yue/phrases.js", "./data/phrases-int.js", "./data/phrases-adv.js", "./data/phrases-beg.js",
   "./yue/", "./yue/index.html", "./yue/manifest.json", "./icons/yue.svg", "./icons/yue-180.png", "./icons/yue-512.png",
   "./data/yue/pack.js", "./data/yue/vocab.js", "./data/yue/vocab-a0.js", "./data/yue/vocab-a1.js", "./data/yue/vocab-a2.js", "./data/yue/grammar.js", "./data/yue/hanja-ko.js", "./data/yue/legacy-ids.js",
-  "./data/pack.js", "./data/vocab.js", "./data/vocab-int.js", "./data/vocab-adv.js", "./data/vocab-beg.js", "./data/grammar.js",
+  "./data/pack.js", "./data/vocab.js", "./data/vocab-int.js", "./data/vocab-adv.js", "./data/vocab-beg.js", "./data/grammar.js", "./data/pics-ko.js",
 ];
 
 self.addEventListener("install", (e) => {
