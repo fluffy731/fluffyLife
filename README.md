@@ -11,7 +11,6 @@ All things life, and whatever comes up next: language trainers, a no-opinion new
 | 蒙古语 Mongolian | [`/mongolian/`](https://fluffy731.github.io/fluffyLife/mongolian/) | Mongolian for a Mandarin speaker starting from zero |
 | English · 영어 | [`/english/`](https://fluffy731.github.io/fluffyLife/english/) | Intermediate-to-advanced English for a Korean speaker |
 | Briefing · 뉴스 | [`/news/`](https://fluffy731.github.io/fluffyLife/news/) | Hourly news from free-to-read outlets, opinion removed |
-| Travel | [`/travel/`](https://fluffy731.github.io/fluffyLife/travel/) | Trip planner and packing checklist |
 | MC 主持稿 | [`/mc/`](https://fluffy731.github.io/fluffyLife/mc/) | MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final |
 
 The bare address forwards to `/korean/`, so home-screen icons saved from it before the other apps existed keep working.
@@ -146,7 +145,9 @@ A fifth home-screen app. It reads only free-to-read outlets and never bypasses a
 - **Checks:** `node --test test/news*.test.js`; `node scripts/build-news.mjs --probe` prints each feed's status; `node scripts/news-check.mjs` checks the app in a browser against a fixture feed.
 - **Note:** GitHub pauses scheduled workflows after 60 days without repository activity; any push (or re-enabling the workflow in Actions) restarts the hourly updates.
 
-# Travel (`/travel/`)
+# Travel (`/travel/`, unlisted)
+
+Left off the home page and out of the table above, and its pages ask search engines not to index them. Open it from its own address or home-screen icon. Unlisted is not private: the address still opens for anyone who has it, and trip files in `travel/trips/` stay readable in this public repo.
 
 Two tabs: **Plan** and **Packing**.
 
