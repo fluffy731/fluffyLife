@@ -40,7 +40,7 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : path.includes("/stocks") ? "./stocks/index.html" :path.includes("/mc/") ? "./mc/index.html" : path.includes("/travel/plan") ? "./travel/plan.html" : path.includes("/travel/") ? "./travel/index.html" : "./korean/index.html");
+const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : path.includes("/stocks") ? "./stocks/index.html" : path.includes("/mc/") ? "./mc/index.html" : path.includes("/travel/plan") ? "./travel/plan.html" : path.includes("/travel/") ? "./travel/index.html" : "./korean/index.html");
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;

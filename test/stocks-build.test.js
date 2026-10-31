@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseChart, completedBars, buildFeed, noteFor, NOTE_MODEL, FEED_VERSION } from "../scripts/build-stocks.mjs";
+import { parseChart, completedBars, buildFeed, noteFor, NOTE_MODEL, FEED_VERSION, SETTLE_SEC } from "../scripts/build-stocks.mjs";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
 
 // A Yahoo chart response in the v8 shape: sessions open 09:30 New York (13:30 UTC in summer).
@@ -21,19 +21,37 @@ test("a Yahoo chart becomes dated bars in exchange time, adjusted for dividends 
   const { bars, currency } = parseChart(chart());
   assert.equal(currency, "USD");
   assert.deepEqual(bars.map((b) => b.d), ["2026-10-27", "2026-10-28", "2026-10-30"]);
-  assert.deepEqual(bars[0], { d: "2026-10-27", h: 5.5, l: 4.5, c: 5 }, "adjusted close of 5 halves the whole bar");
+  assert.deepEqual(bars[0], { d: "2026-10-27", h: 5.5, l: 4.5, c: 5, p: 10 }, "adjusted close of 5 halves the bar; the price alone stays");
   assert.equal(bars[2].c, 13);
+});
+
+test("the date is the exchange's own: a Hong Kong session stamped late in the UTC evening is the next day", () => {
+  const ts = Date.parse("2026-10-29T20:00:00Z") / 1000;
+  const hk = { chart: { error: null, result: [{ meta: { currency: "HKD", gmtoffset: 28800 }, timestamp: [ts], indicators: { quote: [{ high: [2], low: [1], close: [1.5] }] } }] } };
+  const { bars, session } = parseChart(hk);
+  assert.equal(bars[0].d, "2026-10-30");
+  assert.equal(bars[0].c, bars[0].p, "no adjusted close: the price is the close");
+  assert.equal(session, null);
+  assert.deepEqual(completedBars(bars, session, ts), bars, "no session times: nothing dropped");
+});
+
+test("a second row for the same day keeps the later one", () => {
+  const twice = chart({ timestamp: [open("2026-10-29"), open("2026-10-30"), open("2026-10-30") + 3600],
+    indicators: { quote: [{ high: [11, 12, 13], low: [9, 10, 11], close: [10, 11, 12] }] } });
+  const { bars } = parseChart(twice);
+  assert.deepEqual(bars.map((b) => [b.d, b.c]), [["2026-10-29", 10], ["2026-10-30", 12]]);
 });
 
 test("a Yahoo error or empty result is refused, not read as no prices", () => {
   assert.throws(() => parseChart({ chart: { error: { code: "Not Found", description: "No data found" }, result: null } }), /No data found/);
+  assert.throws(() => parseChart({ chart: { error: null, result: [] } }), /no prices/);
 });
 
-test("today's bar is dropped while the session is still trading, kept once it has closed", () => {
+test("today's bar is dropped while the session trades and through the closing auction, kept once settled", () => {
   const { bars, session } = parseChart(chart());
-  const during = session.end - 600, after = session.end + 60;
-  assert.equal(completedBars(bars, session, during).at(-1).d, "2026-10-28");
-  assert.equal(completedBars(bars, session, after).at(-1).d, "2026-10-30");
+  assert.equal(completedBars(bars, session, session.end - 600).at(-1).d, "2026-10-28");
+  assert.equal(completedBars(bars, session, session.end + 600).at(-1).d, "2026-10-28", "auction and delayed prices");
+  assert.equal(completedBars(bars, session, session.end + SETTLE_SEC + 60).at(-1).d, "2026-10-30");
 });
 
 // Synthetic two years of sessions for the feed tests.
