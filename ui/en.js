@@ -17,6 +17,7 @@ export const ui = {
       </ol>
     `,
   unitDone: "Unit done", unitDoneHint: "Every item here has been introduced. Pick the next unit above or go review.",
+  leechTip: (n) => `🩹 Missed ${n} times. In Browse, tap 🩹 to find it and edit it: add a note, a memory trick or your own example.`,
   jumpedAhead: "Jumped ahead — the previous unit isn't finished yet. That's fine.",
   leftInUnit: (n) => `${n} left in this unit`, gotIt: "Got it", alreadyKnew: "Already knew", reviewIn: (x) => `review in ${x}`,
   showMeaning: "Show meaning", nothingDue: "Nothing due", nextReview: (x) => `Next review in ${x}.`, learnFirst: "Learn some new words first.",

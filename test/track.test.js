@@ -56,7 +56,7 @@ test("pickHourItems falls back to tier when unit fully learned", () => {
 });
 
 test("Again keeps an item seen: still due, unit still learned", async () => {
-  const { grade } = await import("../lib/sm2.js");
+  const { grade } = await import("../lib/fsrs.js");
   const now = 1_700_000_000_000;
   let s = grade(undefined, "good", now); s = grade(s, "again", now);
   const p = { v1: s, v2: { reps: 1, due: now + 1 }, g1: { reps: 1, due: now + 1 } };

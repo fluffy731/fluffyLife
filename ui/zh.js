@@ -21,6 +21,7 @@ export const ui = {
       </ol>
     `,
   unitDone: "本单元完成！", unitDoneHint: "本单元的内容都学过一遍了。在上面选下一个单元，或者去复习。",
+  leechTip: (n) => `🩹 已经答错 ${n} 次。在「浏览」点 🩹 可以找到它并编辑：加个备注、记忆窍门或自己的例句。`,
   jumpedAhead: "上一个单元还没学完——跳着学也没关系。",
   leftInUnit: (n) => `本单元还剩 ${n} 个`, gotIt: "记住了", alreadyKnew: "早就会了", reviewIn: (x) => `${x}后复习`,
   showMeaning: "看意思", nothingDue: "没有要复习的", nextReview: (x) => `下次复习在 ${x}后。`, learnFirst: "先学一些新单词吧。",

@@ -22,6 +22,7 @@ export const ui = {
       <p class="small muted">(메뉴 이름은 iOS 버전에 따라 조금 다를 수 있어요.)</p>
     `,
   unitDone: "단원 끝!", unitDoneHint: "이 단원의 모든 항목을 한 번씩 봤어요. 위에서 다음 단원을 고르거나 복습하러 가세요.",
+  leechTip: (n) => `🩹 ${n}번 틀렸어요. 찾아보기에서 🩹를 누르면 모아 볼 수 있어요. 메모나 외우는 요령, 나만의 예문을 넣어 보세요.`,
   jumpedAhead: "앞 단원이 아직 안 끝났어요. 건너뛰어도 괜찮아요.",
   leftInUnit: (n) => `이 단원에 ${n}개 남았어요`, gotIt: "알겠어요", alreadyKnew: "이미 알아요", reviewIn: (x) => `${x} 뒤 복습`,
   showMeaning: "뜻 보기", nothingDue: "복습할 게 없어요", nextReview: (x) => `다음 복습은 ${x} 뒤예요.`, learnFirst: "먼저 새 단어를 배워 보세요.",
