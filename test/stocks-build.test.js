@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseChart, completedBars, buildFeed, noteFor, parseNews, newsFromRss, mergeNews, aboutCompany, historyFor, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
+import { parseChart, completedBars, buildFeed, noteFor, parseNews, newsFromRss, mergeNews, aboutCompany, historyFor, fxRates, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
 import { historyFile } from "../stocks/model.js";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
 
@@ -289,4 +289,11 @@ test("the universe covers US, Hong Kong and UK with no symbol twice", () => {
   assert.equal(new Set(symbols).size, symbols.length);
   for (const m of ["US", "HK", "UK"]) assert.ok(UNIVERSE.filter((s) => s.m === m && s.kind !== "fund").length >= 20, m);
   assert.ok(UNIVERSE.every((s) => MARKETS[s.m]));
+});
+
+test("exchange rates into Australian dollars come from the latest close of each currency pair", () => {
+  const bars = (c) => [{ d: "2026-10-30", h: c, l: c, c, p: c }];
+  const fx = fxRates({ USD: bars(1.51), HKD: bars(0.194), GBP: bars(2.03) });
+  assert.deepEqual(fx, { USD: 1.51, HKD: 0.194, GBP: 2.03 });
+  assert.deepEqual(fxRates({ USD: bars(1.5), HKD: null }), { USD: 1.5 }, "a pair that failed is left out");
 });

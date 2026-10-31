@@ -3,6 +3,18 @@
 
 const pc = (x, digits = 0) => `${Math.abs(x * 100).toFixed(digits)}%`;
 
+// Money in a stock's own currency, rounded to the dollar (or pound): US$1,250, HK$1,235, £900.
+const SYMBOL = { USD: "US$", HKD: "HK$", GBP: "£", GBp: "£" };
+export const moneyOf = (x, cur) => `${SYMBOL[cur] ?? ""}${Math.round(x).toLocaleString("en-AU")}${SYMBOL[cur] ? "" : ` ${cur}`}`;
+
+// A price in Australian dollars at the day's rate (fx: Australian dollars per unit of each currency);
+// London prices are in pence, a hundredth of a pound. null when the rate is unknown.
+export function audOf(price, cur, fx) {
+  if (!fx || !Number.isFinite(price)) return null;
+  const rate = cur === "GBp" ? (fx.GBP == null ? null : fx.GBP / 100) : fx[cur];
+  return Number.isFinite(rate) ? price * rate : null;
+}
+
 function swings(vol) {
   if (vol < 0.2) return "which is calm for a large company";
   if (vol < 0.35) return "about average for a large company";
@@ -36,6 +48,7 @@ export function plainEnglish(s, benchName) {
     const paid = s.r6p != null && Math.abs(s.r6m - s.r6p) >= 0.005 ? ` With dividends it ${s.r6m >= 0 ? "returned" : "lost"} ${pc(s.r6m)}.` : "";
     out.push(`Over six months its price ${move >= 0 ? "rose" : "fell"} ${pc(move)}${vs}.${paid}`);
   }
+  if (s.r12m != null && s.cur) out.push(`${moneyOf(1000, s.cur)} put into it a year ago would be worth about ${moneyOf(1000 * (1 + s.r12m), s.cur)} now, counting dividends (before fees, tax and any currency change).`);
   if (f) {
     out.push(`Its price typically swings about ${pc(f.vol)} over a year, ${swings(f.vol)}.${st?.dailyMove ? ` On a normal day it moves within about ${pc(st.dailyMove, 1)}.` : ""}`);
     out.push(f.drawdown < 0.03 ? "It is close to its highest price of the past year." : `It is ${pc(f.drawdown)} below its highest price of the past year.`);
