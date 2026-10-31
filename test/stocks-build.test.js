@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseChart, completedBars, buildFeed, noteFor, parseNews, newsFromRss, mergeNews, aboutCompany, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
+import { parseChart, completedBars, buildFeed, noteFor, parseNews, newsFromRss, mergeNews, aboutCompany, historyFor, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
+import { historyFile } from "../stocks/model.js";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
 
 // A Yahoo chart response in the v8 shape: sessions open 09:30 New York (13:30 UTC in summer).
@@ -219,9 +220,73 @@ test("US-listed shares for news are set only on Hong Kong and UK stocks, never t
   assert.ok(withAdr.every((s) => s.m !== "US" && s.adr !== s.t && /^[A-Z]{1,5}$/.test(s.adr)));
 });
 
+test("dividends come out of the chart, dated in exchange time", () => {
+  const lateUtc = Date.parse("2026-10-29T02:00:00Z") / 1000;   // 10pm on the 28th in New York
+  const withDiv = chart({ events: { dividends: { [lateUtc]: { amount: 0.26, date: lateUtc } } } });
+  assert.deepEqual(parseChart(withDiv).dividends, [{ d: "2026-10-28", amount: 0.26 }]);
+  assert.deepEqual(parseChart(chart()).dividends, [], "none paid: an empty list");
+});
+
+test("key stats: 52-week range of the price, dividend yield over the last year, typical daily move", () => {
+  const bars = sessions(300, (i) => 100 + (i % 50)).map((b) => ({ ...b, p: b.c }));
+  const last = bars.at(-1);
+  const dividends = [{ d: bars.at(-10).d, amount: 1 }, { d: bars.at(-100).d, amount: 1 }, { d: bars[0].d, amount: 5 }];
+  const feed = buildFeed({ universe: [{ t: "AAPL", n: "Apple", m: "US" }], markets: { US: MARKETS.US }, prices: { AAPL: { bars, currency: "USD", dividends } }, benches: { US: sessions(300, () => 100) }, builtAt: "2026-10-31T00:00:00Z" });
+  const st = feed.stocks[0].stats;
+  assert.equal(st.hi52, 149);
+  assert.equal(st.lo52, 100);
+  assert.ok(Math.abs(st.divYield - 2 / last.p) < 1e-3, "only dividends paid in the last 365 days count");
+  assert.ok(st.dailyMove > 0);
+});
+
+test("a dividend yield over 20% is left out: it means the dividend came in other units than the price", () => {
+  const bars = sessions(300, () => 100).map((b) => ({ ...b, p: b.c }));
+  const feed = buildFeed({ universe: [{ t: "ISF.L", n: "FTSE fund", m: "UK" }], markets: { UK: MARKETS.UK }, prices: { "ISF.L": { bars, currency: "GBp", dividends: [{ d: bars.at(-5).d, amount: 30 }] } }, benches: { UK: sessions(300, () => 100) }, builtAt: "2026-10-31T00:00:00Z" });
+  assert.equal(feed.stocks[0].stats.divYield, null);
+});
+
+test("the daily note is about the stocks: index funds are left out of its lists", async () => {
+  const feed = feedFor("2026-10-31");
+  feed.stocks.push({ t: "VOO", n: "Vanguard S&P 500 ETF", m: "US", kind: "fund", rating: "Buy", score: 6, prev: "Buy", r6m: 0.1, bull: [], bear: [], news: null });
+  const client = fakeClient(ok);
+  await noteFor(feed, null, client);
+  assert.doesNotMatch(client.calls[0].messages[0].content, /VOO/);
+});
+
+test("index funds are rated and charted like stocks but kept out of the scorecard and the news", () => {
+  const bench = sessions(500, () => 100);
+  const prices = { AAPL: { bars: sessions(500, (i) => 100 * 1.002 ** i), currency: "USD" }, VOO: { bars: sessions(500, (i) => 100 * 1.001 ** i), currency: "USD" } };
+  const universe = [{ t: "AAPL", n: "Apple", m: "US" }, { t: "VOO", n: "Vanguard S&P 500 ETF", m: "US", kind: "fund" }];
+  const both = buildFeed({ universe, markets: { US: MARKETS.US }, prices, benches: { US: bench }, news: { AAPL: [], VOO: [{ t: "x" }] }, builtAt: "2026-10-31T00:00:00Z" });
+  const alone = buildFeed({ universe: universe.slice(0, 1), markets: { US: MARKETS.US }, prices, benches: { US: bench }, builtAt: "2026-10-31T00:00:00Z" });
+  assert.equal(both.scorecard.all.scored, alone.scorecard.all.scored);
+  const fund = both.stocks.find((s) => s.t === "VOO");
+  assert.equal(fund.kind, "fund");
+  assert.equal(fund.news, null);
+  assert.ok(fund.rating);
+});
+
+test("a stock's history file: dated prices with its index alongside, rounded, index null where it did not trade", () => {
+  const bars = sessions(5, (i) => 100 + i / 3).map((b) => ({ ...b, p: b.c - 1 }));
+  const bench = [bars[0], bars[1], bars[3], bars[4]].map((b) => ({ d: b.d, c: 5000 + b.c }));
+  const h = historyFor(bars, bench);
+  assert.deepEqual(h.d, bars.map((b) => b.d));
+  assert.deepEqual(h.p, bars.map((b) => +(b.c - 1).toPrecision(6)), "the price alone, as quoted");
+  assert.equal(h.b[2], h.b[1], "a day the index did not trade carries its last close");
+  assert.equal(historyFor(bars, []).b.every((x) => x === null), true);
+  assert.equal(historyFile("0700.HK"), "0700_HK.json");
+  assert.equal(historyFile("BRK-B"), "BRK-B.json");
+});
+
+test("the list's index funds: one per market, marked as funds", () => {
+  const funds = UNIVERSE.filter((s) => s.kind === "fund");
+  assert.deepEqual(funds.map((f) => f.m).sort(), ["HK", "UK", "US"]);
+  assert.ok(funds.every((f) => f.about && f.about.length > 40));
+});
+
 test("the universe covers US, Hong Kong and UK with no symbol twice", () => {
   const symbols = UNIVERSE.map((s) => s.t);
   assert.equal(new Set(symbols).size, symbols.length);
-  for (const m of ["US", "HK", "UK"]) assert.ok(UNIVERSE.filter((s) => s.m === m).length >= 20, m);
+  for (const m of ["US", "HK", "UK"]) assert.ok(UNIVERSE.filter((s) => s.m === m && s.kind !== "fund").length >= 20, m);
   assert.ok(UNIVERSE.every((s) => MARKETS[s.m]));
 });

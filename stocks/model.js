@@ -75,17 +75,20 @@ function review(reason) {
   return { rating: REVIEW, reason, score: null, summary: reason, analysts: [], bull: [], bear: [], plan: null, facts: null };
 }
 
+// Trend and risk read the price as quoted, the same line a chart draws, so what the page says about a
+// stock matches its chart; returns read the dividend-adjusted close, so they count what an owner received.
 function facts(bars, bench, end) {
-  const c = bars.map((b) => b.c), close = c[end];
+  const c = bars.map((b) => b.c), pc = bars.map(price), close = pc[end];
   const b0 = closeAsOf(bench, bars[end - HALF].d), b1 = closeAsOf(bench, bars[end].d);
   if (b0 == null || b1 == null) return null;
   let high = 0;
-  for (let i = end - YEAR + 1; i <= end; i++) high = Math.max(high, bars[i].h);
+  for (let i = end - YEAR + 1; i <= end; i++) high = Math.max(high, pc[i]);
+  const r6p = close / pc[end - HALF] - 1;
   return {
-    close, sma50: sma(c, 50, end), sma200: sma(c, 200, end), atr: atr(bars, end), rsi: rsi(c, end), vol: volatility(c, end),
-    r1m: close / c[end - MONTH] - 1, r3m: close / c[end - QUARTER] - 1, r6m: close / c[end - HALF] - 1,
-    r12m: close / c[end - YEAR] - 1, r12x1: c[end - MONTH] / c[end - YEAR] - 1,
-    rel6: price(bars[end]) / price(bars[end - HALF]) - b1 / b0, drawdown: 1 - close / high,
+    close, sma50: sma(pc, 50, end), sma200: sma(pc, 200, end), atr: atr(bars, end), rsi: rsi(pc, end), vol: volatility(c, end),
+    r1m: c[end] / c[end - MONTH] - 1, r3m: c[end] / c[end - QUARTER] - 1, r6m: c[end] / c[end - HALF] - 1,
+    r12m: c[end] / c[end - YEAR] - 1, r12x1: c[end - MONTH] / c[end - YEAR] - 1,
+    r6p, rel6: r6p - (b1 / b0 - 1), drawdown: 1 - close / high,
   };
 }
 
@@ -200,6 +203,9 @@ export function scorecard(calls) {
     spread: bull != null && bear != null ? bull - bear : null,
   };
 }
+
+// Where a stock's two-year history is published (stocks/history/<file>), for the page to load on demand.
+export const historyFile = (t) => `${t.replace(/[^A-Za-z0-9-]/g, "_")}.json`;
 
 // The last `span` closes thinned to at most `points`, first and last kept, for a small chart.
 export function sparkline(bars, span = HALF, points = 60) {

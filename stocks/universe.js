@@ -44,4 +44,12 @@ export const UNIVERSE = [
     ["DGE.L", "Diageo", "DEO"], ["RR.L", "Rolls-Royce", "RYCEY"], ["BA.L", "BAE Systems", "BAESY"], ["GLEN.L", "Glencore", "GLNCY"], ["NG.L", "National Grid", "NGG"],
     ["LLOY.L", "Lloyds", "LYG"], ["BARC.L", "Barclays", "BCS"], ["CPG.L", "Compass", "CMPGY"], ["AAL.L", "Anglo American", "NGLOY"], ["TSCO.L", "Tesco", "TSCDY"],
   ]),
+  // Index funds, one per market: each holds the whole index, the usual first step for someone starting out.
+  // Rated and charted like the stocks, but kept out of the scorecard, which tests the stock ratings.
+  { t: "VOO", n: "Vanguard S&P 500 ETF", m: "US", kind: "fund",
+    about: "Holds all 500 companies in the S&P 500, the main US share index, in proportion to their size, for a yearly fee of about 0.03%." },
+  { t: "2800.HK", n: "Tracker Fund of Hong Kong", m: "HK", kind: "fund",
+    about: "Holds the companies in the Hang Seng Index, Hong Kong's main share index, in proportion to their size, for a low yearly fee (well under 0.2%)." },
+  { t: "ISF.L", n: "iShares Core FTSE 100", m: "UK", kind: "fund",
+    about: "Holds the 100 largest companies listed in London, the FTSE 100, in proportion to their size, for a low yearly fee (well under 0.2%)." },
 ];

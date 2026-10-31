@@ -77,12 +77,14 @@ jobs:
         continue-on-error: true
         run: node scripts/build-news.mjs
       # Stocks: the last good feed comes back first, so a failed fetch leaves yesterday's ratings up, not none.
-      - name: Restore the last stock feed
+      - name: Restore the last stock feed and chart histories
         uses: actions/cache@v4
         with:
-          path: stocks/feed.json
-          key: stocks-v1-${{ github.run_id }}
-          restore-keys: stocks-v1-
+          path: |
+            stocks/feed.json
+            stocks/history
+          key: stocks-v2-${{ github.run_id }}
+          restore-keys: stocks-v2-
       - name: Rate the stocks (Yahoo prices; daily note by Claude Haiku when the ANTHROPIC_API_KEY secret is set)
         continue-on-error: true
         timeout-minutes: 15

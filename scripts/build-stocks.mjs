@@ -5,10 +5,10 @@
 // Runs on GitHub Actions with the hourly deploy; the phone only downloads the finished JSON.
 //   node scripts/build-stocks.mjs           rebuild unless the feed is under 3 hours old
 //   node scripts/build-stocks.mjs --force   rebuild now
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { MARKETS, UNIVERSE, ALSO_CALLED } from "../stocks/universe.js";
-import { analyse, replay, scorecard, sparkline, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
+import { analyse, replay, scorecard, sparkline, closeAsOf, historyFile, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
 import { isOpinion, parseFeed } from "./build-news.mjs";
 
 export const FEED_VERSION = 1;
@@ -17,12 +17,13 @@ const RULES = createHash("sha256")
   .update(["../stocks/model.js", "../stocks/universe.js", "./build-stocks.mjs"].map((f) => readFileSync(new URL(f, import.meta.url))).join("\n"))
   .digest("hex").slice(0, 12);
 export const NOTE_MODEL = "claude-haiku-5-5";
-const OUT = "stocks/feed.json";
+const OUT = "stocks/feed.json", HISTORY = "stocks/history";
 const FRESH_FOR = 3 * 3600e3;
 const UA = "Mozilla/5.0 (compatible; fluffyLife-stocks/1.0; personal reader)";
 
 const dayOf = (sec) => new Date(sec * 1000).toISOString().slice(0, 10);
 const r4 = (x) => (Number.isFinite(x) ? +x.toPrecision(4) : null);
+const r6 = (x) => (Number.isFinite(x) ? +x.toPrecision(6) : null);   // prices: 12,034p must not print as 12,030
 
 // ---------- Yahoo's chart format ----------
 export function parseChart(json) {
@@ -42,7 +43,18 @@ export function parseChart(json) {
     else bars.push(bar);
   });
   const reg = res.meta.currentTradingPeriod?.regular;
-  return { bars, currency: res.meta.currency || "", session: reg ? { start: reg.start, end: reg.end, date: dayOf(reg.start + off) } : null };
+  // Dividends per share, in the price's own units, for the yield.
+  const dividends = Object.values(res.events?.dividends || {})
+    .filter((v) => Number.isFinite(v.amount) && Number.isFinite(v.date))
+    .map((v) => ({ d: dayOf(v.date + off), amount: v.amount })).sort((a, b) => (a.d < b.d ? -1 : 1));
+  return { bars, currency: res.meta.currency || "", dividends, session: reg ? { start: reg.start, end: reg.end, date: dayOf(reg.start + off) } : null };
+}
+
+// A stock's two years for its chart: dates, the price alone (as quoted), and its index's close on each date
+// (the last close before it on a day the index did not trade; null when there is none).
+export function historyFor(bars, bench) {
+  const r6 = (x) => +x.toPrecision(6);
+  return { d: bars.map((b) => b.d), p: bars.map((b) => r6(b.p ?? b.c)), b: bars.map((b) => { const c = closeAsOf(bench, b.d); return c == null ? null : r6(c); }) };
 }
 
 // Today's bar is the live price until the session closes, and for a while after: Hong Kong's closing auction
@@ -108,19 +120,36 @@ export function newsFromRss(xml, s, nowMs) {
 }
 
 // ---------- the feed (pure) ----------
-function stockEntry(s, { bars, currency }, bench, benchName) {
+// Figures a beginner looks for first: the price's range over the past year, the dividends it paid over the
+// past year as a share of the price, and its typical daily move (the average daily range).
+function statsFor(bars, dividends, atrPct) {
+  const year = bars.slice(-252).map((b) => b.p ?? b.c), last = bars.at(-1), price = last.p ?? last.c;
+  const since = new Date(Date.parse(last.d) - 365 * 864e5).toISOString().slice(0, 10);
+  const yieldNow = dividends ? dividends.filter((x) => x.d > since).reduce((sum, x) => sum + x.amount, 0) / price : null;
+  return {
+    hi52: r6(Math.max(...year)), lo52: r6(Math.min(...year)),
+    // No large company yields over 20%: a figure that high would mean the dividend came in other units than
+    // the price (pounds against pence), so it is left out rather than shown wrong.
+    divYield: yieldNow == null || yieldNow > 0.2 ? null : r4(yieldNow),
+    dailyMove: r4(atrPct),
+  };
+}
+
+function stockEntry(s, { bars, currency, dividends }, bench, benchName) {
   const calls = replay(bars, bench, { benchName });
   const a = analyse(bars, bench, bars.length - 1, { benchName });
   const f = a.facts, last = bars.at(-1);
   return {
     entry: {
-      t: s.t, n: s.n, m: s.m, cur: currency, d: last.d, close: r4(last.c),
+      t: s.t, n: s.n, m: s.m, kind: s.kind || "stock", ...(s.about ? { about: s.about } : {}),
+      cur: currency, d: last.d, close: r6(f?.close ?? last.p ?? last.c), price: r6(last.p ?? last.c),
+      stats: statsFor(bars, dividends, a.plan?.atrPct),
       r1d: bars.length > 1 ? r4(last.c / bars.at(-2).c - 1) : null,
-      r1m: r4(f?.r1m), r3m: r4(f?.r3m), r6m: r4(f?.r6m), r12m: r4(f?.r12m), rel6: r4(f?.rel6),
+      r1m: r4(f?.r1m), r3m: r4(f?.r3m), r6m: r4(f?.r6m), r12m: r4(f?.r12m), r6p: r4(f?.r6p), rel6: r4(f?.rel6),
       rating: a.rating, score: a.score, summary: a.summary, reason: a.reason,
       analysts: a.analysts, bull: a.bull, bear: a.bear,
-      plan: a.plan && { down: r4(a.plan.down), up: r4(a.plan.up), atrPct: r4(a.plan.atrPct) },
-      facts: f && { rsi: r4(f.rsi), vol: r4(f.vol), drawdown: r4(f.drawdown), sma50: r4(f.sma50), sma200: r4(f.sma200) },
+      plan: a.plan && { down: r6(a.plan.down), up: r6(a.plan.up), atrPct: r4(a.plan.atrPct) },
+      facts: f && { rsi: r4(f.rsi), vol: r4(f.vol), drawdown: r4(f.drawdown), sma50: r6(f.sma50), sma200: r6(f.sma200) },
       spark: sparkline(bars),
       history: calls.slice(-12).map(({ d, rating }) => ({ d, rating })),
       prev: calls.at(-2)?.rating ?? null,
@@ -137,7 +166,8 @@ export function buildFeed({ universe, markets, prices, benches, news = {}, built
   for (const s of universe) {
     if (!prices[s.t]?.bars?.length) { failed.push(s.t); continue; }
     const { entry, calls } = stockEntry(s, prices[s.t], benches[s.m] || [], markets[s.m].benchName);
-    stocks.push({ ...entry, news: news[s.t] ?? null });
+    stocks.push({ ...entry, news: entry.kind === "fund" ? null : news[s.t] ?? null });
+    if (entry.kind === "fund") continue;   // the scorecard tests the stock ratings
     callsBy.all.push(...calls);
     (callsBy[s.m] ||= []).push(...calls);
   }
@@ -167,7 +197,7 @@ const NOTE_SYSTEM = [
 ].join(" ");
 
 function notePayload(feed) {
-  const rated = feed.stocks.filter((s) => s.rating !== REVIEW);
+  const rated = feed.stocks.filter((s) => s.rating !== REVIEW && s.kind !== "fund");
   const percent = (x) => (x == null ? null : pct(x, 1));
   const brief = (s) => ({ t: s.t, name: s.n, market: s.m, rating: s.rating, lastWeek: s.prev, sixMonthReturn: percent(s.r6m), bull: s.bull.slice(0, 2), bear: s.bear.slice(0, 1),
     headlines: (s.news || []).slice(0, 2).map((n) => `${n.t} (${n.p || "unknown publisher"})`) });
@@ -229,8 +259,8 @@ async function fetchBars(symbol, nowSec) {
   for (const wait of [0, 2000]) {   // one retry: Yahoo turns away the odd request from shared runners
     if (wait) await new Promise((r) => setTimeout(r, wait));
     try {
-      const { bars, currency, session } = parseChart(await getJson(url));
-      return { bars: completedBars(bars, session, nowSec), currency };
+      const { bars, currency, dividends, session } = parseChart(await getJson(url));
+      return { bars: completedBars(bars, session, nowSec), currency, dividends };
     } catch (e) { error = String(e.message || e); }
   }
   return { error };
@@ -269,16 +299,19 @@ export async function build({ force = false } = {}) {
   const got = Object.fromEntries(await pool(symbols, 4, async (s) => [s, await fetchBars(s, nowSec)]));
   const benches = Object.fromEntries(Object.entries(MARKETS).filter(([, m]) => got[m.bench].bars).map(([k, m]) => [k, got[m.bench].bars]));
   const prices = Object.fromEntries(UNIVERSE.filter((s) => got[s.t].bars).map((s) => [s.t, got[s.t]]));
-  const news = Object.fromEntries(await pool(UNIVERSE.filter((s) => prices[s.t]), 4, async (s) => [s.t, await fetchNews(s, Date.now())]));
+  const news = Object.fromEntries(await pool(UNIVERSE.filter((s) => prices[s.t] && s.kind !== "fund"), 4, async (s) => [s.t, await fetchNews(s, Date.now())]));
   const feed = buildFeed({ universe: UNIVERSE, markets: MARKETS, prices, benches, news, builtAt: new Date().toISOString() });
   if (!feed.stocks.length) throw new Error(`no stock prices fetched (${got[UNIVERSE[0].t].error}); the previous feed is kept`);
   feed.note = await writeNote(feed, previous?.note);
-  mkdirSync("stocks", { recursive: true });
+  // Each stock's two years for its chart, one small file each, loaded only when the stock is opened.
+  rmSync(HISTORY, { recursive: true, force: true });
+  mkdirSync(HISTORY, { recursive: true });
+  for (const s of UNIVERSE.filter((x) => prices[x.t])) writeFileSync(`${HISTORY}/${historyFile(s.t)}`, JSON.stringify(historyFor(prices[s.t].bars, benches[s.m] || [])));
   writeFileSync(OUT, JSON.stringify(feed));
   return {
     stocks: feed.stocks.length, failed: Object.entries(got).filter(([, v]) => v.error).map(([s, v]) => `${s} (${v.error})`),
     indices: Object.keys(benches), scored: feed.scorecard.all.scored, spread: feed.scorecard.all.spread, note: feed.note ? feed.note.key : "none",
-    news: { withHeadlines: feed.stocks.filter((s) => s.news?.length).length, none: feed.stocks.filter((s) => s.news && !s.news.length).length, notFetched: feed.stocks.filter((s) => !s.news).length },
+    news: (({ stocks }) => ({ withHeadlines: stocks.filter((s) => s.news?.length).length, none: stocks.filter((s) => s.news && !s.news.length).length, notFetched: stocks.filter((s) => !s.news).length }))({ stocks: feed.stocks.filter((s) => s.kind !== "fund") }),
   };
 }
 

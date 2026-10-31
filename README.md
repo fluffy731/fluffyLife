@@ -167,7 +167,11 @@ The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final: mornin
 
 # Stocks (`/stocks/`, unlisted)
 
-Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scorecard. A cut-down version of the TradingAgents idea (several analysts argue, a judge rates, every past call is scored) without the dozens of AI calls per stock. Personal research, not financial advice. It is deliberately left off the home page and out of the table above, and the page asks search engines not to index it. Open it from its own address and add it to the home screen.
+Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scorecard, built for someone new to shares. A cut-down version of the TradingAgents idea (several analysts argue, a judge rates, every past call is scored) without the dozens of AI calls per stock. Personal research, not financial advice.
+
+- **Tabs:** ★ Watchlist (starred stocks, the change since starring, rating changes since the last visit; kept in the phone's storage), Ideas (index funds to start with, steady climbers, upgrades, dips in strong stocks, downgrades, each with its reason), Ratings (search and sort), Scorecard, and Learn (a glossary of every term on the page).
+- **Each stock:** a two-year price chart (1M to 2Y, 50- and 200-day averages, the index alongside, tap to read a date), a plain-English reading of its figures (`stocks/explain.js`), key figures (52-week range, dividend yield, typical daily move), the rating with its bull and bear cases, and news. The chart's history is a small file per stock in `stocks/history/`, written by the build and loaded only when the stock is opened.
+- **Index funds:** one per market (VOO, 2800.HK, ISF.L) in `stocks/universe.js`, rated and charted like the stocks but kept out of the scorecard and the news. It is deliberately left off the home page and out of the table above, and the page asks search engines not to index it. Open it from its own address and add it to the home screen.
 
 - **How it works:** with the hourly deploy, `scripts/build-stocks.mjs` fetches two years of daily prices from Yahoo Finance for every stock in `stocks/universe.js` and for the S&P 500, Hang Seng and FTSE 100, then writes `stocks/feed.json`. It refetches only when the feed is over 3 hours old. Today's bar is left out until that market has closed.
 - **The rules** (`stocks/model.js`): four analysts each score one angle: Trend (200- and 50-day averages), Momentum (12 months leaving out the last, and 3 months), Against the index (6 months) and Risk (stretched RSI, distance from the 50-day average and the 52-week high, volatility). Their sum is the rating, from Buy at +4 or more to Sell at −4 or less. A stock without enough history, or a market whose index could not be fetched, shows **Review**, never a Hold.
@@ -175,7 +179,7 @@ Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scor
 - **News:** each stock's page lists up to six headlines from the last week that Yahoo Finance has tagged with the company. For Hong Kong and UK stocks it also accepts articles tagged with their US-listed shares (the third column in `stocks/universe.js`), since Yahoo tags few articles with those exchanges' symbols. Opinion pieces are left out with the Briefing app's filter. News is shown, never rated: past headlines cannot be replayed, so a rating that used them could not be scored honestly.
 - **Daily note:** add a repository secret `ANTHROPIC_API_KEY` (Settings → Secrets and variables → Actions) and one short note is written by Claude Haiku for each completed US session, from the ratings and the named stocks' headlines. It costs well under a cent a day. Without the secret there is no note and nothing else changes.
 - **Edit the list:** add or remove rows in `stocks/universe.js`, using Yahoo symbols (`0700.HK`, `AZN.L`). A symbol Yahoo does not know shows under "Not fetched".
-- **Checks:** `node --test test/stocks*.test.js`; `node scripts/build-stocks.mjs --force` builds the feed locally.
+- **Checks:** `node --test test/stocks*.test.js`; `node scripts/build-stocks.mjs --force` builds the feed and the chart histories locally. Each deploy leaves a "Stocks feed" notice on its run with the build summary.
 
 # Development
 

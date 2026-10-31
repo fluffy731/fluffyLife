@@ -9,7 +9,7 @@ const FILES = [
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
   "./lib/sm2.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js", "./lib/interleave.js", "./lib/mongol.js", "./lib/validate-mn.js", "./lib/validate-en.js",
   "./news/", "./news/index.html", "./news/news.js", "./news/news.css", "./news/model.js", "./news/manifest.json", "./icons/news.svg", "./icons/news-180.png", "./icons/news-512.png",
-  "./stocks/", "./stocks/index.html", "./stocks/stocks.js", "./stocks/stocks.css", "./stocks/model.js", "./stocks/manifest.json", "./icons/stocks.svg", "./icons/stocks-180.png", "./icons/stocks-512.png",
+  "./stocks/", "./stocks/index.html", "./stocks/stocks.js", "./stocks/stocks.css", "./stocks/model.js", "./stocks/explain.js", "./stocks/ideas.js", "./stocks/watch.js", "./stocks/chart.js", "./stocks/companies.js", "./stocks/manifest.json", "./icons/stocks.svg", "./icons/stocks-180.png", "./icons/stocks-512.png",
   "./quiz-view.js", "./quiz/ko.js", "./quiz/yue.js",
   "./packs/ko.js", "./packs/dict-ko.js", "./packs/dict-yue.js", "./packs/dict-en.js", "./cards/ko.js", "./ui/en.js", "./lib/dict.js",
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
