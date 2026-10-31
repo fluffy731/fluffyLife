@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sma, rsi, atr, analyse, replay, scorecard, sparkline, REVIEW, MIN_BARS, HOLD_DAYS } from "../stocks/model.js";
+import { sma, rsi, atr, analyse, replay, scorecard, sparkline, closeAsOf, REVIEW, MIN_BARS, HOLD_DAYS } from "../stocks/model.js";
 
 // Weekday dates from 2024-01-01, so bars look like trading sessions.
 function weekdays(n) {
@@ -96,7 +96,7 @@ test("scorecard: hit rate in the rating's direction, mean alpha, and the Buy-min
   const calls = [
     { rating: "Buy", alpha: 0.04 }, { rating: "Buy", alpha: -0.02 }, { rating: "Overweight", alpha: 0.01 },
     { rating: "Hold", alpha: 0.03 }, { rating: "Sell", alpha: -0.05 }, { rating: "Underweight", alpha: 0.01 },
-    { rating: "Buy", alpha: null }, { rating: REVIEW, alpha: null },
+    { rating: "Buy", alpha: null, waiting: true }, { rating: "Sell", alpha: null, waiting: false }, { rating: REVIEW, alpha: null },
   ];
   const s = scorecard(calls);
   assert.equal(s.scored, 6);
@@ -109,6 +109,22 @@ test("scorecard: hit rate in the rating's direction, mean alpha, and the Buy-min
   assert.equal(s.byRating.Sell.hit, 1);
   assert.ok(Math.abs(s.spread - (0.01 - -0.02)) < 1e-12, "bullish mean 0.01 minus bearish mean -0.02");
   assert.equal(scorecard([]).spread, null);
+});
+
+test("against the index, dividends are left out: a flat price with a yield neither beats nor trails a flat price index", () => {
+  const paying = series(N, (i) => 100 * 1.0002 ** i).map((b) => ({ ...b, p: 100 }));
+  const a = analyse(paying, flat, N - 1, OPTS);
+  assert.ok(Math.abs(a.facts.rel6) < 1e-12);
+  assert.ok(a.facts.r6m > 0.02, "the total return still counts for momentum");
+  const scored = replay(paying, flat, OPTS).filter((c) => c.alpha != null);
+  assert.ok(scored.length > 0 && scored.every((c) => Math.abs(c.alpha) < 1e-12));
+});
+
+test("an index close more than 4 days before the date is no comparison", () => {
+  const b = [{ d: "2026-10-01", c: 1 }];
+  assert.equal(closeAsOf(b, "2026-10-05"), 1);
+  assert.equal(closeAsOf(b, "2026-10-06"), null);
+  assert.equal(closeAsOf(b, "2026-09-30"), null);
 });
 
 test("sparkline keeps the first and last close and at most the asked number of points", () => {

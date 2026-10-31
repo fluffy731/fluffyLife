@@ -2,7 +2,9 @@
 // Pure functions shared by the build script (Node) and the page (browser). Every call reads only the
 // prices up to its own date, so the replay is an honest test of the rules: nothing here has seen the future.
 //
-// Bars are completed daily sessions, oldest first: { d: "YYYY-MM-DD", h, l, c }.
+// Bars are completed daily sessions, oldest first: { d: "YYYY-MM-DD", h, l, c, p }. h, l and c are adjusted for
+// dividends and splits (total return, for trend and momentum); p is the price alone, adjusted for splits only,
+// for comparisons with an index, since the indices are price indices. Without p, c is the price.
 
 export const RATINGS = ["Buy", "Overweight", "Hold", "Underweight", "Sell"];
 // A call the rules cannot make (too little history, no index prices). Never shown or scored as a Hold.
@@ -19,6 +21,7 @@ const YEAR = 252, HALF = 126, QUARTER = 63, MONTH = 21;
 
 export const pct = (x, digits = 0) => `${x >= 0 ? "+" : "−"}${Math.abs(x * 100).toFixed(digits)}%`;
 const abs = (x) => `${Math.abs(x * 100).toFixed(0)}%`;
+const price = (b) => b.p ?? b.c;
 
 export function sma(values, n, end) {
   if (end - n + 1 < 0) return null;
@@ -27,7 +30,7 @@ export function sma(values, n, end) {
   return s / n;
 }
 
-// Wilder's RSI over n sessions ending at `end`; 50 when nothing moved.
+// RSI from simple n-session sums of gains and losses (Cutler's form) ending at `end`; 50 when nothing moved.
 export function rsi(closes, end, n = 14) {
   let gain = 0, loss = 0;
   for (let i = end - n + 1; i <= end; i++) {
@@ -57,14 +60,15 @@ function volatility(closes, end, n = QUARTER) {
 
 const days = (a, b) => (Date.parse(b) - Date.parse(a)) / 864e5;
 
-// The index close on or before `date`, or null when the index has no session within a week of it.
+// The index close on or before `date`, or null when the index's last session before it is over 4 days old
+// (a long weekend, not a missing week).
 export function closeAsOf(bench, date) {
   let lo = 0, hi = bench.length - 1, hit = -1;
   while (lo <= hi) {
     const mid = (lo + hi) >> 1;
     if (bench[mid].d <= date) { hit = mid; lo = mid + 1; } else hi = mid - 1;
   }
-  return hit >= 0 && days(bench[hit].d, date) <= 7 ? bench[hit].c : null;
+  return hit >= 0 && days(bench[hit].d, date) <= 4 ? bench[hit].c : null;
 }
 
 function review(reason) {
@@ -73,15 +77,15 @@ function review(reason) {
 
 function facts(bars, bench, end) {
   const c = bars.map((b) => b.c), close = c[end];
-  const b0 = closeAsOf(bench, bars[end - HALF].d), b1 = closeAsOf(bench, bars[end].d), bq = closeAsOf(bench, bars[end - QUARTER].d);
-  if (b0 == null || b1 == null || bq == null) return null;
+  const b0 = closeAsOf(bench, bars[end - HALF].d), b1 = closeAsOf(bench, bars[end].d);
+  if (b0 == null || b1 == null) return null;
   let high = 0;
   for (let i = end - YEAR + 1; i <= end; i++) high = Math.max(high, bars[i].h);
-  const r6m = close / c[end - HALF] - 1, r3m = close / c[end - QUARTER] - 1;
   return {
     close, sma50: sma(c, 50, end), sma200: sma(c, 200, end), atr: atr(bars, end), rsi: rsi(c, end), vol: volatility(c, end),
-    r1m: close / c[end - MONTH] - 1, r3m, r6m, r12m: close / c[end - YEAR] - 1, r12x1: c[end - MONTH] / c[end - YEAR] - 1,
-    rel6: r6m - (b1 / b0 - 1), rel3: r3m - (b1 / bq - 1), drawdown: 1 - close / high,
+    r1m: close / c[end - MONTH] - 1, r3m: close / c[end - QUARTER] - 1, r6m: close / c[end - HALF] - 1,
+    r12m: close / c[end - YEAR] - 1, r12x1: c[end - MONTH] / c[end - YEAR] - 1,
+    rel6: price(bars[end]) / price(bars[end - HALF]) - b1 / b0, drawdown: 1 - close / high,
   };
 }
 
@@ -154,17 +158,18 @@ export function analyse(bars, bench, end, { benchName }) {
 }
 
 // The rules replayed every REPLAY_EVERY sessions back from today's, each call scored over HOLD_DAYS sessions
-// from the next close (a call made on a close can only be acted on after it). Unscored calls have alpha null.
+// from the next close (a call made on a close can only be acted on after it), price against price index.
+// A call still `waiting` for its window to trade, or with no index price at either end, has alpha null.
 export function replay(bars, bench, { benchName, every = REPLAY_EVERY, hold = HOLD_DAYS }) {
   const last = bars.length - 1, calls = [];
   for (let end = last; end >= MIN_BARS - 1; end -= every) {
     const { rating, score } = analyse(bars, bench, end, { benchName });
-    const call = { d: bars[end].d, rating, score, ret: null, alpha: null };
     const exit = end + 1 + hold;
-    if (exit <= last && rating !== REVIEW) {
+    const call = { d: bars[end].d, rating, score, ret: null, alpha: null, waiting: exit > last };
+    if (!call.waiting && rating !== REVIEW) {
       const b0 = closeAsOf(bench, bars[end + 1].d), b1 = closeAsOf(bench, bars[exit].d);
       if (b0 != null && b1 != null) {
-        call.ret = bars[exit].c / bars[end + 1].c - 1;
+        call.ret = price(bars[exit]) / price(bars[end + 1]) - 1;
         call.alpha = call.ret - (b1 / b0 - 1);
       }
     }
@@ -189,7 +194,7 @@ export function scorecard(calls) {
   const bear = mean(scored.filter((c) => DIRECTION[c.rating] < 0).map((c) => c.alpha));
   return {
     scored: scored.length,
-    pending: calls.filter((c) => c.alpha == null && c.rating !== REVIEW).length,
+    pending: calls.filter((c) => c.waiting && c.rating !== REVIEW).length,
     review: calls.filter((c) => c.rating === REVIEW).length,
     byRating,
     spread: bull != null && bear != null ? bull - bear : null,

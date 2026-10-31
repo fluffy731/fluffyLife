@@ -5,10 +5,15 @@
 //   node scripts/build-stocks.mjs           rebuild unless the feed is under 3 hours old
 //   node scripts/build-stocks.mjs --force   rebuild now
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
-import { analyse, replay, scorecard, sparkline, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
+import { analyse, replay, scorecard, sparkline, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
 
 export const FEED_VERSION = 1;
+// A fingerprint of the rules, the list and this script: a feed built by older rules is rebuilt, however fresh.
+const RULES = createHash("sha256")
+  .update(["../stocks/model.js", "../stocks/universe.js", "./build-stocks.mjs"].map((f) => readFileSync(new URL(f, import.meta.url))).join("\n"))
+  .digest("hex").slice(0, 12);
 export const NOTE_MODEL = "claude-haiku-5-5";
 const OUT = "stocks/feed.json";
 const FRESH_FOR = 3 * 3600e3;
@@ -30,15 +35,19 @@ export function parseChart(json) {
     const [h, l, c] = [q.high[i], q.low[i], q.close[i]];
     if (![h, l, c].every((x) => Number.isFinite(x) && x > 0)) return;
     const k = adj && Number.isFinite(adj[i]) && adj[i] > 0 ? adj[i] / c : 1;   // dividends and splits
-    bars.push({ d: dayOf(ts + off), h: h * k, l: l * k, c: c * k });
+    const bar = { d: dayOf(ts + off), h: h * k, l: l * k, c: c * k, p: c };      // p: price alone, for index comparisons
+    if (bars.at(-1)?.d === bar.d) bars[bars.length - 1] = bar;                   // a second row for one day: the later one
+    else bars.push(bar);
   });
   const reg = res.meta.currentTradingPeriod?.regular;
   return { bars, currency: res.meta.currency || "", session: reg ? { start: reg.start, end: reg.end, date: dayOf(reg.start + off) } : null };
 }
 
-// Today's bar is the live price until the session closes; a call on it would be read off a moving number.
+// Today's bar is the live price until the session closes, and for a while after: Hong Kong's closing auction
+// runs 10 minutes past the bell and Yahoo's Hong Kong prices lag 15. A call on it would read a moving number.
+export const SETTLE_SEC = 45 * 60;
 export function completedBars(bars, session, nowSec) {
-  if (session && nowSec < session.end && bars.at(-1)?.d === session.date) return bars.slice(0, -1);
+  if (session && nowSec < session.end + SETTLE_SEC && bars.at(-1)?.d === session.date) return bars.slice(0, -1);
   return bars;
 }
 
@@ -84,7 +93,7 @@ export function buildFeed({ universe, markets, prices, benches, builtAt }) {
     return [k, { label: m.label, benchName: m.benchName, asOf: b?.at(-1)?.d ?? null, r6m: b?.length > 126 ? r4(b.at(-1).c / b.at(-127).c - 1) : null }];
   }));
   return {
-    version: FEED_VERSION, builtAt, holdDays: HOLD_DAYS, every: REPLAY_EVERY,
+    version: FEED_VERSION, rules: RULES, builtAt, holdDays: HOLD_DAYS, every: REPLAY_EVERY,
     markets: summary, stocks: stocks.sort(order), failed, scorecard: card,
     noteKey: benches.US?.at(-1)?.d ?? null, note: null,
   };
@@ -101,13 +110,15 @@ const NOTE_SYSTEM = [
 
 function notePayload(feed) {
   const rated = feed.stocks.filter((s) => s.rating !== REVIEW);
-  const brief = (s) => ({ t: s.t, name: s.n, market: s.m, rating: s.rating, lastWeek: s.prev, sixMonths: s.r6m, bull: s.bull.slice(0, 2), bear: s.bear.slice(0, 1) });
+  const percent = (x) => (x == null ? null : pct(x, 1));
+  const brief = (s) => ({ t: s.t, name: s.n, market: s.m, rating: s.rating, lastWeek: s.prev, sixMonthReturn: percent(s.r6m), bull: s.bull.slice(0, 2), bear: s.bear.slice(0, 1) });
+  const spread = feed.scorecard.all?.spread;
   return {
     highest: rated.slice(0, 8).map(brief),
-    lowest: rated.slice(-5).map(brief),
+    lowest: rated.slice(Math.max(8, rated.length - 5)).map(brief),
     changed: rated.filter((s) => s.prev && s.prev !== REVIEW && s.prev !== s.rating).slice(0, 10).map((s) => ({ t: s.t, name: s.n, from: s.prev, to: s.rating })),
-    scorecard: { bullishMinusBearishAlpha: feed.scorecard.all?.spread ?? null, callsScored: feed.scorecard.all?.scored ?? 0, holdSessions: HOLD_DAYS },
-    indices: Object.values(feed.markets).map((m) => ({ name: m.benchName, sixMonths: m.r6m })),
+    scorecard: { bullishMinusBearishVsIndex: spread == null ? null : `${(spread * 100).toFixed(1)} percentage points`, callsScored: feed.scorecard.all?.scored ?? 0, holdSessions: HOLD_DAYS },
+    indices: Object.values(feed.markets).map((m) => ({ name: m.benchName, sixMonthReturn: percent(m.r6m) })),
   };
 }
 
@@ -128,14 +139,16 @@ export async function noteFor(feed, previous, client) {
   return text ? { key: feed.noteKey, text, model: NOTE_MODEL, at: new Date().toISOString() } : null;
 }
 
+// The note is an extra: nothing on its path (a missing SDK, an API error, a bad reply) may stop the prices.
 async function writeNote(feed, previous) {
   if (!process.env.ANTHROPIC_API_KEY) return noteFor(feed, previous, null);
-  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  let Anthropic;
   try {
-    return await noteFor(feed, previous, new Anthropic());
+    ({ default: Anthropic } = await import("@anthropic-ai/sdk"));
+    return await noteFor(feed, previous, new Anthropic({ timeout: 60_000, maxRetries: 2 }));
   } catch (e) {
-    if (!(e instanceof Anthropic.APIError)) throw e;
-    console.warn(`stocks: note not written (${e.status ?? "no connection"}): ${e.message}`);
+    const why = Anthropic && e instanceof Anthropic.APIError ? `API ${e.status ?? "no connection"}` : e.constructor.name;
+    console.warn(`::warning::stocks: note not written (${why}): ${e.message}`);
     return null;
   }
 }
@@ -178,7 +191,7 @@ function previousFeed() {
 
 export async function build({ force = false } = {}) {
   const previous = previousFeed();
-  if (!force && previous?.version === FEED_VERSION && Date.now() - Date.parse(previous.builtAt) < FRESH_FOR) return { kept: previous.builtAt };
+  if (!force && previous?.rules === RULES && Date.now() - Date.parse(previous.builtAt) < FRESH_FOR) return { kept: previous.builtAt };
   const nowSec = Math.floor(Date.now() / 1000);
   const symbols = [...Object.values(MARKETS).map((m) => m.bench), ...UNIVERSE.map((s) => s.t)];
   const got = Object.fromEntries(await pool(symbols, 4, async (s) => [s, await fetchBars(s, nowSec)]));

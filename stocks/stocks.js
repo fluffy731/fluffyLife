@@ -67,10 +67,10 @@ function scorecardHTML() {
   const where = market === "all" ? "each stock's own index" : `the ${esc(feed.markets[market].benchName)}`;
   const head = sc.spread == null ? "Not enough bullish and bearish calls to compare yet."
     : sc.spread >= 0 ? `Bullish calls beat bearish calls by <b>${pts(sc.spread)}</b>` : `Bearish calls beat bullish calls by <b>${pts(-sc.spread)}</b>: the rules were wrong-footed`;
-  const rows = Object.entries(sc.byRating).map(([r, x]) => `<tr><td>${pill(r)}</td><td class="num">${x.n}</td><td class="num">${x.hit == null ? "–" : `${Math.round(x.hit * 100)}%`}</td><td class="num ${tone(x.alpha)}">${pts(x.alpha)}</td></tr>`).join("");
+  const rows = Object.entries(sc.byRating).map(([r, x]) => `<tr><td>${pill(r)}</td><td class="num">${esc(x.n)}</td><td class="num">${x.hit == null ? "–" : `${Math.round(x.hit * 100)}%`}</td><td class="num ${tone(x.alpha)}">${pts(x.alpha)}</td></tr>`).join("");
   return `<div class="card"><h2>How the rules have done</h2>
-      <p>${head}, on average over ${feed.holdDays} sessions, measured against ${where}.</p>
-      <p class="muted">${sc.scored} calls replayed every ${feed.every} sessions from ${day(sc.from)} to ${day(sc.to)}, each using only prices known on its day and entered at the next close. ${sc.pending} recent calls wait for their ${feed.holdDays} sessions to trade.</p></div>
+      <p>${head}, on average over ${esc(feed.holdDays)} sessions, measured against ${where}.</p>
+      <p class="muted">${esc(sc.scored)} calls replayed every ${esc(feed.every)} sessions from ${day(sc.from)} to ${day(sc.to)}, each using only prices known on its day and entered at the next close. ${esc(sc.pending)} recent calls wait for their ${esc(feed.holdDays)} sessions to trade.</p></div>
     <div class="card"><table><thead><tr><th>Rating</th><th>Calls</th><th>Right way</th><th>Avg vs index</th></tr></thead><tbody>${rows}</tbody></table>
       <p class="muted">"Right way" means the stock beat its index after a Buy or Overweight, or trailed it after an Underweight or Sell. Hold claims no direction.</p></div>
     <div class="card"><h2>Read it with care</h2>
@@ -107,7 +107,7 @@ function caseFile(t) {
   if (!s) return;
   const m = feed.markets[s.m];
   const list = (xs) => (xs.length ? `<ul>${xs.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p class="none">Nothing the rules count.</p>`);
-  const dots = (n) => `<span class="dots" aria-label="score ${n}">${[-2, -1, 1, 2].map((k) => `<i class="${k < 0 && n <= k ? "n" : k > 0 && n >= k ? "p" : ""}"></i>`).join("")}</span>`;
+  const dots = (n) => `<span class="dots" aria-label="score ${esc(n)}">${[-2, -1, 1, 2].map((k) => `<i class="${k < 0 && n <= k ? "n" : k > 0 && n >= k ? "p" : ""}"></i>`).join("")}</span>`;
   const f = s.facts;
   sheet(`<div class="hdr"><h3>${esc(s.n)}</h3>
       <div class="muted">${esc(s.t)} · ${esc(m.label)} · close ${day(s.d)}: <span class="num">${price(s.close, s.cur)}</span> <span class="num ${tone(s.r1d)}">${signed(s.r1d, 1)}</span></div>
