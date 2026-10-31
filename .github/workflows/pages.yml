@@ -76,6 +76,26 @@ jobs:
       - name: Collect news (free-to-read feeds, opinion removed)
         continue-on-error: true
         run: node scripts/build-news.mjs
+      # Stocks: the last good feed comes back first, so a failed fetch leaves yesterday's ratings up, not none.
+      - name: Restore the last stock feed
+        uses: actions/cache@v4
+        with:
+          path: stocks/feed.json
+          key: stocks-v1-${{ github.run_id }}
+          restore-keys: stocks-v1-
+      - name: Rate the stocks (Yahoo prices; daily note by Claude Haiku when the ANTHROPIC_API_KEY secret is set)
+        continue-on-error: true
+        timeout-minutes: 15
+        env:
+          NOTE_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        # node_modules must never reach the published site: the whole folder is uploaded below.
+        # A failed install costs only the note; the ratings still build. The key goes to node alone.
+        run: |
+          trap 'rm -rf node_modules' EXIT
+          if [ -n "$NOTE_KEY" ]; then
+            npm install --ignore-scripts --no-package-lock --no-audit --no-fund || echo "::warning::Claude SDK not installed: ratings build without today's note"
+          fi
+          ANTHROPIC_API_KEY="$NOTE_KEY" node scripts/build-stocks.mjs
       - name: Stamp service-worker cache version with the commit SHA
         run: sed -i "s/const VERSION = \"dev\";/const VERSION = \"${GITHUB_SHA::12}\";/" sw.js && grep -q "${GITHUB_SHA::12}" sw.js
       - uses: actions/configure-pages@v5

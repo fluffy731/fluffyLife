@@ -4,3 +4,4 @@ audio/*/*.mp3
 audio-jobs.json
 dict/
 news/feed.json
+stocks/feed.json
