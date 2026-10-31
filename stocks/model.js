@@ -201,6 +201,9 @@ export function scorecard(calls) {
   };
 }
 
+// Where a stock's two-year history is published (stocks/history/<file>), for the page to load on demand.
+export const historyFile = (t) => `${t.replace(/[^A-Za-z0-9-]/g, "_")}.json`;
+
 // The last `span` closes thinned to at most `points`, first and last kept, for a small chart.
 export function sparkline(bars, span = HALF, points = 60) {
   const xs = bars.slice(-span).map((b) => +b.c.toPrecision(6));

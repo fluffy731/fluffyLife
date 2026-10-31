@@ -5,3 +5,4 @@ audio-jobs.json
 dict/
 news/feed.json
 stocks/feed.json
+stocks/history/
