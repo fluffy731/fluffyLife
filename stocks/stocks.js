@@ -5,6 +5,7 @@ import { plainEnglish, GLOSSARY } from "./explain.js";
 import { ideas } from "./ideas.js";
 import { toggle, sinceWatching, ratingChanges, markSeen } from "./watch.js";
 import { chartModel, RANGES } from "./chart.js";
+import { COMPANIES } from "./companies.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -14,7 +15,7 @@ const store = {
   json: (k) => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } },
 };
 
-const TABS = [["watchlist", "★ Watchlist"], ["ideas", "Ideas"], ["ratings", "Ratings"], ["scorecard", "Scorecard"], ["learn", "Learn"]];
+const TABS = [["watchlist", "★ Watchlist"], ["ideas", "Ideas"], ["ratings", "Ratings"], ["scorecard", "Score"], ["learn", "Learn"]];
 const CHIPS = [["all", "All"], ["US", "US"], ["HK", "Hong Kong"], ["UK", "UK"]];
 const SORTS = [["score", "Rating"], ["r6m", "6-month return"], ["vol", "Smallest swings"], ["name", "Name"]];
 const BULLISH = new Set(["Buy", "Overweight"]), BEARISH = new Set(["Underweight", "Sell"]);
@@ -30,7 +31,8 @@ const day = (iso) => (iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-
 const dayY = (iso) => (iso ? new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "2-digit", timeZone: "UTC" }) : "–");
 const price = (x, cur) => (x == null ? "–" : `${x.toLocaleString("en-AU", { maximumFractionDigits: x < 10 ? 3 : 2 })}${cur ? ` ${esc(cur)}` : ""}`);
 const pill = (r) => `<span class="pill ${esc(r)}">${r === REVIEW ? "Review" : esc(r)}</span>`;
-const today = () => new Date().toISOString().slice(0, 10);
+// The phone's own date: starring at 9am in Sydney is today there, not yesterday in UTC.
+const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 10); };
 const bench = (s) => feed.markets[s.m]?.benchName || "index";
 const byT = (t) => feed.stocks.find((x) => x.t === t);
 function ago(ms) {
@@ -55,10 +57,13 @@ async function load(fresh = false) {
     if (!feed) $("#main").innerHTML = `<div class="empty">Prices aren't available yet. They are collected with each hourly update — try again shortly.</div>`;
     return;
   }
-  // What changed for starred stocks since the last visit: worked out once, then remembered as seen.
-  changes = ratingChanges(watch, seen, feed.stocks);
-  seen = markSeen(seen, watch, feed.stocks);
-  store.set("stocks.seen", JSON.stringify(seen));
+  // A starred symbol that has left the list (not merely missed this time) is dropped, so it cannot linger.
+  const known = new Set([...feed.stocks.map((s) => s.t), ...feed.failed]);
+  const stale = Object.keys(watch).filter((t) => !known.has(t));
+  if (stale.length) { stale.forEach((t) => delete watch[t]); store.set("stocks.watch", JSON.stringify(watch)); }
+  // Rating changes for starred stocks gather here until the Watchlist has shown them (watchlistHTML marks
+  // them seen); a reload before then keeps them rather than losing them.
+  changes = { ...changes, ...ratingChanges(watch, seen, feed.stocks) };
   render();
 }
 
@@ -72,12 +77,11 @@ function starButton(s) {
 function rowHTML(s, extra = "") {
   const changed = s.prev && s.prev !== s.rating && s.prev !== REVIEW && s.rating !== REVIEW;
   const sub = s.kind === "fund" ? "Index fund" : s.rel6 == null ? "" : `<span class="${tone(s.rel6)}">${s.rel6 >= 0 ? "+" : "−"}${Math.abs(s.rel6 * 100).toFixed(0)} pts</span> vs index`;
-  return `<div class="row" data-open="${esc(s.t)}" role="button" tabindex="0">
-    ${starButton(s)}
-    <div class="who"><div class="name">${esc(s.n)}</div><div class="sub">${esc(s.t)}${sub ? ` · ${sub}` : ""}</div>${extra}</div>
+  return `<div class="row">${starButton(s)}<button class="row-main" data-open="${esc(s.t)}">
+    <span class="who"><span class="name">${esc(s.n)}</span><span class="sub">${esc(s.t)}${sub ? ` · ${sub}` : ""}</span>${extra}</span>
     ${spark(s.spark, "spark")}
-    <div class="right">${pill(s.rating)}<span class="ret"><span class="num ${tone(s.r6m)}">${signed(s.r6m)}</span> 6 mo</span>${changed ? `<span class="chg">was ${esc(s.prev)}</span>` : ""}</div>
-  </div>`;
+    <span class="right">${pill(s.rating)}<span class="ret"><span class="num ${tone(s.r6m)}">${signed(s.r6m)}</span> 6 mo</span>${changed ? `<span class="chg">was ${esc(s.prev)}</span>` : ""}</span>
+  </button></div>`;
 }
 
 function noteCard() {
@@ -95,15 +99,18 @@ function watchlistHTML() {
   const banner = changed.length ? `<div class="note-card"><div class="k">Since your last look</div><p>${changed.map(([t, c]) => `${esc(byT(t).n)}: ${esc(c.from)} → <b>${esc(c.to)}</b>`).join(" · ")}</p></div>` : "";
   const rows = mine.map((s) => {
     const since = sinceWatching(watch[s.t], s);
-    return rowHTML(s, since ? `<div class="sub">Since ${day(since.since)}: <span class="num ${tone(since.change)}">${signed(since.change, 1)}</span></div>` : "");
+    return rowHTML(s, since ? `<span class="sub">Since ${day(since.since)}: <span class="num ${tone(since.change)}">${signed(since.change, 1)}</span></span>` : "");
   }).join("");
-  return `${banner}<div class="list">${rows}</div><p class="muted">Saved on this phone only. Tap ★ to remove a stock.</p>`;
+  seen = markSeen(seen, watch, feed.stocks);   // shown now, so the next visit reports only newer changes
+  store.set("stocks.seen", JSON.stringify(seen));
+  const missed = Object.keys(watch).filter((t) => feed.failed.includes(t));
+  return `${banner}<div class="list">${rows}</div>${missed.length ? `<p class="muted">Not fetched this time: ${missed.map(esc).join(", ")}.</p>` : ""}<p class="muted">Saved on this phone only. Tap ★ to remove a stock.</p>`;
 }
 
 function ideasHTML() {
   const pool = feed.stocks.filter(inMarket);
   return `${market === "all" ? noteCard() : ""}${ideas(pool).map((list) => `<div class="card idea"><h2>${esc(list.title)}</h2><p class="muted">${esc(list.blurb)}</p>
-    ${list.items.length ? list.items.map((i) => { const s = byT(i.t); return `<div class="idea-row" data-open="${esc(s.t)}" role="button" tabindex="0">${starButton(s)}<div class="who"><div class="name">${esc(s.n)} <span class="muted">${esc(s.t)}</span></div><div class="sub">${esc(i.why)}</div></div>${pill(s.rating)}</div>`; }).join("") : `<p class="none">None right now.</p>`}</div>`).join("")}
+    ${list.items.length ? list.items.map((i) => { const s = byT(i.t); return `<div class="idea-row">${starButton(s)}<button class="row-main" data-open="${esc(s.t)}"><span class="who"><span class="name">${esc(s.n)} <span class="muted">${esc(s.t)}</span></span><span class="sub">${esc(i.why)}</span></span>${pill(s.rating)}</button></div>`; }).join("") : `<p class="none">None right now.</p>`}</div>`).join("")}
     <p class="muted">Ideas are starting points for your own reading, picked by simple rules. They are not recommendations to buy.</p>`;
 }
 
@@ -201,8 +208,8 @@ function statsHTML(s) {
       ${cell("Dividend yield", st.divYield == null ? "–" : st.divYield > 0 ? `${(st.divYield * 100).toFixed(1)}%` : "none")}
       ${cell("Typical daily move", st.dailyMove == null ? "–" : `${(st.dailyMove * 100).toFixed(1)}%`)}
       ${f ? `${cell("Swings a year", `${Math.round(f.vol * 100)}%`)}${cell("RSI (14)", f.rsi.toFixed(0))}
-      ${cell("From 52-wk high", f.drawdown ? `−${Math.round(f.drawdown * 100)}%` : "at high")}${cell(`vs ${esc(bench(s))}, 6 mo`, pts(s.rel6), tone(s.rel6))}` : ""}
-    </div><p class="muted">Not sure what one means? See the Learn tab.</p></div>`;
+      ${cell("From 52-wk high", f.drawdown ? `−${Math.round(f.drawdown * 100)}%` : "at high")}${s.kind === "fund" ? "" : cell(`vs ${esc(bench(s))}, 6 mo`, pts(s.rel6), tone(s.rel6))}` : ""}
+    </div><p class="muted">Returns include dividends; the chart and the 52-week range show the price alone. Not sure what a figure means? See the Learn tab.</p></div>`;
 }
 
 function ratingHTML(s) {
@@ -216,7 +223,7 @@ function ratingHTML(s) {
 
 // ---------- the price chart ----------
 const W = 320, H = 150, PAD = 6;
-let chartData = null, chartView = null;
+let chartData = null, chartView = null, chartFailed = false;
 
 function chartHTML() {
   return `<div class="card chart-card"><div class="chart-head"><h2>Price</h2><div class="ranges">${RANGES.map(([k]) => `<button data-range="${k}" class="${k === range ? "on" : ""}">${k}</button>`).join("")}</div></div>
@@ -230,7 +237,8 @@ const path = (xs, m) => xs.map((v, i) => (v == null ? null : `${xOf(i, m).toFixe
 
 function drawChart(s) {
   const box = $("#chart");
-  if (!box || !chartData) return;
+  if (!box) return;
+  if (!chartData) { if (chartFailed) box.innerHTML = chartFailedHTML(); return; }   // still loading otherwise
   const m = chartView = chartModel(chartData, Object.fromEntries(RANGES)[range]);
   const up = m.change >= 0;
   box.innerHTML = `<div class="readout" id="readout"><b>${price(m.p.at(-1), s.cur)}</b> · ${dayY(m.d.at(-1))} · <span class="${tone(m.change)}">${signed(m.change, 1)} over ${range}</span></div>
@@ -253,8 +261,11 @@ function drawChart(s) {
   svg.addEventListener("pointermove", read);
 }
 
+const chartFailedHTML = () => `<p class="muted">The price history isn't available right now${navigator.onLine ? "" : " (offline)"}.</p>`;
+
 async function loadChart(s) {
   chartData = null;
+  chartFailed = false;
   try {
     const r = await fetch(`./history/${historyFile(s.t)}`, { cache: "default" });
     if (!r.ok) throw new Error(r.status);
@@ -263,7 +274,9 @@ async function loadChart(s) {
     chartData = h;
     drawChart(s);
   } catch {
-    if (openStock === s.t && $("#chart")) $("#chart").innerHTML = `<p class="muted">The price history isn't available right now${navigator.onLine ? "" : " (offline)"}.</p>`;
+    if (openStock !== s.t) return;
+    chartFailed = true;
+    drawChart(s);
   }
 }
 
@@ -275,7 +288,9 @@ function caseFile(t) {
   openStock = t;
   const m = feed.markets[s.m];
   const since = sinceWatching(watch[s.t], s);
+  const [sector, does] = COMPANIES[s.t] || [];
   sheet(`<div class="hdr"><div class="title-row"><h3>${esc(s.n)}</h3>${starButton(s)}</div>
+      ${does ? `<p class="does"><span class="sector">${esc(sector)}</span> ${esc(does)}</p>` : ""}
       <div class="muted">${esc(s.t)} · ${esc(m.label)}${s.kind === "fund" ? " · index fund" : ""} · close ${day(s.d)}: <span class="num">${price(s.price, s.cur)}</span> <span class="num ${tone(s.r1d)}">${signed(s.r1d, 1)}</span></div>
       ${since ? `<div class="watching">Watching since ${day(since.since)} at ${price(watch[s.t].price, s.cur)}: <span class="num ${tone(since.change)}">${signed(since.change, 1)}</span></div>` : ""}
       <div class="rating-line">${pill(s.rating)} <span class="muted">${esc(s.rating === REVIEW ? s.reason : s.summary)}</span></div></div>
@@ -325,10 +340,6 @@ document.addEventListener("click", (e) => {
   if (el.dataset.close !== undefined) { openStock = null; return $("#sheet").close(); }
   if (el.id === "refresh") return load(true);
   if ((el.id === "about" || el.id === "method") && feed) return about();
-});
-document.addEventListener("keydown", (e) => {
-  const row = e.target.closest?.("[data-open]");
-  if (row && (e.key === "Enter" || e.key === " ") && !e.target.closest("[data-star]")) { e.preventDefault(); caseFile(row.dataset.open); }
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "q") { query = e.target.value; $("#rows").innerHTML = ratingRowsHTML(); }

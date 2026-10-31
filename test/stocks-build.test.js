@@ -221,7 +221,8 @@ test("US-listed shares for news are set only on Hong Kong and UK stocks, never t
 });
 
 test("dividends come out of the chart, dated in exchange time", () => {
-  const withDiv = chart({ events: { dividends: { [open("2026-10-28")]: { amount: 0.26, date: open("2026-10-28") } } } });
+  const lateUtc = Date.parse("2026-10-29T02:00:00Z") / 1000;   // 10pm on the 28th in New York
+  const withDiv = chart({ events: { dividends: { [lateUtc]: { amount: 0.26, date: lateUtc } } } });
   assert.deepEqual(parseChart(withDiv).dividends, [{ d: "2026-10-28", amount: 0.26 }]);
   assert.deepEqual(parseChart(chart()).dividends, [], "none paid: an empty list");
 });
@@ -236,6 +237,20 @@ test("key stats: 52-week range of the price, dividend yield over the last year, 
   assert.equal(st.lo52, 100);
   assert.ok(Math.abs(st.divYield - 2 / last.p) < 1e-3, "only dividends paid in the last 365 days count");
   assert.ok(st.dailyMove > 0);
+});
+
+test("a dividend yield over 20% is left out: it means the dividend came in other units than the price", () => {
+  const bars = sessions(300, () => 100).map((b) => ({ ...b, p: b.c }));
+  const feed = buildFeed({ universe: [{ t: "ISF.L", n: "FTSE fund", m: "UK" }], markets: { UK: MARKETS.UK }, prices: { "ISF.L": { bars, currency: "GBp", dividends: [{ d: bars.at(-5).d, amount: 30 }] } }, benches: { UK: sessions(300, () => 100) }, builtAt: "2026-10-31T00:00:00Z" });
+  assert.equal(feed.stocks[0].stats.divYield, null);
+});
+
+test("the daily note is about the stocks: index funds are left out of its lists", async () => {
+  const feed = feedFor("2026-10-31");
+  feed.stocks.push({ t: "VOO", n: "Vanguard S&P 500 ETF", m: "US", kind: "fund", rating: "Buy", score: 6, prev: "Buy", r6m: 0.1, bull: [], bear: [], news: null });
+  const client = fakeClient(ok);
+  await noteFor(feed, null, client);
+  assert.doesNotMatch(client.calls[0].messages[0].content, /VOO/);
 });
 
 test("index funds are rated and charted like stocks but kept out of the scorecard and the news", () => {

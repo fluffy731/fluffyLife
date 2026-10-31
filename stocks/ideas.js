@@ -19,7 +19,7 @@ export function ideas(stocks) {
       (s) => `${s.r6m >= 0 ? "Up" : "Down"} ${pc(s.r6m)} in 6 months, swings ${pc(s.facts.vol)} a year`),
     pick("upgraded", "Upgraded this week", "The rules think better of these than a week ago.", (s) => moved(s, 1), (s) => `${s.prev} → ${s.rating}`),
     pick("dips", "Dips in strong stocks", "Down this month but still in a long-term uptrend: worth a look, though a dip can keep going.",
-      (s) => rated(s) && s.facts && s.close > s.facts.sma200 && s.r1m <= -0.05,
+      (s) => rated(s) && RANK[s.rating] <= 2 && s.facts && s.close > s.facts.sma200 && s.r1m <= -0.05,
       (s) => `Down ${pc(s.r1m)} this month, still above its 200-day average`, (a, b) => a.r1m - b.r1m),
     pick("downgraded", "Downgraded this week", "The rules think less of these than a week ago.", (s) => moved(s, -1), (s) => `${s.prev} → ${s.rating}`),
   ];

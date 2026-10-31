@@ -41,7 +41,14 @@ test("plain English for an index fund starts with what the fund holds", () => {
   const fund = plainEnglish(stock({ t: "VOO", n: "Vanguard S&P 500 ETF", kind: "fund", about: "Holds all 500 companies in the S&P 500." }), "S&P 500");
   assert.equal(fund[0], "Holds all 500 companies in the S&P 500.");
   assert.match(fund.join(" "), /one company's bad news matters much less/);
-  assert.match(fund.join(" "), /Over six months it rose 18%\./, "no 'points better than' its own index");
+  assert.match(fund.join(" "), /Over six months its price rose 18%\./, "no 'points better than' its own index");
+  assert.match(fund.join(" "), /rating only reflects the market's recent trend/);
+});
+
+test("six months on one basis: the price against the index, with dividends said separately", () => {
+  const text = plainEnglish(stock({ r6p: 0.15, r6m: 0.18, rel6: 0.06 }), "FTSE 100").join(" ");
+  assert.match(text, /Over six months its price rose 15%, 6 points better than the FTSE 100\. With dividends it returned 18%\./);
+  assert.doesNotMatch(plainEnglish(stock({ r6p: 0.18, r6m: 0.182 }), "S&P 500").join(" "), /With dividends/, "no dividend clause when they made no real difference");
 });
 
 test("the glossary explains every term the page uses", () => {
@@ -58,6 +65,7 @@ test("ideas: index funds to start with, steady climbers, upgrades, dips in stron
     stock({ t: "MSFT", n: "Microsoft", rating: "Hold", prev: "Overweight", score: 1, close: 410, r1m: -0.08, facts: { rsi: 35, vol: 0.25, drawdown: 0.12, sma50: 430, sma200: 400 } }),
     stock({ t: "VOO", n: "Vanguard S&P 500 ETF", kind: "fund", rating: "Hold", prev: "Hold", r6m: 0.11 }),
     stock({ t: "BAD", n: "Bad Co", rating: "REVIEW", prev: "Hold", facts: null }),
+    stock({ t: "SLIP", n: "Slipping Co", rating: "Sell", prev: "Sell", close: 120, r1m: -0.12, facts: { rsi: 30, vol: 0.3, drawdown: 0.2, sma50: 130, sma200: 110 } }),
   ];
   const lists = Object.fromEntries(ideas(stocks).map((l) => [l.key, l]));
   assert.deepEqual(lists.start.items.map((i) => i.t), ["VOO"]);
@@ -65,7 +73,7 @@ test("ideas: index funds to start with, steady climbers, upgrades, dips in stron
   assert.match(lists.steady.items[0].why, /9%.*16% a year/);
   assert.deepEqual(lists.upgraded.items.map((i) => i.t), ["KO", "AAPL"]);
   assert.equal(lists.upgraded.items[1].why, "Hold → Overweight");
-  assert.deepEqual(lists.dips.items.map((i) => i.t), ["MSFT"]);
+  assert.deepEqual(lists.dips.items.map((i) => i.t), ["MSFT"], "a Sell-rated stock is no 'strong stock', however it dips");
   assert.match(lists.dips.items[0].why, /Down 8% this month, still above its 200-day average/);
   assert.deepEqual(lists.downgraded.items.map((i) => i.t), ["MSFT"]);
   assert.ok(Object.values(lists).every((l) => l.title && l.blurb));
@@ -105,4 +113,13 @@ test("chart model: the range's prices, 50- and 200-day averages over the whole h
   assert.equal(all.ma200[198], null, "too little history for a 200-day average yet");
   assert.ok(Math.abs(all.change - (p.at(-1) / p[0] - 1)) < 1e-12);
   assert.deepEqual(RANGES.map((r) => r[0]), ["1M", "6M", "1Y", "2Y"]);
+});
+
+test("the offline cache lists every module the Stocks page imports", async () => {
+  const { readFileSync } = await import("node:fs");
+  const page = readFileSync(new URL("../stocks/stocks.js", import.meta.url), "utf8");
+  const sw = readFileSync(new URL("../sw.js", import.meta.url), "utf8");
+  const modules = [...page.matchAll(/from "\.\/([\w.-]+\.js)"/g)].map((m) => m[1]);
+  assert.ok(modules.length >= 6);
+  for (const m of modules) assert.ok(sw.includes(`"./stocks/${m}"`), `sw.js FILES is missing ./stocks/${m}`);
 });

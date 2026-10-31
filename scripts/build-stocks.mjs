@@ -23,6 +23,7 @@ const UA = "Mozilla/5.0 (compatible; fluffyLife-stocks/1.0; personal reader)";
 
 const dayOf = (sec) => new Date(sec * 1000).toISOString().slice(0, 10);
 const r4 = (x) => (Number.isFinite(x) ? +x.toPrecision(4) : null);
+const r6 = (x) => (Number.isFinite(x) ? +x.toPrecision(6) : null);   // prices: 12,034p must not print as 12,030
 
 // ---------- Yahoo's chart format ----------
 export function parseChart(json) {
@@ -124,9 +125,12 @@ export function newsFromRss(xml, s, nowMs) {
 function statsFor(bars, dividends, atrPct) {
   const year = bars.slice(-252).map((b) => b.p ?? b.c), last = bars.at(-1), price = last.p ?? last.c;
   const since = new Date(Date.parse(last.d) - 365 * 864e5).toISOString().slice(0, 10);
+  const yieldNow = dividends ? dividends.filter((x) => x.d > since).reduce((sum, x) => sum + x.amount, 0) / price : null;
   return {
-    hi52: r4(Math.max(...year)), lo52: r4(Math.min(...year)),
-    divYield: dividends ? r4(dividends.filter((x) => x.d > since).reduce((sum, x) => sum + x.amount, 0) / price) : null,
+    hi52: r6(Math.max(...year)), lo52: r6(Math.min(...year)),
+    // No large company yields over 20%: a figure that high would mean the dividend came in other units than
+    // the price (pounds against pence), so it is left out rather than shown wrong.
+    divYield: yieldNow == null || yieldNow > 0.2 ? null : r4(yieldNow),
     dailyMove: r4(atrPct),
   };
 }
@@ -138,14 +142,14 @@ function stockEntry(s, { bars, currency, dividends }, bench, benchName) {
   return {
     entry: {
       t: s.t, n: s.n, m: s.m, kind: s.kind || "stock", ...(s.about ? { about: s.about } : {}),
-      cur: currency, d: last.d, close: r4(last.c), price: r4(last.p ?? last.c),
+      cur: currency, d: last.d, close: r6(f?.close ?? last.p ?? last.c), price: r6(last.p ?? last.c),
       stats: statsFor(bars, dividends, a.plan?.atrPct),
       r1d: bars.length > 1 ? r4(last.c / bars.at(-2).c - 1) : null,
-      r1m: r4(f?.r1m), r3m: r4(f?.r3m), r6m: r4(f?.r6m), r12m: r4(f?.r12m), rel6: r4(f?.rel6),
+      r1m: r4(f?.r1m), r3m: r4(f?.r3m), r6m: r4(f?.r6m), r12m: r4(f?.r12m), r6p: r4(f?.r6p), rel6: r4(f?.rel6),
       rating: a.rating, score: a.score, summary: a.summary, reason: a.reason,
       analysts: a.analysts, bull: a.bull, bear: a.bear,
-      plan: a.plan && { down: r4(a.plan.down), up: r4(a.plan.up), atrPct: r4(a.plan.atrPct) },
-      facts: f && { rsi: r4(f.rsi), vol: r4(f.vol), drawdown: r4(f.drawdown), sma50: r4(f.sma50), sma200: r4(f.sma200) },
+      plan: a.plan && { down: r6(a.plan.down), up: r6(a.plan.up), atrPct: r4(a.plan.atrPct) },
+      facts: f && { rsi: r4(f.rsi), vol: r4(f.vol), drawdown: r4(f.drawdown), sma50: r6(f.sma50), sma200: r6(f.sma200) },
       spark: sparkline(bars),
       history: calls.slice(-12).map(({ d, rating }) => ({ d, rating })),
       prev: calls.at(-2)?.rating ?? null,
@@ -307,7 +311,7 @@ export async function build({ force = false } = {}) {
   return {
     stocks: feed.stocks.length, failed: Object.entries(got).filter(([, v]) => v.error).map(([s, v]) => `${s} (${v.error})`),
     indices: Object.keys(benches), scored: feed.scorecard.all.scored, spread: feed.scorecard.all.spread, note: feed.note ? feed.note.key : "none",
-    news: { withHeadlines: feed.stocks.filter((s) => s.news?.length).length, none: feed.stocks.filter((s) => s.news && !s.news.length).length, notFetched: feed.stocks.filter((s) => !s.news).length },
+    news: (({ stocks }) => ({ withHeadlines: stocks.filter((s) => s.news?.length).length, none: stocks.filter((s) => s.news && !s.news.length).length, notFetched: stocks.filter((s) => !s.news).length }))({ stocks: feed.stocks.filter((s) => s.kind !== "fund") }),
   };
 }
 

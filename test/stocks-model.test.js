@@ -120,6 +120,15 @@ test("against the index, dividends are left out: a flat price with a yield neith
   assert.ok(scored.length > 0 && scored.every((c) => Math.abs(c.alpha) < 1e-12));
 });
 
+test("trend reads the price as quoted, like the chart: a flat price with a yield is no uptrend, though its return counts", () => {
+  const paying = series(N, (i) => 100 * 1.0004 ** i).map((b) => ({ ...b, p: 100 }));
+  const a = analyse(paying, flat, N - 1, OPTS);
+  assert.equal(a.facts.sma200, 100);
+  assert.equal(a.analysts.find((x) => x.key === "trend").score, 0);
+  assert.equal(a.facts.r6p, 0);
+  assert.ok(a.facts.r12m > 0.1, "the dividend-adjusted return still shows what an owner received");
+});
+
 test("an index close more than 4 days before the date is no comparison", () => {
   const b = [{ d: "2026-10-01", c: 1 }];
   assert.equal(closeAsOf(b, "2026-10-05"), 1);
