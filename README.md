@@ -26,6 +26,7 @@ The bare address forwards to `/korean/`, so home-screen icons saved from it befo
 | `languages` | `korean/`, `yue/`, `mongolian/`, `english/` and their data |
 | `travel` | `travel/` |
 | `MCscript` | `mc/` |
+| `stocks` | `stocks/` |
 
 Every branch is a full copy of the site. A project branch is where that project's folder changes, not a copy with the other apps removed. Deleting another app's files on a project branch would delete them from the live site when the branch is merged.
 
@@ -162,6 +163,17 @@ Two tabs: **Plan** and **Packing**.
 # MC script (`/mc/`)
 
 The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final: morning in Mandarin and English, afternoon in Traditional Chinese with spoken Cantonese, with sponsors, judges, awards and a prev/next pager. Names typed into its 名单 tab stay in that browser only.
+
+# Stocks (`/stocks/`, unlisted)
+
+Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scorecard. A cut-down version of the TradingAgents idea (several analysts argue, a judge rates, every past call is scored) without the dozens of AI calls per stock. Personal research, not financial advice. It is deliberately left off the home page and out of the table above, and the page asks search engines not to index it. Open it from its own address and add it to the home screen.
+
+- **How it works:** with the hourly deploy, `scripts/build-stocks.mjs` fetches two years of daily prices from Yahoo Finance for every stock in `stocks/universe.js` and for the S&P 500, Hang Seng and FTSE 100, then writes `stocks/feed.json`. It refetches only when the feed is over 3 hours old. Today's bar is left out until that market has closed.
+- **The rules** (`stocks/model.js`): four analysts each score one angle: Trend (200- and 50-day averages), Momentum (12 months leaving out the last, and 3 months), Against the index (6 months) and Risk (stretched RSI, distance from the 50-day average and the 52-week high, volatility). Their sum is the rating, from Buy at +4 or more to Sell at −4 or less. A stock without enough history, or a market whose index could not be fetched, shows **Review**, never a Hold.
+- **Scorecard:** the same rules are replayed every 5 sessions over the past year, each call using only the prices known on its day. Each call is scored over the next 20 sessions from the following close, against its own index. Because the list is today's largest companies, the fair test is Buy against Sell, not against the index.
+- **Daily note:** add a repository secret `ANTHROPIC_API_KEY` (Settings → Secrets and variables → Actions) and one short note is written by Claude Haiku for each completed US session, from the ratings only. It costs well under a cent a day. Without the secret there is no note and nothing else changes.
+- **Edit the list:** add or remove rows in `stocks/universe.js`, using Yahoo symbols (`0700.HK`, `AZN.L`). A symbol Yahoo does not know shows under "Not fetched".
+- **Checks:** `node --test test/stocks*.test.js`; `node scripts/build-stocks.mjs --force` builds the feed locally.
 
 # Development
 
