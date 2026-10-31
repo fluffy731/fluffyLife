@@ -1,0 +1,15 @@
+{
+  "name": "Stocks",
+  "short_name": "Stocks",
+  "description": "Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scorecard.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#1f4e79",
+  "icons": [
+    { "src": "../icons/stocks.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/stocks-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/stocks-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Stocks</title>
+<!-- Unlisted: personal research, kept out of search engines and off the home page. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f141b" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Stocks">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="../icons/stocks-180.png">
+<link rel="icon" href="../icons/stocks.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./stocks.css">
+</head>
+<body>
+<header class="mast">
+  <div class="mast-row">
+    <h1>Stocks</h1>
+    <button class="icon-btn" id="refresh" aria-label="Refresh">↻</button>
+    <button class="icon-btn" id="about" aria-label="Method">ⓘ</button>
+  </div>
+  <div class="dateline" id="dateline"></div>
+  <nav class="tabs" id="tabs"></nav>
+  <nav class="chips" id="chips"></nav>
+</header>
+<main id="main" class="main"></main>
+<footer class="foot">Personal research from fixed rules on past prices. Not financial advice.</footer>
+<dialog id="sheet" class="sheet"></dialog>
+<script type="module" src="./stocks.js"></script>
+</body>
+</html>
