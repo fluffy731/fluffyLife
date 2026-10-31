@@ -9,7 +9,7 @@ import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
 import { analyse, replay, scorecard, sparkline, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
-import { isOpinion } from "./build-news.mjs";
+import { isOpinion, parseFeed } from "./build-news.mjs";
 
 export const FEED_VERSION = 1;
 // A fingerprint of the rules, the list and this script: a feed built by older rules is rebuilt, however fresh.
@@ -53,30 +53,46 @@ export function completedBars(bars, session, nowSec) {
   return bars;
 }
 
-// ---------- Yahoo search's news ----------
+// ---------- news: Yahoo's per-stock RSS feed and its search, merged ----------
 // The news analyst reports and never rates: there is no record of what was published on each past day, so
 // headlines cannot be replayed, and a rating that used them could not be scored honestly.
+// Two sources because Yahoo's search answers news only some of the time (seen from a GitHub runner on
+// 31 Oct 2026: the same AAPL search returned 24 articles, then 0, then 24); its RSS feed answered every time.
 export const NEWS_DAYS = 7, NEWS_MAX = 6;
+const VIA_YAHOO = "Yahoo Finance";   // the RSS feed names no publisher, so credit where it came from
 
-// Articles tagged with one of `symbols` (the stock, and its US-listed shares), from the last NEWS_DAYS days,
-// opinion pieces and repeats left out, newest first. Search returns a sample, so none found is not "no news".
+// Headlines {t, p, l, at} from the last NEWS_DAYS days with web links, opinion pieces left out.
+function recent(items, nowMs) {
+  return items.filter((n) => typeof n.t === "string" && n.t.trim() && Number.isFinite(n.at) && nowMs - n.at <= NEWS_DAYS * 864e5
+    && /^https?:\/\//i.test(n.l || "") && !isOpinion({ title: n.t, link: n.l, categories: [] }));
+}
+
+// Headline lists from several sources as one: a story once (the copy naming its publisher kept), newest
+// first, at most NEWS_MAX. null when every source failed, which is not the same as no news.
+export function mergeNews(lists) {
+  if (lists.every((l) => l == null)) return null;
+  const out = [], at = new Map();
+  for (const n of lists.filter(Boolean).flat().sort((a, b) => b.at - a.at)) {
+    const key = n.t.trim().toLowerCase();
+    if (!at.has(key)) { at.set(key, out.length); out.push({ ...n, t: n.t.trim() }); continue; }
+    const kept = out[at.get(key)];
+    if (kept.p === VIA_YAHOO && n.p && n.p !== VIA_YAHOO) kept.p = n.p;
+  }
+  return out.slice(0, NEWS_MAX);
+}
+
+// Yahoo search's articles tagged with one of `symbols` (the stock, and its US-listed shares).
 export function parseNews(json, symbols, nowMs) {
   const want = new Set(symbols.map((s) => s.toUpperCase()));
-  const seen = new Set(), out = [];
   const items = (json?.news || [])
     .filter((a) => (a.relatedTickers || []).some((t) => want.has(String(t).toUpperCase())))
-    .filter((a) => Number.isFinite(a.providerPublishTime) && nowMs - a.providerPublishTime * 1000 <= NEWS_DAYS * 864e5)
-    .filter((a) => typeof a.title === "string" && /^https?:\/\//i.test(a.link || ""))
-    .filter((a) => !isOpinion({ title: a.title, link: a.link, categories: [] }))
-    .sort((a, b) => b.providerPublishTime - a.providerPublishTime);
-  for (const a of items) {
-    const key = a.title.trim().toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    out.push({ t: a.title.trim(), p: a.publisher || "", l: a.link, at: a.providerPublishTime * 1000 });
-    if (out.length === NEWS_MAX) break;
-  }
-  return out;
+    .map((a) => ({ t: a.title, p: a.publisher || "", l: a.link, at: a.providerPublishTime * 1000 }));
+  return mergeNews([recent(items, nowMs)]);
+}
+
+// Yahoo's per-stock RSS feed, read with the Briefing app's parser.
+export function newsFromRss(xml, nowMs) {
+  return mergeNews([recent(parseFeed(xml).map((i) => ({ t: i.title, p: VIA_YAHOO, l: i.link, at: i.time })), nowMs)]);
 }
 
 // ---------- the feed (pure) ----------
@@ -185,14 +201,15 @@ async function writeNote(feed, previous) {
 }
 
 // ---------- fetching ----------
-async function getJson(url, ms = 15000) {
+async function getText(url, accept, ms = 15000) {
   const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), ms);
   try {
-    const r = await fetch(url, { headers: { "user-agent": UA, accept: "application/json" }, signal: ctl.signal });
+    const r = await fetch(url, { headers: { "user-agent": UA, accept }, signal: ctl.signal });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return await r.json();
+    return await r.text();
   } finally { clearTimeout(timer); }
 }
+const getJson = async (url) => JSON.parse(await getText(url, "application/json"));
 
 async function fetchBars(symbol, nowSec) {
   const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=2y&interval=1d&includeAdjustedClose=true&events=div%2Csplit`;
@@ -210,13 +227,13 @@ async function fetchBars(symbol, nowSec) {
 // A stock's headlines, searched by its US-listed shares when it has them (Yahoo tags those), or null when
 // Yahoo could not be asked; a missing headline list never stops the prices.
 async function fetchNews(s, nowMs) {
-  const url = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(s.adr || s.t)}&quotesCount=0&newsCount=25&enableFuzzyQuery=false`;
-  try {
-    return parseNews(await getJson(url), [s.t, s.adr].filter(Boolean), nowMs);
-  } catch (e) {
-    console.warn(`stocks: no news for ${s.t}: ${e.message}`);
-    return null;
-  }
+  const rss = `https://feeds.finance.yahoo.com/rss/2.0/headline?s=${encodeURIComponent(s.t)}&region=US&lang=en-US`;
+  const search = `https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(s.adr || s.t)}&quotesCount=0&newsCount=25&enableFuzzyQuery=false`;
+  const failed = (source) => (e) => { console.warn(`stocks: no ${source} news for ${s.t}: ${e.message}`); return null; };
+  return mergeNews(await Promise.all([
+    getText(rss, "application/rss+xml, application/xml").then((xml) => newsFromRss(xml, nowMs)).catch(failed("RSS")),
+    getJson(search).then((json) => parseNews(json, [s.t, s.adr].filter(Boolean), nowMs)).catch(failed("search")),
+  ]));
 }
 
 async function pool(list, n, fn) {
@@ -254,5 +271,6 @@ export async function build({ force = false } = {}) {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  console.log("stocks/feed.json:", JSON.stringify(await build({ force: process.argv.includes("--force") })));
+  // A notice, not just a log line: GitHub keeps it on the run, readable from its API without the long log.
+  console.log(`::notice title=Stocks feed::${JSON.stringify(await build({ force: process.argv.includes("--force") }))}`);
 }
