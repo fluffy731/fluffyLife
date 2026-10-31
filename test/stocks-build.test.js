@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseChart, completedBars, buildFeed, noteFor, parseNews, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
+import { parseChart, completedBars, buildFeed, noteFor, parseNews, newsFromRss, mergeNews, aboutCompany, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
 import { MARKETS, UNIVERSE } from "../stocks/universe.js";
 
 // A Yahoo chart response in the v8 shape: sessions open 09:30 New York (13:30 UTC in summer).
@@ -119,6 +119,7 @@ test("no API key means no note; a cut-off or refused reply is not published", as
 // Yahoo search's news in its v1 shape: publish times in epoch seconds, tagged tickers per article.
 const NOW = Date.parse("2026-10-31T12:00:00Z");
 const ago = (h) => Math.floor((NOW - h * 3600e3) / 1000);
+const TENCENT = { t: "0700.HK", n: "Tencent", m: "HK", adr: "TCEHY" }, APPLE = { t: "AAPL", n: "Apple", m: "US" }, CHINA_MOBILE = { t: "0941.HK", n: "China Mobile", m: "HK" };
 const article = (title, tickers, hoursAgo, extra = {}) => ({ title, publisher: "Reuters", link: `https://finance.example.com/${encodeURIComponent(title)}`, providerPublishTime: ago(hoursAgo), relatedTickers: tickers, ...extra });
 
 test("news keeps only articles tagged with the stock or its US-listed shares, newest first", () => {
@@ -128,8 +129,8 @@ test("news keeps only articles tagged with the stock or its US-listed shares, ne
     article("Tencent games licence", ["0700.HK", "NTES"], 2),
     article("Untagged market wrap", undefined, 1),
   ] };
-  assert.deepEqual(parseNews(json, ["0700.HK", "TCEHY"], NOW).map((n) => n.t), ["Tencent games licence", "Tencent results beat"]);
-  const first = parseNews(json, ["0700.HK", "TCEHY"], NOW)[0];
+  assert.deepEqual(parseNews(json, TENCENT, NOW).map((n) => n.t), ["Tencent games licence", "Tencent results beat"]);
+  const first = parseNews(json, TENCENT, NOW)[0];
   assert.deepEqual(Object.keys(first).sort(), ["at", "l", "p", "t"]);
   assert.equal(first.at, ago(2) * 1000);
 });
@@ -144,12 +145,54 @@ test("news leaves out stale, opinion, duplicate and non-web links, and keeps at 
     article("No time", ["AAPL"], 1, { providerPublishTime: undefined }),
     ...Array.from({ length: 10 }, (_, i) => article(`Apple story ${i}`, ["aapl"], 10 + i)),
   ] };
-  const news = parseNews(json, ["AAPL"], NOW);
+  const news = parseNews(json, APPLE, NOW);
   assert.equal(news.length, NEWS_MAX);
   assert.equal(news[0].t, "Apple shares rise");
   assert.equal(news.filter((n) => n.t === "Apple shares rise").length, 1);
   assert.ok(!news.some((n) => /Opinion|Old Apple|Sneaky|No time/.test(n.t)));
-  assert.deepEqual(parseNews({}, ["AAPL"], NOW), [], "no news array: nothing, not an error");
+  assert.deepEqual(parseNews({}, APPLE, NOW), [], "no news array: nothing, not an error");
+});
+
+// Yahoo's per-stock RSS feed, which answers when its search does not (seen live: the same search 24, 0, 24).
+const rssItem = (title, hoursAgo, link = `https://finance.yahoo.com/news/${encodeURIComponent(title)}`) =>
+  `<item><title>${title}</title><link>${link}</link><pubDate>${new Date(NOW - hoursAgo * 3600e3).toUTCString()}</pubDate><guid>${link}</guid></item>`;
+const rss = (items) => `<?xml version="1.0"?><rss version="2.0"><channel><title>Yahoo! Finance: 0941.HK News</title>${items.join("")}</channel></rss>`;
+
+test("news from Yahoo's per-stock RSS: last week only, opinion and non-web links left out, newest first", () => {
+  const xml = rss([rssItem("China Mobile adds 5G users", 30), rssItem("China Mobile dividend raised", 2), rssItem("Old China Mobile story", 24 * 9),
+    rssItem("Opinion: why China Mobile is cheap", 3), rssItem("China Mobile odd link", 1, "ftp://example.com/x"), rssItem("Is AMC Stock a Trick or a Treat?", 1)]);
+  const news = newsFromRss(xml, CHINA_MOBILE, NOW);
+  assert.deepEqual(news.map((n) => n.t), ["China Mobile dividend raised", "China Mobile adds 5G users"]);
+  assert.equal(news[0].p, "Yahoo Finance", "the feed names no publisher, so the page credits where it came from");
+  assert.equal(news[0].at, Math.floor((NOW - 2 * 3600e3) / 1000) * 1000);
+  assert.deepEqual(newsFromRss("<html>not a feed</html>", CHINA_MOBILE, NOW), []);
+});
+
+test("a headline must name the company: its name, a usual short name, or a symbol of three letters or more", () => {
+  const google = aboutCompany({ t: "GOOGL", n: "Alphabet", m: "US" });
+  assert.ok(google("Google faces new EU probe") && google("Alphabet earnings beat") && google("GOOGL slides after results"));
+  assert.ok(!google("Is AMC Stock a Trick or a Treat?"));
+  const nvidia = aboutCompany({ t: "NVDA", n: "Nvidia", m: "US" });
+  assert.ok(nvidia("NVDA stock jumps") && nvidia("NVIDIA unveils chip"));
+  const visa = aboutCompany({ t: "V", n: "Visa", m: "US" });
+  assert.ok(visa("Visa raises fees") && !visa("Plan V delayed"), "a one-letter symbol is not matched as a word");
+  const pg = aboutCompany({ t: "PG", n: "Procter & Gamble", m: "US" });
+  assert.ok(pg("P&G lifts prices") && pg("Procter & Gamble beats"));
+  assert.ok(!aboutCompany(APPLE)("Applebee's opens 50 restaurants"), "part of a word is not the company");
+  assert.ok(!aboutCompany({ t: "SHEL.L", n: "Shell", m: "UK", adr: "SHEL" })("Shellfish prices soar") && aboutCompany({ t: "SHEL.L", n: "Shell", m: "UK", adr: "SHEL" })("Shell profit falls"));
+  assert.ok(aboutCompany(TENCENT)("TCEHY: what the ADR is telling you"));
+});
+
+test("both sources merge: one copy of a story, the named publisher kept, newest first, at most the cap", () => {
+  const fromRss = [{ t: "Apple shares rise", p: "Yahoo Finance", l: "https://a", at: NOW - 1000 }, { t: "Apple chip news", p: "Yahoo Finance", l: "https://b", at: NOW - 5000 }];
+  const fromSearch = [{ t: "apple shares rise ", p: "Reuters", l: "https://c", at: NOW - 900 }, ...Array.from({ length: 8 }, (_, i) => ({ t: `Story ${i}`, p: "Bloomberg", l: `https://s/${i}`, at: NOW - 10000 - i }))];
+  const merged = mergeNews([fromRss, fromSearch]);
+  assert.equal(merged.length, NEWS_MAX);
+  assert.equal(merged.filter((n) => n.t.toLowerCase().trim() === "apple shares rise").length, 1);
+  assert.equal(merged[0].p, "Reuters");
+  assert.deepEqual(merged.map((n) => n.at), [...merged.map((n) => n.at)].sort((a, b) => b - a));
+  assert.equal(mergeNews([null, fromRss]).length, 2, "a source that failed adds nothing");
+  assert.equal(mergeNews([null, null]), null, "both failed: not fetched, which is not the same as no news");
 });
 
 test("the feed carries each stock's headlines, null when its news could not be fetched", () => {
