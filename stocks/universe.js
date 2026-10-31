@@ -1,6 +1,9 @@
 // The stocks the Stocks page rates: the largest companies in each market, by Yahoo Finance symbol.
 // Edit freely; a symbol Yahoo does not know is listed under "not fetched" on the page, not an error.
 // Picking today's giants favours past winners, so the scorecard leads with Buy-against-Sell, not against the index.
+//
+// The third column is the company's US-listed shares, used only to find its news: Yahoo tags few articles
+// with Hong Kong or London symbols. Add one only when sure: a wrong symbol would show another company's news.
 
 export const MARKETS = {
   US: { label: "US", bench: "^GSPC", benchName: "S&P 500" },
@@ -8,7 +11,7 @@ export const MARKETS = {
   UK: { label: "UK", bench: "^FTSE", benchName: "FTSE 100" },
 };
 
-const list = (m, rows) => rows.map(([t, n]) => ({ t, n, m }));
+const list = (m, rows) => rows.map(([t, n, adr]) => (adr ? { t, n, m, adr } : { t, n, m }));
 
 export const UNIVERSE = [
   ...list("US", [
@@ -20,15 +23,15 @@ export const UNIVERSE = [
     ["AMD", "AMD"], ["CRM", "Salesforce"], ["PLTR", "Palantir"], ["GE", "GE Aerospace"], ["CVX", "Chevron"],
   ]),
   ...list("HK", [
-    ["0700.HK", "Tencent"], ["9988.HK", "Alibaba"], ["3690.HK", "Meituan"], ["1299.HK", "AIA"], ["0005.HK", "HSBC"],
-    ["0939.HK", "China Construction Bank"], ["1398.HK", "ICBC"], ["3988.HK", "Bank of China"], ["0941.HK", "China Mobile"], ["1810.HK", "Xiaomi"],
-    ["2318.HK", "Ping An"], ["0388.HK", "HKEX"], ["1211.HK", "BYD"], ["9618.HK", "JD.com"], ["0883.HK", "CNOOC"],
-    ["0016.HK", "Sun Hung Kai Properties"], ["0002.HK", "CLP"], ["0001.HK", "CK Hutchison"], ["9999.HK", "NetEase"], ["2020.HK", "ANTA Sports"],
+    ["0700.HK", "Tencent", "TCEHY"], ["9988.HK", "Alibaba", "BABA"], ["3690.HK", "Meituan", "MPNGY"], ["1299.HK", "AIA", "AAGIY"], ["0005.HK", "HSBC", "HSBC"],
+    ["0939.HK", "China Construction Bank"], ["1398.HK", "ICBC"], ["3988.HK", "Bank of China"], ["0941.HK", "China Mobile"], ["1810.HK", "Xiaomi", "XIACY"],
+    ["2318.HK", "Ping An", "PNGAY"], ["0388.HK", "HKEX", "HKXCY"], ["1211.HK", "BYD", "BYDDY"], ["9618.HK", "JD.com", "JD"], ["0883.HK", "CNOOC"],
+    ["0016.HK", "Sun Hung Kai Properties"], ["0002.HK", "CLP"], ["0001.HK", "CK Hutchison"], ["9999.HK", "NetEase", "NTES"], ["2020.HK", "ANTA Sports"],
   ]),
   ...list("UK", [
-    ["AZN.L", "AstraZeneca"], ["SHEL.L", "Shell"], ["HSBA.L", "HSBC"], ["ULVR.L", "Unilever"], ["BP.L", "BP"],
-    ["RIO.L", "Rio Tinto"], ["GSK.L", "GSK"], ["REL.L", "RELX"], ["BATS.L", "British American Tobacco"], ["LSEG.L", "London Stock Exchange Group"],
-    ["DGE.L", "Diageo"], ["RR.L", "Rolls-Royce"], ["BA.L", "BAE Systems"], ["GLEN.L", "Glencore"], ["NG.L", "National Grid"],
-    ["LLOY.L", "Lloyds"], ["BARC.L", "Barclays"], ["CPG.L", "Compass"], ["AAL.L", "Anglo American"], ["TSCO.L", "Tesco"],
+    ["AZN.L", "AstraZeneca", "AZN"], ["SHEL.L", "Shell", "SHEL"], ["HSBA.L", "HSBC", "HSBC"], ["ULVR.L", "Unilever", "UL"], ["BP.L", "BP", "BP"],
+    ["RIO.L", "Rio Tinto", "RIO"], ["GSK.L", "GSK", "GSK"], ["REL.L", "RELX", "RELX"], ["BATS.L", "British American Tobacco", "BTI"], ["LSEG.L", "London Stock Exchange Group", "LNSTY"],
+    ["DGE.L", "Diageo", "DEO"], ["RR.L", "Rolls-Royce", "RYCEY"], ["BA.L", "BAE Systems", "BAESY"], ["GLEN.L", "Glencore", "GLNCY"], ["NG.L", "National Grid", "NGG"],
+    ["LLOY.L", "Lloyds", "LYG"], ["BARC.L", "Barclays", "BCS"], ["CPG.L", "Compass", "CMPGY"], ["AAL.L", "Anglo American", "NGLOY"], ["TSCO.L", "Tesco", "TSCDY"],
   ]),
 ];
