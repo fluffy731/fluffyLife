@@ -15,6 +15,22 @@ function movingAverage(p, n) {
   return out;
 }
 
+// Two stocks over the same range as % change from the first day both have a price. Markets keep different
+// holidays, so the second stock's last price carries over days it did not trade.
+export function compareModel(h1, h2, sessions) {
+  const from = Math.max(0, h1.p.length - (Number.isFinite(sessions) ? sessions : h1.p.length));
+  const d = [], a = [], b = [];
+  let j = -1, a0 = null, b0 = null;
+  for (let i = from; i < h1.d.length; i++) {
+    while (j + 1 < h2.d.length && h2.d[j + 1] <= h1.d[i]) j++;
+    if (j < 0) continue;
+    a0 ??= h1.p[i];
+    b0 ??= h2.p[j];
+    d.push(h1.d[i]); a.push(h1.p[i] / a0 - 1); b.push(h2.p[j] / b0 - 1);
+  }
+  return { d, a, b, lo: Math.min(...a, ...b), hi: Math.max(...a, ...b) };
+}
+
 // h: { d: dates, p: prices, b: index closes or null }; sessions: how many trading days to show.
 export function chartModel(h, sessions) {
   const from = Math.max(0, h.p.length - (Number.isFinite(sessions) ? sessions : h.p.length));

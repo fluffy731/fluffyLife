@@ -4,7 +4,8 @@ import { pct, REVIEW, MIN_BARS, historyFile } from "./model.js";
 import { plainEnglish, GLOSSARY, audOf } from "./explain.js";
 import { ideas } from "./ideas.js";
 import { toggle, sinceWatching, ratingChanges, markSeen, backupText, readBackup } from "./watch.js";
-import { chartModel, RANGES } from "./chart.js";
+import { chartModel, compareModel, RANGES } from "./chart.js";
+import { newPractice, buy, sell, valuation, monthlyPlan, readPractice, START_CASH, FEE } from "./practice.js";
 import { COMPANIES } from "./companies.js";
 
 const $ = (s) => document.querySelector(s);
@@ -15,14 +16,16 @@ const store = {
   json: (k) => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; } },
 };
 
-const TABS = [["watchlist", "★ Watchlist"], ["ideas", "Ideas"], ["ratings", "Ratings"], ["scorecard", "Score"], ["learn", "Learn"]];
+const TABS = [["watchlist", "★ Watchlist"], ["ideas", "Ideas"], ["ratings", "Ratings"], ["practice", "Practice"], ["learn", "Learn"]];
 const CHIPS = [["all", "All"], ["US", "US"], ["HK", "Hong Kong"], ["UK", "UK"]];
 const SORTS = [["score", "Rating"], ["r6m", "6-month return"], ["vol", "Smallest swings"], ["name", "Name"]];
 const BULLISH = new Set(["Buy", "Overweight"]), BEARISH = new Set(["Underweight", "Sell"]);
 
 let feed = null, watch = store.json("stocks.watch"), seen = store.json("stocks.seen"), changes = {};
 let tab = store.get("stocks.tab") || (Object.keys(watch).length ? "watchlist" : "ideas");
-let market = store.get("stocks.market") || "all", query = "", sort = "score", range = "1Y", openStock = null;
+if (tab === "scorecard") tab = "learn";   // the scorecard moved into Learn
+let market = store.get("stocks.market") || "all", query = "", sort = "score", sector = "all", range = "1Y", openStock = null;
+let practice = readPractice(store.get("stocks.practice")), planAmount = 200;
 
 const signed = (x, digits = 0) => (x == null ? "–" : pct(x, digits));
 const tone = (x) => (x == null ? "" : x >= 0 ? "pos" : "neg");
@@ -35,6 +38,8 @@ const pill = (r) => `<span class="pill ${esc(r)}">${r === REVIEW ? "Review" : es
 const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 10); };
 const bench = (s) => feed.markets[s.m]?.benchName || "index";
 const byT = (t) => feed.stocks.find((x) => x.t === t);
+const audFmt = (x) => (x == null ? "–" : `A$${x.toLocaleString("en-AU", { maximumFractionDigits: Math.abs(x) < 100 ? 2 : 0 })}`);
+const units = (n) => n.toLocaleString("en-AU", { maximumFractionDigits: n < 10 ? 3 : 1 });
 function ago(ms) {
   const m = Math.round((Date.now() - ms) / 60e3);
   return m < 60 ? `${Math.max(m, 1)} min` : m < 48 * 60 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} days`;
@@ -129,21 +134,23 @@ const SORTERS = {
 function ratingRowsHTML() {
   const q = query.trim().toLowerCase();
   const words = (s) => `${s.n} ${s.t}${s.kind === "fund" ? " index fund etf" : ""}`.toLowerCase();
-  const rows = feed.stocks.filter((s) => inMarket(s) && (q ? words(s).includes(q) : s.kind !== "fund")).sort(SORTERS[sort]);
+  const inSector = (s) => sector === "all" || COMPANIES[s.t]?.[0] === sector;
+  const rows = feed.stocks.filter((s) => inMarket(s) && inSector(s) && (q ? words(s).includes(q) : s.kind !== "fund" || sector === "Index fund")).sort(SORTERS[sort]);
   return rows.length ? `<div class="list">${rows.map((s) => rowHTML(s)).join("")}</div>` : `<div class="empty">Nothing matches.</div>`;
 }
 
 function ratingsHTML() {
   const failed = feed.failed.length ? `<p class="muted">Not fetched this time: ${feed.failed.map(esc).join(", ")}.</p>` : "";
   return `<div class="controls"><input id="q" type="search" placeholder="Search name or symbol" value="${esc(query)}" autocomplete="off" aria-label="Search stocks">
-      <select id="sort" aria-label="Sort by">${SORTS.map(([k, label]) => `<option value="${k}"${k === sort ? " selected" : ""}>${label}</option>`).join("")}</select></div>
+      <select id="sort" aria-label="Sort by">${SORTS.map(([k, label]) => `<option value="${k}"${k === sort ? " selected" : ""}>Sort: ${label}</option>`).join("")}</select>
+      <select id="sector" aria-label="Sector"><option value="all">All sectors</option>${[...new Set(feed.stocks.map((x) => COMPANIES[x.t]?.[0]).filter(Boolean))].sort().map((k) => `<option value="${esc(k)}"${k === sector ? " selected" : ""}>${esc(k)}</option>`).join("")}</select></div>
     <div id="rows">${ratingRowsHTML()}</div>${failed}`;
 }
 
-function scorecardHTML() {
-  const key = market === "all" ? "all" : market, sc = feed.scorecard[key];
-  if (!sc || !sc.scored) return `<div class="empty">No scored calls yet for this market.</div>`;
-  const where = market === "all" ? "each stock's own index" : `the ${esc(feed.markets[market].benchName)}`;
+function scorecardHTML(key = "all") {
+  const sc = feed.scorecard[key];
+  if (!sc || !sc.scored) return `<div class="empty">No scored calls yet.</div>`;
+  const where = key === "all" ? "each stock's own index" : `the ${esc(feed.markets[key].benchName)}`;
   const head = sc.spread == null ? "Not enough bullish and bearish calls to compare yet."
     : sc.spread >= 0 ? `Bullish calls beat bearish calls by <b>${pts(sc.spread)}</b>` : `Bearish calls beat bullish calls by <b>${pts(-sc.spread)}</b>: the rules were wrong-footed`;
   const rows = Object.entries(sc.byRating).map(([r, x]) => `<tr><td>${pill(r)}</td><td class="num">${esc(x.n)}</td><td class="num">${x.hit == null ? "–" : `${Math.round(x.hit * 100)}%`}</td><td class="num ${tone(x.alpha)}">${pts(x.alpha)}</td></tr>`).join("");
@@ -161,16 +168,86 @@ function learnHTML() {
       <p>Open any stock for a plain-English reading of its figures and a price chart. Star (☆) the ones you want to follow; your Watchlist shows how they move from the day you starred them.</p>
       <p>If you are starting out, look at the index funds in <b>Ideas</b> first: one purchase holds a whole market, which spreads the risk.</p></div>
     <div class="card"><h2>What the words mean</h2>${GLOSSARY.map((g) => `<details class="term"><summary>${esc(g.term)}</summary><p>${esc(g.text)}</p></details>`).join("")}</div>
+    <h2 class="section">How good are the ratings?</h2>
+    <p class="muted">${Object.entries(feed.markets).map(([k, m]) => { const x = feed.scorecard[k]?.spread; return `${esc(m.label)}: ${x == null ? "–" : pts(x)}`; }).join(" · ")} (Buy and Overweight calls against Underweight and Sell, by market)</p>
+    ${scorecardHTML("all")}
     <button class="cta wide" id="method">How the ratings are made</button>`;
+}
+
+// ---------- the practice portfolio ----------
+function savePractice() { store.set("stocks.practice", JSON.stringify(practice)); }
+
+function practiceHTML() {
+  if (!practice) {
+    return `<div class="card intro"><h2>Practise with play money</h2>
+      <p>Start with ${audFmt(START_CASH)} of pretend money. Buy and sell any stock or index fund here at its latest closing price, then watch how your choices do over the weeks, with no real money at risk.</p>
+      <p class="muted">Each trade costs a pretend A$${FEE} fee, so costs count. Prices are in Australian dollars at the day's exchange rate. Saved on this phone only.</p>
+      <button class="cta" id="practice-start">Start with ${audFmt(START_CASH)}</button></div>`;
+  }
+  const v = valuation(practice, feed.stocks, feed.fx);
+  const rows = v.rows.map((r) => {
+    const s = byT(r.t);
+    return `<div class="row">${s ? starButton(s) : "<span></span>"}<button class="row-main" data-open="${esc(r.t)}">
+      <span class="who"><span class="name">${esc(s?.n || r.t)}</span><span class="sub">${units(r.units)} units · cost ${audFmt(r.cost)}</span></span><span></span>
+      <span class="right"><span class="num">${audFmt(r.value)}</span><span class="ret num ${tone(r.gainPct)}">${signed(r.gainPct, 1)}</span></span></button></div>`;
+  }).join("");
+  const trades = practice.trades.slice(-15).reverse().map((t) => `<div class="trade-row"><span>${day(t.d)} · ${t.side === "buy" ? "Bought" : "Sold"} ${esc(byT(t.t)?.n || t.t)}</span>
+      <span class="num">${audFmt(t.amount)}${t.side === "sell" ? ` <span class="${tone(t.gain)}">(${t.gain >= 0 ? "+" : "−"}${audFmt(Math.abs(t.gain))})</span>` : ""}</span></div>`).join("");
+  return `<div class="card practice-sum"><div class="muted">Practice portfolio since ${day(practice.created)}</div>
+      <div class="big num">${audFmt(v.total)}</div>
+      <div><span class="num ${tone(v.change)}">${v.change >= 0 ? "+" : "−"}${audFmt(Math.abs(v.change))} (${signed(v.changePct, 1)})</span> <span class="muted">· cash ${audFmt(v.cash)}</span></div>
+      ${v.bench == null ? "" : `<p>The same ${audFmt(practice.start)} in the S&P 500 fund (VOO) would now be <b>${audFmt(v.bench)}</b>${Math.abs(v.total - v.bench) < 1 ? "." : v.total > v.bench ? ": you are ahead of it so far." : ": beating the index is harder than it looks."}</p>`}</div>
+    ${rows ? `<div class="list">${rows}</div>` : `<div class="card"><p>No holdings yet. Open any stock or fund (from Ideas or Ratings) and use its Practice box to buy some.</p></div>`}
+    ${trades ? `<div class="card"><h2>Trades</h2>${trades}</div>` : ""}
+    <p class="muted">Practice uses each market's latest close, updated a few times a day, and allows part-shares (real brokers may sell whole shares only; Hong Kong trades in lots). Dividends are not paid into it. Fee: A$${FEE} a trade.</p>
+    <button class="cta ghost wide" id="practice-reset">Start again</button>`;
+}
+
+function practiceCardHTML(s) {
+  if (!practice) return `<div class="card"><h2>Practice</h2><p class="muted">See how buying this would go, with play money.</p><button class="cta" id="practice-start">Start a practice portfolio (${audFmt(START_CASH)})</button></div>`;
+  const p = audOf(s.price, s.cur, feed.fx);
+  if (p == null) return `<div class="card"><h2>Practice</h2><p class="muted">Practice trading needs today's exchange rate, which isn't available yet.</p></div>`;
+  const held = practice.holdings[s.t];
+  const worth = held ? held.units * p : 0;
+  const suggest = Math.min(1000, Math.floor(practice.cash));
+  return `<div class="card practice"><h2>Practice</h2>
+    ${held ? `<p>You hold ${units(held.units)} units, worth <b>${audFmt(worth)}</b> <span class="num ${tone(worth / held.cost - 1)}">${signed(worth / held.cost - 1, 1)}</span>.</p>` : ""}
+    <p class="muted">${audFmt(practice.cash)} practice cash left · one unit ≈ ${audFmt(p)} · A$${FEE} a trade</p>
+    <div class="trade"><label>A$ <input id="buy-amount" type="number" inputmode="decimal" min="10" step="10" value="${suggest > FEE ? suggest : ""}" aria-label="Amount to buy in Australian dollars"></label><button class="cta" data-buy="${esc(s.t)}">Buy</button></div>
+    ${held ? `<div class="btns"><button class="cta ghost" data-sell="${esc(s.t)}" data-part="0.5">Sell half</button><button class="cta ghost" data-sell="${esc(s.t)}" data-part="1">Sell all</button></div>` : ""}</div>`;
+}
+
+function practiseTrade(fn) {
+  try { practice = fn(practice); } catch (err) { alert(err.message); return; }
+  savePractice();
+  render();
+  if (openStock) caseFile(openStock);
+}
+
+// ---------- investing every month ----------
+function regularHTML() {
+  return `<div class="card"><h2>Investing every month</h2>
+    <div class="trade"><label>A$ <input id="plan-amount" type="number" inputmode="decimal" min="10" step="10" value="${planAmount}" aria-label="Amount each month in Australian dollars"></label><span class="muted">a month</span></div>
+    <p id="plan-result" class="muted">Waiting for the price history…</p></div>`;
+}
+
+function drawPlan() {
+  const el = $("#plan-result");
+  if (!el) return;
+  if (!chartData) { if (chartFailed) el.textContent = "This needs the price history, which isn't available right now."; return; }
+  const r = planAmount > 0 ? monthlyPlan(chartData, planAmount) : null;
+  if (!r) { el.textContent = "Enter an amount."; return; }
+  const gain = r.value / r.invested - 1;
+  el.innerHTML = `Putting ${audFmt(planAmount)} in on the first trading day of each month since ${dayY(r.from)} (${r.months} months, ${audFmt(r.invested)} in all) would now be worth about <b>${audFmt(r.value)}</b>, <span class="${tone(gain)}">${signed(gain, 1)}</span>. Buying every month gets more units when prices are low and fewer when they are high. Prices only: dividends, fees and currency changes are left out.`;
 }
 
 function render() {
   $("#tabs").innerHTML = TABS.map(([k, label]) => `<button data-tab="${k}" class="${k === tab ? "on" : ""}">${label}</button>`).join("");
-  $("#chips").innerHTML = ["watchlist", "learn"].includes(tab) ? "" : CHIPS.map(([k, label]) => `<button data-market="${k}" class="${k === market ? "on" : ""}">${label}</button>`).join("");
+  $("#chips").innerHTML = ["ideas", "ratings"].includes(tab) ? CHIPS.map(([k, label]) => `<button data-market="${k}" class="${k === market ? "on" : ""}">${label}</button>`).join("") : "";
   if (!feed) return;
   const asOf = Object.values(feed.markets).filter((m) => m.asOf).map((m) => `${m.label} ${day(m.asOf)}`).join(" · ");
   $("#dateline").textContent = `Closes to ${asOf} · updated ${ago(Date.parse(feed.builtAt))} ago`;
-  const view = { watchlist: watchlistHTML, ideas: ideasHTML, ratings: ratingsHTML, scorecard: scorecardHTML, learn: learnHTML }[tab] || ideasHTML;
+  const view = { watchlist: watchlistHTML, ideas: ideasHTML, ratings: ratingsHTML, practice: practiceHTML, learn: learnHTML }[tab] || ideasHTML;
   $("#main").innerHTML = view();
 }
 
@@ -227,12 +304,62 @@ function ratingHTML(s) {
 
 // ---------- the price chart ----------
 const W = 320, H = 150, PAD = 6;
-let chartData = null, chartView = null, chartFailed = false;
+let chartData = null, chartView = null, chartFailed = false, compareT = null, compareData = null;
 
-function chartHTML() {
+function chartHTML(s) {
+  const others = feed.stocks.filter((x) => x.t !== s.t).sort((a, b) => a.n.localeCompare(b.n));
   return `<div class="card chart-card"><div class="chart-head"><h2>Price</h2><div class="ranges">${RANGES.map(([k]) => `<button data-range="${k}" class="${k === range ? "on" : ""}">${k}</button>`).join("")}</div></div>
+    <select id="compare" aria-label="Compare with another stock"><option value="">Compare with another stock…</option>${others.map((x) => `<option value="${esc(x.t)}"${x.t === compareT ? " selected" : ""}>${esc(x.n)} (${esc(x.t)})</option>`).join("")}</select>
     <div class="chart" id="chart"><p class="muted">Loading the price history…</p></div>
-    <div class="legend"><span class="k price">Price</span><span class="k ma50">50-day</span><span class="k ma200">200-day</span><span class="k idx">Index</span></div></div>`;
+    <div class="legend" id="legend"></div><div id="compare-table"></div></div>`;
+}
+
+const LEGEND = `<span class="k price">Price</span><span class="k ma50">50-day</span><span class="k ma200">200-day</span><span class="k idx">Index</span>`;
+
+// Two stocks as % change from the range's first day, and their key figures side by side.
+function drawCompare(s, other) {
+  const c = compareModel(chartData, compareData, Object.fromEntries(RANGES)[range]);
+  const m = { lo: c.lo, hi: c.hi, p: c.a };
+  const pc = (x) => `${x >= 0 ? "+" : "−"}${Math.abs(x * 100).toFixed(0)}%`;
+  $("#chart").innerHTML = `<div class="readout" id="readout"><b>${esc(s.n)}</b> <span class="${tone(c.a.at(-1))}">${signed(c.a.at(-1), 1)}</span> · <b>${esc(other.n)}</b> <span class="${tone(c.b.at(-1))}">${signed(c.b.at(-1), 1)}</span> over ${esc(range)}</div>
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" id="chart-svg" role="img" aria-label="Comparison chart, ${esc(range)}">
+      <polyline class="cmp-b" points="${path(c.b, m)}"/><polyline class="cmp-a" points="${path(c.a, m)}"/>
+      <line id="cursor" class="cursor" x1="0" x2="0" y1="0" y2="${H}" visibility="hidden"/></svg>
+    <div class="axis num"><span>${dayY(c.d[0])}</span><span>${pc(c.lo)} – ${pc(c.hi)}</span><span>${dayY(c.d.at(-1))}</span></div>`;
+  $("#legend").innerHTML = `<span class="k cmp-a">${esc(s.n)}</span><span class="k cmp-b">${esc(other.n)}</span><span class="muted">price change, %</span>`;
+  const row = (label, f) => `<tr><td>${label}</td><td class="num">${f(s)}</td><td class="num">${f(other)}</td></tr>`;
+  $("#compare-table").innerHTML = `<table class="cmp"><thead><tr><th></th><th>${esc(s.t)}</th><th>${esc(other.t)}</th></tr></thead><tbody>
+    ${row("Rating", (x) => pill(x.rating))}${row("6 months", (x) => signed(x.r6m))}${row("12 months", (x) => signed(x.r12m))}
+    ${row("Swings a year", (x) => (x.facts ? `${Math.round(x.facts.vol * 100)}%` : "–"))}${row("Dividend yield", (x) => (x.stats?.divYield == null ? "–" : x.stats.divYield > 0 ? `${(x.stats.divYield * 100).toFixed(1)}%` : "none"))}
+    ${row("From 52-wk high", (x) => (x.facts ? (x.facts.drawdown ? `−${Math.round(x.facts.drawdown * 100)}%` : "at high") : "–"))}</tbody></table>`;
+  const svg = $("#chart-svg");
+  const read = (e) => {
+    const r = svg.getBoundingClientRect();
+    const i = Math.round(Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * (c.a.length - 1));
+    const cur = $("#cursor"), x = xOf(i, m);
+    cur.setAttribute("x1", x); cur.setAttribute("x2", x); cur.setAttribute("visibility", "visible");
+    $("#readout").innerHTML = `${dayY(c.d[i])} · <b>${esc(s.n)}</b> <span class="${tone(c.a[i])}">${signed(c.a[i], 1)}</span> · <b>${esc(other.n)}</b> <span class="${tone(c.b[i])}">${signed(c.b[i], 1)}</span>`;
+  };
+  svg.addEventListener("pointerdown", read);
+  svg.addEventListener("pointermove", read);
+}
+
+async function loadCompare(s, t) {
+  compareT = t || null;
+  compareData = null;
+  if (!compareT) return drawChart(s);
+  $("#chart").innerHTML = `<p class="muted">Loading the comparison…</p>`;
+  try {
+    const r = await fetch(`./history/${historyFile(compareT)}`, { cache: "default" });
+    if (!r.ok) throw new Error(r.status);
+    const h = await r.json();
+    if (compareT !== t || openStock !== s.t) return;
+    compareData = h;
+  } catch {
+    compareT = null;
+    alert("That stock's price history isn't available right now.");
+  }
+  drawChart(s);
 }
 
 const yOf = (v, m) => PAD + (H - 2 * PAD) * (1 - (v - m.lo) / (m.hi - m.lo || 1));
@@ -242,7 +369,12 @@ const path = (xs, m) => xs.map((v, i) => (v == null ? null : `${xOf(i, m).toFixe
 function drawChart(s) {
   const box = $("#chart");
   if (!box) return;
-  if (!chartData) { if (chartFailed) box.innerHTML = chartFailedHTML(); return; }   // still loading otherwise
+  if (!chartData) { if (chartFailed) box.innerHTML = chartFailedHTML(); drawPlan(); return; }   // still loading otherwise
+  drawPlan();
+  const other = compareT && compareData ? byT(compareT) : null;
+  if (other) return drawCompare(s, other);
+  $("#legend").innerHTML = LEGEND;
+  $("#compare-table").innerHTML = "";
   const m = chartView = chartModel(chartData, Object.fromEntries(RANGES)[range]);
   const up = m.change >= 0;
   box.innerHTML = `<div class="readout" id="readout"><b>${price(m.p.at(-1), s.cur)}</b> · ${dayY(m.d.at(-1))} · <span class="${tone(m.change)}">${signed(m.change, 1)} over ${range}</span></div>
@@ -290,6 +422,7 @@ function caseFile(t) {
   if (!s) return;
   const firstOpen = openStock !== t;
   openStock = t;
+  if (firstOpen) { compareT = null; compareData = null; }
   const m = feed.markets[s.m];
   const since = sinceWatching(watch[s.t], s);
   const [sector, does] = COMPANIES[s.t] || [];
@@ -299,9 +432,11 @@ function caseFile(t) {
       <div class="muted">${esc(s.t)} · ${esc(m.label)}${s.kind === "fund" ? " · index fund" : ""} · close ${day(s.d)}: <span class="num">${price(s.price, s.cur)}</span> <span class="num ${tone(s.r1d)}">${signed(s.r1d, 1)}</span>${aud == null ? "" : ` · <span class="num">≈ A$${aud.toLocaleString("en-AU", { maximumFractionDigits: aud < 10 ? 2 : 0 })}</span>`}</div>
       ${since ? `<div class="watching">Watching since ${day(since.since)} at ${price(watch[s.t].price, s.cur)}: <span class="num ${tone(since.change)}">${signed(since.change, 1)}</span></div>` : ""}
       <div class="rating-line">${pill(s.rating)} <span class="muted">${esc(s.rating === REVIEW ? s.reason : s.summary)}</span></div></div>
-    ${chartHTML()}
+    ${chartHTML(s)}
     <div class="card"><h2>In plain English</h2>${plainEnglish(s, bench(s)).map((x) => `<p>${esc(x)}</p>`).join("")}</div>
     ${statsHTML(s)}
+    ${practiceCardHTML(s)}
+    ${regularHTML()}
     ${ratingHTML(s)}
     ${newsHTML(s)}
     <div class="card"><h2>The last ${s.history.length} weekly calls</h2>
@@ -367,7 +502,7 @@ function restore() {
 }
 
 document.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-star],[data-tab],[data-market],[data-range],[data-open],[data-close],#refresh,#about,#method,#backup,#restore");
+  const el = e.target.closest("[data-star],[data-tab],[data-market],[data-range],[data-open],[data-close],[data-buy],[data-sell],#refresh,#about,#method,#backup,#restore,#practice-start,#practice-reset");
   if (!el) return;
   if (el.dataset.star) { e.stopPropagation(); return star(el.dataset.star); }
   if (el.dataset.tab) { tab = el.dataset.tab; store.set("stocks.tab", tab); window.scrollTo(0, 0); return render(); }
@@ -377,13 +512,22 @@ document.addEventListener("click", (e) => {
   if (el.dataset.close !== undefined) { openStock = null; return $("#sheet").close(); }
   if (el.id === "refresh") return load(true);
   if (el.id === "backup") return backup();
+  if (el.id === "practice-start" && feed) { practice = newPractice(today(), feed.stocks, feed.fx); savePractice(); render(); if (openStock) caseFile(openStock); return; }
+  if (el.id === "practice-reset") { if (confirm("Start the practice portfolio again with A$10,000? Its holdings and trades will be cleared.")) { practice = null; store.set("stocks.practice", ""); render(); } return; }
+  if (el.dataset.buy) { const s = byT(el.dataset.buy), amount = Number($("#buy-amount")?.value); return practiseTrade((pf) => buy(pf, s, amount, today(), feed.fx)); }
+  if (el.dataset.sell) { const s = byT(el.dataset.sell), held = practice?.holdings[s.t]; if (!held) return; return practiseTrade((pf) => sell(pf, s, held.units * Number(el.dataset.part), today(), feed.fx)); }
   if (el.id === "restore" && feed) return restore();
   if ((el.id === "about" || el.id === "method") && feed) return about();
 });
 document.addEventListener("input", (e) => {
   if (e.target.id === "q") { query = e.target.value; $("#rows").innerHTML = ratingRowsHTML(); }
+  if (e.target.id === "plan-amount") { planAmount = Number(e.target.value); drawPlan(); }
 });
-document.addEventListener("change", (e) => { if (e.target.id === "sort") { sort = e.target.value; $("#rows").innerHTML = ratingRowsHTML(); } });
+document.addEventListener("change", (e) => {
+  if (e.target.id === "sort") { sort = e.target.value; $("#rows").innerHTML = ratingRowsHTML(); }
+  if (e.target.id === "sector") { sector = e.target.value; $("#rows").innerHTML = ratingRowsHTML(); }
+  if (e.target.id === "compare" && openStock) loadCompare(byT(openStock), e.target.value);
+});
 $("#sheet").addEventListener("click", (e) => { if (e.target.id === "sheet") { openStock = null; $("#sheet").close(); } });
 $("#sheet").addEventListener("close", () => { openStock = null; });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && feed && Date.now() - Date.parse(feed.builtAt) > 60 * 60e3) load(true); });
