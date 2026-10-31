@@ -1,0 +1,20 @@
+# Temporary: runs the real Stocks build on a GitHub runner to check the news fix. Nothing is deployed.
+name: Stocks news probe
+on:
+  push:
+    branches: ["stocks-probe"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node scripts/build-stocks.mjs --force
+      - name: Check the v2 data
+        run: |
+          ls stocks/history | wc -l
+          node -e 'const fs=require("fs");const f=JSON.parse(fs.readFileSync("stocks/feed.json"));for(const t of ["AAPL","KO","0005.HK","BP.L","VOO","2800.HK","ISF.L"]){const s=f.stocks.find(x=>x.t===t);const h=s&&fs.existsSync("stocks/history/"+t.replace(/[^A-Za-z0-9-]/g,"_")+".json")?JSON.parse(fs.readFileSync("stocks/history/"+t.replace(/[^A-Za-z0-9-]/g,"_")+".json")):null;console.log(`::notice title=${t}::${s?`${s.kind} ${s.rating} price ${s.price} ${s.cur} stats ${JSON.stringify(s.stats)} history ${h?h.d.length+" days, index nulls "+h.b.filter(x=>x==null).length:"MISSING"}`:"missing"}`)};console.log(`::notice title=funds in scorecard?::stocks ${f.stocks.filter(s=>s.kind!=="fund").length}, funds ${f.stocks.filter(s=>s.kind==="fund").length}, scored ${f.scorecard.all.scored}`)'
