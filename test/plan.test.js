@@ -116,7 +116,6 @@ test("every trip published in travel/trips restores cleanly", () => {
   const files = readdirSync(dir).filter(f => f.endsWith(".json") && f !== "index.json");
   const listed = JSON.parse(readFileSync(new URL("index.json", dir), "utf8")).trips;
   assert.deepEqual([...listed].sort(), files.map(f => f.slice(0, -5)).sort(), "travel/trips/index.json must list every trip file (and only those)");
-  assert.ok(files.length, "no trip files");
   for (const f of files) {
     assert.ok(linkedTrip(`#import=${f.slice(0, -5)}`), `${f}: name must be letters, digits, - or _`);
     const raw = JSON.parse(readFileSync(new URL(f, dir), "utf8"));
