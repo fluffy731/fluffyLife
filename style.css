@@ -2,17 +2,18 @@
   --bg: #f6f7f9; --card: #ffffff; --ink: #14202e; --muted: #5b6b7c;
   --accent: #1b2a41; --accent-ink: #ffffff; --line: #e2e6eb;
   --ok: #2e7d4f; --warn: #b7791f; --bad: #b3261e; --soft: #eef1f5;
-  --hanja: #8a2d1f;
+  --hanja: #8a2d1f; --leech-bg: #fff4e5; --leech-fg: #8a4b00;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #0f1722; --card: #182334; --ink: #e9eef5; --muted: #9fb0c3;
     --accent: #6fa8ff; --accent-ink: #0b1220; --line: #26344a;
     --ok: #6fcf97; --warn: #f2c14e; --bad: #ff7b72; --soft: #1f2c40;
-    --hanja: #ffb08a;
+    --hanja: #ffb08a; --leech-bg: #3a2a12; --leech-fg: #f5c98a;
   }
 }
 :root[data-theme="dark"] {
+  --leech-bg: #3a2a12; --leech-fg: #f5c98a;
   --bg: #0f1722; --card: #182334; --ink: #e9eef5; --muted: #9fb0c3;
   --accent: #6fa8ff; --accent-ink: #0b1220; --line: #26344a;
   --ok: #6fcf97; --warn: #f2c14e; --bad: #ff7b72; --soft: #1f2c40;
@@ -51,6 +52,7 @@ h2:first-child { margin-top: 0; }
 .flash .pic .picemoji { font-size: 80px; line-height: 1; }
 .item .bpic { width: 28px; height: 28px; vertical-align: middle; margin-right: 6px; background: #fff; border-radius: 6px; }
 .item .bemoji { margin-right: 6px; }
+.leech { background: var(--leech-bg); color: var(--leech-fg); border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; }
 .flash .hint { color: var(--muted); font-size: 13px; margin-top: 24px; }
 .pron { font-size: 15px; color: var(--muted); margin-top: 4px; }
 .pron .said { color: var(--ink); }

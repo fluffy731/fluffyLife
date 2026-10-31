@@ -1,6 +1,6 @@
 // Pack-driven study engine. `start(pack)` runs one app (Korean or Cantonese); the pack supplies
 // data, tiers, UI strings, card renderers, storage key and speech languages.
-import { grade } from "./lib/sm2.js";
+import { grade } from "./lib/fsrs.js";
 import { buildUnits, isLearned, currentUnit, isUnlocked, dueItems, unseenItems, pickHourItems, seen, kindOf } from "./lib/track.js";
 import { wordOfHour } from "./lib/hour.js";
 import { load, save, exportJSON, importJSON } from "./lib/store.js";
@@ -134,7 +134,9 @@ function renderReview() {
     return `<div class="card empty"><b>${t.nothingDue}</b>${next ? t.nextReview(fmtDue(next)) : t.learnFirst}</div>`;
   }
   const it = queue[0];
-  return `<div class="small muted" style="margin-bottom:8px">${t.nDue(queue.length)}</div>` + cardHTML(it, flipped) +
+  const lp = state.progress[it.id];
+  return `<div class="small muted" style="margin-bottom:8px">${t.nDue(queue.length)}</div>` +
+    (lp?.leech ? `<div class="small leech">${t.leechTip(lp.lapses)}</div>` : "") + cardHTML(it, flipped) +
     (flipped ? `<div class="grades">
         <button class="btn again" data-grade="again">${t.again}<small>${t.now}</small></button>
         <button class="btn hard" data-grade="hard">${t.hard}<small>${esc(preview(it, "hard"))}</small></button>
@@ -148,15 +150,19 @@ function renderBrowse() {
   const list = browseList();
   return `<input type="search" id="q" placeholder="${t.searchPlaceholder}" value="${esc(browse.q)}">
     <div class="chips">${KINDS().map(([k, l]) => `<button data-kind="${k}" class="${browse.kind === k ? "on" : ""}">${l}</button>`).join("")}
+      ${leechCount() ? `<button data-kind="leech" class="${browse.kind === "leech" ? "on" : ""}">🩹 ${leechCount()}</button>` : ""}
       ${pack.editable ? `<button data-add style="margin-left:auto">${t.add}</button>` : ""}</div>
     <div class="chips">${["all", ...pack.tiers.map((x) => x.key)].map((k) => `<button data-tier="${k}" class="${browse.tier === k ? "on" : ""}">${k === "all" ? t.anyLevel : pack.tiers.find((x) => x.key === k).short}</button>`).join("")}</div>
     <div id="browse-list">${browseListHTML(list)}</div>`;
 }
 
+// Cards missed LEECH times after being learned (lib/fsrs.js), as Anki flags them.
+const leechCount = () => items.filter((i) => state.progress[i.id]?.leech).length;
+
 function browseList() {
   const q = browse.q.trim().toLowerCase();
   return items.filter((i) => (browse.tier === "all" || i.tier === browse.tier) &&
-    (browse.kind === "all" || kindOf(i) === browse.kind) &&
+    (browse.kind === "all" || (browse.kind === "leech" ? !!state.progress[i.id]?.leech : kindOf(i) === browse.kind)) &&
     (!q || pack.cards.searchText(i).some((f) => f && String(f).toLowerCase().includes(q))));
 }
 
@@ -164,7 +170,7 @@ function browseListHTML(list) {
   return `<div class="small muted" style="margin-bottom:8px">${t.nItems(list.length)}</div>
     <div class="list">${list.slice(0, 200).map((i) => {
       const p = state.progress[i.id];
-      const status = !p ? t.statusNew : p.due <= Date.now() ? t.statusDue : t.statusIn(fmtDue(p.due));
+      const status = (!p ? t.statusNew : p.due <= Date.now() ? t.statusDue : t.statusIn(fmtDue(p.due))) + (p?.leech ? " 🩹" : "");
       return pack.cards.browseRow(i, status, ctx);
     }).join("")}${list.length > 200 ? `<div class="small muted">${t.showingFirst}</div>` : ""}</div>${dictHTML(list)}`;
 }

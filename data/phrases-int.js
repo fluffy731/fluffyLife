@@ -92,7 +92,7 @@ export const PH_INT = [
 // 사자성어 (hanja idioms)
 ["일석이조","一石二鳥","一舉兩得","Killing two birds with one stone","운동도 하고 돈도 아끼니까 자전거 출근은 일석이조예요.","既能運動又能省錢，騎腳踏車上班真是一舉兩得。","You get exercise and save money, so biking to work kills two birds with one stone.",null],
 ["작심삼일","作心三日","三分鐘熱度","Resolutions that last only three days","새해 계획이 또 작심삼일로 끝났어요.","新年計畫又是三分鐘熱度就結束了。","My New Year's resolutions fizzled out within days again.",null],
-["대기만성","大器晚成","大器晚成","A late bloomer","그 배우는 마흔이 넘어서 유명해진 대기만성형 배우예요.","那位演員過了四十歲才成名，是大器晚成型的演員。","That actor became famous after forty—a real late bloomer.",null],
+["대기만성","大器晩成","大器晚成","A late bloomer","그 배우는 마흔이 넘어서 유명해진 대기만성형 배우예요.","那位演員過了四十歲才成名，是大器晚成型的演員。","That actor became famous after forty—a real late bloomer.",null],
 ["반신반의","半信半疑","半信半疑","Half in doubt","처음에는 반신반의했는데 정말 효과가 있더라고요.","一開始半信半疑，結果真的有效。","I was skeptical at first, but it actually worked.",null],
 ["비몽사몽","非夢似夢","半夢半醒；迷迷糊糊","Half asleep; in a daze","아침에 비몽사몽 중에 알람을 꺼 버렸어요.","早上迷迷糊糊地就把鬧鐘關掉了。","In the morning I turned off the alarm while half asleep.","Often 비몽사몽 중에 / 비몽사몽간에."],
 ["이구동성","異口同聲","異口同聲","With one voice; unanimously","학생들은 이구동성으로 시험이 어려웠다고 했다.","學生們異口同聲地說考試很難。","The students all said in unison that the exam was hard.","Usually 이구동성으로."],
