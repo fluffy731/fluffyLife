@@ -74,3 +74,84 @@ export function parseSongList(text) {
   }
   return out;
 }
+
+// ---------- the Claude request ----------
+// US$ per million tokens. Cache reads cost 0.1× and cache writes 1.25× the input price.
+export const SONG_MODELS = {
+  "claude-haiku-5-5": { label: "Claude Haiku 5.5", in: 0.10, out: 0.50 },
+  "claude-sonnet-5-5": { label: "Claude Sonnet 5.5", in: 2, out: 10 },
+  "claude-opus-5-5": { label: "Claude Opus 5.5", in: 4, out: 20 },
+};
+export const DEFAULT_MODEL = "claude-haiku-5-5";
+
+const RULES = `You help a Korean learner (TOPIK 3–4, reads Traditional Chinese and English) study song lyrics.
+For each numbered line: give a natural Traditional Chinese translation (zh) and a natural English translation (en), not word for word.
+grammar: the grammar points in that line worth learning. Skip particles and endings a TOPIK 3 learner already knows unless used unusually. For each give form (e.g. -(으)ㄹ수록), en and zh meanings, and a one-sentence English note on how it works in this line; mention casual or poetic contractions (난 = 나는, 널 = 너를). Set appId only if the line truly uses that point from the GRAMMAR LIST, else null.
+words: up to 5 content words: ko as in the line, base = dictionary form, hanja for Sino-Korean words else null, zh, en, pos (n, v, adj, adv, phrase).
+Return n = the line number you were given for every line, once each.`;
+
+export const systemText = (grammar) =>
+  `${RULES}\n\nGRAMMAR LIST (id | form | meaning)\n${grammar.map((g) => `${g.id} | ${g.form} | ${g.en}`).join("\n")}`;
+
+const S = { type: "string" };
+const NULLABLE = { anyOf: [S, { type: "null" }] };
+const obj = (props) => ({ type: "object", additionalProperties: false, required: Object.keys(props), properties: props });
+export const ANALYSIS_SCHEMA = obj({
+  lines: { type: "array", items: obj({
+    n: { type: "integer" }, zh: S, en: S,
+    grammar: { type: "array", items: obj({ form: S, appId: NULLABLE, en: S, zh: S, note: S }) },
+    words: { type: "array", items: obj({ ko: S, base: S, hanja: NULLABLE, zh: S, en: S, pos: S }) },
+  }) },
+});
+
+export function buildRequest({ model, lines, grammar }) {
+  const req = {
+    model, max_tokens: 64000,
+    system: [{ type: "text", text: systemText(grammar), cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: lines.map((l, i) => `${i + 1}. ${l}`).join("\n") }],
+    output_config: { effort: "medium", format: { type: "json_schema", schema: ANALYSIS_SCHEMA } },
+  };
+  // Server-side refusal fallbacks exist for Opus and Sonnet only.
+  if (model !== "claude-haiku-5-5") Object.assign(req, { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
+  return req;
+}
+
+// ---------- checking the reply ----------
+const MAX = 400;
+const fail = () => { throw new Error("invalid"); };
+const str = (v) => (typeof v === "string" ? v.slice(0, MAX) : fail());
+const strOrNull = (v) => (v == null || v === "" ? null : str(v));
+const arr = (v) => (Array.isArray(v) ? v : fail());
+
+export function parseAnalysis(text, lines, grammarIds) {
+  let j;
+  try { j = JSON.parse(text); } catch { fail(); }
+  const got = new Map();
+  for (const l of arr(j?.lines)) {
+    if (!Number.isInteger(l?.n) || l.n < 1 || l.n > lines.length || got.has(l.n)) fail();
+    got.set(l.n, {
+      ko: lines[l.n - 1], zh: str(l.zh), en: str(l.en),
+      grammar: arr(l.grammar).map((g) => {
+        const appId = strOrNull(g?.appId);
+        return { form: str(g.form), appId: appId && grammarIds.has(appId) ? appId : null, en: str(g.en), zh: str(g.zh), note: str(g.note) };
+      }),
+      words: arr(l.words).slice(0, 5).map((w) => ({ ko: str(w?.ko), base: str(w.base), hanja: strOrNull(w.hanja), zh: str(w.zh), en: str(w.en), pos: str(w.pos) })),
+    });
+  }
+  if (got.size !== lines.length) fail();
+  return { lines: lines.map((_, i) => got.get(i + 1)) };
+}
+
+// ---------- cost (US$) ----------
+export function estimateCost(model, lyricsChars, lineCount, systemChars = 9000) {
+  const p = SONG_MODELS[model] ?? SONG_MODELS[DEFAULT_MODEL];
+  const input = Math.ceil(systemChars / 3) + Math.ceil(lyricsChars / 1.5);
+  const output = 200 * lineCount + 2000;
+  return (input * p.in + output * p.out) / 1e6;
+}
+
+export function actualCost(model, usage = {}) {
+  const p = SONG_MODELS[model] ?? SONG_MODELS[DEFAULT_MODEL];
+  const n = (k) => Number(usage[k]) || 0;
+  return ((n("input_tokens") + 0.1 * n("cache_read_input_tokens") + 1.25 * n("cache_creation_input_tokens")) * p.in + n("output_tokens") * p.out) / 1e6;
+}
