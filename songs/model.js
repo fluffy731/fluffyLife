@@ -182,3 +182,30 @@ export function studyItem({ kind, entry, line, song, items, unit, id }) {
 }
 
 export const inReviews = (id, progress) => !!progress?.[id];
+
+// ---------- song records (IndexedDB and backups) ----------
+export const newSongId = () => `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+
+const STATUSES = ["queued", "lyrics", "done", "error"];
+const s = (v) => (typeof v === "string" ? v : null);
+const num = (v) => (Number.isFinite(v) ? v : 0);
+const cleanG = (g) => ({ form: s(g?.form) ?? "", appId: s(g?.appId), en: s(g?.en) ?? "", zh: s(g?.zh) ?? "", note: s(g?.note) ?? "" });
+const cleanW = (w) => ({ ko: s(w?.ko) ?? "", base: s(w?.base) ?? "", hanja: s(w?.hanja), zh: s(w?.zh) ?? "", en: s(w?.en) ?? "", pos: s(w?.pos) ?? "" });
+const cleanLine = (l) => ({ ko: s(l?.ko) ?? "", zh: s(l?.zh) ?? "", en: s(l?.en) ?? "",
+  grammar: Array.isArray(l?.grammar) ? l.grammar.map(cleanG) : [], words: Array.isArray(l?.words) ? l.words.map(cleanW) : [] });
+
+// Backups are user files: keep only the known fields with the right types, so nothing else reaches the page.
+export function cleanSong(raw) {
+  if (!raw || typeof raw !== "object" || !s(raw.id) || !s(raw.title)) return null;
+  const a = raw.analysis;
+  const analysis = a && typeof a === "object" && Array.isArray(a.lines) ? {
+    model: s(a.model) ?? DEFAULT_MODEL, at: num(a.at),
+    usage: { in: num(a.usage?.in), out: num(a.usage?.out), cacheRead: num(a.usage?.cacheRead) },
+    costUsd: num(a.costUsd), lines: a.lines.map(cleanLine),
+  } : null;
+  const lyrics = s(raw.lyrics);
+  let status = STATUSES.includes(raw.status) ? raw.status : lyrics ? "lyrics" : "queued";
+  if (status === "done" && !analysis) status = lyrics ? "lyrics" : "queued";
+  return { id: raw.id, title: raw.title, artist: s(raw.artist) ?? "", album: s(raw.album), source: ["lrclib", "paste", "import"].includes(raw.source) ? raw.source : "paste",
+    status, error: s(raw.error), lyrics, analysis, addedAt: num(raw.addedAt) };
+}

@@ -130,3 +130,18 @@ test("studyItem refuses a card that would not pass validation", () => {
   assert.equal(inReviews("u1", { u1: { due: 1 } }), true);
   assert.equal(inReviews("u9", {}), false);
 });
+
+import { cleanSong, newSongId } from "../songs/model.js";
+
+test("cleanSong keeps a valid record and strips anything else from a backup", () => {
+  const good = { id: "s1", title: "밤", artist: "X", album: null, source: "lrclib", status: "done", error: null, lyrics: "가", addedAt: 5,
+    analysis: { model: "claude-haiku-5-5", at: 6, usage: { in: 1, out: 2, cacheRead: 0 }, costUsd: 0.001,
+      lines: [{ ko: "가", zh: "去", en: "go", grammar: [{ form: "-아", appId: null, en: "e", zh: "z", note: "n" }], words: [{ ko: "가", base: "가다", hanja: null, zh: "去", en: "go", pos: "v" }] }] } };
+  assert.deepEqual(cleanSong(good), good);
+  const bad = cleanSong({ ...good, "<script>": 1, title: 5 });
+  assert.equal(bad, null);
+  const extra = cleanSong({ ...good, evil: "<img onerror=x>", status: "weird" });
+  assert.equal("evil" in extra, false);
+  assert.equal(extra.status, "lyrics");
+  assert.match(newSongId(), /^s[0-9a-z]+$/);
+});
