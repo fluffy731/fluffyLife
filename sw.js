@@ -11,6 +11,7 @@ const FILES = [
   "./news/", "./news/index.html", "./news/news.js", "./news/news.css", "./news/model.js", "./news/manifest.json", "./icons/news.svg", "./icons/news-180.png", "./icons/news-512.png",
   "./stocks/", "./stocks/index.html", "./stocks/stocks.js", "./stocks/stocks.css", "./stocks/model.js", "./stocks/explain.js", "./stocks/ideas.js", "./stocks/watch.js", "./stocks/chart.js", "./stocks/companies.js", "./stocks/practice.js", "./stocks/manifest.json", "./icons/stocks.svg", "./icons/stocks-180.png", "./icons/stocks-512.png",
   "./quiz-view.js", "./quiz/ko.js", "./quiz/yue.js",
+  "./songs/model.js", "./songs/lrclib.js", "./songs/claude.js", "./songs/db.js", "./songs/view.js",
   "./packs/ko.js", "./packs/dict-ko.js", "./packs/dict-yue.js", "./packs/dict-en.js", "./cards/ko.js", "./ui/en.js", "./lib/dict.js",
   "./packs/yue.js", "./cards/yue.js", "./ui/ko.js",
   "./packs/mn.js", "./cards/mn.js", "./ui/zh.js", "./quiz/mn.js",

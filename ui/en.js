@@ -1,6 +1,6 @@
 // English UI strings for the Korean app. Functions take the values they interpolate.
 export const ui = {
-  tabs: { home: "Home", learn: "Learn", review: "Review", quiz: "Quiz", browse: "Browse", settings: "Settings" },
+  tabs: { home: "Home", learn: "Learn", review: "Review", quiz: "Quiz", browse: "Browse", settings: "Settings", songs: "Songs" },
   now: "now", minutes: (n) => `${n} min`, hours: (n) => `${n} h`, days: (n) => `${n} d`,
   listen: "Listen", listenBtn: "🔊 Listen", edit: "Edit", resetProgress: "Reset progress", tapToFlip: "tap to flip",
   dueNow: "due now", ofSeen: (n) => `of ${n} seen`, unit: "unit", wordOfHour: "Word of the hour", noItems: "No items",

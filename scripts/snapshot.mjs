@@ -40,6 +40,8 @@ await page.locator(".item").first().click(); out.browseGrammar = await view();
 await page.click('[data-tab="settings"]'); out.settings = await view();
 out.wipeConfirm = await page.evaluate(() => { let msg = null; const c = window.confirm; window.confirm = (m) => { msg = m; return false; }; document.querySelector("[data-wipe]").click(); window.confirm = c; return msg; });
 await browser.close(); srv.close();
+// The server port is random on every run: keep it out of the comparison.
+for (const k of Object.keys(out)) if (typeof out[k] === "string") out[k] = out[k].replaceAll(base, "http://localhost/");
 
 if (mode === "write") { await writeFile(GOLDEN, JSON.stringify(out, null, 1)); console.log("golden written:", Object.keys(out).join(", ")); }
 else {
