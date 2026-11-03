@@ -6,13 +6,13 @@ const THEME = { auto: "자동", light: "밝게", dark: "어둡게" };
 export const ui = {
   tabs: { home: "홈", learn: "학습", review: "복습", quiz: "퀴즈", browse: "찾아보기", settings: "설정", songs: "노래" },
   now: "지금", minutes: (n) => `${n}분`, hours: (n) => `${n}시간`, days: (n) => `${n}일`,
-  listen: "듣기", listenBtn: "🔊 듣기", edit: "수정", resetProgress: "진도 초기화", tapToFlip: "카드를 눌러서 뜻을 확인하세요",
+  listen: "듣기", listenBtn: "듣기", edit: "수정", resetProgress: "진도 초기화", tapToFlip: "카드를 눌러서 뜻을 확인하세요",
   dueNow: "복습할 것", ofSeen: (n) => `/ ${n}개 학습`, unit: "단원", wordOfHour: "지금 이 시간의 단어", noItems: "항목이 없어요",
   changesAt: (hh) => `${hh}:00에 바뀌어요`, currentUnit: "현재 단원", unitN: (n) => `${n}단원`,
   introduced: (a, b, g) => `${b}개 중 ${a}개 학습 · 문법 ${g}개`,
   learnNew: "새로 배우기", review: "복습", phrases: "표현", noKindLeft: (k) => `이 단원에 새 ${k}이(가) 더 없어요.`,
-  hourlyTip: `<h2>매시간 알림 (아이폰)</h2>
-    <div class="card tip">
+  hourlyTip: `<details class="tip"><summary>매시간 알림 (아이폰)</summary>
+    <div class="tip-body">
       아이폰은 웹앱이 스스로 알람을 울리게 해 주지 않고, 단축어(Shortcuts)에는 "매시간 반복"도 없어요. 그래서 원하는 시각마다 <b>매일</b> 반복 자동화를 하나씩 만들어야 해요 (예: 9:00, 10:00 … 21:00):
       <ol>
         <li>단축어 → 자동화 → + → <b>시간</b>(Time of Day) → <b>매일</b> 반복 → <b>즉시 실행</b>을 선택해요.</li>
@@ -20,7 +20,7 @@ export const ui = {
         <li>목록에 없으면 <b>URL 열기</b>에 이 페이지 주소를 넣어요. 이 경우 사파리가 열리고, 사파리는 진도를 따로 저장해서 앱과 단어가 다를 수 있어요.</li>
       </ol>
       <p class="small muted">(메뉴 이름은 iOS 버전에 따라 조금 다를 수 있어요.)</p>
-    `,
+    </div></details>`,
   unitDone: "단원 끝!", unitDoneHint: "이 단원의 모든 항목을 한 번씩 봤어요. 위에서 다음 단원을 고르거나 복습하러 가세요.",
   leechTip: (n) => `🩹 ${n}번 틀렸어요. 찾아보기에서 🩹를 누르면 모아 볼 수 있어요. 메모나 외우는 요령, 나만의 예문을 넣어 보세요.`,
   jumpedAhead: "앞 단원이 아직 안 끝났어요. 건너뛰어도 괜찮아요.",
@@ -39,7 +39,7 @@ export const ui = {
   noVoice: "광둥어(홍콩) 음성이 설치되어 있지 않아요. 표준중국어 음성으로 읽으면 소리가 틀려서 읽지 않았어요. 설정 → 손쉬운 사용 → 말하기 콘텐츠 → 음성 → 중국어 → 광둥어에서 내려받아 주세요. (메뉴 이름은 iOS 버전에 따라 조금 달라요.)",
   dictAdded: (u) => `${u}에 추가했어요.`, dictTitle: "사전", dictLoading: "사전을 불러오는 중…", dictError: "사전을 쓸 수 없어요 — 인터넷에 연결된 상태로 한 번 열어 주세요.", dictNone: "사전에 없어요.", dictAdd: "+ 학습에 추가", dictSource: "사전: Wiktionary (kaikki.org), CC BY-SA 4.0.",
   speechCheck: "음성 점검",
-  speechCheckBtn: "🔊 음성 테스트하고 자세히 보기",
+  speechCheckBtn: "음성 테스트하고 자세히 보기",
   quizPractice: "연습 퀴즈", quizPracticeHint: "배운 단어에서 10문제, 약한 것부터 나와요. 합격 기준은 없어요.",
   quizNeedSeen: "먼저 4개 이상 배워 보세요.", quizUnits: "단원 시험", quizNotReady: (n) => `배울 것 ${n}개 남음`,
   quizReady: "시험 볼 수 있어요", quizPassed: (b, n) => `🏅 합격 · 최고 ${b}/${n}`, quizStart: "시작", quizNext: "다음",

@@ -1,33 +1,34 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-line="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>English · 영어</title>
 <meta name="description" content="한국어로 배우는 중·고급 영어 — 단어, 표현, 문법, 간격 반복 복습.">
-<meta name="theme-color" content="#2e6b4f" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1722" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f1f3f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1013" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="English">
 <link rel="manifest" href="./manifest.json">
 <link rel="apple-touch-icon" href="../icons/en-180.png">
 <link rel="icon" href="../icons/en.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../style.css">
+<link rel="stylesheet" href="../metro.css">
 </head>
 <body>
 <header class="top">
+  <span class="roundel" aria-hidden="true">Aa</span>
   <h1 id="title">English · 영어</h1>
   <span id="due-badge" class="badge" hidden></span>
 </header>
 <main id="view" class="view"></main>
 <nav class="tabs" id="tabs">
-  <button data-tab="home" class="active"><span class="ic">⌂</span>홈</button>
-  <button data-tab="learn"><span class="ic">✎</span>학습</button>
-  <button data-tab="review"><span class="ic">↻</span>복습</button>
-  <button data-tab="quiz"><span class="ic">✓</span>퀴즈</button>
-  <button data-tab="browse"><span class="ic">☰</span>찾아보기</button>
-  <button data-tab="settings"><span class="ic">⚙</span>설정</button>
+  <button data-tab="home" class="active"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.2 12 4l8 7.2V19a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg>홈</button>
+  <button data-tab="learn"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="15" rx="2.5"/><path d="M12 8.5v7M8.5 12h7"/></svg>학습</button>
+  <button data-tab="review"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4h-4"/></svg>복습</button>
+  <button data-tab="quiz"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4.5" width="16" height="15" rx="2.5"/><path d="m8 12.2 2.7 2.7L16 9.6"/></svg>퀴즈</button>
+  <button data-tab="browse"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>찾아보기</button>
+  <button data-tab="settings"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/></svg>설정</button>
 </nav>
 <dialog id="dlg"></dialog>
 <script type="module">

@@ -41,7 +41,7 @@ const browser = await chromium.launch();
   await page.waitForTimeout(200);
   ok("no IndexedDB: Songs explains it can't save", (await page.textContent("#view")).includes("Songs can't be saved on this device"));
   await page.click('[data-tab="home"]');
-  ok("no IndexedDB: Home still renders", (await page.locator(".stat-row").count()) === 1);
+  ok("no IndexedDB: Home still renders", (await page.locator(".route").count()) === 1);
   await ctx.close();
 }
 

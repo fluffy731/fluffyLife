@@ -35,11 +35,11 @@ let n = 0; while ((await page.inputValue("#unit-pick")) === "int-1" && await pag
 ok(`unit 1 learned (${n} items) → current unit 2`, n >= 20 && (await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("korean.v1")); return Object.keys(s.progress).length; })) === n);
 await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("korean.v1")); for (const k in s.progress) s.progress[k].due = 0; localStorage.setItem("korean.v1", JSON.stringify(s)); });
 await page.reload({ waitUntil: "networkidle" });
-const unitBefore = await page.textContent(".stat:nth-child(3) b");
+const unitBefore = await page.textContent(".route-stats b");
 await page.click('[data-tab="review"]'); await page.click("[data-flip]"); await page.click('[data-grade="again"]');
 ok("after Again still all due", (await page.textContent("#due-badge")) === String(n));
 await page.click('[data-tab="home"]');
-ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".stat:nth-child(3) b")) === unitBefore && unitBefore.startsWith("2/"));
+ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".route-stats b")) === unitBefore && unitBefore.startsWith("2/"));
 // Add defaults to current unit
 await page.click('[data-tab="browse"]'); await page.click("[data-add]");
 ok("add defaults to unit 2", (await page.inputValue('input[name="unit"]')) === "2");

@@ -77,6 +77,7 @@ function renderHome() {
   const learnedInUnit = cur.items.length - unseenItems(cur, state.progress).length;
   const hour = wordOfHour(pickHourItems(units, cur, state.progress), new Date());
   const nextHour = new Date(); nextHour.setMinutes(60, 0, 0);
+  if (pack.lineMap) return lineHomeHTML({ cur, due, seenCount, idx, learnedInUnit, hour, nextHour });
   return `
     <div class="stat-row">
       <div class="stat"><b>${due.length}</b><span>${t.dueNow}</span></div>
@@ -98,6 +99,35 @@ function renderHome() {
     </div>
     ${quiz.homeCard()}
     ${t.hourlyTip}</div>`;
+}
+
+// Metro-line Home (pack.lineMap: the Korean, Cantonese and English apps). The study track is a line of
+// five stations around the current unit; tapping a station opens that unit in Learn (the data-unit route).
+function lineHomeHTML({ cur, due, seenCount, idx, learnedInUnit, hour, nextHour }) {
+  const from = Math.max(0, Math.min(idx - 2, units.length - 5));
+  const short = (k) => pack.tiers.find((x) => x.key === k)?.short ?? k;
+  const stations = units.slice(from, from + 5).map((u) => {
+    const here = u === cur;
+    const name = u.tier === cur.tier ? t.unitN(esc(u.unit)) : `${esc(short(u.tier))} ${esc(u.unit)}`;
+    return `<li class="${here ? "here" : isLearned(u, state.progress) ? "done" : ""}"${here ? ' aria-current="step"' : ""}><button data-unit="${esc(u.key)}"><i></i><span>${name}</span></button></li>`;
+  }).join("");
+  const hh = (d) => d.getHours().toString().padStart(2, "0");
+  return `
+    <section class="route" aria-label="${esc(t.studyTrack)}">
+      <div class="route-name">${esc(tierLabel(cur.tier))}</div>
+      <ol class="stations" style="--p:${Math.round((learnedInUnit / cur.items.length) * 100)}%">${stations}</ol>
+      <div class="route-now"><b>${t.unitN(esc(cur.unit))}${unitTitle(cur.unit)}</b><span>${t.introduced(learnedInUnit, cur.items.length, cur.items.filter(isGrammar).length)}</span></div>
+      <div class="actions">
+        <button class="btn primary" data-go="learn">${t.learnNew}</button>
+        <button class="btn" data-go="review">${t.review} ${due.length ? `(${due.length})` : ""}</button>
+      </div>
+      <div class="route-stats"><span><b>${idx + 1}/${units.length}</b> ${t.unit}</span><span><b>${seenCount}</b> ${t.ofSeen(items.length)}</span></div>
+    </section>
+    <h2 class="sign-head"><span class="time">${hh(new Date())}:00</span>${t.wordOfHour}</h2>
+    ${hour ? cardHTML(hour, flipped) : `<div class="card empty">${t.noItems}</div>`}
+    <div class="small muted sign-foot">${t.changesAt(hh(nextHour))}</div>${pack.homeExtra ? pack.homeExtra(ctx) : ""}
+    ${quiz.homeCard()}
+    ${t.hourlyTip}`;
 }
 
 function renderLearn() {
@@ -177,7 +207,7 @@ function browseListHTML(list) {
 
 function renderSettings() {
   return `<h2>${t.studyTrack}</h2>
-    <div class="list">${units.map((u, i) => {
+    <div class="list track">${units.map((u, i) => {
       const done = u.items.length - unseenItems(u, state.progress).length;
       const cur = currentUnit(units, state.progress) === u;
       return `<div class="unit ${isUnlocked(units, i, state.progress) ? "" : "locked"} ${cur ? "current" : ""}" data-unit="${esc(u.key)}">

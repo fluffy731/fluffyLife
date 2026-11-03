@@ -4,7 +4,7 @@ const VERSION = "dev";
 const PREFIX = "hanja-korean-";
 const CACHE = `${PREFIX}${VERSION}`;
 const FILES = [
-  "./", "./index.html", "./style.css", "./app.js",
+  "./", "./index.html", "./style.css", "./metro.css", "./app.js",
   "./korean/", "./korean/index.html", "./korean/manifest.json",
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
   "./lib/fsrs.js", "./lib/vendor/ts-fsrs.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js", "./lib/interleave.js", "./lib/mongol.js", "./lib/validate-mn.js", "./lib/validate-en.js",

@@ -22,7 +22,7 @@ const b = await chromium.launch();
   ok(`learned unit 1 (${n} items) into yue.v1`, keys.yue === n && n >= 24);
   ok("korean.v1 untouched", keys.ko === null);
   await page.click('[data-tab="home"]');
-  ok("home now on unit 2", (await page.textContent(".card .row b")).includes("2단원"));
+  ok("home now on unit 2", (await page.textContent(".route-now b")).includes("2단원"));
   ok("no console or page errors", errs.length === 0);
   await page.close();
 }
@@ -122,8 +122,8 @@ async function speechRun(voices, path = "yue/") {
   await page.reload({ waitUntil: "networkidle" }); // controlled by the worker now
   await ctx.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
-  await page.waitForSelector("#view .stat", { timeout: 5000 }).catch(() => {});
-  ok("renders offline", (await page.locator("#view .stat").count()) === 3 && (await page.title()).includes("광동어"));
+  await page.waitForSelector("#view .stations", { timeout: 5000 }).catch(() => {});
+  ok("renders offline", (await page.locator("#view .stations li").count()) === 5 && (await page.title()).includes("광동어"));
   await ctx.close();
 }
 

@@ -54,7 +54,7 @@ export function createQuiz(api) {
         <span class="pill ${esc(u.tier)}">${esc(u.tier)}</span><span class="qunit-name">${t.unitN(esc(u.unit))}${api.unitTitle(u.unit)}</span>
         <span class="small muted">${status}</span></div>`;
     }).join("");
-    return `<div class="card">${practice}</div><h2>${t.quizUnits}</h2><div class="list">${rows}</div>`;
+    return `<div class="card">${practice}</div><h2>${t.quizUnits}</h2><div class="list track">${rows}</div>`;
   }
 
   function questionHTML() {

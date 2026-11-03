@@ -22,6 +22,8 @@ export const koPack = {
   // Offline dictionary built at deploy by scripts/build-dict.mjs (Browse search shows it under your own items).
   dict: dictKo,
   ui, cards, editable: true, validate: validateItem,
+  // Home draws the study track as a metro line (app.js lineHomeHTML); styled by metro.css.
+  lineMap: true,
   quiz: { types: quizTypes },
   // ♪ Songs tab: lyrics stay on the phone; translations come from the Claude API with the user's own key.
   songs: createSongs,

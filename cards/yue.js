@@ -29,7 +29,7 @@ export function card(it, open, ctx) {
   if (isGrammar(it)) {
     const front = `<div class="front hgline">${sylHTML(it.formJp, esc)} ${say(it.form)}</div><div class="chars" lang="zh-Hant">${esc(it.form)}</div><div class="pos">${esc(t.grammarLabel)}</div>`;
     if (!open) return `<div class="card flash" id="card">${front}<div class="hint">${t.tapToFlip}</div></div>`;
-    const back = `<div class="zh">${esc(it.ko)}</div><div class="en">${esc(it.en)}</div><div class="jp">${esc(it.formJp)}</div>` +
+    const back = `<div class="rule"></div><div class="zh">${esc(it.ko)}</div><div class="en">${esc(it.en)}</div><div class="jp">${esc(it.formJp)}</div>` +
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +
       it.ex.map((e) => exampleHTML(e.zh, e.jp, e.ko, ctx)).join("");
     return `<div class="card flash" id="card">${front}${back}</div>`;
@@ -41,7 +41,7 @@ export function card(it, open, ctx) {
   }
   const front = sound;
   if (!open) return `<div class="card flash" id="card">${front}<div class="hint">${t.tapToFlip}</div></div>`;
-  const back = `<div class="zh">${esc(it.ko)}</div><div class="en">${esc(it.en)}</div><div class="jp">${esc(it.jp)}</div>` +
+  const back = `<div class="rule"></div><div class="zh">${esc(it.ko)}</div><div class="en">${esc(it.en)}</div><div class="jp">${esc(it.jp)}</div>` +
     `<div class="hanja" lang="zh-Hant">${esc(it.zh)}</div>` + bridgeHTML(it.zh, it.jp, ctx, it.loan) +
     (it.exZh ? exampleHTML(it.exZh, it.exJp, it.exKo, ctx) : "");
   return `<div class="card flash" id="card">${front}${back}</div>`;

@@ -16,12 +16,12 @@ export function card(it, open, { esc, say, t, isGrammar }) {
   if (!open) return `<div class="card flash" id="card">${front}<div class="hint">${t.tapToFlip}</div></div>`;
   let back;
   if (isGrammar(it)) {
-    back = `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div><div class="en">${esc(it.en)}</div>` +
+    back = `<div class="rule"></div><div class="zh" lang="zh-Hant">${esc(it.zh)}</div><div class="en">${esc(it.en)}</div>` +
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +
       it.ex.map((e) => `<div class="ex"><div class="k">${esc(e.ko)} ${say(e.ko)}</div><div class="t" lang="zh-Hant">${esc(e.zh)}</div><div class="t">${esc(e.en)}</div></div>`).join("");
   } else {
     const pic = picHTML(it.ko, esc);
-    back = (pic ? `<div class="pic">${pic}</div>` : "") + pronHTML(it, esc) +
+    back = pronHTML(it, esc) + `<div class="rule"></div>` + (pic ? `<div class="pic">${pic}</div>` : "") +
       (it.hanja ? `<div class="hanja" lang="zh-Hant">${esc(it.hanja)}</div>` : it.pos === "phrase" || it.pos === "idiom" ? "" : `<div class="hanja none">고유어 · native word</div>`) +
       (it.zh ? `<div class="zh" lang="zh-Hant">${esc(it.zh)}</div>` : "") + `<div class="en">${esc(it.en)}</div>` +
       (it.note ? `<div class="note">${esc(it.note)}</div>` : "") +

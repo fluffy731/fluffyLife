@@ -2,20 +2,20 @@
 export const ui = {
   tabs: { home: "Home", learn: "Learn", review: "Review", quiz: "Quiz", browse: "Browse", settings: "Settings", songs: "Songs" },
   now: "now", minutes: (n) => `${n} min`, hours: (n) => `${n} h`, days: (n) => `${n} d`,
-  listen: "Listen", listenBtn: "🔊 Listen", edit: "Edit", resetProgress: "Reset progress", tapToFlip: "tap to flip",
+  listen: "Listen", listenBtn: "Listen", edit: "Edit", resetProgress: "Reset progress", tapToFlip: "tap to flip",
   dueNow: "due now", ofSeen: (n) => `of ${n} seen`, unit: "unit", wordOfHour: "Word of the hour", noItems: "No items",
   changesAt: (hh) => `Changes at ${hh}:00`, currentUnit: "Current unit", unitN: (n) => `Unit ${n}`,
   introduced: (a, b, g) => `${a}/${b} introduced · ${g} grammar points`,
   learnNew: "Learn new", review: "Review", phrases: "Phrases", noKindLeft: (k) => `No new ${k.toLowerCase()} left in this unit.`,
-  hourlyTip: `<h2>Hourly reminder on iPhone</h2>
-    <div class="card tip">
+  hourlyTip: `<details class="tip"><summary>Hourly reminder on iPhone</summary>
+    <div class="tip-body">
       iOS won't let a web app set its own alarm, and Shortcuts has no "hourly" repeat — so make one <b>Daily</b> automation per hour you want (e.g. 9:00, 10:00 … 21:00):
       <ol>
         <li>Shortcuts → Automation → + → <b>Time of Day</b> → repeat <b>Daily</b>, choose <b>Run Immediately</b>.</li>
         <li>Action: <b>Open App</b> → this app, if it appears in the list after Add to Home Screen.</li>
         <li>If it doesn't, use <b>Open URL</b> with this page's address. That opens Safari, which keeps its own separate progress — so the word it shows may not match this app.</li>
       </ol>
-    `,
+    </div></details>`,
   unitDone: "Unit done", unitDoneHint: "Every item here has been introduced. Pick the next unit above or go review.",
   leechTip: (n) => `🩹 Missed ${n} times. In Browse, tap 🩹 to find it and edit it: add a note, a memory trick or your own example.`,
   jumpedAhead: "Jumped ahead — the previous unit isn't finished yet. That's fine.",
@@ -32,7 +32,7 @@ export const ui = {
   confirmImport: "Replace the progress AND custom words on this device with the backup?",
   noSpeech: "This browser has no speech voices.", noVoice: "No matching voice is installed.",
   dictAdded: (u) => `Added to ${u}.`, dictTitle: "Dictionary", dictLoading: "Loading the dictionary…", dictError: "Dictionary not available — open Browse once while online.", dictNone: "No dictionary entries.", dictAdd: "+ Add to study", dictSource: "Dictionary: Wiktionary via kaikki.org, CC BY-SA 4.0.",
-  speechCheck: "Speech check", speechCheckBtn: "🔊 Test speech and show details",
+  speechCheck: "Speech check", speechCheckBtn: "Test speech and show details",
   quizPractice: "Practice quiz", quizPracticeHint: "10 questions from words you've seen, weakest first. No pass mark.",
   quizNeedSeen: "Learn at least 4 items first.", quizUnits: "Unit tests", quizNotReady: (n) => `${n} left to learn`,
   quizReady: "Test ready", quizPassed: (b, n) => `🏅 Passed · best ${b}/${n}`, quizStart: "Start", quizNext: "Next",
