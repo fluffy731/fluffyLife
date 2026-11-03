@@ -43,7 +43,7 @@ colors:
   line-1-blue-night: "#4d8fe8"
 typography:
   display:
-    fontFamily: "-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, PingFang TC, system-ui, sans-serif"
+    fontFamily: "Pretendard, -apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, PingFang TC, system-ui, sans-serif"
     fontSize: "clamp(32px, 11.5vw, 50px)"
     fontWeight: 800
     lineHeight: 1.12
@@ -55,7 +55,7 @@ typography:
     lineHeight: 1.15
     letterSpacing: "0.06em"
   headline:
-    fontFamily: "-apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif"
+    fontFamily: "Pretendard, -apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, system-ui, sans-serif"
     fontSize: "22px"
     fontWeight: 800
     lineHeight: 1.25
@@ -177,12 +177,12 @@ Each app owns one line colour, set by `<html data-line="ko|yue|en">`, and that c
 
 ## Typography
 
-The platform's own gothic is the lettering: Apple SD Gothic Neo on iPhone for Hangul (heavy weights for headwords), PingFang TC for hanja and Chinese, San Francisco for Latin. One family carries everything; the scale steps are weight and size, not new faces.
+Two voices. **Station-name lettering** is Pretendard ExtraBold (800), self-hosted at `fonts/Pretendard-ExtraBold.woff2`: unmodified, SIL OFL 1.1 (`fonts/Pretendard-LICENSE.txt`), every one of the 11,172 Hangul syllables plus Latin, 794 KB, preloaded by each app's page and cached offline by `sw.js`. It sets headwords on signs, quiz prompts and scores, the current stop on Home, the app name and the roundel (`--font-sign`). Everything else is the platform's own text face: Apple SD Gothic Neo for Hangul, PingFang TC for hanja and Chinese, San Francisco for Latin (`--font`, `--font-han`). Hanja on a headword fall back to PingFang glyph by glyph. The owner chose the self-hosted face over the platform face on 3 November 2026.
 
 ### Hierarchy
-- **Display** (800, clamp(32px, 11.5vw, 50px), 1.12, −0.02em): the headword on a sign. Grammar forms 30px; Cantonese 한글 lines clamp(28px, 9.5vw, 38px).
+- **Display** (Pretendard 800, clamp(32px, 11.5vw, 50px), 1.12, −0.02em): the headword on a sign. Grammar forms 30px; Cantonese 한글 lines clamp(28px, 9.5vw, 38px).
 - **Hanja** (700, 38px on an open sign, 30px on the Home glance, 0.06em tracking): signage yellow.
-- **Headline** (800, 22px): the current stop on Home ("Unit 3").
+- **Headline** (Pretendard 800, 22px): the current stop on Home ("Unit 3").
 - **Title** (700, 15px): section headings; the header app name is 19px / 750.
 - **Body** (400, 16px / 1.5): meanings, examples (15px), notes (14px).
 - **Label** (600–700, 10.5–13px): tab labels, station names (12px), tier badges (11px), counts with tabular numerals.
@@ -246,4 +246,4 @@ Drawn, never glyphs: the speaker, add, back and done marks are CSS masks over `c
 - **Don't** pin a light or dark look by category; both themes are first-class.
 - **Don't** restyle the Mongolian app from this file; it keeps `style.css`.
 
-Open, not a rule: the display face is the platform gothic. The finish review asked for a self-hosted heavy Hangul face for headwords; that is awaiting the owner's ruling (3 November 2026).
+- **Don't** set body text, meanings or examples in Pretendard; it is one heavy weight for names only.
