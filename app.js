@@ -106,10 +106,11 @@ function renderHome() {
 // five stations around the current unit; tapping a station opens that unit in Learn (the data-unit route).
 function lineHomeHTML({ cur, due, seenCount, idx, learnedInUnit, hour, nextHour }) {
   const from = Math.max(0, Math.min(idx - 2, units.length - 5));
-  const stations = units.slice(from, from + 5).map((u) => {
-    const here = u === cur, transfer = u.tier !== cur.tier;
+  const stations = units.slice(from, from + 5).map((u, i) => {
+    const k = from + i, here = u === cur;
+    const transfer = k > 0 && units[k - 1].tier !== u.tier;
     const cls = [here ? "here" : isLearned(u, state.progress) ? "done" : "", transfer ? "transfer" : ""].filter(Boolean).join(" ");
-    return `<li class="${cls}"${here ? ' aria-current="step"' : ""}><button data-unit="${esc(u.key)}"><i></i><span>${t.unitN(esc(u.unit))}</span>${transfer ? `<small>${esc(tierShort(u.tier))}</small>` : ""}</button></li>`;
+    return `<li class="${cls}"${here ? ' aria-current="step"' : ""}><button data-unit="${esc(u.key)}"><i></i><span>${t.unitN(esc(u.unit))}</span>${u.tier !== cur.tier ? `<small>${esc(tierShort(u.tier))}</small>` : ""}</button></li>`;
   }).join("");
   const hh = (d) => d.getHours().toString().padStart(2, "0");
   return `

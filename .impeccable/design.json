@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-03T00:00:00Z",
+  "title": "Design System: Metro line",
+  "extensions": {
+    "colorMeta": {
+      "line-2-green": { "role": "primary", "displayName": "Seoul Line 2 Green (Korean app)", "tonalRamp": ["#cdebd8", "#00a84d", "#007a37", "#005c29"] },
+      "mtr-red": { "role": "primary", "displayName": "MTR Tsuen Wan Red (Cantonese app)", "tonalRamp": ["#f8d0cd", "#e2231a", "#c41c14", "#9b1410"] },
+      "line-1-blue": { "role": "primary", "displayName": "Seoul Line 1 Blue (English app)", "tonalRamp": ["#cbd9ee", "#3d8ff0", "#0052a4", "#003f80"] },
+      "signage-yellow": { "role": "secondary", "displayName": "Signage Yellow (hanja on a sign)" },
+      "sign": { "role": "neutral", "displayName": "Sign Charcoal" },
+      "ground": { "role": "neutral", "displayName": "Platform Grey" },
+      "ground-night": { "role": "neutral", "displayName": "Signboard Charcoal" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Station name", "purpose": "The headword on a sign." },
+      "hanja": { "displayName": "Hanja", "purpose": "Characters on a sign, in signage yellow." },
+      "headline": { "displayName": "Current stop", "purpose": "The current unit on Home." }
+    },
+    "shadows": [
+      { "name": "sign", "value": "0 1px 2px rgba(15,19,23,.10), 0 14px 30px -16px rgba(15,19,23,.45)", "purpose": "Every study card." },
+      { "name": "pop", "value": "0 2px 6px rgba(15,19,23,.10), 0 24px 48px -12px rgba(15,19,23,.35)", "purpose": "Dialogs." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(.16, 1, .3, 1)", "purpose": "All transitions." },
+      { "name": "rule-draw", "value": "scaleX 0→1, 480ms", "purpose": "The line-colour rule drawing across a sign on flip; the one authored moment." },
+      { "name": "sign-in", "value": "opacity 0→1 and translateY 5px→0, 320ms after 60ms", "purpose": "The sign's subtitle lines after the rule." }
+    ],
+    "breakpoints": [ { "name": "column", "value": "640px" } ]
+  },
+  "components": [
+    {
+      "name": "Station sign", "kind": "card", "refersTo": "sign",
+      "description": "Every study card: headword, line-colour rule, hanja in signage yellow, meaning.",
+      "html": "<div class=\"ds-sign\"><div class=\"ds-sign-word\">경제</div><div class=\"ds-sign-rule\"></div><div class=\"ds-sign-hanja\">經濟</div><div class=\"ds-sign-en\">economy</div></div>",
+      "css": ".ds-sign { background: #20262c; color: #fff; border-radius: 16px; padding: 20px 18px 18px; box-shadow: 0 1px 2px rgba(15,19,23,.10), 0 14px 30px -16px rgba(15,19,23,.45); } .ds-sign-word { font-size: 46px; font-weight: 800; letter-spacing: -.02em; line-height: 1.12; } .ds-sign-rule { height: 4px; border-radius: 2px; background: #00b453; margin: 16px 0 14px; } .ds-sign-hanja { font-size: 38px; font-weight: 700; color: #ffd166; letter-spacing: .06em; } .ds-sign-en { color: #b3bcc5; }"
+    },
+    {
+      "name": "The line", "kind": "custom", "refersTo": "line-2-green",
+      "description": "Home's study track: stations around the current unit, the rail filled to here.",
+      "html": "<ol class=\"ds-line\"><li class=\"done\"><i></i><span>Unit 2</span></li><li class=\"here\"><i></i><span>Unit 3</span></li><li><i></i><span>Unit 4</span></li></ol>",
+      "css": ".ds-line { list-style: none; display: flex; padding: 0; margin: 0; } .ds-line li { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; font-size: 12px; color: #59626b; position: relative; } .ds-line li::before { content: \"\"; position: absolute; top: 13px; right: 50%; width: 100%; height: 6px; background: #cdebd8; } .ds-line li:first-child::before { display: none; } .ds-line li.done::before, .ds-line li.here::before { background: #00a84d; } .ds-line i { position: relative; width: 22px; height: 22px; margin: 5px 0; border-radius: 50%; background: #f1f3f2; border: 5px solid #cdebd8; box-sizing: border-box; } .ds-line .done i { background: #00a84d; border-color: #00a84d; } .ds-line .here i { width: 32px; height: 32px; margin: 0; border: 6px solid #00a84d; box-shadow: 0 0 0 3px #f1f3f2, 0 0 0 5.5px #14181c; } .ds-line .here span { color: #14181c; font-weight: 800; }"
+    },
+    {
+      "name": "Primary button", "kind": "button", "refersTo": "button-primary",
+      "description": "Learn new, Got it, Next: the line-strong fill.",
+      "html": "<button class=\"ds-btn-primary\">Learn new</button>",
+      "css": ".ds-btn-primary { min-height: 50px; padding: 11px 18px; border: 1.5px solid #007a37; border-radius: 12px; background: #007a37; color: #fff; font-size: 15px; font-weight: 650; transition: transform 120ms cubic-bezier(.16,1,.3,1), background-color 150ms; } .ds-btn-primary:hover { background: #0a6b33; } .ds-btn-primary:active { transform: scale(.98); } .ds-btn-primary:focus-visible { outline: 2.5px solid #007a37; outline-offset: 2px; }"
+    },
+    {
+      "name": "Button", "kind": "button", "refersTo": "button",
+      "description": "Secondary actions and the four grades.",
+      "html": "<button class=\"ds-btn\">Review (4)</button>",
+      "css": ".ds-btn { min-height: 50px; padding: 11px 18px; border: 1.5px solid #c3c9ce; border-radius: 12px; background: #fff; color: #14181c; font-size: 15px; font-weight: 650; transition: border-color 150ms, transform 120ms; } .ds-btn:hover { border-color: #59626b; } .ds-btn:active { transform: scale(.98); } .ds-btn:focus-visible { outline: 2.5px solid #007a37; outline-offset: 2px; }"
+    },
+    {
+      "name": "Chip", "kind": "chip", "refersTo": "chip",
+      "description": "Filters; the selected one takes the line colour.",
+      "html": "<span class=\"ds-chip ds-chip-on\">All</span> <span class=\"ds-chip\">Words</span>",
+      "css": ".ds-chip { display: inline-block; min-height: 36px; padding: 6px 14px; border: 1.5px solid #c3c9ce; border-radius: 999px; background: #fff; color: #14181c; font-size: 13px; font-weight: 600; } .ds-chip-on { background: #007a37; border-color: #007a37; color: #fff; }"
+    },
+    {
+      "name": "Search input", "kind": "input", "refersTo": "input",
+      "description": "Browse search with a drawn lens; focus halo in the line colour.",
+      "html": "<input class=\"ds-input\" type=\"search\" placeholder=\"Search 한글 · 漢字 · 中文 · English\">",
+      "css": ".ds-input { width: 100%; padding: 11px 14px; border: 1.5px solid #c3c9ce; border-radius: 12px; background: #fff; color: #14181c; font-size: 16px; } .ds-input:focus { outline: none; border-color: #007a37; box-shadow: 0 0 0 3px rgba(0,168,77,.25); }"
+    },
+    {
+      "name": "Tab bar", "kind": "nav", "refersTo": "surface",
+      "description": "Drawn stroke icons; the active tab gets a line-colour marker on the top edge.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"on\"><svg viewBox=\"0 0 24 24\"><path d=\"M4 11.2 12 4l8 7.2V19a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z\"/></svg>Home</a><a><svg viewBox=\"0 0 24 24\"><circle cx=\"11\" cy=\"11\" r=\"6.5\"/><path d=\"m20 20-4.4-4.4\"/></svg>Browse</a></nav>",
+      "css": ".ds-tabs { display: flex; background: #fff; border-top: 1px solid #dde1e3; } .ds-tabs a { position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0 6px; font-size: 10.5px; color: #59626b; } .ds-tabs svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; } .ds-tabs a.on { color: #14181c; font-weight: 700; } .ds-tabs a.on svg { stroke: #007a37; } .ds-tabs a.on::before { content: \"\"; position: absolute; top: -1px; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: #00a84d; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Metro line",
+    "overview": "Seoul Metro and MTR wayfinding: the study track is a line of stations and every study card is a station sign, the word in heavy white gothic over its hanja in signage yellow and its meaning. Each app owns one line colour. Calm and grown-up, light by day and charcoal by night, with the standard iPhone controls left standard.",
+    "keyCharacteristics": ["One line colour per app", "Charcoal station signs for every card", "The study track drawn as a line", "Hanja in signage yellow", "Drawn icons, no glyphs"],
+    "rules": [
+      { "name": "The One Line Rule", "body": "An app uses its own line colour and no other accent; status colours appear only where they mean a grade, a tone or a result.", "section": "colors" },
+      { "name": "The Sign Rule", "body": "Inside a sign, colour tokens are re-pointed so anything placed on it takes the sign's palette.", "section": "colors" }
+    ],
+    "dos": ["Do put every study card on a sign.", "Do keep the grade row reachable without scrolling.", "Do draw icons as SVG or masks."],
+    "donts": ["Don't box examples inside a sign in a second panel.", "Don't add a second accent colour to an app.", "Don't put emoji or glyphs in labels as icons.", "Don't restyle the Mongolian app from this system."]
+  }
+}
