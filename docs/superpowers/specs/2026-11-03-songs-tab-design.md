@@ -197,7 +197,7 @@ To display a song, each lyric line is matched to its unique entry by its normali
 
 **Estimate before sending:**
 
-- Input tokens ≈ system prompt (measured once and written into `songs/model.js`) + lyrics characters ÷ 1.5.
+- Input tokens ≈ system prompt (estimated from its length, about 3 characters per token) + lyrics characters ÷ 1.5.
 - Output tokens ≈ 200 per unique Hangul line + 2,000 for thinking.
 
 **Prices in `songs/model.js` (US$ per million tokens):**
