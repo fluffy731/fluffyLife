@@ -162,21 +162,24 @@ export function actualCost(model, usage = {}) {
 // Returns the id to schedule and, when the app has no such card yet, a new custom item to add.
 // Grammar: the app's own card (appId) or an earlier card with the same form. Word: any card for the
 // same dictionary form. So tapping twice, or on something already in the deck, never duplicates.
-export function studyItem({ kind, entry, line, song, items, unit, id }) {
-  const tag = `♪ ${song.title}${song.artist ? ` – ${song.artist}` : ""}`;
-  let item;
+// The id of a card the app already has for this grammar point or word, or null.
+export function findStudyId({ kind, entry, items }) {
   if (kind === "grammar") {
-    if (entry.appId && items.some((i) => i.id === entry.appId)) return { id: entry.appId, item: null };
-    const same = items.find((i) => i.form && normLine(i.form) === normLine(entry.form));
-    if (same) return { id: same.id, item: null };
-    item = { id, kind: "grammar", tier: unit.tier, unit: unit.unit, form: entry.form, en: entry.en, zh: entry.zh,
-      note: entry.note ? `${entry.note} · ${tag}` : tag, ex: [{ ko: line.ko, zh: line.zh, en: line.en }] };
-  } else {
-    const same = items.find((i) => !i.form && i.ko && normLine(i.ko) === normLine(entry.base));
-    if (same) return { id: same.id, item: null };
-    item = { id, kind: "vocab", tier: unit.tier, unit: unit.unit, ko: entry.base, hanja: entry.hanja || null, zh: entry.zh, en: entry.en,
-      pos: entry.pos || "n", ex: line.ko, exZh: line.zh, exEn: line.en, note: tag, check: false };
+    if (entry.appId && items.some((i) => i.id === entry.appId)) return entry.appId;
+    return items.find((i) => i.form && normLine(i.form) === normLine(entry.form))?.id ?? null;
   }
+  return items.find((i) => !i.form && i.ko && normLine(i.ko) === normLine(entry.base))?.id ?? null;
+}
+
+export function studyItem({ kind, entry, line, song, items, unit, id }) {
+  const existing = findStudyId({ kind, entry, items });
+  if (existing) return { id: existing, item: null };
+  const tag = `♪ ${song.title}${song.artist ? ` – ${song.artist}` : ""}`;
+  const item = kind === "grammar"
+    ? { id, kind: "grammar", tier: unit.tier, unit: unit.unit, form: entry.form, en: entry.en, zh: entry.zh,
+      note: entry.note ? `${entry.note} · ${tag}` : tag, ex: [{ ko: line.ko, zh: line.zh, en: line.en }] }
+    : { id, kind: "vocab", tier: unit.tier, unit: unit.unit, ko: entry.base, hanja: entry.hanja || null, zh: entry.zh, en: entry.en,
+      pos: entry.pos || "n", ex: line.ko, exZh: line.zh, exEn: line.en, note: tag, check: false };
   if (validateItem(item, kind === "word" ? "vocab" : "grammar").length) throw new Error("invalid item");
   return { id, item };
 }
