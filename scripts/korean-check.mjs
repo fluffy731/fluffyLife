@@ -37,7 +37,7 @@ await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("korean.v1
 await page.reload({ waitUntil: "networkidle" });
 const unitBefore = await page.textContent(".route-stats b");
 await page.click('[data-tab="review"]'); await page.click("[data-flip]"); await page.click('[data-grade="again"]');
-ok("after Again still all due", (await page.textContent("#due-badge")) === String(n));
+ok("after Again still all due", (await page.textContent("#due-badge")) === `${n} due`);
 await page.click('[data-tab="home"]');
 ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".route-stats b")) === unitBefore && unitBefore.startsWith("2/"));
 // Add defaults to current unit
@@ -101,7 +101,7 @@ await page.click('[data-lkind="all"]');
   const s1 = await saved();
   await q.click('[data-tab="learn"]');
   ok("unit test passes with all-correct answers", (await q.textContent(".qresult").catch(() => "")) !== null && typeof s1.quiz.units["int-1"].passedAt === "number" && s1.quiz.units["int-1"].best === 15
-    && (await q.locator('#unit-pick option[value="int-1"]').textContent()).includes("🏅"));
+    && (await q.locator('#unit-pick option[value="int-1"]').textContent()).includes(" · passed"));
   await runTest(false);
   const s2 = await saved(), missed = Object.values(s2.progress).filter((p) => p.due <= Date.now()).length;
   ok("wrong answers bring items due; pass kept", missed === 15 && s2.quiz.units["int-1"].passedAt === s1.quiz.units["int-1"].passedAt && s2.quiz.units["int-1"].attempts.length === 2

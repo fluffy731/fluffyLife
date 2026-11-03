@@ -40,7 +40,9 @@ export function card(it, open, ctx) {
     return `<div class="card flash" id="card"><div class="front ko-front">${esc(it.ko)}</div><div class="pos">${esc(t.posName(it.pos))}</div><div class="hint">${esc(t.sayIt)}</div></div>`;
   }
   const front = sound;
-  if (!open) return `<div class="card flash" id="card">${front}<div class="hint">${t.tapToFlip}</div></div>`;
+  // Home's word of the hour shows the characters and the Korean meaning on its face.
+  const glance = ctx.tab === "home" ? `<div class="glance"><span class="hanja" lang="zh-Hant">${esc(it.zh)}</span><span class="en">${esc(it.ko)}</span></div>` : "";
+  if (!open) return `<div class="card flash" id="card">${front}${glance}<div class="hint">${t.tapToFlip}</div></div>`;
   const back = `<div class="rule"></div><div class="zh">${esc(it.ko)}</div><div class="en">${esc(it.en)}</div><div class="jp">${esc(it.jp)}</div>` +
     `<div class="hanja" lang="zh-Hant">${esc(it.zh)}</div>` + bridgeHTML(it.zh, it.jp, ctx, it.loan) +
     (it.exZh ? exampleHTML(it.exZh, it.exJp, it.exKo, ctx) : "");

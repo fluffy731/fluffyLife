@@ -13,7 +13,7 @@
   --leech-bg: #fff1dc; --leech-fg: #7a4500;
   /* Cantonese tone colours on the light ground; signs use the --st set. */
   --t1: #c62828; --t2: #b45309; --t3: #2e7d32; --t4: #1565c0; --t5: #6a1b9a; --t6: #6d4c41;
-  --st1: #ff8a80; --st2: #ffb74d; --st3: #81c784; --st4: #64b5f6; --st5: #ce93d8; --st6: #bcaaa4;
+  --st1: #ff8a80; --st2: #ffb74d; --st3: #81c784; --st4: #64b5f6; --st5: #ce93d8; --st6: #d39b6a;
   /* The line: Seoul Line 2 green (Korean). */
   --route: #00a84d; --route-strong: #007a37; --route-soft: #cdebd8; --route-ink: #005c29; --on-route: #ffffff;
   --route-sign: #00b453; /* the line as drawn on a charcoal sign */
@@ -24,6 +24,9 @@
   --ease: cubic-bezier(.16, 1, .3, 1);
   --chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2359626b' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   --lens: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2359626b' stroke-width='2.2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='m20 20-4.4-4.4'/%3E%3C/svg%3E");
+  --plus: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E");
+  --back: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m15 5-7 7 7 7'/%3E%3C/svg%3E");
+  --tick: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7'/%3E%3C/svg%3E");
   --speaker: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z' fill='black'/%3E%3Cpath d='M15.5 9a4 4 0 0 1 0 6M18.2 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E");
 }
 /* MTR Tsuen Wan red (Cantonese) and Seoul Line 1 blue (English). */
@@ -38,7 +41,7 @@
     --sign: #232a32; --sign-2: #2e363f; --sign-hair: #3d4650; --sign-ink: #f4f6f8;
     --hanja: #f5c451; --ok: #5fd38d; --warn: #f2b84b; --bad: #ff7b72; --easy: #7fb2ff;
     --leech-bg: #3a2a12; --leech-fg: #f5c98a;
-    --t1: #ff8a80; --t2: #ffb74d; --t3: #81c784; --t4: #64b5f6; --t5: #ce93d8; --t6: #bcaaa4;
+    --t1: #ff8a80; --t2: #ffb74d; --t3: #81c784; --t4: #64b5f6; --t5: #ce93d8; --t6: #d39b6a;
     --route: #2bc06a; --route-strong: #2bc06a; --route-soft: #17442b; --route-ink: #7fe0a6; --on-route: #04140a;
     --shadow-sign: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 14px 30px -16px rgba(0, 0, 0, .8);
     --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, .7);
@@ -54,7 +57,7 @@
   --sign: #232a32; --sign-2: #2e363f; --sign-hair: #3d4650; --sign-ink: #f4f6f8;
   --hanja: #f5c451; --ok: #5fd38d; --warn: #f2b84b; --bad: #ff7b72; --easy: #7fb2ff;
   --leech-bg: #3a2a12; --leech-fg: #f5c98a;
-  --t1: #ff8a80; --t2: #ffb74d; --t3: #81c784; --t4: #64b5f6; --t5: #ce93d8; --t6: #bcaaa4;
+  --t1: #ff8a80; --t2: #ffb74d; --t3: #81c784; --t4: #64b5f6; --t5: #ce93d8; --t6: #d39b6a;
   --route: #2bc06a; --route-strong: #2bc06a; --route-soft: #17442b; --route-ink: #7fe0a6; --on-route: #04140a;
   --shadow-sign: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 14px 30px -16px rgba(0, 0, 0, .8);
   --shadow-pop: 0 24px 48px -12px rgba(0, 0, 0, .7);
@@ -115,6 +118,8 @@ h2:first-child { margin-top: 4px; }
 .stations .done i { background: var(--route); border-color: var(--route); }
 .stations .here i { width: 32px; height: 32px; margin: 0; border: 6px solid var(--route); background: var(--bg);
   box-shadow: 0 0 0 3px var(--bg), 0 0 0 5.5px var(--ink); }
+.stations .transfer i { background: #fff; border: 4px solid var(--ink); }
+.stations small { margin-top: -6px; font-size: 10.5px; font-weight: 700; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stations span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--muted); }
 .stations .here span { color: var(--ink); font-weight: 800; }
 .route-now { display: flex; flex-direction: column; gap: 2px; margin-top: 14px; }
@@ -139,6 +144,10 @@ h2:first-child { margin-top: 4px; }
 .flash .front.grammar { font-size: 30px; letter-spacing: -.01em; }
 .flash .pos { margin-top: 6px; font-size: 13px; color: var(--muted); letter-spacing: .02em; }
 .flash .hint { margin-top: 26px; font-size: 13px; color: var(--muted); }
+.glance { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--hair); }
+.glance .hanja { font-size: 30px; }
+.glance .en { margin: 0; font-size: 16px; }
+.flash .glance + .hint { margin-top: 16px; }
 .flash .hint::after { content: ""; display: inline-block; width: 22px; height: 4px; margin-left: 10px; vertical-align: middle; border-radius: 2px; background: var(--route); }
 .rule { height: 4px; margin: 16px 0 14px; border-radius: 2px; background: var(--route); transform-origin: left center; }
 .pron { font-size: 15px; color: var(--muted); margin-top: 6px; }
@@ -154,8 +163,8 @@ h2:first-child { margin-top: 4px; }
   background: #fff; border-radius: 12px; }
 .flash .pic .picimg { width: 100px; height: 100px; }
 .flash .pic .picemoji { font-size: 68px; line-height: 1; }
-.ex { margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-size: 15px; }
-.ex + .ex { margin-top: 8px; }
+.ex { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--hair); font-size: 15px; }
+.ex + .ex { margin-top: 12px; }
 .ex .k { font-weight: 600; }
 .ex .t { color: var(--muted); font-size: 14px; }
 .note { margin-top: 12px; font-size: 14px; color: var(--muted); }
@@ -168,6 +177,12 @@ button.say { flex: none; display: inline-grid; place-items: center; width: 36px;
 button.say::before { content: ""; width: 18px; height: 18px; background: currentColor; -webkit-mask: var(--speaker) center / contain no-repeat; mask: var(--speaker) center / contain no-repeat; }
 .flash .front button.say { width: 42px; height: 42px; }
 .flash .front button.say::before { width: 20px; height: 20px; }
+[data-add]::before, [data-dictadd]::before, [data-s="add"]::before, [data-s="study"]::before, [data-s="back"]::before, .in-reviews::before, .song-chip.done::before {
+  content: ""; display: inline-block; width: 16px; height: 16px; margin-right: 6px; vertical-align: -2.5px; background: currentColor;
+  -webkit-mask: var(--plus) center / contain no-repeat; mask: var(--plus) center / contain no-repeat; }
+[data-s="back"]::before { -webkit-mask-image: var(--back); mask-image: var(--back); margin-left: -4px; }
+.in-reviews::before, .song-chip.done::before { -webkit-mask-image: var(--tick); mask-image: var(--tick); }
+.song-chip.done { border-color: var(--route); }
 button.btn[data-say]::before { content: ""; display: inline-block; width: 17px; height: 17px; margin-right: 7px; vertical-align: -3px; background: currentColor;
   -webkit-mask: var(--speaker) center / contain no-repeat; mask: var(--speaker) center / contain no-repeat; }
 
@@ -179,6 +194,8 @@ button.btn { min-height: 50px; padding: 11px 10px; border: 1.5px solid var(--hai
 button.btn:active { transform: scale(.98); }
 button.btn.primary { background: var(--route-strong); border-color: var(--route-strong); color: var(--on-route); }
 button.btn:disabled { opacity: .45; cursor: default; transform: none; }
+.flash + .actions, .flash + .grades { position: sticky; bottom: calc(env(safe-area-inset-bottom) + 57px); z-index: 4; margin: 0 -16px; padding: 12px 16px 10px;
+  background: linear-gradient(to bottom, transparent, var(--bg) 12px); }
 button.btn small { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
 button.btn.primary small { color: inherit; opacity: .85; }
 button.btn.again { color: var(--bad); } button.btn.hard { color: var(--warn); } button.btn.good { color: var(--ok); } button.btn.easy { color: var(--easy); }
@@ -267,7 +284,7 @@ dialog h3 { font-size: 18px; }
 h2.sign-head { display: flex; align-items: center; gap: 8px; margin: 28px 0 0; padding: 12px 16px 0; border-radius: 16px 16px 0 0;
   background: var(--sign); color: var(--sign-muted); font-size: 13px; font-weight: 600; }
 h2.sign-head .time { padding: 1px 8px; border-radius: 999px; background: var(--route-strong); color: var(--on-route); font-weight: 750; font-variant-numeric: tabular-nums; }
-h2.sign-head + .card.flash { border-radius: 0 0 16px 16px; padding-top: 14px; min-height: 200px; box-shadow: 0 14px 30px -16px rgba(0, 0, 0, .45); }
+h2.sign-head + .card.flash { border-radius: 0 0 16px 16px; padding-top: 14px; min-height: 0; box-shadow: 0 14px 30px -16px rgba(0, 0, 0, .45); }
 h2.sign-head + .card.empty { margin-top: 0; border-radius: 0 0 16px 16px; }
 .sign-foot { margin-top: 8px; }
 
@@ -334,6 +351,7 @@ details.tip[open] summary::after { transform: rotate(180deg); }
 
 /* ---------- ♪ Songs (Korean) ---------- */
 .songs .btn + h2 { margin-top: 16px; }
+.songs > [data-s="back"] { min-height: 40px; padding: 6px 14px 6px 12px; border-radius: 999px; }
 .song-row input[type=checkbox] { flex: none; width: 22px; height: 22px; }
 .song-lines { gap: 6px; }
 .song-line .k { font-size: 17px; font-weight: 650; }

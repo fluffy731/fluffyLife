@@ -50,6 +50,7 @@ function rebuild() {
 
 const persist = () => save(ls, state, pack.storageKey);
 const tierLabel = (k) => pack.tiers.find((x) => x.key === k)?.label ?? k;
+const tierShort = (k) => pack.tiers.find((x) => x.key === k)?.short ?? k;
 const unitTitle = (u) => (pack.unitTitles?.[u] ? ` · ${esc(pack.unitTitles[u])}` : "");
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -105,11 +106,10 @@ function renderHome() {
 // five stations around the current unit; tapping a station opens that unit in Learn (the data-unit route).
 function lineHomeHTML({ cur, due, seenCount, idx, learnedInUnit, hour, nextHour }) {
   const from = Math.max(0, Math.min(idx - 2, units.length - 5));
-  const short = (k) => pack.tiers.find((x) => x.key === k)?.short ?? k;
   const stations = units.slice(from, from + 5).map((u) => {
-    const here = u === cur;
-    const name = u.tier === cur.tier ? t.unitN(esc(u.unit)) : `${esc(short(u.tier))} ${esc(u.unit)}`;
-    return `<li class="${here ? "here" : isLearned(u, state.progress) ? "done" : ""}"${here ? ' aria-current="step"' : ""}><button data-unit="${esc(u.key)}"><i></i><span>${name}</span></button></li>`;
+    const here = u === cur, transfer = u.tier !== cur.tier;
+    const cls = [here ? "here" : isLearned(u, state.progress) ? "done" : "", transfer ? "transfer" : ""].filter(Boolean).join(" ");
+    return `<li class="${cls}"${here ? ' aria-current="step"' : ""}><button data-unit="${esc(u.key)}"><i></i><span>${t.unitN(esc(u.unit))}</span>${transfer ? `<small>${esc(tierShort(u.tier))}</small>` : ""}</button></li>`;
   }).join("");
   const hh = (d) => d.getHours().toString().padStart(2, "0");
   return `
@@ -138,7 +138,7 @@ function renderLearn() {
   if (!queue.length || queue._key !== qkey) { queue = unseenItems(unit, state.progress).filter((i) => kind === "all" || kindOf(i) === kind); queue._key = qkey; flipped = false; }
   const chips = `<div class="chips">${KINDS().map(([k, l]) => `<button data-lkind="${k}" class="${kind === k ? "on" : ""}">${l}</button>`).join("")}</div>`;
   const header = chips + `<div class="row" style="margin-bottom:10px">
-      <select id="unit-pick">${units.map((u) => `<option value="${esc(u.key)}" ${u.key === unit.key ? "selected" : ""}>${esc(tierLabel(u.tier))} · ${t.unitN(esc(u.unit))}${unitTitle(u.unit)}${isLearned(u, state.progress) ? " ✓" : ""}${quiz.passed(u.key) ? " 🏅" : ""}</option>`).join("")}</select>
+      <select id="unit-pick">${units.map((u) => `<option value="${esc(u.key)}" ${u.key === unit.key ? "selected" : ""}>${esc(pack.lineMap ? tierShort(u.tier) : tierLabel(u.tier))} · ${t.unitN(esc(u.unit))}${unitTitle(u.unit)}${isLearned(u, state.progress) ? t.optLearned : ""}${quiz.passed(u.key) ? t.optPassed : ""}</option>`).join("")}</select>
     </div>`;
   if (!queue.length && kind !== "all" && unseenItems(unit, state.progress).length) {
     return header + `<div class="card empty"><b>${t.noKindLeft(KINDS().find(([k]) => k === kind)[1])}</b><div class="actions" style="grid-template-columns:1fr"><button class="btn" data-lkind="all">${t.all}</button></div></div>`;
@@ -180,7 +180,7 @@ function renderBrowse() {
   const list = browseList();
   return `<input type="search" id="q" placeholder="${t.searchPlaceholder}" value="${esc(browse.q)}">
     <div class="chips">${KINDS().map(([k, l]) => `<button data-kind="${k}" class="${browse.kind === k ? "on" : ""}">${l}</button>`).join("")}
-      ${leechCount() ? `<button data-kind="leech" class="${browse.kind === "leech" ? "on" : ""}">🩹 ${leechCount()}</button>` : ""}
+      ${leechCount() ? `<button data-kind="leech" class="${browse.kind === "leech" ? "on" : ""}">${t.leechChip} ${leechCount()}</button>` : ""}
       ${pack.editable ? `<button data-add style="margin-left:auto">${t.add}</button>` : ""}</div>
     <div class="chips">${["all", ...pack.tiers.map((x) => x.key)].map((k) => `<button data-tier="${k}" class="${browse.tier === k ? "on" : ""}">${k === "all" ? t.anyLevel : pack.tiers.find((x) => x.key === k).short}</button>`).join("")}</div>
     <div id="browse-list">${browseListHTML(list)}</div>`;
@@ -200,7 +200,7 @@ function browseListHTML(list) {
   return `<div class="small muted" style="margin-bottom:8px">${t.nItems(list.length)}</div>
     <div class="list">${list.slice(0, 200).map((i) => {
       const p = state.progress[i.id];
-      const status = (!p ? t.statusNew : p.due <= Date.now() ? t.statusDue : t.statusIn(fmtDue(p.due))) + (p?.leech ? " 🩹" : "");
+      const status = (!p ? t.statusNew : p.due <= Date.now() ? t.statusDue : t.statusIn(fmtDue(p.due))) + (p?.leech ? t.leechMark : "");
       return pack.cards.browseRow(i, status, ctx);
     }).join("")}${list.length > 200 ? `<div class="small muted">${t.showingFirst}</div>` : ""}</div>${dictHTML(list)}`;
 }
@@ -236,7 +236,7 @@ function render() {
   $("#view").innerHTML = VIEWS[tab]();
   document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
   const due = dueItems(items, state.progress, Date.now()).length;
-  const badge = $("#due-badge"); badge.hidden = !due; badge.textContent = due;
+  const badge = $("#due-badge"); badge.hidden = !due; badge.textContent = t.dueBadge(due);
 }
 
 // ---------- editing ----------
