@@ -118,7 +118,7 @@ A **Songs** section with:
   - Stored under `localStorage["korean.songs.apiKey"]`, outside the main state, so `exportJSON` never includes it.
   - Shown masked (`sk-ant-…abcd`).
   - A one-line note recommends setting a monthly spend limit on the key in the Anthropic Console.
-- **Model:** Claude Opus 5.5 (default), Claude Sonnet 5.5 or Claude Haiku 5.5. The rough per-song cost is shown beside each. Saved in `settings.songModel`.
+- **Model:** Claude Haiku 5.5 (default, the user's choice), Claude Sonnet 5.5 or Claude Opus 5.5. The rough per-song cost is shown beside each. Saved in `settings.songModel`.
 
 ## How it works
 
@@ -167,11 +167,11 @@ To display a song, each lyric line is matched to its unique entry by its normali
 ### The Claude call
 
 - **SDK and client:** `new Anthropic({ apiKey, dangerouslyAllowBrowser: true })`. Browser use with the user's own key is the intended case for that option.
-- **Model:** `settings.songModel`, default `claude-opus-5-5`.
+- **Model:** `settings.songModel`, default `claude-haiku-5-5`.
 - **Request:**
   - `output_config: { effort: "medium", format: { type: "json_schema", schema } }`, so the reply is JSON in a fixed shape.
   - Streamed, ending in `finalMessage()`, with `max_tokens: 64000`.
-- **Refusal fallbacks:** on Opus 5.5 and Sonnet 5.5, `fallbacks: "default"` with beta `server-side-fallback-2026-07-01`. Haiku 5.5 has none. If `stop_reason` is still `"refusal"` at the end, the song is marked *error* with a plain message.
+- **Refusal fallbacks:** on Opus 5.5 and Sonnet 5.5, `fallbacks: "default"` with beta `server-side-fallback-2026-07-01`. Haiku 5.5, the default, has none, so a refusal on Haiku suggests retrying that song with Sonnet 5.5. If `stop_reason` is still `"refusal"` at the end, the song is marked *error* with a plain message.
 - **System prompt:**
   - Fixed text, sent with `cache_control`, so a batch of songs reads it from cache.
   - Translation rules:
