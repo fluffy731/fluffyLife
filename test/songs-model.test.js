@@ -88,3 +88,45 @@ test("cost from usage and the estimate before sending", () => {
   const e = estimateCost("claude-haiku-5-5", 600, 20);
   assert.ok(e > 0.002 && e < 0.005, `estimate ${e}`);
 });
+
+import { studyItem, inReviews } from "../songs/model.js";
+import { validateItem } from "../lib/validate.js";
+
+const SONG = { title: "빗소리", artist: "가수" };
+const LINE = { ko: "비가 와도 괜찮아", zh: "下雨也沒關係", en: "It's okay even if it rains" };
+const UNIT = { tier: "int", unit: 3 };
+const GE = { form: "-아도/어도", appId: null, en: "even if", zh: "即使", note: "와도 = 오다 + -아도." };
+const WE = { ko: "비가", base: "비", hanja: null, zh: "雨", en: "rain", pos: "n" };
+const SEED = [{ id: "g-int-1", form: "-기 위해", tier: "int", unit: 2, en: "in order to", zh: "為了", ex: [{ ko: "가", zh: "去", en: "go" }] }];
+
+test("studyItem makes valid new grammar and word cards carrying the song line", () => {
+  const g = studyItem({ kind: "grammar", entry: GE, line: LINE, song: SONG, items: SEED, unit: UNIT, id: "u1" });
+  assert.equal(g.id, "u1");
+  assert.deepEqual(validateItem(g.item, "grammar"), []);
+  assert.deepEqual(g.item.ex, [{ ko: LINE.ko, zh: LINE.zh, en: LINE.en }]);
+  assert.ok(g.item.note.endsWith("♪ 빗소리 – 가수"));
+  const w = studyItem({ kind: "word", entry: WE, line: LINE, song: SONG, items: SEED, unit: UNIT, id: "u2" });
+  assert.deepEqual(validateItem(w.item, "vocab"), []);
+  assert.equal(w.item.ko, "비");
+  assert.equal(w.item.ex, LINE.ko);
+  assert.equal(w.item.tier, "int"); assert.equal(w.item.unit, 3);
+});
+
+test("studyItem reuses the app's own grammar card when appId matches", () => {
+  const r = studyItem({ kind: "grammar", entry: { ...GE, appId: "g-int-1" }, line: LINE, song: SONG, items: SEED, unit: UNIT, id: "u1" });
+  assert.deepEqual(r, { id: "g-int-1", item: null });
+});
+
+test("a second tap returns the card made by the first tap instead of a duplicate", () => {
+  for (const [kind, entry] of [["grammar", GE], ["word", WE]]) {
+    const first = studyItem({ kind, entry, line: LINE, song: SONG, items: SEED, unit: UNIT, id: "u1" });
+    const again = studyItem({ kind, entry, line: LINE, song: SONG, items: [...SEED, first.item], unit: UNIT, id: "u2" });
+    assert.deepEqual(again, { id: "u1", item: null });
+  }
+});
+
+test("studyItem refuses a card that would not pass validation", () => {
+  assert.throws(() => studyItem({ kind: "word", entry: { ...WE, en: "" }, line: LINE, song: SONG, items: SEED, unit: UNIT, id: "u3" }), /invalid item/);
+  assert.equal(inReviews("u1", { u1: { due: 1 } }), true);
+  assert.equal(inReviews("u9", {}), false);
+});

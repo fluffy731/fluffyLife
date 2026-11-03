@@ -2,6 +2,8 @@
 // Pure functions only, so all of it runs in Node tests. Lyrics never live in the repo: they come from
 // LRCLIB or the user's paste and are stored on the phone (see songs/db.js).
 
+import { validateItem } from "../lib/validate.js";
+
 const HANGUL = /[가-힣ᄀ-ᇿ㄰-㆏]/;
 export const hasHangul = (s) => HANGUL.test(String(s ?? ""));
 export const normLine = (s) => String(s ?? "").trim().replace(/\s+/g, " ");
@@ -155,3 +157,28 @@ export function actualCost(model, usage = {}) {
   const n = (k) => Number(usage[k]) || 0;
   return ((n("input_tokens") + 0.1 * n("cache_read_input_tokens") + 1.25 * n("cache_creation_input_tokens")) * p.in + n("output_tokens") * p.out) / 1e6;
 }
+
+// ---------- study cards ----------
+// Returns the id to schedule and, when the app has no such card yet, a new custom item to add.
+// Grammar: the app's own card (appId) or an earlier card with the same form. Word: any card for the
+// same dictionary form. So tapping twice, or on something already in the deck, never duplicates.
+export function studyItem({ kind, entry, line, song, items, unit, id }) {
+  const tag = `♪ ${song.title}${song.artist ? ` – ${song.artist}` : ""}`;
+  let item;
+  if (kind === "grammar") {
+    if (entry.appId && items.some((i) => i.id === entry.appId)) return { id: entry.appId, item: null };
+    const same = items.find((i) => i.form && normLine(i.form) === normLine(entry.form));
+    if (same) return { id: same.id, item: null };
+    item = { id, kind: "grammar", tier: unit.tier, unit: unit.unit, form: entry.form, en: entry.en, zh: entry.zh,
+      note: entry.note ? `${entry.note} · ${tag}` : tag, ex: [{ ko: line.ko, zh: line.zh, en: line.en }] };
+  } else {
+    const same = items.find((i) => !i.form && i.ko && normLine(i.ko) === normLine(entry.base));
+    if (same) return { id: same.id, item: null };
+    item = { id, kind: "vocab", tier: unit.tier, unit: unit.unit, ko: entry.base, hanja: entry.hanja || null, zh: entry.zh, en: entry.en,
+      pos: entry.pos || "n", ex: line.ko, exZh: line.zh, exEn: line.en, note: tag, check: false };
+  }
+  if (validateItem(item, kind === "word" ? "vocab" : "grammar").length) throw new Error("invalid item");
+  return { id, item };
+}
+
+export const inReviews = (id, progress) => !!progress?.[id];
