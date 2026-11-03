@@ -4,7 +4,7 @@ const POS = { n: "名词", v: "动词", adj: "形容词", adv: "副词", pron: "
 const THEME = { auto: "自动", light: "浅色", dark: "深色" };
 
 export const ui = {
-  tabs: { home: "首页", learn: "学习", review: "复习", quiz: "测验", browse: "浏览", settings: "设置" },
+  tabs: { home: "首页", learn: "学习", review: "复习", quiz: "测验", browse: "浏览", settings: "设置", songs: "歌曲" },
   now: "现在", minutes: (n) => `${n} 分钟`, hours: (n) => `${n} 小时`, days: (n) => `${n} 天`,
   listen: "听", listenBtn: "🔊 听", edit: "编辑", resetProgress: "重置进度", tapToFlip: "点卡片看意思",
   dueNow: "待复习", ofSeen: (n) => `/ ${n} 已学`, unit: "单元", wordOfHour: "本小时单词", noItems: "没有内容",

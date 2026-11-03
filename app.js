@@ -9,7 +9,7 @@ import { clipName } from "./lib/audio.js";
 import { createQuiz } from "./quiz-view.js";
 
 // ---------- state ----------
-let pack, t, ctx, ls, state, items, vocab, grammar, units, quiz;
+let pack, t, ctx, ls, state, items, vocab, grammar, units, quiz, songs;
 let tab = "home";
 let learnUnitKey = null;   // null = current unit
 let flipped = false;
@@ -184,7 +184,7 @@ function renderSettings() {
         <span class="pill ${esc(u.tier)}">${esc(u.tier)}</span><span style="min-width:52px">${t.unitN(esc(u.unit))}${unitTitle(u.unit)}</span>
         <div class="bar"><i style="width:${(done / u.items.length) * 100}%"></i></div>
         <span class="small muted">${done}/${u.items.length}</span></div>`;
-    }).join("")}</div>${pack.settingsExtra ? pack.settingsExtra(ctx) : ""}
+    }).join("")}</div>${pack.settingsExtra ? pack.settingsExtra(ctx) : ""}${songs ? songs.settingsHTML() : ""}
     <h2>${t.data}</h2>
     <div class="card">
       <div class="actions">
@@ -200,7 +200,7 @@ function renderSettings() {
     <div class="card"><button class="btn" data-speechtest style="width:100%">${t.speechCheckBtn}</button><pre id="speech-log" class="speech-log"></pre></div>`;
 }
 
-const VIEWS = { home: renderHome, learn: renderLearn, review: renderReview, quiz: () => quiz.render(), browse: renderBrowse, settings: renderSettings };
+const VIEWS = { home: renderHome, learn: renderLearn, review: renderReview, quiz: () => quiz.render(), browse: renderBrowse, settings: renderSettings, songs: () => songs?.render() ?? "" };
 
 function render() {
   $("#view").innerHTML = VIEWS[tab]();
@@ -271,9 +271,10 @@ function openEditor(existing, prefill = {}) {
 const Q_KEYS = ["qstart", "qopt", "qnext", "qretake", "qback", "qreplay", "qmiss"];
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],[data-lkind],[data-dictadd],#card,.item");
+    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],[data-lkind],[data-dictadd],[data-s],#card,.item");
     if (!el) return;
     if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
+    if (el.dataset.s !== undefined) { if (songs?.click(el, e)) render(); return; }
     if (el.dataset.speechtest !== undefined) return speechCheck();
     if (Q_KEYS.some((k) => el.dataset[k] !== undefined)) {
       if (el.dataset.qstart !== undefined && tab !== "quiz") { tab = "quiz"; window.scrollTo(0, 0); }
@@ -309,7 +310,7 @@ function bindEvents() {
     if (el.dataset.unit) { learnUnitKey = el.dataset.unit; tab = "learn"; queue = []; return render(); }
     if (el.dataset.export !== undefined) {
       const name = `${pack.backupPrefix}-backup-${new Date().toISOString().slice(0, 10)}.json`;
-      const json = exportJSON(state);
+      const json = exportJSON(songs ? { ...state, songs: songs.exportSongs() } : state);
       const file = new File([json], name, { type: "application/json" });
       // iOS: the share sheet (Save to Files) is the reliable route; a blob download from a home-screen app is not.
       if (navigator.canShare?.({ files: [file] })) { navigator.share({ files: [file], title: name }).catch(() => {}); return; }
@@ -326,6 +327,7 @@ function bindEvents() {
   // Only the list re-renders while typing, so the IME composition (Korean jamo, pinyin/zhuyin candidates) is never interrupted.
   document.addEventListener("input", (e) => { if (e.target.id === "q") { browse.q = e.target.value; const l = $("#browse-list"); if (l) l.innerHTML = browseListHTML(browseList()); } });
   document.addEventListener("change", (e) => {
+    if (songs?.change(e)) return render();
     if (e.target.id === "unit-pick") { learnUnitKey = e.target.value; queue = []; flipped = false; render(); }
     if (e.target.id === "file") {
       const f = e.target.files[0]; if (!f) return;
@@ -333,6 +335,9 @@ function bindEvents() {
         let s; try { s = importJSON(txt, pack.validate); } catch (err) { alert(err.message); return; }
         if (!confirm(t.confirmImport)) return;
         state = s; persist(); rebuild(); render();
+        // Songs travel in the same backup file but live in IndexedDB, not in the saved state.
+        let saved; try { saved = JSON.parse(txt).songs; } catch { saved = null; }
+        if (songs && Array.isArray(saved)) songs.importSongs(saved).then(() => render());
       });
       e.target.value = "";
     }
@@ -454,6 +459,10 @@ export function start(p) {
     // Offline the clip index can still be cached while the mp3s (never cached) are not: no audio questions then.
     hasClip: (text) => navigator.onLine !== false && !!clipFor(text),
   });
+  songs = pack.songs ? pack.songs({
+    esc, say, speak, t, ls, persist, rebuild, render, state: () => state, items: () => items, grammar: () => grammar,
+    currentUnit: () => currentUnit(units, state.progress), tab: () => tab,
+  }) : null;
   document.querySelectorAll("#tabs button").forEach((b) => { b.lastChild.textContent = t.tabs[b.dataset.tab]; });
   bindEvents();
   applyTheme();

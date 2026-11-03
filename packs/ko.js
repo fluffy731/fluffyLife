@@ -6,6 +6,7 @@ import { ui } from "../ui/en.js";
 import { cards } from "../cards/ko.js";
 import { dictKo } from "./dict-ko.js";
 import { types as quizTypes } from "../quiz/ko.js";
+import { createSongs } from "../songs/view.js";
 
 export const koPack = {
   ...data,
@@ -22,4 +23,6 @@ export const koPack = {
   dict: dictKo,
   ui, cards, editable: true, validate: validateItem,
   quiz: { types: quizTypes },
+  // ♪ Songs tab: lyrics stay on the phone; translations come from the Claude API with the user's own key.
+  songs: createSongs,
 };

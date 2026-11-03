@@ -85,6 +85,11 @@ Units run **Intermediate (TOPIK 3–4) → Advanced (TOPIK 5–6) → Beginner (
 - **Pictures:** about 250 concrete words (verbs, objects, the body, food, animals, colours) show a pictogram on the back of the card and beside the word in Browse. Hanja words such as 經濟 get none on purpose: the hanja is the hook there. Pictograms are [Mulberry Symbols](https://mulberrysymbols.org) by Steve Lee (CC BY-SA 4.0, credits in `pics/ko/CREDITS.md`), each checked by eye against its word; a few gaps use an unambiguous emoji. The map is `data/pics-ko.js`, keyed by the Korean word, so a word you add yourself gets its picture too. A picture is downloaded the first time its card is shown and kept for offline use after that.
 - **Browse** searches by 한글, 漢字, 中文 or English; tap an item to see examples, edit it, or reset its progress. **+ Add** creates your own words or grammar points.
 - **Settings** exports and imports a JSON backup. Progress lives in the browser's localStorage only, so export before clearing Safari data.
+- **♪ Songs (Korean app only):** learn from the songs you listen to. Each line shows the Korean (🔊), its romanisation, Traditional Chinese and English; tap a line for its grammar points and words (with hanja), and **+ Add to study** puts any of them into your reviews (first review tomorrow, like *Got it*). A grammar point the app already teaches schedules the app's own card instead of a duplicate.
+  - **Lyrics stay on the phone.** This repo and the site are public, so lyrics and their translations are never committed or published. The phone fetches lyrics from [LRCLIB](https://lrclib.net) (free, no account), or you paste them; songs are kept in the phone's IndexedDB and travel in Export/Import. LRCLIB could not be reached from the build container, so its first real test is on the phone; pasting always works.
+  - **Translation** uses the Claude API with **your own key** (Settings → Songs). The key stays on the phone and is never in a backup; set a monthly spend limit on it in the Anthropic Console. Claude Haiku 5.5 is the default, at roughly US$0.003–0.01 a song; Sonnet 5.5 (about US$0.07) and Opus 5.5 (about US$0.13) write richer notes. Repeated lines (choruses) are translated once, and a translated song opens offline at no further cost.
+  - **Import list** takes `Title – Artist` lines (also `-`, `—` or a tab) or a CSV with *title* and *artist* columns, such as a Google Takeout YouTube Music export. Imported songs come ticked, so one tap on *Translate N songs* fetches their lyrics and translates them all, showing the total estimate first.
+  - **Code:** `songs/model.js` (lines, list import, the request and reply check, cost, study cards), `songs/lrclib.js`, `songs/claude.js`, `songs/db.js`, `songs/view.js`. The official Anthropic SDK is vendored into `lib/vendor/anthropic-sdk.js` and loaded only when translating; to update it, change the version in `package.json`, then run `npm install --no-save --ignore-scripts esbuild@0.25.12 @anthropic-ai/sdk@<version> && node scripts/vendor-sdk.mjs`.
 
 ### Editing the seed data
 
@@ -199,5 +204,6 @@ node scripts/korean-check.mjs              # Korean app behaviour (search IME, d
 node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
 node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
 node scripts/news-check.mjs                # Briefing news app against a fixture feed
+node scripts/songs-check.mjs               # Korean Songs tab with LRCLIB and the Claude API faked (invented lyrics only)
 ```
 The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.

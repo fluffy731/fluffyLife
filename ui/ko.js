@@ -4,7 +4,7 @@ const POS = { dict: "사전", n: "명사", v: "동사", adj: "형용사", adv: "
 const THEME = { auto: "자동", light: "밝게", dark: "어둡게" };
 
 export const ui = {
-  tabs: { home: "홈", learn: "학습", review: "복습", quiz: "퀴즈", browse: "찾아보기", settings: "설정" },
+  tabs: { home: "홈", learn: "학습", review: "복습", quiz: "퀴즈", browse: "찾아보기", settings: "설정", songs: "노래" },
   now: "지금", minutes: (n) => `${n}분`, hours: (n) => `${n}시간`, days: (n) => `${n}일`,
   listen: "듣기", listenBtn: "🔊 듣기", edit: "수정", resetProgress: "진도 초기화", tapToFlip: "카드를 눌러서 뜻을 확인하세요",
   dueNow: "복습할 것", ofSeen: (n) => `/ ${n}개 학습`, unit: "단원", wordOfHour: "지금 이 시간의 단어", noItems: "항목이 없어요",
