@@ -5,7 +5,7 @@ import { translateSong, SongError } from "../songs/claude.js";
 // A stand-in for the SDK's default export: same error class names, and a stream() whose finalMessage()
 // resolves to a canned message, or throws the error `outcome(classes)` builds from this fake's own classes.
 function fakeSdk(outcome) {
-  class APIError extends Error { constructor(status) { super(`status ${status}`); this.status = status; } }
+  class APIError extends Error { constructor(status, body) { super(`${status} ${JSON.stringify(body ?? {})}`); this.status = status; this.error = body; } }
   class AuthenticationError extends APIError {}
   class PermissionDeniedError extends APIError {}
   class RateLimitError extends APIError {}
@@ -49,7 +49,7 @@ test("stop reasons and bad replies become plain error codes", async () => {
 test("SDK errors map to codes, most specific first", async () => {
   const cases = [[(C) => new C.AuthenticationError(401), "badKey"], [(C) => new C.PermissionDeniedError(403), "badKey"],
     [(C) => new C.RateLimitError(429), "rateLimit"], [(C) => new C.APIConnectionError(0), "offline"],
-    [(C) => new C.APIError(529), "server"], [(C) => new C.APIError(400), "invalid"], [() => new TypeError("boom"), "invalid"]];
+    [(C) => new C.APIError(529), "server"], [(C) => new C.APIError(400), "rejected"], [(C) => new C.APIError(404), "rejected"], [() => new TypeError("boom"), "invalid"]];
   for (const [make, want] of cases) assert.equal(await code(translateSong(ARGS, fakeSdk(make))), want, String(make));
 });
 
@@ -57,4 +57,10 @@ test("a missing key fails before loading the SDK", async () => {
   let loaded = false;
   assert.equal(await code(translateSong({ ...ARGS, apiKey: " " }, { loadSdk: async () => { loaded = true; } })), "noKey");
   assert.equal(loaded, false);
+});
+
+test("a request Claude rejects (no credit, unknown model) carries the API's own reason", async () => {
+  const body = { type: "error", error: { type: "invalid_request_error", message: "Your credit balance is too low to access the Anthropic API." } };
+  try { await translateSong(ARGS, fakeSdk((C) => new C.APIError(400, body))); assert.fail("did not throw"); }
+  catch (e) { assert.equal(e.code, "rejected"); assert.equal(e.detail, "Your credit balance is too low to access the Anthropic API."); }
 });

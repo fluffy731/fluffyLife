@@ -3,7 +3,7 @@
 import { buildRequest, parseAnalysis, actualCost } from "./model.js";
 
 export class SongError extends Error {
-  constructor(code) { super(code); this.code = code; }
+  constructor(code, detail = "") { super(code); this.code = code; this.detail = detail; }
 }
 
 const loadVendored = () => import("../lib/vendor/anthropic-sdk.js");
@@ -22,6 +22,8 @@ export async function translateSong({ apiKey, model, lines, grammar }, { loadSdk
     if (e instanceof Anthropic.RateLimitError) throw new SongError("rateLimit");
     if (e instanceof Anthropic.APIConnectionError) throw new SongError("offline");
     if (e instanceof Anthropic.APIError && e.status >= 500) throw new SongError("server");
+    // Any other 4xx (no credit left, a model the account can't use): retrying won't help, so pass on the API's reason.
+    if (e instanceof Anthropic.APIError && e.status >= 400) throw new SongError("rejected", String(e.error?.error?.message || e.message || ""));
     throw new SongError("invalid");
   }
   if (msg.stop_reason === "refusal") throw new SongError("refusal");

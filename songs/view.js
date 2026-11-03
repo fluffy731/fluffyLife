@@ -20,6 +20,7 @@ const MESSAGES = {
   refusal: "The model declined this song. Try Sonnet 5.5 in Settings.",
   tooLong: "The reply was cut off. Try Sonnet 5.5 for long songs.",
   invalid: "The reply couldn't be read. Retry.",
+  rejected: "Claude rejected the request. Check your Anthropic account (credit balance, model access).",
   noLyrics: "No lyrics found on LRCLIB. Open the song and paste them.",
   lrclib: "The lyrics search isn't answering. Try again later, or paste the lyrics.",
   nostorage: "Songs can't be saved on this device.",
@@ -45,8 +46,11 @@ export function createSongs(c) {
   const sysChars = () => systemText(grammarList()).length;
   const byId = (id) => songs.find((s) => s.id === id);
   const usd = (n) => `US$${n < 0.01 ? n.toFixed(4) : n.toFixed(2)}`;
-  async function save(song) {
+  // Only adding and importing create songs; anything else updates one that still exists, so a song
+  // deleted while a batch was working on it is not brought back.
+  async function save(song, { add = false } = {}) {
     const i = songs.findIndex((s) => s.id === song.id);
+    if (i < 0 && !add) return;
     if (i >= 0) songs[i] = song; else songs.push(song);
     if (store) await store.put(song);
   }
@@ -56,6 +60,8 @@ export function createSongs(c) {
     }
     const list = document.querySelector("#song-list"); if (list) ui.importText = list.value;
   }
+  // After async work: keep what the user has typed, and redraw only if they are still on Songs.
+  const refresh = () => { syncDraft(); if (c.tab() === "songs") c.render(); };
   const msgText = (k) => (k in MESSAGES ? MESSAGES[k] : k);
   const msgHTML = () => (ui.msg ? `<div class="card small song-msg">${esc(msgText(ui.msg))}${ui.msg === "noKey" ? `<div class="actions" style="grid-template-columns:1fr"><button class="btn" data-tab="settings">Open Settings</button></div>` : ""}</div>` : "");
 
@@ -182,7 +188,7 @@ export function createSongs(c) {
       song.status = "done"; song.error = null;
     } catch (e) {
       song.status = "error"; song.error = e.code || "invalid";
-      ui.msg = song.error;
+      ui.msg = song.error === "rejected" && e.detail ? `Claude rejected the request: ${e.detail}` : song.error;
     }
     await save(song);
     return song.status === "done";
@@ -200,14 +206,15 @@ export function createSongs(c) {
   async function runBatch() {
     const list = [...ui.ticked].map(byId).filter((s) => s && s.status !== "done");
     for (const [i, song] of list.entries()) {
-      ui.busy = `Translating ${i + 1} of ${list.length}: ${song.title}…`; c.render();
+      if (!byId(song.id)) continue;            // deleted since the batch started
+      ui.busy = `Translating ${i + 1} of ${list.length}: ${song.title}…`; refresh();
       try {
         if (!song.lyrics && !(await fetchLyrics(song))) { song.status = "error"; song.error = "noLyrics"; await save(song); continue; }
       } catch (e) { song.status = "error"; song.error = e.message === "offline" ? "offline" : "lrclib"; await save(song); continue; }
       if (await translate(song, { ask: false })) ui.ticked.delete(song.id);
       if (ui.msg === "noKey") break;
     }
-    ui.busy = ""; c.render();
+    ui.busy = ""; refresh();
   }
 
   function study(song, li, kind, idx) {
@@ -228,7 +235,7 @@ export function createSongs(c) {
     const a = el.dataset.s;
     syncDraft();
     if (a !== "tick") ui.msg = "";
-    const later = (p) => { p.catch(() => {}).finally(() => c.render()); return true; };
+    const later = (p) => { p.catch(() => {}).finally(refresh); return true; };
     switch (a) {
       case "add": ui.view = "add"; ui.draft = {}; ui.hits = []; return true;
       case "import": ui.view = "import"; return true;
@@ -255,7 +262,7 @@ export function createSongs(c) {
         const song = { id: newSongId(), title: normLine(d.title), artist: normLine(d.artist), album: d.album ?? null, source: d.source || "paste",
           status: "lyrics", error: null, lyrics: d.lyrics, analysis: null, addedAt: Date.now() };
         ui.view = "song"; ui.id = song.id; ui.draft = {};
-        return later(save(song));
+        return later(save(song, { add: true }));
       }
       case "savelyrics": {
         const song = byId(ui.id); if (!song || !ui.draft.lyrics?.trim()) { ui.msg = "Paste the lyrics first."; return true; }
@@ -299,7 +306,7 @@ export function createSongs(c) {
         ui.view = "list"; ui.importText = "";
         const skipped = parsed.length - fresh.length;
         ui.msg = `Imported ${added.length} song${added.length === 1 ? "" : "s"}${skipped ? ` (${skipped} already in your list)` : ""}.`;
-        return later(Promise.all(added.map(save)));
+        return later(Promise.all(added.map((s) => save(s, { add: true }))));
       }
       case "key-save": {
         const v = (document.querySelector("#song-key")?.value || "").trim();
@@ -315,7 +322,7 @@ export function createSongs(c) {
   function change(e) {
     if (e.target.id !== "song-csv") return false;
     const f = e.target.files?.[0]; if (!f) return false;
-    f.text().then((txt) => { ui.importText = txt; c.render(); });
+    f.text().then((txt) => { ui.importText = txt; if (c.tab() === "songs") c.render(); });
     e.target.value = "";
     return false;
   }
@@ -333,7 +340,7 @@ export function createSongs(c) {
   async function importSongs(list) {
     if (!store) return 0;
     let n = 0;
-    for (const raw of list) { const s = cleanSong(raw); if (s) { await save(s); n++; } }
+    for (const raw of list) { const s = cleanSong(raw); if (s) { await save(s, { add: true }); n++; } }
     return n;
   }
 

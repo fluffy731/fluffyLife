@@ -47,7 +47,7 @@ const browser = await chromium.launch();
 
 // ---- the full flow, with LRCLIB and the Claude API faked ----
 const { LYRICS } = await import(join(process.cwd(), "test/fixtures/songs.js"));
-let apiMode = "ok"; const apiBodies = [];
+let apiMode = "ok", apiDelay = 0; const apiBodies = [];
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET, POST, OPTIONS" };
 // The SDK streams: answer with the same server-sent events the Messages API sends.
 function sse(json) {
@@ -68,9 +68,11 @@ function analysisFor(body) {
 async function mockNetwork(target) {
   await target.route("https://lrclib.net/api/search**", (r) => r.fulfill({ headers: CORS, contentType: "application/json",
     body: JSON.stringify([{ trackName: "빗소리", artistName: "가수", albumName: "A", duration: 180, instrumental: false, plainLyrics: LYRICS, syncedLyrics: null }]) }));
-  await target.route("https://api.anthropic.com/**", (r) => {
+  await target.route("https://api.anthropic.com/**", async (r) => {
     if (r.request().method() === "OPTIONS") return r.fulfill({ status: 204, headers: CORS });
     const body = JSON.parse(r.request().postData() || "{}"); apiBodies.push(body);
+    if (apiDelay) await new Promise((ok) => setTimeout(ok, apiDelay));
+    if (apiMode === "400") return r.fulfill({ status: 400, headers: CORS, contentType: "application/json", body: JSON.stringify({ type: "error", error: { type: "invalid_request_error", message: "Your credit balance is too low to access the Anthropic API." } }) });
     if (apiMode === "401") return r.fulfill({ status: 401, headers: CORS, contentType: "application/json", body: JSON.stringify({ type: "error", error: { type: "authentication_error", message: "invalid x-api-key" } }) });
     return r.fulfill({ status: 200, headers: { ...CORS, "content-type": "text/event-stream" }, body: sse(analysisFor(body)) });
   });
@@ -170,6 +172,54 @@ let backupText = null;
   await page.click('[data-s="batch"]');
   await page.waitForFunction(() => document.querySelectorAll('.song-row[data-status="done"]').length === 3, null, { timeout: 15000 });
   ok("batch fetched lyrics and translated both", apiBodies.length === 4);
+  await ctx.close();
+}
+
+// ---- a batch running in the background must not wipe typing or bring back a deleted song ----
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  await mockNetwork(ctx);
+  const page = await ctx.newPage();
+  page.on("dialog", (d) => d.accept());
+  await page.goto(base + "korean/", { waitUntil: "networkidle" });
+  await page.evaluate(() => localStorage.setItem("korean.songs.apiKey", "sk-ant-test-key-1234"));
+  await page.click('[data-tab="songs"]');
+  await page.click('[data-s="import"]');
+  await page.fill("#song-list", "하나 – 가수\n둘 – 가수");
+  await page.click('[data-s="importGo"]');
+  apiDelay = 1500;
+  await page.click('[data-s="batch"]');
+  await page.click('[data-s="add"]');
+  await page.fill("#song-title", "손으로 쓴 노래"); await page.fill("#song-lyrics", "직접 붙여 넣은 가사");
+  await page.waitForTimeout(4000);
+  ok("batch finishing keeps pasted lyrics and title", (await page.inputValue("#song-lyrics")) === "직접 붙여 넣은 가사" && (await page.inputValue("#song-title")) === "손으로 쓴 노래");
+  await page.click('[data-s="back"]');
+  await page.waitForFunction(() => !document.querySelector(".song-msg")?.textContent.includes("Translating"), null, { timeout: 15000 });
+
+  // Delete a song while the batch is translating it.
+  await page.click('[data-s="import"]');
+  await page.fill("#song-list", "지울 노래 – 가수");
+  await page.click('[data-s="importGo"]');
+  const before = apiBodies.length;
+  await page.click('[data-s="batch"]');
+  await page.waitForTimeout(300);
+  await page.locator('.song-row [data-s="open"]', { hasText: "지울 노래" }).click();
+  await page.click('[data-s="delete"]');
+  await page.waitForTimeout(2500);
+  await page.reload({ waitUntil: "networkidle" });
+  await page.click('[data-tab="songs"]');
+  await page.waitForSelector(".song-row");
+  ok("a song deleted during a batch stays deleted", (await page.locator(".song-row", { hasText: "지울 노래" }).count()) === 0 && apiBodies.length === before + 1);
+
+  // A request Claude rejects outright: say why instead of "Retry".
+  apiDelay = 0; apiMode = "400";
+  await page.click('[data-s="add"]');
+  await page.fill("#song-title", "잔액"); await page.fill("#song-lyrics", "비가 와도 괜찮아");
+  await page.click('[data-s="save"]');
+  await page.click('[data-s="translate"]');
+  await page.waitForSelector(".song-msg");
+  ok("400: message gives the API's reason", (await page.textContent(".song-msg")).includes("credit balance is too low"));
+  apiMode = "ok";
   await ctx.close();
 }
 
