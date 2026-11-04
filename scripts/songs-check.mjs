@@ -223,6 +223,65 @@ let backupText = null;
   await ctx.close();
 }
 
+// ---- a long batch: resumes after the app is reopened, keeps the screen awake, can be stopped ----
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  await mockNetwork(ctx);
+  // A stand-in Screen Wake Lock that counts requests and releases.
+  await ctx.addInitScript(() => {
+    window.__locks = { req: 0, rel: 0 };
+    Object.defineProperty(navigator, "wakeLock", { configurable: true, value: { request: async () => { window.__locks.req++; return { release: async () => { window.__locks.rel++; } }; } } });
+  });
+  const page = await ctx.newPage();
+  page.on("dialog", (d) => d.accept());
+  await page.goto(base + "korean/", { waitUntil: "networkidle" });
+  await page.evaluate(() => localStorage.setItem("korean.songs.apiKey", "sk-ant-test-key-1234"));
+  await page.click('[data-tab="songs"]');
+  await page.click('[data-s="import"]');
+  await page.fill("#song-list", "하나 – 가수\n둘 – 가수\n셋 – 가수");
+  await page.click('[data-s="importGo"]');
+  // Closing the app forgets the ticks; one tap still covers every song left to translate.
+  await page.reload({ waitUntil: "networkidle" });
+  await page.click('[data-tab="songs"]');
+  await page.waitForSelector(".song-row");
+  ok("after reopening, the batch offers every untranslated song", (await page.textContent('[data-s="batch"]')).includes("Translate all 3 untranslated"));
+
+  // Stop after the song in progress: the rest stay untranslated for next time.
+  apiDelay = 1200;
+  const before = apiBodies.length;
+  await page.click('[data-s="batch"]');
+  await page.waitForSelector('[data-s="stop"]');
+  ok("a running batch asks to keep the screen open", (await page.textContent(".song-msg")).includes("Keep this screen open"));
+  ok("a running batch keeps the screen awake", (await page.evaluate(() => window.__locks.req)) === 1);
+  await page.click('[data-s="stop"]');
+  await page.waitForFunction(() => !document.querySelector('[data-s="stop"]'), null, { timeout: 15000 });
+  ok("Stop ends the batch after the current song", apiBodies.length === before + 1 && (await page.locator('.song-row[data-status="done"]').count()) === 1);
+  ok("the screen lock is released when the batch ends", (await page.evaluate(() => window.__locks.rel)) === 1);
+  ok("stopping says how many are done", (await page.textContent(".song-msg")).includes("Stopped: translated 1 of 3"));
+
+  // Resume: the button now covers the 2 left; a full run reports its result.
+  apiDelay = 0;
+  ok("resume offers the 2 left", (await page.textContent('[data-s="batch"]')).includes("Translate all 2 untranslated"));
+  await page.click('[data-s="batch"]');
+  await page.waitForFunction(() => document.querySelectorAll('.song-row[data-status="done"]').length === 3, null, { timeout: 15000 });
+  await page.waitForFunction(() => !document.querySelector('[data-s="stop"]'), null, { timeout: 15000 });
+  ok("a finished batch reports its result", (await page.textContent(".song-msg")).includes("Translated 2 of 2"));
+  ok("nothing left to translate: no batch button", (await page.locator('[data-s="batch"]').count()) === 0);
+
+  // A song that failed in a batch says why when opened.
+  apiMode = "401";
+  await page.click('[data-s="import"]');
+  await page.fill("#song-list", "넷 – 가수");
+  await page.click('[data-s="importGo"]');
+  await page.click('[data-s="batch"]');
+  await page.waitForFunction(() => !document.querySelector('[data-s="stop"]') && document.querySelector('.song-row[data-status="error"]'), null, { timeout: 15000 });
+  ok("a failed batch song is counted", (await page.textContent(".song-msg")).includes("1 needs attention"));
+  await page.locator('.song-row [data-s="open"]', { hasText: "넷" }).click();
+  ok("the failed song says why", (await page.textContent(".song-msg")).includes("API key was refused"));
+  apiMode = "ok";
+  await ctx.close();
+}
+
 // ---- restore on a fresh phone, then read it offline ----
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });

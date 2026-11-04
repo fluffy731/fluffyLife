@@ -5,7 +5,7 @@ import { searchLrclib } from "./lrclib.js";
 import { translateSong } from "./claude.js";
 import {
   splitLyrics, uniqueHangulLines, normLine, hasHangul, parseSongList, songKey, newSongId, cleanSong,
-  SONG_MODELS, DEFAULT_MODEL, systemText, estimateCost, studyItem, findStudyId, inReviews,
+  SONG_MODELS, DEFAULT_MODEL, systemText, estimateCost, studyItem, findStudyId, inReviews, batchSongs,
 } from "./model.js";
 import { grade } from "../lib/fsrs.js";
 import { romanize } from "../lib/pron.js";
@@ -34,6 +34,15 @@ export function createSongs(c) {
   let store = null, storeError = false, loaded = false;
   let songs = [];                         // in memory, so Export can run inside the tap (iOS share sheet)
   const ui = { view: "list", id: null, draft: {}, hits: [], msg: "", busy: "", open: -1, ticked: new Set(), importText: "" };
+  let run = null;                         // the batch in progress: { stopping }
+  let lock = null;                        // Screen Wake Lock held while a batch runs
+
+  // iPhone pauses a home-screen app when the screen locks or you switch away, which stops a batch, so a
+  // batch asks to keep the screen on. Unsupported or refused: the batch still runs, the screen may sleep.
+  async function keepAwake() { try { lock = (await navigator.wakeLock?.request("screen")) ?? null; } catch { lock = null; } }
+  function letSleep() { const l = lock; lock = null; if (l) l.release().catch(() => {}); }
+  // The system drops the lock while the app is in the background; take it again on return.
+  document.addEventListener("visibilitychange", () => { if (run && document.visibilityState === "visible") keepAwake(); });
 
   openSongs().then((s) => s.all().then((all) => { store = s; songs = all.map(cleanSong).filter(Boolean); }))
     .catch(() => { storeError = true; })
@@ -71,12 +80,17 @@ export function createSongs(c) {
     if (!loaded) return `<div class="songs"><div class="small muted">Loading…</div></div>`;
     const buttons = `<div class="actions"><button class="btn primary" data-s="add">Add song</button><button class="btn" data-s="import">Import list</button></div>`;
     if (!songs.length) return `<div class="songs">${msgHTML()}<div class="card empty"><b>No songs yet</b>Add a song you listen to, or import your list.${buttons}</div></div>`;
-    const ticked = [...ui.ticked].map(byId).filter((s) => s && s.status !== "done");
-    const total = ticked.reduce((n, s) => n + (s.lyrics
+    const { list, ticked } = batchSongs(songs, ui.ticked);
+    const total = list.reduce((n, s) => n + (s.lyrics
       ? estimateCost(model(), s.lyrics.length, uniqueHangulLines(splitLyrics(s.lyrics)).length, sysChars())
       : estimateCost(model(), TYPICAL.chars, TYPICAL.lines, sysChars())), 0);
-    const batch = ui.busy ? `<div class="card small song-msg">${esc(ui.busy)}</div>`
-      : ticked.length ? `<button class="btn primary" data-s="batch" style="width:100%;margin-top:10px">Translate ${ticked.length} song${ticked.length > 1 ? "s" : ""} (about ${usd(total)})</button>` : "";
+    const label = ticked ? `Translate ${list.length} song${list.length > 1 ? "s" : ""}`
+      : list.length > 1 ? `Translate all ${list.length} untranslated` : "Translate 1 untranslated song";
+    const batch = ui.busy ? `<div class="card small song-msg">${esc(ui.busy)}${run ? `
+        <div class="progress-line"><i style="width:${Math.round((run.at / run.of) * 100)}%"></i></div>
+        <p class="small muted">Keep this screen open until it finishes: iPhone pauses the app when the screen locks or you switch away. Each song is saved as soon as it's done.</p>
+        <div class="actions" style="grid-template-columns:1fr"><button class="btn" data-s="stop" ${run.stopping ? "disabled" : ""}>${run.stopping ? "Stopping after this song…" : "Stop after this song"}</button></div>` : ""}</div>`
+      : list.length ? `<button class="btn primary" data-s="batch" style="width:100%;margin-top:10px">${label} (about ${usd(total)})</button>` : "";
     const sorted = songs.slice().sort((a, b) => b.addedAt - a.addedAt);
     return `<div class="songs">${msgHTML()}${buttons}${batch}<div class="list" style="margin-top:12px">${sorted.map((s) => {
       const points = s.analysis ? new Set(s.analysis.lines.flatMap((l) => l.grammar.map((g) => g.appId || normLine(g.form)))).size : 0;
@@ -142,8 +156,10 @@ export function createSongs(c) {
   function songHTML() {
     const song = byId(ui.id);
     if (!song) { ui.view = "list"; return listHTML(); }
+    // Why the last try failed, kept with the song so a batch's failures can be read later.
+    const why = song.status === "error" && song.error && !ui.msg ? `<div class="card small song-msg">${esc(msgText(song.error))}</div>` : "";
     const head = `<div class="songs">${msgHTML()}<button class="btn" data-s="back">Songs</button>
-      <h2>${esc(song.title)}${song.artist ? ` · ${esc(song.artist)}` : ""}</h2>`;
+      <h2>${esc(song.title)}${song.artist ? ` · ${esc(song.artist)}` : ""}</h2>${why}`;
     const del = `<button class="btn" data-s="delete" style="width:100%;margin-top:16px;color:var(--bad)">Delete song</button></div>`;
     if (!song.lyrics) {
       return head + `<div class="card"><p class="small muted">Lyrics not fetched yet.</p>
@@ -204,17 +220,27 @@ export function createSongs(c) {
   }
 
   async function runBatch() {
-    const list = [...ui.ticked].map(byId).filter((s) => s && s.status !== "done");
-    for (const [i, song] of list.entries()) {
-      if (!byId(song.id)) continue;            // deleted since the batch started
-      ui.busy = `Translating ${i + 1} of ${list.length}: ${song.title}…`; refresh();
-      try {
-        if (!song.lyrics && !(await fetchLyrics(song))) { song.status = "error"; song.error = "noLyrics"; await save(song); continue; }
-      } catch (e) { song.status = "error"; song.error = e.message === "offline" ? "offline" : "lrclib"; await save(song); continue; }
-      if (await translate(song, { ask: false })) ui.ticked.delete(song.id);
-      if (ui.msg === "noKey") break;
+    const { list } = batchSongs(songs, ui.ticked);
+    run = { stopping: false, at: 0, of: list.length };
+    let done = 0;
+    await keepAwake();
+    try {
+      for (const [i, song] of list.entries()) {
+        if (run.stopping) break;
+        if (!byId(song.id)) continue;            // deleted since the batch started
+        run.at = i; ui.busy = `Translating ${i + 1} of ${list.length}: ${song.title}…`; refresh();
+        try {
+          if (!song.lyrics && !(await fetchLyrics(song))) { song.status = "error"; song.error = "noLyrics"; await save(song); continue; }
+        } catch (e) { song.status = "error"; song.error = e.message === "offline" ? "offline" : "lrclib"; await save(song); continue; }
+        if (await translate(song, { ask: false })) { ui.ticked.delete(song.id); done++; }
+        if (ui.msg === "noKey") break;
+      }
+    } finally {
+      letSleep();
+      const failed = list.filter((s) => byId(s.id)?.status === "error").length;
+      if (ui.msg !== "noKey") ui.msg = `${run.stopping ? "Stopped: translated" : "Translated"} ${done} of ${list.length}.${failed ? ` ${failed} need${failed > 1 ? "" : "s"} attention: open ${failed > 1 ? "them" : "it"} to see why.` : ""}`;
+      run = null; ui.busy = ""; refresh();
     }
-    ui.busy = ""; refresh();
   }
 
   function study(song, li, kind, idx) {
@@ -282,7 +308,8 @@ export function createSongs(c) {
         c.render();
         return later(p.finally(() => { ui.busy = ""; }));
       }
-      case "batch": if (ui.busy) return false; return later(runBatch());
+      case "batch": if (ui.busy || run) return false; return later(runBatch());
+      case "stop": if (run) run.stopping = true; return true;
       case "study": {
         const song = byId(ui.id); if (!song?.analysis) return false;
         ui.open = Number(el.closest("[data-line]")?.dataset.line ?? -1);
