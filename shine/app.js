@@ -66,16 +66,18 @@ function lineHTML([who, text, o = {}]) {
     `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(text, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}</p></div>`;
 }
 
-function listHTML(name) {
+function listHTML(name, o = {}) {
   const L = LISTS[name], l = lang();
   if (name === "board") {
     return `<ol class="names">${Array.from({ length: L.n }, (_, j) => `<li>${chip("board" + (j + 1), l)}</li>`).join("")}</ol>`;
   }
   if (name === "prizes") {
+    // o.from / o.to: the prizes drawn in this round (the draw is split across the evening).
+    const from = o.from || 1, to = o.to || L.n;
     const done = Array.from({ length: L.n }, (_, j) => !!S.drawn[j + 1]).filter(Boolean).length;
-    return `<div class="prizes"><p class="list-h">${bi("奖品", "Prizes")} <span>${bi(`已抽 ${done} / ${L.n}`, `${done} of ${L.n} drawn`)}</span></p><ol>` +
-      Array.from({ length: L.n }, (_, j) => {
-        const n = j + 1;
+    return `<div class="prizes"><p class="list-h">${bi(`奖品 ${from}–${to}`, `Prizes ${from}–${to}`)} <span>${bi(`已抽 ${done} / ${L.n}`, `${done} of ${L.n} drawn`)}</span></p><ol>` +
+      Array.from({ length: to - from + 1 }, (_, j) => {
+        const n = from + j;
         return `<li class="${S.drawn[n] ? "done" : ""}"><input type="checkbox" id="dr${n}" data-drawn="${n}"${S.drawn[n] ? " checked" : ""}>` +
           `<label for="dr${n}" class="no" aria-label="${bi(`第 ${n} 份已抽`, `Prize ${n} drawn`)}">${n}</label>` +
           `<span class="pz">${chip("prize" + n, l)}</span><span class="by">${chip("prizeBy" + n, l)}</span></li>`;
@@ -92,8 +94,8 @@ function itemHTML(it) {
   if (type === "S" || type === "W" || type === "SW") return lineHTML(it);
   if (type === "cue") return `<p class="cue">${duo(it[1], it[2])}</p>`;
   if (type === "crit") return `<p class="crit">${duo(it[1], it[2])}</p>`;
-  if (type === "list") return listHTML(it[1]);
-  if (type === "table") return `<div class="tablewrap"><table class="cuesheet"><thead><tr><th>${bi("歌词句", "Lyric lines")}</th><th>${bi("入场", "Who walks in")}</th></tr></thead><tbody>` +
+  if (type === "list") return listHTML(it[1], it[2]);
+  if (type === "table") return `<div class="tablewrap"><table class="cuesheet"><thead><tr><th>${bi("歌曲", "Song")}</th><th>${bi("入场", "Who walks in")}</th></tr></thead><tbody>` +
     ENTRANCE.map(([n, zh, en]) => `<tr><td>${esc(n)}</td><td>${duo(zh, en)}</td></tr>`).join("") + `</tbody></table></div>`;
   return "";
 }

@@ -166,7 +166,7 @@ body[data-who="S"] .seg .ln[data-s="W"] .b, body[data-who="W"] .seg .ln[data-s="
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th { text-align: left; font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; padding: 8px 8px 6px; border-bottom: 1px solid var(--line); }
 td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-.cuesheet td:first-child { font-weight: 700; color: var(--gold); white-space: nowrap; font-variant-numeric: tabular-nums; width: 4.5em; }
+.cuesheet td:first-child { font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; width: 7.5em; }
 .seg .tablewrap { margin: 0 -4px 6px; }
 
 /* TBC tab */
