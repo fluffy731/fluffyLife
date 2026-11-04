@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>A Night to Shine MC</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A Night to Shine · 13 November 2026 · MC script for Solomon (普通话) and Wade (English)">
+<meta name="theme-color" content="#eef0f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0d12" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Shine MC">
+<link rel="icon" href="../icons/shine.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/shine-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,600;1,6..96,500&display=swap">
+<link rel="stylesheet" href="./shine.css">
+</head>
+<body data-who="both">
+<header class="mast" id="mast">
+  <div class="mast-row">
+    <div class="ttl">
+      <h1><span class="spark" aria-hidden="true">✦</span>A Night to Shine</h1>
+      <p class="sub">MC 主持稿 · Fri 13 Nov · Rombe Rooftop</p>
+    </div>
+    <div class="tools">
+      <button class="icon-btn" id="smaller" type="button" aria-label="字体缩小 Smaller text">A−</button>
+      <button class="icon-btn" id="bigger" type="button" aria-label="字体放大 Larger text">A+</button>
+      <button class="icon-btn" id="theme" type="button" aria-label="深色 / 浅色 Dark or light"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="7.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 2.8a7.2 7.2 0 0 1 0 14.4z" fill="currentColor"/></svg></button>
+    </div>
+  </div>
+  <button class="nowbar" id="nowbar" type="button"><span id="clock">--:--</span><span id="nowtxt"></span><span class="go" aria-hidden="true">→</span></button>
+  <nav class="tabs" id="tabs" aria-label="页面 Pages">
+    <button type="button" data-tab="script"><span>主持稿</span><small>Script</small></button>
+    <button type="button" data-tab="tbc"><span>待填 <b class="badge" id="tbcCount"></b></span><small>TBC</small></button>
+    <button type="button" data-tab="run"><span>流程</span><small>Run sheet</small></button>
+    <button type="button" data-tab="notes"><span>提醒</span><small>Notes</small></button>
+  </nav>
+  <div class="foil" aria-hidden="true"></div>
+</header>
+
+<div class="banner" id="importBanner" hidden>
+  <p id="importText"></p>
+  <div class="banner-btns"><button type="button" id="doImport" class="primary">导入 Import</button><button type="button" id="skipImport">不用 Dismiss</button></div>
+</div>
+
+<main>
+  <section class="panel" id="script">
+    <div class="who" role="group" aria-label="显示谁的台词 Whose lines">
+      <button type="button" data-who="both">两位 Both</button>
+      <button type="button" data-who="S"><b class="b S">S</b>Solomon</button>
+      <button type="button" data-who="W"><b class="b W">W</b>Wade</button>
+    </div>
+    <p class="legend"><span class="zh">选自己的名字：自己的台词放大，搭档的变小。黄色 = 待填，点一下去填。</span><span class="en">Pick your name: your lines show large, your partner's small. Yellow = TBC; tap it to fill in.</span></p>
+    <nav class="toc" id="toc" aria-label="环节 Segments"></nav>
+    <div id="segs"></div>
+  </section>
+
+  <section class="panel" id="tbc" hidden>
+    <div class="tbc-sum">
+      <p class="count"><b id="leftN">0</b> <span id="leftWord"></span></p>
+      <div class="meter" aria-hidden="true"><i id="bar"></i></div>
+      <p class="hint">活动前填好。未填的在主持稿里以黄色标出。<br>Fill these in closer to the night. Anything blank shows in yellow in the script.</p>
+      <label class="only" for="onlyBlank"><input type="checkbox" id="onlyBlank"> 只看未填 · Show blank only</label>
+    </div>
+    <div id="groups"></div>
+    <section class="grp share">
+      <h3>分享给搭档 <span>Share with your co-MC</span></h3>
+      <p class="hint">填写只存在这部手机。复制后发给搭档，对方导入即可。<br>Entries stay on this phone. Copy them, send to your co-MC, and they import.</p>
+      <button type="button" id="copy" class="primary wide">复制填写内容 · Copy entries</button>
+      <textarea id="shareOut" rows="3" readonly hidden aria-label="分享内容 Share text"></textarea>
+      <p class="msg" id="copyMsg" aria-live="polite"></p>
+      <label class="field" for="pasteIn"><span class="lab"><span class="zh">粘贴搭档发来的内容</span><span class="en">Paste from your co-MC</span></span>
+        <textarea id="pasteIn" rows="3" placeholder="SHINE1.…"></textarea></label>
+      <button type="button" id="pasteGo" class="wide">导入 · Import</button>
+      <p class="msg" id="pasteMsg" aria-live="polite"></p>
+      <button type="button" id="reset" class="wide danger">清除全部填写 · Clear all entries</button>
+    </section>
+  </section>
+
+  <section class="panel" id="run" hidden>
+    <div class="tablewrap"><table class="run" id="runTable"></table></div>
+    <p class="runnote" id="runNote"></p>
+  </section>
+
+  <section class="panel" id="notes" hidden>
+    <div id="notesBody"></div>
+  </section>
+</main>
+
+<nav class="pager" id="pager" aria-label="翻页 Page through segments">
+  <button type="button" id="prev"><small>上一段 · Prev</small><span id="prevName">—</span></button>
+  <button type="button" id="next"><small>下一段 · Next</small><span id="nextName">—</span></button>
+</nav>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
