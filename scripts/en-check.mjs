@@ -16,7 +16,7 @@ const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} $
   const page = await b.newPage({ viewport: { width: 390, height: 844 } });
   const errs = []; page.on("pageerror", (e) => errs.push(e.message));
   await page.goto(base + "english/", { waitUntil: "networkidle" });
-  ok("title and Korean tabs", (await page.title()).includes("English") && (await page.locator("#tabs button").allTextContents()).join("|") === "⌂홈|✎학습|↻복습|✓퀴즈|☰찾아보기|⚙설정");
+  ok("title and Korean tabs", (await page.title()).includes("English") && (await page.locator("#tabs button").allTextContents()).join("|") === "홈|학습|복습|퀴즈|찾아보기|설정");
   await page.click('[data-tab="learn"]');
   const front = await page.textContent("#card .front");
   ok("Learn card: English word with an IPA line", /[A-Za-z]/.test(front) && /^\/.+\/$/.test((await page.textContent("#card .ipa")).trim()));
@@ -62,8 +62,8 @@ const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} $
   await page.reload({ waitUntil: "networkidle" });
   await ctx.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
-  await page.waitForSelector("#view .stat", { timeout: 5000 }).catch(() => {});
-  ok("renders offline", (await page.locator("#view .stat").count()) === 3 && (await page.title()).includes("English"));
+  await page.waitForSelector("#view .stations", { timeout: 5000 }).catch(() => {});
+  ok("renders offline", (await page.locator("#view .stations li").count()) === 5 && (await page.title()).includes("English"));
   await ctx.close();
 }
 // 4. dictionary: English→Korean lookup, add a word to study

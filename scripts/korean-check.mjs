@@ -35,11 +35,11 @@ let n = 0; while ((await page.inputValue("#unit-pick")) === "int-1" && await pag
 ok(`unit 1 learned (${n} items) → current unit 2`, n >= 20 && (await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("korean.v1")); return Object.keys(s.progress).length; })) === n);
 await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("korean.v1")); for (const k in s.progress) s.progress[k].due = 0; localStorage.setItem("korean.v1", JSON.stringify(s)); });
 await page.reload({ waitUntil: "networkidle" });
-const unitBefore = await page.textContent(".stat:nth-child(3) b");
+const unitBefore = await page.textContent(".route-stats b");
 await page.click('[data-tab="review"]'); await page.click("[data-flip]"); await page.click('[data-grade="again"]');
-ok("after Again still all due", (await page.textContent("#due-badge")) === String(n));
+ok("after Again still all due", (await page.textContent("#due-badge")) === `${n} due`);
 await page.click('[data-tab="home"]');
-ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".stat:nth-child(3) b")) === unitBefore && unitBefore.startsWith("2/"));
+ok(`unit unchanged after Again (${unitBefore})`, (await page.textContent(".route-stats b")) === unitBefore && unitBefore.startsWith("2/"));
 // Add defaults to current unit
 await page.click('[data-tab="browse"]'); await page.click("[data-add]");
 ok("add defaults to unit 2", (await page.inputValue('input[name="unit"]')) === "2");
@@ -101,7 +101,7 @@ await page.click('[data-lkind="all"]');
   const s1 = await saved();
   await q.click('[data-tab="learn"]');
   ok("unit test passes with all-correct answers", (await q.textContent(".qresult").catch(() => "")) !== null && typeof s1.quiz.units["int-1"].passedAt === "number" && s1.quiz.units["int-1"].best === 15
-    && (await q.locator('#unit-pick option[value="int-1"]').textContent()).includes("🏅"));
+    && (await q.locator('#unit-pick option[value="int-1"]').textContent()).includes(" · passed"));
   await runTest(false);
   const s2 = await saved(), missed = Object.values(s2.progress).filter((p) => p.due <= Date.now()).length;
   ok("wrong answers bring items due; pass kept", missed === 15 && s2.quiz.units["int-1"].passedAt === s1.quiz.units["int-1"].passedAt && s2.quiz.units["int-1"].attempts.length === 2

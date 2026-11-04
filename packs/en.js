@@ -24,6 +24,8 @@ export const enPack = {
     11: "비즈니스 회의와 협상", 12: "학술 글쓰기", 13: "경제와 금융", 14: "정치와 법", 15: "과학과 연구",
     16: "심리와 행동", 17: "문화와 예술", 18: "뉘앙스 있는 형용사·부사", 19: "관용구와 은유", 20: "토론과 설득" },
   ui, cards, editable: false, validate: validateEn,
+  // Home draws the study track as a metro line (app.js lineHomeHTML); styled by metro.css.
+  lineMap: true,
   quiz: { types: quizTypes },
   // Offline English→Korean dictionary (built at deploy from Wiktionary translations).
   dict: dictEn,

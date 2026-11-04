@@ -54,7 +54,7 @@ export function createQuiz(api) {
         <span class="pill ${esc(u.tier)}">${esc(u.tier)}</span><span class="qunit-name">${t.unitN(esc(u.unit))}${api.unitTitle(u.unit)}</span>
         <span class="small muted">${status}</span></div>`;
     }).join("");
-    return `<div class="card">${practice}</div><h2>${t.quizUnits}</h2><div class="list">${rows}</div>`;
+    return `<div class="card">${practice}</div><h2>${t.quizUnits}</h2><div class="list track">${rows}</div>`;
   }
 
   function questionHTML() {
@@ -63,7 +63,7 @@ export function createQuiz(api) {
       const cls = !done ? "" : i === q.answer ? "right" : i === s.picked ? "wrong" : "dim";
       return `<div class="qopt ${cls}" role="button" tabindex="0" data-qopt="${i}">${type.optionHTML(o, ctx)}</div>`;
     }).join("");
-    return `<div class="row small muted" style="margin-bottom:8px"><span>${t.quizQn(s.i + 1, s.questions.length)}</span><span>${s.score} ✓</span></div>
+    return `<div class="row small muted" style="margin-bottom:8px"><span>${t.quizQn(s.i + 1, s.questions.length)}</span><span>${t.quizRight(s.score)}</span></div>
       <div class="card qprompt"><div class="small muted">${t[type.caption]}</div>${type.promptHTML(q.item, ctx)}</div>
       <div class="qopts ${type.fixedOptions ? "qtones" : ""}">${opts}</div>
       ${done ? `<div class="actions" style="grid-template-columns:1fr;margin-bottom:12px"><button class="btn primary" data-qnext>${t.quizNext}</button></div>${api.cardHTML(q.item, true)}` : ""}`;

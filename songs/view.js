@@ -69,7 +69,7 @@ export function createSongs(c) {
   function listHTML() {
     if (storeError) return `<div class="songs"><div class="card empty"><b>Songs can't be saved on this device</b>This browser has blocked its storage (a private window, or website data turned off). The rest of the app still works.</div></div>`;
     if (!loaded) return `<div class="songs"><div class="small muted">Loading…</div></div>`;
-    const buttons = `<div class="actions"><button class="btn primary" data-s="add">+ Add song</button><button class="btn" data-s="import">Import list</button></div>`;
+    const buttons = `<div class="actions"><button class="btn primary" data-s="add">Add song</button><button class="btn" data-s="import">Import list</button></div>`;
     if (!songs.length) return `<div class="songs">${msgHTML()}<div class="card empty"><b>No songs yet</b>Add a song you listen to, or import your list.${buttons}</div></div>`;
     const ticked = [...ui.ticked].map(byId).filter((s) => s && s.status !== "done");
     const total = ticked.reduce((n, s) => n + (s.lyrics
@@ -88,7 +88,7 @@ export function createSongs(c) {
 
   function addHTML() {
     const d = ui.draft;
-    return `<div class="songs">${msgHTML()}<button class="btn" data-s="back">‹ Songs</button>
+    return `<div class="songs">${msgHTML()}<button class="btn" data-s="back">Songs</button>
       <h2>Add a song</h2>
       <div class="card">
         <input id="song-title" placeholder="Title" value="${esc(d.title ?? "")}" autocomplete="off">
@@ -105,7 +105,7 @@ export function createSongs(c) {
   }
 
   function importHTML() {
-    return `<div class="songs">${msgHTML()}<button class="btn" data-s="back">‹ Songs</button>
+    return `<div class="songs">${msgHTML()}<button class="btn" data-s="back">Songs</button>
       <h2>Import list</h2>
       <div class="card">
         <textarea id="song-list" rows="10" placeholder="One song per line: Title – Artist">${esc(ui.importText)}</textarea>
@@ -125,8 +125,8 @@ export function createSongs(c) {
     const progress = c.state().progress, items = c.items();
     const btn = (kind, entry, idx) => {
       const id = findStudyId({ kind, entry, items });
-      return id && inReviews(id, progress) ? `<span class="in-reviews small">✓ In reviews</span>`
-        : `<button class="btn" data-s="study" data-kind="${kind}" data-li="${li}" data-idx="${idx}">+ Add to study</button>`;
+      return id && inReviews(id, progress) ? `<span class="in-reviews small">In reviews</span>`
+        : `<button class="btn" data-s="study" data-kind="${kind}" data-li="${li}" data-idx="${idx}">Add to study</button>`;
     };
     return `<div class="song-line item${ui.open === i ? " open" : ""}" data-line="${i}">
       <div class="k">${esc(ko)} ${say(ko)}</div>
@@ -142,7 +142,7 @@ export function createSongs(c) {
   function songHTML() {
     const song = byId(ui.id);
     if (!song) { ui.view = "list"; return listHTML(); }
-    const head = `<div class="songs">${msgHTML()}<button class="btn" data-s="back">‹ Songs</button>
+    const head = `<div class="songs">${msgHTML()}<button class="btn" data-s="back">Songs</button>
       <h2>${esc(song.title)}${song.artist ? ` · ${esc(song.artist)}` : ""}</h2>`;
     const del = `<button class="btn" data-s="delete" style="width:100%;margin-top:16px;color:var(--bad)">Delete song</button></div>`;
     if (!song.lyrics) {
@@ -168,7 +168,7 @@ export function createSongs(c) {
     const sum = `<div class="card song-sum small"><div class="muted">${esc(SONG_MODELS[a.model]?.label ?? a.model)} · ${usd(a.costUsd)}</div>
       ${groups.size ? `<div class="chips">${[...groups.values()].map(({ g, n }) => {
         const id = findStudyId({ kind: "grammar", entry: g, items });
-        return `<span class="song-chip">${id && inReviews(id, progress) ? "✓ " : ""}${esc(g.form)}${n > 1 ? ` ×${n}` : ""}</span>`;
+        return `<span class="song-chip${id && inReviews(id, progress) ? " done" : ""}">${esc(g.form)}${n > 1 ? ` ×${n}` : ""}</span>`;
       }).join("")}</div>` : ""}
       <div class="muted">Tap a line for its grammar and words.</div></div>`;
     return head + sum + `<div class="list song-lines" style="margin-top:12px">${splitLyrics(song.lyrics).map((l, i) => lineHTML(l, i, entries, song)).join("")}</div>` + del;

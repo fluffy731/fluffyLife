@@ -25,7 +25,7 @@ const browser = await chromium.launch();
   await page.click('[data-tab="songs"]');
   await page.waitForSelector("#view .songs");
   const text = await page.textContent("#view");
-  ok("empty Songs tab offers Add song and Import list", text.includes("No songs yet") && text.includes("+ Add song") && text.includes("Import list"));
+  ok("empty Songs tab offers Add song and Import list", text.includes("No songs yet") && text.includes("Add song") && text.includes("Import list"));
   await page.goto(base + "yue/", { waitUntil: "networkidle" });
   ok("Cantonese app still has 6 tabs", (await page.locator("#tabs button").count()) === 6);
   await page.close();
@@ -41,7 +41,7 @@ const browser = await chromium.launch();
   await page.waitForTimeout(200);
   ok("no IndexedDB: Songs explains it can't save", (await page.textContent("#view")).includes("Songs can't be saved on this device"));
   await page.click('[data-tab="home"]');
-  ok("no IndexedDB: Home still renders", (await page.locator(".stat-row").count()) === 1);
+  ok("no IndexedDB: Home still renders", (await page.locator(".route").count()) === 1);
   await ctx.close();
 }
 
@@ -127,10 +127,10 @@ let backupText = null;
   ok("button now says In reviews", (await page.locator(".song-line.item.open .in-reviews").count()) >= 1);
   await page.locator(".song-line.item.open .in-reviews").first().click();
   ok("second tap adds nothing", ((await stateOf(page)).custom || []).length === (after.custom || []).length);
-  const dueBefore = Number((await page.textContent("#due-badge")) || 0);
+  const dueBefore = parseInt((await page.textContent("#due-badge")) || "0", 10) || 0;
   await page.clock.fastForward("25:00:00");
   await page.click('[data-tab="home"]');
-  ok("both cards are due the next day", Number(await page.textContent("#due-badge")) === dueBefore + 2);
+  ok("both cards are due the next day", parseInt(await page.textContent("#due-badge"), 10) === dueBefore + 2);
 
   // Export: songs in the file, key not.
   await page.click('[data-tab="settings"]');

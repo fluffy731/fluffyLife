@@ -29,6 +29,8 @@ export const yuePack = {
   homeExtra, settingsExtra,
   migrate: (state) => ({ ...state, progress: migrateProgress(state.progress, LEGACY_IDS) }),
   ui, cards, editable: false, validate: validateYue,
+  // Home draws the study track as a metro line (app.js lineHomeHTML); styled by metro.css.
+  lineMap: true,
   quiz: { types: quizTypes },
   // Offline Cantonese dictionary (built at deploy): 한글 spelling, characters, Korean meaning via hanja, English.
   dict: dictYue,

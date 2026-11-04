@@ -55,6 +55,8 @@ Add each app separately. Each has its own icon, name and data.
 
 # Languages
 
+**Look.** The Korean, Cantonese and English apps share `metro.css` (November 2026). Each card reads like a metro station sign, and Home draws your study track as a metro line: tap any station to open that unit in Learn. Each app has its own line colour: Korean is Seoul Line 2 green, Cantonese is MTR red and English is Seoul Line 1 blue. Light and dark follow the phone, or Settings → Theme. The Mongolian app keeps `style.css`. Headwords and names are set in [Pretendard](https://github.com/orioncactus/pretendard) ExtraBold by Kil Hyung-jin (SIL Open Font License 1.1, `fonts/Pretendard-LICENSE.txt`), shipped unmodified and cached for offline use. The design record is `DESIGN.md` (the system), `PRODUCT.md` (who the apps are for) and `docs/design/language-apps.md` (the direction).
+
 ## 한자 Korean (`/korean/`)
 
 A personal Korean vocabulary and grammar trainer that shows **hanja (漢字)** and Traditional Chinese beside every Sino-Korean word, so a Chinese reader gets the meaning at a glance. Spaced repetition (FSRS), a TOPIK-ordered study track, and a clock-driven "word of the hour". Static files only: no server, no account, works offline once installed.

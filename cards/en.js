@@ -9,11 +9,13 @@ export function card(it, open, ctx) {
   const front = isGrammar(it)
     ? `<div class="front grammar">${esc(it.form)}</div><div class="pos">${esc(t.grammarLabel)}</div>`
     : `<div class="front">${esc(it.en)} ${say(it.en)}</div>${ipa(it.ipa, esc)}<div class="pos">${esc(t.posName(it.pos))}${it.check ? '<span class="check">?</span>' : ""}</div>`;
-  if (!open) return `<div class="card flash" id="card">${front}<div class="hint">${t.tapToFlip}</div></div>`;
+  // Home's word of the hour shows the Korean meaning on its face.
+  const glance = ctx.tab === "home" && !isGrammar(it) ? `<div class="glance"><span class="en">${esc(it.ko)}</span></div>` : "";
+  if (!open) return `<div class="card flash" id="card">${front}${glance}<div class="hint">${t.tapToFlip}</div></div>`;
   const back = isGrammar(it)
-    ? `<div class="zh">${esc(it.ko)}</div>${noteHTML(it.note, esc)}` +
+    ? `<div class="rule"></div><div class="zh">${esc(it.ko)}</div>${noteHTML(it.note, esc)}` +
       it.ex.map((e) => `<div class="ex"><div class="k">${esc(e.en)} ${say(e.en)}</div><div class="t">${esc(e.ko)}</div></div>`).join("")
-    : `<div class="zh">${esc(it.ko)}</div>${noteHTML(it.note, esc)}` +
+    : `<div class="rule"></div><div class="zh">${esc(it.ko)}</div>${noteHTML(it.note, esc)}` +
       (it.ex ? `<div class="ex"><div class="k">${esc(it.ex)} ${say(it.ex)}</div><div class="t">${esc(it.exKo)}</div></div>` : "");
   return `<div class="card flash" id="card">${front}${back}</div>`;
 }
