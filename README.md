@@ -180,7 +180,7 @@ The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final: mornin
 
 # A Night to Shine MC (`/shine/`)
 
-The two-MC script for She Rises' A Night to Shine, Friday 13 November 2026, Rombe Rooftop. Solomon's lines are Mandarin in simplified Chinese, Wade's are English, and timings follow the updated run sheet (Eric at 8:00, lucky draw 8:10–8:20, awards 8:20).
+The two-MC script for She Rises' A Night to Shine, Friday 13 November 2026, Rombe Rooftop. Solomon's lines are Mandarin in simplified Chinese, Wade's are English. Timings follow the 13 November run sheet with the 4 November feedback: a warm-up opening, the President leading the Goddess Entrance at 7:04 with members last, Eric singing at 8:00 and again at 8:40 after Tian, and fundraising items straight after the lucky draw (8:05–8:15). The 8:20 awards and 8:50 live band are unchanged.
 
 - **Whose lines:** each MC picks their name at the top of the script. Their own lines show large; the partner's shrink to hand-off cues, and stage directions show in their language only.
 - **TBC fields:** names, songs, prizes, prices and the like that are not confirmed yet show in yellow in the script. Tap one to fill it in on the 待填 TBC tab, which counts what is left. Entries stay in that browser; **Copy entries** makes a link (or code) the other MC opens to import them.

@@ -29,17 +29,27 @@ test("segments run back to back from 6:30 to 10:00 and follow the updated run sh
   assert.equal(SEGMENTS[0].t, "18:30");
   assert.equal(SEGMENTS.at(-1).e, "22:00");
   const at = (t) => SEGMENTS.find((s) => s.t === t);
-  // The 13 Nov update: Eric 8:00, lucky draw 8:10–8:20 (10 min), awards 8:20, Tian's English song 8:35, live band 8:50.
+  // 4 Nov feedback on the 13 Nov sheet: warm-up opening, entrance 7:04, Eric one song at 8:00 and one after Tian (8:40),
+  // lucky draw 8:05–8:15 with fundraising items straight after, awards still 8:20, live band still 8:50.
+  assert.equal(at("19:04").zh.includes("女神入场"), true);
+  assert.equal(at("19:07").e, "19:17", "the President and VP keep their 10 minutes");
   assert.match(at("20:00").zh, /Eric/);
-  assert.equal(at("20:10").e, "20:20");
-  assert.match(at("20:10").zh, /抽奖/);
+  assert.equal(at("20:05").e, "20:15");
+  assert.match(at("20:05").zh, /抽奖/);
+  assert.match(at("20:15").zh, /义卖/);
   assert.match(at("20:20").zh, /尼泊尔/);
   assert.match(at("20:35").zh, /Tian/);
+  assert.match(at("20:40").zh, /Eric/);
   assert.match(at("20:50").en, /Live band/);
   const opening = at("19:00").items.map((it) => it[1]).join(" ");
-  assert.match(opening, /8 点 10 分开奖/);
-  assert.match(opening, /at 8:10/);
+  assert.match(opening, /8 点 05 分左右开奖/);
+  assert.match(opening, /at about 8:05/);
   assert.match(opening, /只限购买了抽奖券/, "the opening must say the draw is for ticket holders only");
+  assert.match(opening, /two men/, "the warm-up comes before Tian");
+  assert.ok(opening.indexOf("two men") < opening.indexOf("Please welcome Tian"), "warm-up first, then Tian");
+  // The President leads the entrance; members go last.
+  assert.match(ENTRANCE[0][1], /会长带领/);
+  assert.match(ENTRANCE.at(-3)[1], /会员/);
   for (const [t] of RUNSHEET) assert.match(t, /^\d{2}:\d{2}$/);
   const shared = RUNSHEET.filter(([t]) => SEGMENTS.some((s) => s.t === t)).length;
   assert.ok(shared >= 15, `script and run sheet share only ${shared} start times`);
