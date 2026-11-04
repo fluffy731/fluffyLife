@@ -12,6 +12,7 @@ All things life, and whatever comes up next: language trainers, a no-opinion new
 | English · 영어 | [`/english/`](https://fluffy731.github.io/fluffyLife/english/) | Intermediate-to-advanced English for a Korean speaker |
 | Briefing · 뉴스 | [`/news/`](https://fluffy731.github.io/fluffyLife/news/) | Hourly news from free-to-read outlets, opinion removed |
 | MC 主持稿 | [`/mc/`](https://fluffy731.github.io/fluffyLife/mc/) | MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final |
+| A Night to Shine MC | [`/shine/`](https://fluffy731.github.io/fluffyLife/shine/) | Two-MC script (Solomon 普通话, Wade English) for She Rises' 13 November black-tie Christmas night |
 
 The bare address forwards to `/korean/`, so home-screen icons saved from it before the other apps existed keep working.
 
@@ -25,6 +26,7 @@ The bare address forwards to `/korean/`, so home-screen icons saved from it befo
 | `languages` | `korean/`, `yue/`, `mongolian/`, `english/` and their data |
 | `travel` | `travel/` |
 | `MCscript` | `mc/` |
+| `NightToShine` | `shine/` |
 | `stocks` | `stocks/` |
 
 Every branch is a full copy of the site. A project branch is where that project's folder changes, not a copy with the other apps removed. Deleting another app's files on a project branch would delete them from the live site when the branch is merged.
@@ -175,6 +177,15 @@ Two tabs: **Plan** and **Packing**.
 # MC script (`/mc/`)
 
 The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final: morning in Mandarin and English, afternoon in Traditional Chinese with spoken Cantonese, with sponsors, judges, awards and a prev/next pager. Names typed into its 名单 tab stay in that browser only.
+
+# A Night to Shine MC (`/shine/`)
+
+The two-MC script for She Rises' A Night to Shine, Friday 13 November 2026, Rombe Rooftop. Solomon's lines are Mandarin in simplified Chinese, Wade's are English, and timings follow the updated run sheet (Eric at 8:00, lucky draw 8:10–8:20, awards 8:20).
+
+- **Whose lines:** each MC picks their name at the top of the script. Their own lines show large; the partner's shrink to hand-off cues, and stage directions show in their language only.
+- **TBC fields:** names, songs, prizes, prices and the like that are not confirmed yet show in yellow in the script. Tap one to fill it in on the 待填 TBC tab, which counts what is left. Entries stay in that browser; **Copy entries** makes a link (or code) the other MC opens to import them.
+- **On the night:** the bar under the title shows the current segment and the minutes left, the pager and a Bluetooth page-turner step through segments, prizes can be ticked off as they are drawn, and the screen is kept awake. Add `?at=19:12` to the address to rehearse at a given time on any day.
+- **Edit the script:** everything is in `shine/data.js`; `node --test test/shine.test.js` checks that every `{field}` exists, segments run back to back, Solomon's lines use simplified characters and Wade's are English only.
 
 # Stocks (`/stocks/`, unlisted)
 
