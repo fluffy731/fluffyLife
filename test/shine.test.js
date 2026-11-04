@@ -29,27 +29,33 @@ test("segments run back to back from 6:30 to 10:00 and follow the updated run sh
   assert.equal(SEGMENTS[0].t, "18:30");
   assert.equal(SEGMENTS.at(-1).e, "22:00");
   const at = (t) => SEGMENTS.find((s) => s.t === t);
-  // 4 Nov feedback on the 13 Nov sheet: warm-up opening, entrance 7:04, Eric one song at 8:00 and one after Tian (8:40),
-  // lucky draw 8:05–8:15 with fundraising items straight after, awards still 8:20, live band still 8:50.
-  assert.equal(at("19:04").zh.includes("女神入场"), true);
-  assert.equal(at("19:07").e, "19:17", "the President and VP keep their 10 minutes");
+  // Organiser's run sheet of 4 Nov: entrance 7:02, Eric 8:00 and 8:50, sales + draw 8:10–8:50 (two rounds in the script),
+  // awards 8:20, Victoria 8:30, Tian 8:35, cake and group photo 9:00, live band 9:10.
+  assert.match(at("19:02").zh, /女神入场/);
+  assert.equal(at("19:05").e, "19:15", "the President and VP keep their 10 minutes");
   assert.match(at("20:00").zh, /Eric/);
-  assert.equal(at("20:05").e, "20:15");
-  assert.match(at("20:05").zh, /抽奖/);
-  assert.match(at("20:15").zh, /义卖/);
+  assert.match(at("20:10").zh, /义卖.*抽奖/);
   assert.match(at("20:20").zh, /尼泊尔/);
+  assert.match(at("20:30").zh, /Victoria/);
   assert.match(at("20:35").zh, /Tian/);
-  assert.match(at("20:40").zh, /Eric/);
-  assert.match(at("20:50").en, /Live band/);
+  assert.match(at("20:40").zh, /抽奖/);
+  assert.equal(at("20:40").e, "20:50", "the draw finishes by 8:50");
+  assert.match(at("20:50").zh, /Eric/);
+  assert.match(at("21:00").zh, /蛋糕/);
+  assert.match(at("21:10").en, /Live band/);
   const opening = at("19:00").items.map((it) => it[1]).join(" ");
-  assert.match(opening, /8 点 05 分左右开奖/);
-  assert.match(opening, /at about 8:05/);
+  assert.match(opening, /8 点 10 分开始抽奖/);
+  assert.match(opening, /at 8:10/);
   assert.match(opening, /只限购买了抽奖券/, "the opening must say the draw is for ticket holders only");
   assert.match(opening, /two men/, "the warm-up comes before Tian");
   assert.ok(opening.indexOf("two men") < opening.indexOf("Please welcome Tian"), "warm-up first, then Tian");
-  // The President leads the entrance; members go last.
-  assert.match(ENTRANCE[0][1], /会长带领/);
-  assert.match(ENTRANCE.at(-3)[1], /会员/);
+  // Walk-in starts on the chorus 「我是女神」, President first, members last.
+  assert.match(ENTRANCE[1][0] + ENTRANCE[1][1], /我是女神.*会长/);
+  assert.match(ENTRANCE[2][1], /副会长.*理事.*会员/);
+  // The two draw rounds cover prizes 1–10 exactly once.
+  const drawn = SEGMENTS.flatMap((s) => s.items).filter((it) => it[0] === "list" && it[1] === "prizes")
+    .flatMap(([, , o]) => Array.from({ length: o.to - o.from + 1 }, (_, j) => o.from + j));
+  assert.deepEqual(drawn, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   for (const [t] of RUNSHEET) assert.match(t, /^\d{2}:\d{2}$/);
   const shared = RUNSHEET.filter(([t]) => SEGMENTS.some((s) => s.t === t)).length;
   assert.ok(shared >= 15, `script and run sheet share only ${shared} start times`);
@@ -75,6 +81,5 @@ test("every segment has both languages, and MC lines alternate speakers within r
     const spoken = s.items.some((it) => ["S", "W", "SW"].includes(it[0]));
     if (spoken) assert.ok(who.has("S") && who.has("W"), `${s.t} ${s.zh}: both MCs should speak`);
   }
-  // Goddess Entrance cue sheet adds up to the 21 people: 12 members + 7 board + VP + President.
-  assert.equal(ENTRANCE.length, 6);
+  assert.ok(ENTRANCE.every((r) => r.length === 3 && r.every(Boolean)), "entrance cue rows need a cue, zh and en");
 });
