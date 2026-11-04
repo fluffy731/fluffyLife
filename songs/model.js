@@ -186,6 +186,15 @@ export function studyItem({ kind, entry, line, song, items, unit, id }) {
 
 export const inReviews = (id, progress) => !!progress?.[id];
 
+// Which songs a batch translates. Ticks live only while the app is open, so with nothing ticked (after
+// reopening) the batch covers every song still to translate, minus those whose lyrics were never found
+// (they need lyrics pasted first; retrying the search would only fail again).
+export function batchSongs(songs, ticked) {
+  const chosen = [...ticked].map((id) => songs.find((s) => s.id === id)).filter((s) => s && s.status !== "done");
+  if (chosen.length) return { ticked: true, list: chosen };
+  return { ticked: false, list: songs.filter((s) => s.status !== "done" && !(s.error === "noLyrics" && !s.lyrics)) };
+}
+
 // ---------- song records (IndexedDB and backups) ----------
 export const newSongId = () => `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 

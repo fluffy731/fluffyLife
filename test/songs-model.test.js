@@ -145,3 +145,15 @@ test("cleanSong keeps a valid record and strips anything else from a backup", ()
   assert.equal(extra.status, "lyrics");
   assert.match(newSongId(), /^s[0-9a-z]+$/);
 });
+
+import { batchSongs } from "../songs/model.js";
+
+test("batchSongs: ticked songs when any are ticked, otherwise every song still to translate", () => {
+  const s = (id, status, extra = {}) => ({ id, title: id, status, lyrics: status === "queued" ? null : "가", ...extra });
+  const songs = [s("a", "done"), s("b", "queued"), s("c", "lyrics"), s("d", "error", { error: "server" }),
+    s("e", "error", { error: "noLyrics", lyrics: null }), s("f", "error", { error: "noLyrics", lyrics: "붙여 넣은 가사" })];
+  // Nothing ticked (after reopening the app): all untranslated, except songs whose lyrics were never found.
+  assert.deepEqual(batchSongs(songs, new Set()), { ticked: false, list: ["b", "c", "d", "f"].map((id) => songs.find((x) => x.id === id)) });
+  // Ticked songs win, and a ticked song that is already done or gone is left out.
+  assert.deepEqual(batchSongs(songs, new Set(["a", "c", "e", "zz"])), { ticked: true, list: [songs[2], songs[4]] });
+});
