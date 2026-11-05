@@ -186,6 +186,33 @@ export function studyItem({ kind, entry, line, song, items, unit, id }) {
 
 export const inReviews = (id, progress) => !!progress?.[id];
 
+// Find a song: by title, artist, a Korean lyric line, a line's Chinese or English translation, or a grammar
+// form the translation found. Case and spaces are ignored, so 볼때마다 finds "볼 때마다". Returns where it
+// matched and the Korean line to show under the song (null for title and artist), or null for no match.
+const squash = (s) => String(s ?? "").normalize("NFC").toLowerCase().replace(/\s+/g, "");
+export function findInSong(song, q) {
+  const k = squash(q);
+  if (!k) return { field: null, line: null };
+  if (squash(song.title).includes(k)) return { field: "title", line: null };
+  if (squash(song.artist).includes(k)) return { field: "artist", line: null };
+  const lyric = splitLyrics(song.lyrics ?? "").find((l) => l && squash(l).includes(k));
+  if (lyric) return { field: "lyric", line: normLine(lyric) };
+  const lines = song.analysis?.lines ?? [];
+  const tr = lines.find((l) => squash(l.zh).includes(k) || squash(l.en).includes(k));
+  if (tr) return { field: "translation", line: tr.ko };
+  const gr = lines.find((l) => l.grammar.some((g) => squash(g.form).includes(k)));
+  if (gr) return { field: "grammar", line: gr.ko };
+  return null;
+}
+
+// The Songs list filter chips.
+export function inFilter(song, f) {
+  if (f === "done") return song.status === "done";
+  if (f === "todo") return song.status !== "done" && song.status !== "error";
+  if (f === "error") return song.status === "error";
+  return true;
+}
+
 // Which songs a batch translates. Ticks live only while the app is open, so with nothing ticked (after
 // reopening) the batch covers every song still to translate, minus those whose lyrics were never found
 // (they need lyrics pasted first; retrying the search would only fail again).

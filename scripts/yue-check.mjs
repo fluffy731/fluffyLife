@@ -27,9 +27,19 @@ const b = await chromium.launch();
   await page.close();
 }
 
+// The 🔊 steps tap the first speaker on Home, on the word of the hour. That word comes from the clock, and in
+// some hours it is a grammar point, whose card has no 🔊, so these pages run at a fixed time.
+async function fixedClockPage() {
+  const page = await b.newPage();
+  await page.addInitScript(() => {
+    const FIXED = new Date("2026-10-15T09:30:00").getTime(), D = Date;
+    window.Date = class extends D { constructor(...a) { super(...(a.length ? a : [FIXED])); } static now() { return FIXED; } };
+  });
+  return page;
+}
 // 2. speech: zh-HK missing → zh-TW; none → Korean hint (review focus 5)
 async function speechRun(voices, path = "yue/") {
-  const page = await b.newPage();
+  const page = await fixedClockPage();
   await page.addInitScript((vs) => {
     window.__spoken = []; window.__alerts = []; window.__order = [];
     // iOS 16.4+ Audio Session API: record its type at the moment speak() is called.
@@ -70,7 +80,7 @@ async function speechRun(voices, path = "yue/") {
   const { koPack } = await import("../packs/ko.js");
   const wav = Buffer.from("UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=", "base64");
   async function clipRun(path, pack, withIndex) {
-    const page = await b.newPage();
+    const page = await fixedClockPage();
     const names = buildJobs(pack).map((j) => j.file.split("/").pop().replace(".mp3", ""));
     await page.route("**/audio/*/index.json", (r) => (withIndex ? r.fulfill({ contentType: "application/json", body: JSON.stringify({ clips: names }) }) : r.fulfill({ status: 404, body: "" })));
     await page.route("**/audio/*/*.mp3", (r) => r.fulfill({ contentType: "audio/mpeg", body: wav }));

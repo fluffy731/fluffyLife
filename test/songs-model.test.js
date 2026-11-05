@@ -157,3 +157,28 @@ test("batchSongs: ticked songs when any are ticked, otherwise every song still t
   // Ticked songs win, and a ticked song that is already done or gone is left out.
   assert.deepEqual(batchSongs(songs, new Set(["a", "c", "e", "zz"])), { ticked: true, list: [songs[2], songs[4]] });
 });
+
+import { findInSong, inFilter } from "../songs/model.js";
+
+test("findInSong matches title, artist, a lyric line, a translation or a grammar form", () => {
+  const song = { id: "s1", title: "비가 와도", artist: "Made-up Band", status: "done", lyrics: "[00:01.00]너를 볼 때마다 웃게 돼\n\n비가 와도 괜찮아",
+    analysis: { lines: [
+      { ko: "너를 볼 때마다 웃게 돼", zh: "每次看到你我都會笑", en: "Every time I see you, I end up smiling", grammar: [{ form: "-(으)ㄹ 때마다" }], words: [] },
+      { ko: "비가 와도 괜찮아", zh: "下雨也沒關係", en: "It's fine even if it rains", grammar: [{ form: "-아/어도" }], words: [] } ] } };
+  assert.deepEqual(findInSong(song, ""), { field: null, line: null });
+  assert.deepEqual(findInSong(song, "  비가와도 "), { field: "title", line: null });          // spaces and case don't matter
+  assert.deepEqual(findInSong(song, "made-UP"), { field: "artist", line: null });
+  assert.deepEqual(findInSong(song, "볼때마다"), { field: "lyric", line: "너를 볼 때마다 웃게 돼" });
+  assert.deepEqual(findInSong(song, "end up smiling"), { field: "translation", line: "너를 볼 때마다 웃게 돼" });
+  assert.deepEqual(findInSong(song, "沒關係"), { field: "translation", line: "비가 와도 괜찮아" });
+  assert.deepEqual(findInSong(song, "아/어도"), { field: "grammar", line: "비가 와도 괜찮아" });
+  assert.equal(findInSong(song, "사랑"), null);
+  // An imported song with no lyrics yet is still found by title.
+  assert.deepEqual(findInSong({ id: "s2", title: "Love story", artist: "볼빨간사춘기", status: "queued", lyrics: null, analysis: null }, "love"), { field: "title", line: null });
+});
+
+test("inFilter sorts songs into translated, to translate and needs attention", () => {
+  const s = (status) => ({ status });
+  assert.deepEqual(["queued", "lyrics", "done", "error"].map((st) => ["all", "done", "todo", "error"].map((f) => inFilter(s(st), f))), [
+    [true, false, true, false], [true, false, true, false], [true, true, false, false], [true, false, false, true]]);
+});

@@ -5,7 +5,7 @@ import { searchLrclib } from "./lrclib.js";
 import { translateSong } from "./claude.js";
 import {
   splitLyrics, uniqueHangulLines, normLine, hasHangul, parseSongList, songKey, newSongId, cleanSong,
-  SONG_MODELS, DEFAULT_MODEL, systemText, estimateCost, studyItem, findStudyId, inReviews, batchSongs,
+  SONG_MODELS, DEFAULT_MODEL, systemText, estimateCost, studyItem, findStudyId, inReviews, batchSongs, findInSong, inFilter,
 } from "./model.js";
 import { grade } from "../lib/fsrs.js";
 import { romanize } from "../lib/pron.js";
@@ -33,7 +33,7 @@ export function createSongs(c) {
   const { esc, say } = c;
   let store = null, storeError = false, loaded = false;
   let songs = [];                         // in memory, so Export can run inside the tap (iOS share sheet)
-  const ui = { view: "list", id: null, draft: {}, hits: [], msg: "", busy: "", open: -1, ticked: new Set(), importText: "" };
+  const ui = { view: "list", id: null, draft: {}, hits: [], msg: "", busy: "", open: -1, ticked: new Set(), importText: "", q: "", filter: "all" };
   let run = null;                         // the batch in progress: { stopping }
   let lock = null;                        // Screen Wake Lock held while a batch runs
 
@@ -91,13 +91,36 @@ export function createSongs(c) {
         <p class="small muted">Keep this screen open until it finishes: iPhone pauses the app when the screen locks or you switch away. Each song is saved as soon as it's done.</p>
         <div class="actions" style="grid-template-columns:1fr"><button class="btn" data-s="stop" ${run.stopping ? "disabled" : ""}>${run.stopping ? "Stopping after this song…" : "Stop after this song"}</button></div>` : ""}</div>`
       : list.length ? `<button class="btn primary" data-s="batch" style="width:100%;margin-top:10px">${label} (about ${usd(total)})</button>` : "";
-    const sorted = songs.slice().sort((a, b) => b.addedAt - a.addedAt);
-    return `<div class="songs">${msgHTML()}${buttons}${batch}<div class="list" style="margin-top:12px">${sorted.map((s) => {
+    const count = (f) => songs.filter((s) => inFilter(s, f)).length;
+    const chips = [["all", "All"], ["done", "Translated"], ["todo", "To translate"], ["error", "Needs attention"]]
+      .filter(([f]) => f !== "error" || count("error") || ui.filter === "error")
+      .map(([f, label]) => `<button data-s="filter" data-sfilter="${f}" class="${ui.filter === f ? "on" : ""}">${label} ${count(f)}</button>`).join("");
+    return `<div class="songs">${msgHTML()}${buttons}${batch}
+      <input type="search" id="song-q" class="song-find" placeholder="Find: title, artist, a lyric or its meaning" value="${esc(ui.q)}" autocomplete="off">
+      <div class="chips">${chips}</div>
+      <div id="song-results">${resultsHTML()}</div></div>`;
+  }
+
+  // The song rows under the find box. Typing redraws only this part, so the box keeps its IME composition.
+  function resultsHTML() {
+    const shown = songs.slice().sort((a, b) => b.addedAt - a.addedAt)
+      .filter((s) => inFilter(s, ui.filter)).map((s) => [s, findInSong(s, ui.q)]).filter(([, hit]) => hit);
+    const narrowed = ui.q.trim() || ui.filter !== "all";
+    const head = `<div class="small muted">${narrowed ? `${shown.length} of ${songs.length} songs` : `${songs.length} song${songs.length > 1 ? "s" : ""}`}</div>`;
+    if (!shown.length) return head + `<div class="card empty small">No songs match${ui.q.trim() ? ` “${esc(ui.q.trim())}”` : " this filter"}.</div>`;
+    return head + `<div class="list" style="margin-top:8px">${shown.map(([s, hit]) => {
       const points = s.analysis ? new Set(s.analysis.lines.flatMap((l) => l.grammar.map((g) => g.appId || normLine(g.form)))).size : 0;
       return `<div class="song-row item" data-status="${esc(s.status)}"><div class="row">
         ${s.status === "done" ? "" : `<input type="checkbox" data-s="tick" data-id="${esc(s.id)}" ${ui.ticked.has(s.id) ? "checked" : ""} aria-label="Select for translating">`}
-        <div data-s="open" data-id="${esc(s.id)}" style="flex:1"><b>${esc(s.title)}</b><div class="meta">${esc(s.artist)}${s.artist ? " · " : ""}${STATUS[s.status]}${points ? ` · ${points} grammar point${points > 1 ? "s" : ""}` : ""}</div></div></div></div>`;
-    }).join("")}</div></div>`;
+        <div data-s="open" data-id="${esc(s.id)}" style="flex:1"><b>${esc(s.title)}</b><div class="meta">${esc(s.artist)}${s.artist ? " · " : ""}${STATUS[s.status]}${points ? ` · ${points} grammar point${points > 1 ? "s" : ""}` : ""}</div>${hit.line ? `<div class="song-hit">${esc(hit.line)}</div>` : ""}</div></div></div>`;
+    }).join("")}</div>`;
+  }
+
+  function input(e) {
+    if (e.target.id !== "song-q") return false;
+    ui.q = e.target.value;
+    const el = document.querySelector("#song-results"); if (el) el.innerHTML = resultsHTML();
+    return true;
   }
 
   function addHTML() {
@@ -310,6 +333,7 @@ export function createSongs(c) {
       }
       case "batch": if (ui.busy || run) return false; return later(runBatch());
       case "stop": if (run) run.stopping = true; return true;
+      case "filter": ui.filter = el.dataset.sfilter; return true;
       case "study": {
         const song = byId(ui.id); if (!song?.analysis) return false;
         ui.open = Number(el.closest("[data-line]")?.dataset.line ?? -1);
@@ -373,7 +397,7 @@ export function createSongs(c) {
 
   return {
     render: () => (ui.view === "add" ? addHTML() : ui.view === "import" ? importHTML() : ui.view === "song" ? songHTML() : listHTML()),
-    click, change, settingsHTML, importSongs,
+    click, change, input, settingsHTML, importSongs,
     exportSongs: () => songs.slice(),
   };
 }

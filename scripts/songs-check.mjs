@@ -282,6 +282,54 @@ let backupText = null;
   await ctx.close();
 }
 
+// ---- find a song: by title, by a lyric or its translation, and filter by status ----
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  await mockNetwork(ctx);
+  const page = await ctx.newPage();
+  page.on("dialog", (d) => d.accept());
+  await page.goto(base + "korean/", { waitUntil: "networkidle" });
+  await page.evaluate(() => localStorage.setItem("korean.songs.apiKey", "sk-ant-test-key-1234"));
+  await page.click('[data-tab="songs"]');
+  await page.click('[data-s="import"]');
+  await page.fill("#song-list", "봄 – 그룹\n바다 – 가수 E\nLove story – 볼빨간사춘기");
+  await page.click('[data-s="importGo"]');
+  await page.click('[data-s="add"]');
+  await page.fill("#song-title", "우산"); await page.fill("#song-lyrics", "비가 와도 괜찮아");
+  await page.click('[data-s="save"]');
+  apiMode = "ok"; apiDelay = 0;
+  await page.click('[data-s="translate"]');
+  await page.waitForSelector(".song-sum");
+  await page.click('[data-s="back"]');
+  ok("the list has a find box", (await page.locator("#song-q").count()) === 1);
+
+  await page.evaluate(() => { window.__sq = document.querySelector("#song-q"); });
+  await page.type("#song-q", "바다");
+  ok("find box is not replaced while typing", await page.evaluate(() => window.__sq === document.querySelector("#song-q")));
+  ok("finds a song by title", (await page.locator(".song-row").count()) === 1 && (await page.textContent(".song-row")).includes("바다"));
+  ok("says how many match", (await page.textContent("#song-results")).includes("1 of 4 songs"));
+  await page.fill("#song-q", "괜찮");
+  ok("finds a song by a lyric and shows the line", (await page.locator(".song-row").count()) === 1 && (await page.textContent(".song-row .song-hit")).includes("비가 와도 괜찮아"));
+  await page.fill("#song-q", "English 1");
+  ok("finds a song by its English translation", (await page.locator(".song-row").count()) === 1 && (await page.textContent(".song-row")).includes("우산"));
+  await page.fill("#song-q", "zzz");
+  ok("no match says so", (await page.locator(".song-row").count()) === 0 && (await page.textContent("#song-results")).includes("No songs match"));
+  await page.fill("#song-q", "");
+  ok("clearing the box shows every song", (await page.locator(".song-row").count()) === 4);
+
+  // Status chips narrow the list; the box and chips combine.
+  await page.click('[data-sfilter="done"]');
+  ok("Translated chip shows the 1 translated song", (await page.locator(".song-row").count()) === 1);
+  await page.click('[data-sfilter="todo"]');
+  ok("To translate chip shows the 3 imported songs", (await page.locator(".song-row").count()) === 3);
+  await page.fill("#song-q", "love");
+  ok("chip and box combine", (await page.locator(".song-row").count()) === 1);
+  await page.click('[data-s="open"]');
+  await page.click('[data-s="back"]');
+  ok("the search is kept after opening a song", (await page.inputValue("#song-q")) === "love" && (await page.locator(".song-row").count()) === 1);
+  await ctx.close();
+}
+
 // ---- restore on a fresh phone, then read it offline ----
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });

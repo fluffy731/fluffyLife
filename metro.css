@@ -220,7 +220,7 @@ input:not([type=checkbox]):not([type=file]), select, textarea { width: 100%; pad
   background: var(--surface); color: var(--ink); font: inherit; font-size: 16px; }
 input:not([type=checkbox]):not([type=file]):focus, select:focus, textarea:focus { outline: none; border-color: var(--route-strong); box-shadow: 0 0 0 3px color-mix(in srgb, var(--route) 25%, transparent); }
 input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
-input[type=search] { padding-left: 42px; background: var(--surface) var(--lens) 13px 50% / 20px no-repeat; -webkit-appearance: none; appearance: none; }
+input[type=search]:not([type=file]) { padding-left: 42px; background: var(--surface) var(--lens) 13px 50% / 20px no-repeat; -webkit-appearance: none; appearance: none; }
 select { -webkit-appearance: none; appearance: none; padding-right: 40px; background: var(--surface) var(--chev) right 12px center / 20px no-repeat; font-weight: 600; }
 input[type=checkbox] { accent-color: var(--route-strong); }
 input[type=file] { font-size: 14px; color: var(--muted); max-width: 100%; }
@@ -372,6 +372,9 @@ details.tip[open] summary::after { transform: rotate(180deg); }
 .in-reviews { display: block; margin-top: 8px; color: var(--route-ink); font-weight: 700; }
 .song-msg { margin-bottom: 10px; }
 .songs > .actions + .song-msg { margin-top: 10px; }
+.songs .song-find { margin-top: 14px; }
+.song-hit { margin-top: 4px; font-size: 13.5px; color: var(--ink); }
+.song-hit::before { content: "“"; } .song-hit::after { content: "”"; }
 .song-msg .progress-line { margin: 10px 0 2px; }
 
 /* ---------- motion: on flip the line draws across the sign, then its subtitles come up ---------- */
