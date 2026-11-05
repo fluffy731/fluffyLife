@@ -356,7 +356,7 @@ function bindEvents() {
     }
   });
   // Only the list re-renders while typing, so the IME composition (Korean jamo, pinyin/zhuyin candidates) is never interrupted.
-  document.addEventListener("input", (e) => { if (e.target.id === "q") { browse.q = e.target.value; const l = $("#browse-list"); if (l) l.innerHTML = browseListHTML(browseList()); } });
+  document.addEventListener("input", (e) => { if (songs?.input(e)) return; if (e.target.id === "q") { browse.q = e.target.value; const l = $("#browse-list"); if (l) l.innerHTML = browseListHTML(browseList()); } });
   document.addEventListener("change", (e) => {
     if (songs?.change(e)) return render();
     if (e.target.id === "unit-pick") { learnUnitKey = e.target.value; queue = []; flipped = false; render(); }

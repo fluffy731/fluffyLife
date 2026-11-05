@@ -5,7 +5,7 @@ import { searchLrclib } from "./lrclib.js";
 import { translateSong } from "./claude.js";
 import {
   splitLyrics, uniqueHangulLines, normLine, hasHangul, parseSongList, songKey, newSongId, cleanSong,
-  SONG_MODELS, DEFAULT_MODEL, systemText, estimateCost, studyItem, findStudyId, inReviews, batchSongs,
+  SONG_MODELS, DEFAULT_MODEL, systemText, estimateCost, studyItem, findStudyId, inReviews, batchSongs, findInSong, inFilter, pickLyrics, koreanLineCount, waitingForLyrics,
 } from "./model.js";
 import { grade } from "../lib/fsrs.js";
 import { romanize } from "../lib/pron.js";
@@ -22,10 +22,12 @@ const MESSAGES = {
   invalid: "The reply couldn't be read. Retry.",
   rejected: "Claude rejected the request. Check your Anthropic account (credit balance, model access).",
   noLyrics: "No lyrics found on LRCLIB. Open the song and paste them.",
+  noKorean: "Only lyrics without Korean were found: an English version, or the song is sung in English. Tap Find other lyrics to pick another version, or paste the Korean lyrics.",
   lrclib: "The lyrics search isn't answering. Try again later, or paste the lyrics.",
   nostorage: "Songs can't be saved on this device.",
 };
 const STATUS = { queued: "not translated", lyrics: "lyrics only", done: "translated", error: "error" };
+const statusText = (s) => (s.status !== "error" ? STATUS[s.status] : s.error === "noKorean" ? "no Korean lyrics" : s.error === "noLyrics" ? "lyrics not found" : "error");
 // For a song whose lyrics aren't fetched yet, the batch estimate assumes a typical song.
 const TYPICAL = { chars: 1200, lines: 30 };
 
@@ -33,7 +35,7 @@ export function createSongs(c) {
   const { esc, say } = c;
   let store = null, storeError = false, loaded = false;
   let songs = [];                         // in memory, so Export can run inside the tap (iOS share sheet)
-  const ui = { view: "list", id: null, draft: {}, hits: [], msg: "", busy: "", open: -1, ticked: new Set(), importText: "" };
+  const ui = { view: "list", id: null, draft: {}, hits: [], msg: "", busy: "", open: -1, ticked: new Set(), importText: "", q: "", filter: "all", relyrics: false };
   let run = null;                         // the batch in progress: { stopping }
   let lock = null;                        // Screen Wake Lock held while a batch runs
 
@@ -91,13 +93,53 @@ export function createSongs(c) {
         <p class="small muted">Keep this screen open until it finishes: iPhone pauses the app when the screen locks or you switch away. Each song is saved as soon as it's done.</p>
         <div class="actions" style="grid-template-columns:1fr"><button class="btn" data-s="stop" ${run.stopping ? "disabled" : ""}>${run.stopping ? "Stopping after this song…" : "Stop after this song"}</button></div>` : ""}</div>`
       : list.length ? `<button class="btn primary" data-s="batch" style="width:100%;margin-top:10px">${label} (about ${usd(total)})</button>` : "";
-    const sorted = songs.slice().sort((a, b) => b.addedAt - a.addedAt);
-    return `<div class="songs">${msgHTML()}${buttons}${batch}<div class="list" style="margin-top:12px">${sorted.map((s) => {
+    const count = (f) => songs.filter((s) => inFilter(s, f)).length;
+    const chips = [["all", "All"], ["done", "Translated"], ["todo", "To translate"], ["error", "Needs attention"]]
+      .filter(([f]) => f !== "error" || count("error") || ui.filter === "error")
+      .map(([f, label]) => `<button data-s="filter" data-sfilter="${f}" class="${ui.filter === f ? "on" : ""}">${label} ${count(f)}</button>`).join("");
+    return `<div class="songs">${msgHTML()}${buttons}${batch}
+      <input type="search" id="song-q" class="song-find" placeholder="Find: title, artist, a lyric or its meaning" value="${esc(ui.q)}" autocomplete="off">
+      <div class="chips">${chips}</div>
+      <div id="song-results">${resultsHTML()}</div></div>`;
+  }
+
+  // The song rows under the find box. Typing redraws only this part, so the box keeps its IME composition.
+  function resultsHTML() {
+    const shown = songs.slice().sort((a, b) => b.addedAt - a.addedAt)
+      .filter((s) => inFilter(s, ui.filter)).map((s) => [s, findInSong(s, ui.q)]).filter(([, hit]) => hit);
+    const narrowed = ui.q.trim() || ui.filter !== "all";
+    const head = `<div class="small muted">${narrowed ? `${shown.length} of ${songs.length} songs` : `${songs.length} song${songs.length > 1 ? "s" : ""}`}</div>`;
+    if (!shown.length) return head + `<div class="card empty small">No songs match${ui.q.trim() ? ` “${esc(ui.q.trim())}”` : " this filter"}.</div>`;
+    return head + `<div class="list" style="margin-top:8px">${shown.map(([s, hit]) => {
       const points = s.analysis ? new Set(s.analysis.lines.flatMap((l) => l.grammar.map((g) => g.appId || normLine(g.form)))).size : 0;
       return `<div class="song-row item" data-status="${esc(s.status)}"><div class="row">
-        ${s.status === "done" ? "" : `<input type="checkbox" data-s="tick" data-id="${esc(s.id)}" ${ui.ticked.has(s.id) ? "checked" : ""} aria-label="Select for translating">`}
-        <div data-s="open" data-id="${esc(s.id)}" style="flex:1"><b>${esc(s.title)}</b><div class="meta">${esc(s.artist)}${s.artist ? " · " : ""}${STATUS[s.status]}${points ? ` · ${points} grammar point${points > 1 ? "s" : ""}` : ""}</div></div></div></div>`;
-    }).join("")}</div></div>`;
+        ${s.status === "done" || waitingForLyrics(s) ? "" : `<input type="checkbox" data-s="tick" data-id="${esc(s.id)}" ${ui.ticked.has(s.id) ? "checked" : ""} aria-label="Select for translating">`}
+        <div data-s="open" data-id="${esc(s.id)}" style="flex:1"><b>${esc(s.title)}</b><div class="meta">${esc(s.artist)}${s.artist ? " · " : ""}${statusText(s)}${points ? ` · ${points} grammar point${points > 1 ? "s" : ""}` : ""}</div>${hit.line ? `<div class="song-hit">${esc(hit.line)}</div>` : ""}</div></div></div>`;
+    }).join("")}</div>`;
+  }
+
+  // Every LRCLIB result for this song with its language, so the right version can be picked; or paste.
+  function relyricsHTML(song) {
+    const rows = ui.busy ? `<div class="small muted">${esc(ui.busy)}</div>`
+      : ui.hits.length ? `<div class="list">${ui.hits.map((h, i) => {
+        const n = koreanLineCount(h.lyrics);
+        const first = n ? uniqueHangulLines(splitLyrics(h.lyrics))[0] : splitLyrics(h.lyrics || "").find(Boolean) || "";
+        return `<div class="item lyric-hit"><div class="row"><b>${esc(h.title)}</b><span class="pill ${n ? "int" : ""}">${n ? `Korean · ${n} lines` : h.lyrics ? "No Korean" : "No lyrics"}</span></div>
+          <div class="meta">${esc(h.artist)}${h.album ? ` · ${esc(h.album)}` : ""}${h.instrumental ? " · instrumental" : ""}</div>
+          ${first ? `<div class="song-hit">${esc(first)}</div>` : ""}
+          ${n ? `<button class="btn" data-s="pickLyrics" data-i="${i}" style="width:100%;margin-top:8px">Use these lyrics</button>` : ""}</div>`;
+      }).join("")}</div>` : `<div class="small muted">No other versions on LRCLIB. Paste the lyrics below.</div>`;
+    return `<h2>Other lyrics</h2>${song.analysis ? `<p class="small muted">Changing the lyrics removes this song's translation.</p>` : ""}${rows}
+      <h2>Or paste them</h2><div class="card">
+        <textarea id="song-lyrics" rows="8" placeholder="Paste the Korean lyrics here">${esc(ui.draft.lyrics ?? "")}</textarea>
+        <div class="actions"><button class="btn primary" data-s="savelyrics">Save lyrics</button><button class="btn" data-s="relyricsCancel">Cancel</button></div></div>`;
+  }
+
+  function input(e) {
+    if (e.target.id !== "song-q") return false;
+    ui.q = e.target.value;
+    const el = document.querySelector("#song-results"); if (el) el.innerHTML = resultsHTML();
+    return true;
   }
 
   function addHTML() {
@@ -161,18 +203,29 @@ export function createSongs(c) {
     const head = `<div class="songs">${msgHTML()}<button class="btn" data-s="back">Songs</button>
       <h2>${esc(song.title)}${song.artist ? ` · ${esc(song.artist)}` : ""}</h2>${why}`;
     const del = `<button class="btn" data-s="delete" style="width:100%;margin-top:16px;color:var(--bad)">Delete song</button></div>`;
+    // Lyrics held: fix them from here (another search result, or pasted), or delete the song.
+    const tail = `<div class="actions" style="margin-top:16px"><button class="btn" data-s="relyrics">Find other lyrics</button><button class="btn" data-s="delete" style="color:var(--bad)">Delete song</button></div></div>`;
+    if (ui.relyrics) return head + relyricsHTML(song) + "</div>";
     if (!song.lyrics) {
-      return head + `<div class="card"><p class="small muted">Lyrics not fetched yet.</p>
-        <div class="actions" style="grid-template-columns:1fr"><button class="btn primary" data-s="fetch">${ui.busy ? esc(ui.busy) : "Find lyrics"}</button></div>
+      // A song whose search already failed leads with the results list: searching the same way again won't help.
+      const find = waitingForLyrics(song)
+        ? `<div class="actions" style="grid-template-columns:1fr"><button class="btn primary" data-s="relyrics">See all results</button></div>`
+        : `<p class="small muted">Lyrics not fetched yet.</p>
+        <div class="actions"><button class="btn primary" data-s="fetch">${ui.busy ? esc(ui.busy) : "Find lyrics"}</button><button class="btn" data-s="relyrics">See all results</button></div>`;
+      return head + `<div class="card">${find}
         <textarea id="song-lyrics" rows="8" placeholder="…or paste the lyrics here" style="margin-top:10px">${esc(ui.draft.lyrics ?? "")}</textarea>
         <div class="actions" style="grid-template-columns:1fr"><button class="btn" data-s="savelyrics">Save lyrics</button></div></div>` + del;
+    }
+    const lyricsCard = `<div class="card" style="margin-top:12px">${splitLyrics(song.lyrics).map((l) => (l ? `<div>${esc(l)}</div>` : "<br>")).join("")}</div>`;
+    if (!koreanLineCount(song.lyrics)) {
+      return head + `<div class="card small">These lyrics have no Korean lines, so there is nothing to translate. They may be an English version, or the song may be sung in English.
+        <div class="actions" style="grid-template-columns:1fr"><button class="btn primary" data-s="relyrics">Find other lyrics</button></div></div>` + lyricsCard + tail;
     }
     if (song.status !== "done" || !song.analysis) {
       const lines = uniqueHangulLines(splitLyrics(song.lyrics));
       const est = estimateCost(model(), song.lyrics.length, lines.length, sysChars());
       return head + `<div class="actions" style="grid-template-columns:1fr"><button class="btn primary" data-s="translate">${ui.busy ? esc(ui.busy)
-        : `${song.status === "error" ? "Retry" : "Translate & explain"} (about ${usd(est)})`}</button></div>
-        <div class="card" style="margin-top:12px">${splitLyrics(song.lyrics).map((l) => (l ? `<div>${esc(l)}</div>` : "<br>")).join("")}</div>` + del;
+        : `${song.status === "error" ? "Retry" : "Translate & explain"} (about ${usd(est)})`}</button></div>` + lyricsCard + tail;
     }
     const a = song.analysis;
     const entries = new Map(a.lines.map((l) => [normLine(l.ko), l]));
@@ -187,14 +240,14 @@ export function createSongs(c) {
         return `<span class="song-chip${id && inReviews(id, progress) ? " done" : ""}">${esc(g.form)}${n > 1 ? ` ×${n}` : ""}</span>`;
       }).join("")}</div>` : ""}
       <div class="muted">Tap a line for its grammar and words.</div></div>`;
-    return head + sum + `<div class="list song-lines" style="margin-top:12px">${splitLyrics(song.lyrics).map((l, i) => lineHTML(l, i, entries, song)).join("")}</div>` + del;
+    return head + sum + `<div class="list song-lines" style="margin-top:12px">${splitLyrics(song.lyrics).map((l, i) => lineHTML(l, i, entries, song)).join("")}</div>` + tail;
   }
 
   // ---------- actions ----------
   async function translate(song, { ask = true } = {}) {
     if (!key()) { ui.msg = "noKey"; return false; }
     const lines = uniqueHangulLines(splitLyrics(song.lyrics));
-    if (!lines.length) { ui.msg = "Nothing to translate: no Korean lines in this song."; return false; }
+    if (!lines.length) { song.status = "error"; song.error = "noKorean"; await save(song); ui.msg = "noKorean"; return false; }
     const m = model();
     if (ask && !confirm(`Translate with ${SONG_MODELS[m].label}? About ${usd(estimateCost(m, song.lyrics.length, lines.length, sysChars()))}`)) return false;
     try {
@@ -210,13 +263,14 @@ export function createSongs(c) {
     return song.status === "done";
   }
 
+  // Fetches lyrics with Korean in them. Returns null when found, or why not ("noLyrics", "noKorean"),
+  // which is saved on the song so it waits for lyrics to be picked or pasted.
   async function fetchLyrics(song) {
-    const hits = await searchLrclib({ title: song.title, artist: song.artist });
-    const hit = hits.find((h) => h.lyrics && !h.instrumental);
-    if (!hit) return false;
-    Object.assign(song, { lyrics: hit.lyrics, album: song.album ?? hit.album, status: "lyrics", error: null });
+    const { hit, reason } = pickLyrics(await searchLrclib({ title: song.title, artist: song.artist }));
+    if (hit) Object.assign(song, { lyrics: hit.lyrics, album: song.album ?? hit.album, status: "lyrics", error: null });
+    else Object.assign(song, { status: "error", error: reason });
     await save(song);
-    return true;
+    return reason;
   }
 
   async function runBatch() {
@@ -230,7 +284,7 @@ export function createSongs(c) {
         if (!byId(song.id)) continue;            // deleted since the batch started
         run.at = i; ui.busy = `Translating ${i + 1} of ${list.length}: ${song.title}…`; refresh();
         try {
-          if (!song.lyrics && !(await fetchLyrics(song))) { song.status = "error"; song.error = "noLyrics"; await save(song); continue; }
+          if (!song.lyrics && (await fetchLyrics(song))) { ui.ticked.delete(song.id); continue; }
         } catch (e) { song.status = "error"; song.error = e.message === "offline" ? "offline" : "lrclib"; await save(song); continue; }
         if (await translate(song, { ask: false })) { ui.ticked.delete(song.id); done++; }
         if (ui.msg === "noKey") break;
@@ -265,8 +319,8 @@ export function createSongs(c) {
     switch (a) {
       case "add": ui.view = "add"; ui.draft = {}; ui.hits = []; return true;
       case "import": ui.view = "import"; return true;
-      case "back": ui.view = "list"; ui.open = -1; return true;
-      case "open": ui.view = "song"; ui.id = el.dataset.id; ui.open = -1; ui.draft = {}; return true;
+      case "back": ui.view = "list"; ui.open = -1; ui.relyrics = false; return true;
+      case "open": ui.view = "song"; ui.id = el.dataset.id; ui.open = -1; ui.draft = {}; ui.relyrics = false; return true;
       case "tick": { const id = el.dataset.id; if (ui.ticked.has(id)) ui.ticked.delete(id); else ui.ticked.add(id); return true; }
       case "search":
         if (!ui.draft.title?.trim()) { ui.msg = "Type a title first."; return true; }
@@ -292,13 +346,31 @@ export function createSongs(c) {
       }
       case "savelyrics": {
         const song = byId(ui.id); if (!song || !ui.draft.lyrics?.trim()) { ui.msg = "Paste the lyrics first."; return true; }
-        Object.assign(song, { lyrics: ui.draft.lyrics, status: "lyrics", error: null, source: "paste" }); ui.draft = {};
+        if (song.analysis && !confirm("Save these lyrics? This song's translation will be removed.")) return false;
+        Object.assign(song, { lyrics: ui.draft.lyrics, status: "lyrics", error: null, source: "paste", analysis: null }); ui.draft = {}; ui.relyrics = false;
+        return later(save(song));
+      }
+      case "relyrics": {
+        const song = byId(ui.id); if (!song) return false;
+        ui.relyrics = true; ui.hits = []; ui.draft = {}; ui.busy = "Searching…";
+        return later(searchLrclib({ title: song.title, artist: song.artist })
+          .then((h) => { ui.hits = h; })
+          .catch((e) => { ui.msg = e.message === "offline" ? "offline" : "lrclib"; })
+          .finally(() => { ui.busy = ""; }));
+      }
+      case "relyricsCancel": ui.relyrics = false; ui.hits = []; return true;
+      case "pickLyrics": {
+        const song = byId(ui.id), h = ui.hits[Number(el.dataset.i)];
+        if (!song || !h || !koreanLineCount(h.lyrics)) return false;
+        if (song.analysis && !confirm("Use these lyrics? This song's translation will be removed.")) return false;
+        Object.assign(song, { lyrics: h.lyrics, album: h.album ?? song.album, source: "lrclib", status: "lyrics", error: null, analysis: null });
+        ui.relyrics = false; ui.hits = [];
         return later(save(song));
       }
       case "fetch": {
         const song = byId(ui.id); if (!song) return false;
         ui.busy = "Searching…";
-        return later(fetchLyrics(song).then((found) => { if (!found) ui.msg = "noLyrics"; })
+        return later(fetchLyrics(song).then((why) => { if (why) ui.msg = why; })
           .catch((e) => { ui.msg = e.message === "offline" ? "offline" : "lrclib"; }).finally(() => { ui.busy = ""; }));
       }
       case "translate": {
@@ -310,6 +382,7 @@ export function createSongs(c) {
       }
       case "batch": if (ui.busy || run) return false; return later(runBatch());
       case "stop": if (run) run.stopping = true; return true;
+      case "filter": ui.filter = el.dataset.sfilter; return true;
       case "study": {
         const song = byId(ui.id); if (!song?.analysis) return false;
         ui.open = Number(el.closest("[data-line]")?.dataset.line ?? -1);
@@ -373,7 +446,7 @@ export function createSongs(c) {
 
   return {
     render: () => (ui.view === "add" ? addHTML() : ui.view === "import" ? importHTML() : ui.view === "song" ? songHTML() : listHTML()),
-    click, change, settingsHTML, importSongs,
+    click, change, input, settingsHTML, importSongs,
     exportSongs: () => songs.slice(),
   };
 }

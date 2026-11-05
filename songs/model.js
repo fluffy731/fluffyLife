@@ -186,13 +186,54 @@ export function studyItem({ kind, entry, line, song, items, unit, id }) {
 
 export const inReviews = (id, progress) => !!progress?.[id];
 
+// Find a song: by title, artist, a Korean lyric line, a line's Chinese or English translation, or a grammar
+// form the translation found. Case and spaces are ignored, so 볼때마다 finds "볼 때마다". Returns where it
+// matched and the Korean line to show under the song (null for title and artist), or null for no match.
+const squash = (s) => String(s ?? "").normalize("NFC").toLowerCase().replace(/\s+/g, "");
+export function findInSong(song, q) {
+  const k = squash(q);
+  if (!k) return { field: null, line: null };
+  if (squash(song.title).includes(k)) return { field: "title", line: null };
+  if (squash(song.artist).includes(k)) return { field: "artist", line: null };
+  const lyric = splitLyrics(song.lyrics ?? "").find((l) => l && squash(l).includes(k));
+  if (lyric) return { field: "lyric", line: normLine(lyric) };
+  const lines = song.analysis?.lines ?? [];
+  const tr = lines.find((l) => squash(l.zh).includes(k) || squash(l.en).includes(k));
+  if (tr) return { field: "translation", line: tr.ko };
+  const gr = lines.find((l) => l.grammar.some((g) => squash(g.form).includes(k)));
+  if (gr) return { field: "grammar", line: gr.ko };
+  return null;
+}
+
+// The Songs list filter chips.
+export function inFilter(song, f) {
+  if (f === "done") return song.status === "done";
+  if (f === "todo") return song.status !== "done" && song.status !== "error";
+  if (f === "error") return song.status === "error";
+  return true;
+}
+
+// Korean lines in a lyrics text (repeats counted once). Zero means there is nothing to translate.
+export const koreanLineCount = (lyrics) => uniqueHangulLines(splitLyrics(lyrics ?? "")).length;
+
+// The lyrics search can return an English version (or a song sung in English) first. Take the first result,
+// in the search's own order, that has Korean lines; with none, say whether lyrics were missing or not Korean.
+export function pickLyrics(hits) {
+  const usable = hits.filter((h) => h.lyrics && !h.instrumental);
+  if (!usable.length) return { hit: null, reason: "noLyrics" };
+  const hit = usable.find((h) => koreanLineCount(h.lyrics) > 0);
+  return hit ? { hit, reason: null } : { hit: null, reason: "noKorean" };
+}
+
 // Which songs a batch translates. Ticks live only while the app is open, so with nothing ticked (after
-// reopening) the batch covers every song still to translate, minus those whose lyrics were never found
-// (they need lyrics pasted first; retrying the search would only fail again).
+// reopening) the batch covers every song still to translate, minus those waiting for Korean lyrics (not found,
+// or found only without Korean): they need lyrics picked or pasted first, and retrying would only fail again.
+export const waitingForLyrics = (s) => (s.error === "noLyrics" || s.error === "noKorean") && !koreanLineCount(s.lyrics);
+const translatable = (s) => s.status !== "done" && !waitingForLyrics(s);
 export function batchSongs(songs, ticked) {
-  const chosen = [...ticked].map((id) => songs.find((s) => s.id === id)).filter((s) => s && s.status !== "done");
+  const chosen = [...ticked].map((id) => songs.find((s) => s.id === id)).filter((s) => s && translatable(s));
   if (chosen.length) return { ticked: true, list: chosen };
-  return { ticked: false, list: songs.filter((s) => s.status !== "done" && !(s.error === "noLyrics" && !s.lyrics)) };
+  return { ticked: false, list: songs.filter(translatable) };
 }
 
 // ---------- song records (IndexedDB and backups) ----------
