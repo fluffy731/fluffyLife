@@ -213,13 +213,27 @@ export function inFilter(song, f) {
   return true;
 }
 
+// Korean lines in a lyrics text (repeats counted once). Zero means there is nothing to translate.
+export const koreanLineCount = (lyrics) => uniqueHangulLines(splitLyrics(lyrics ?? "")).length;
+
+// The lyrics search can return an English version (or a song sung in English) first. Take the first result,
+// in the search's own order, that has Korean lines; with none, say whether lyrics were missing or not Korean.
+export function pickLyrics(hits) {
+  const usable = hits.filter((h) => h.lyrics && !h.instrumental);
+  if (!usable.length) return { hit: null, reason: "noLyrics" };
+  const hit = usable.find((h) => koreanLineCount(h.lyrics) > 0);
+  return hit ? { hit, reason: null } : { hit: null, reason: "noKorean" };
+}
+
 // Which songs a batch translates. Ticks live only while the app is open, so with nothing ticked (after
-// reopening) the batch covers every song still to translate, minus those whose lyrics were never found
-// (they need lyrics pasted first; retrying the search would only fail again).
+// reopening) the batch covers every song still to translate, minus those waiting for Korean lyrics (not found,
+// or found only without Korean): they need lyrics picked or pasted first, and retrying would only fail again.
+export const waitingForLyrics = (s) => (s.error === "noLyrics" || s.error === "noKorean") && !koreanLineCount(s.lyrics);
+const translatable = (s) => s.status !== "done" && !waitingForLyrics(s);
 export function batchSongs(songs, ticked) {
-  const chosen = [...ticked].map((id) => songs.find((s) => s.id === id)).filter((s) => s && s.status !== "done");
+  const chosen = [...ticked].map((id) => songs.find((s) => s.id === id)).filter((s) => s && translatable(s));
   if (chosen.length) return { ticked: true, list: chosen };
-  return { ticked: false, list: songs.filter((s) => s.status !== "done" && !(s.error === "noLyrics" && !s.lyrics)) };
+  return { ticked: false, list: songs.filter(translatable) };
 }
 
 // ---------- song records (IndexedDB and backups) ----------

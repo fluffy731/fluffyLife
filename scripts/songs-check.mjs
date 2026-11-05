@@ -47,7 +47,7 @@ const browser = await chromium.launch();
 
 // ---- the full flow, with LRCLIB and the Claude API faked ----
 const { LYRICS } = await import(join(process.cwd(), "test/fixtures/songs.js"));
-let apiMode = "ok", apiDelay = 0; const apiBodies = [];
+let apiMode = "ok", apiDelay = 0, lrclibHits = null; const apiBodies = [];
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET, POST, OPTIONS" };
 // The SDK streams: answer with the same server-sent events the Messages API sends.
 function sse(json) {
@@ -67,7 +67,7 @@ function analysisFor(body) {
 }
 async function mockNetwork(target) {
   await target.route("https://lrclib.net/api/search**", (r) => r.fulfill({ headers: CORS, contentType: "application/json",
-    body: JSON.stringify([{ trackName: "빗소리", artistName: "가수", albumName: "A", duration: 180, instrumental: false, plainLyrics: LYRICS, syncedLyrics: null }]) }));
+    body: JSON.stringify(lrclibHits ?? [{ trackName: "빗소리", artistName: "가수", albumName: "A", duration: 180, instrumental: false, plainLyrics: LYRICS, syncedLyrics: null }]) }));
   await target.route("https://api.anthropic.com/**", async (r) => {
     if (r.request().method() === "OPTIONS") return r.fulfill({ status: 204, headers: CORS });
     const body = JSON.parse(r.request().postData() || "{}"); apiBodies.push(body);
@@ -147,8 +147,7 @@ let backupText = null;
   await page.click('[data-s="add"]');
   await page.fill("#song-title", "English one"); await page.fill("#song-lyrics", "Oh baby\nla la");
   await page.click('[data-s="save"]');
-  await page.click('[data-s="translate"]');
-  ok("no Korean lines: nothing to translate, no call", (await page.textContent(".song-msg")).includes("Nothing to translate") && apiBodies.length === 1);
+  ok("no Korean lines: no Translate button, no call", (await page.locator('[data-s="translate"]').count()) === 0 && (await page.textContent("#view")).includes("no Korean lines") && apiBodies.length === 1);
 
   // A refused key: plain message, lyrics kept.
   apiMode = "401";
@@ -328,6 +327,67 @@ let backupText = null;
   await page.click('[data-s="back"]');
   ok("the search is kept after opening a song", (await page.inputValue("#song-q")) === "love" && (await page.locator(".song-row").count()) === 1);
   await ctx.close();
+}
+
+// ---- wrong lyrics: an English version is never translated, and other lyrics can be picked or pasted ----
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  await mockNetwork(ctx);
+  const page = await ctx.newPage();
+  page.on("dialog", (d) => d.accept());
+  await page.goto(base + "korean/", { waitUntil: "networkidle" });
+  await page.evaluate(() => localStorage.setItem("korean.songs.apiKey", "sk-ant-test-key-1234"));
+  const hit = (album, lyrics) => ({ trackName: "Parallel Night", artistName: "서영주", albumName: album, duration: 200, instrumental: false, plainLyrics: lyrics, syncedLyrics: null });
+  const EN = hit("English", "You looked so pretty last night\nIt was so hard to fake it");
+  const KO = hit("Korean", LYRICS), KO2 = hit("Korean live", "비가 와도 괜찮아\n비가 와도");
+  apiMode = "ok"; apiDelay = 0; lrclibHits = [EN];
+  await page.click('[data-tab="songs"]');
+  await page.click('[data-s="import"]');
+  await page.fill("#song-list", "Parallel Night – 서영주");
+  await page.click('[data-s="importGo"]');
+  const before = apiBodies.length;
+  await page.click('[data-s="batch"]');
+  await page.waitForFunction(() => document.querySelector('.song-row[data-status="error"]') && !document.querySelector('[data-s="stop"]'), null, { timeout: 15000 });
+  ok("only English lyrics found: the song says no Korean lyrics", (await page.textContent(".song-row")).includes("no Korean lyrics"));
+  ok("only English lyrics found: Claude is not called", apiBodies.length === before);
+  ok("a song waiting for Korean lyrics is not offered to the next batch", (await page.locator('[data-s="batch"]').count()) === 0);
+
+  // Find other lyrics: every result with its language; a Korean one makes the song translatable.
+  lrclibHits = [EN, KO];
+  await page.locator('.song-row [data-s="open"]', { hasText: "Parallel Night" }).click();
+  ok("the song explains the English-only lyrics", (await page.textContent(".song-msg")).includes("without Korean"));
+  await page.click('[data-s="relyrics"]');
+  await page.waitForSelector(".lyric-hit");
+  const hits = await page.locator(".lyric-hit").allTextContents();
+  ok("Find other lyrics lists each result with its language", hits.length === 2 && hits[0].includes("No Korean") && hits[1].includes("Korean") && hits[1].includes("너를 볼 때마다"));
+  ok("a result without Korean can't be picked", (await page.locator('.lyric-hit [data-s="pickLyrics"]').count()) === 1);
+  await page.click('[data-s="pickLyrics"]');
+  ok("picking Korean lyrics makes the song translatable", (await page.locator('[data-s="translate"]').count()) === 1 && (await page.textContent("#view")).includes("너를 볼 때마다 웃게 돼"));
+  await page.click('[data-s="translate"]');
+  await page.waitForSelector(".song-sum");
+
+  // A translated song: picking other lyrics asks first, then the old translation goes.
+  lrclibHits = [KO, KO2];
+  await page.click('[data-s="relyrics"]');
+  await page.waitForSelector(".lyric-hit");
+  await page.locator('.lyric-hit', { hasText: "Korean live" }).locator('[data-s="pickLyrics"]').click();
+  ok("new lyrics replace the translated ones and drop the old translation", (await page.locator(".song-sum").count()) === 0 && (await page.locator('[data-s="translate"]').count()) === 1 && (await page.textContent("#view")).includes("비가 와도"));
+
+  // Or paste: the change panel has its own paste box.
+  await page.click('[data-s="relyrics"]');
+  await page.waitForSelector(".lyric-hit");
+  await page.fill("#song-lyrics", "직접 고친 가사");
+  await page.click('[data-s="savelyrics"]');
+  ok("pasted lyrics replace the old ones", (await page.textContent("#view")).includes("직접 고친 가사") && !(await page.textContent("#view")).includes("비가 와도 괜찮아"));
+
+  // English lyrics saved before this check existed: no Translate button, and a batch marks them without a call.
+  await page.click('[data-s="back"]');
+  await page.click('[data-s="add"]');
+  await page.fill("#song-title", "Old fetch"); await page.fill("#song-lyrics", "Hello there\nGood night");
+  await page.click('[data-s="save"]');
+  ok("lyrics with no Korean: no Translate button, a way to fix it instead", (await page.locator('[data-s="translate"]').count()) === 0 && (await page.textContent("#view")).includes("no Korean lines") && (await page.locator('[data-s="relyrics"]').count()) >= 1);
+  await ctx.close();
+  lrclibHits = null;
 }
 
 // ---- restore on a fresh phone, then read it offline ----

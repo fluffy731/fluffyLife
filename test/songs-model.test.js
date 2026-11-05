@@ -154,8 +154,8 @@ test("batchSongs: ticked songs when any are ticked, otherwise every song still t
     s("e", "error", { error: "noLyrics", lyrics: null }), s("f", "error", { error: "noLyrics", lyrics: "붙여 넣은 가사" })];
   // Nothing ticked (after reopening the app): all untranslated, except songs whose lyrics were never found.
   assert.deepEqual(batchSongs(songs, new Set()), { ticked: false, list: ["b", "c", "d", "f"].map((id) => songs.find((x) => x.id === id)) });
-  // Ticked songs win, and a ticked song that is already done or gone is left out.
-  assert.deepEqual(batchSongs(songs, new Set(["a", "c", "e", "zz"])), { ticked: true, list: [songs[2], songs[4]] });
+  // Ticked songs win; a ticked song that is done, gone or still waiting for lyrics is left out.
+  assert.deepEqual(batchSongs(songs, new Set(["a", "c", "e", "zz"])), { ticked: true, list: [songs[2]] });
 });
 
 import { findInSong, inFilter } from "../songs/model.js";
@@ -181,4 +181,27 @@ test("inFilter sorts songs into translated, to translate and needs attention", (
   const s = (status) => ({ status });
   assert.deepEqual(["queued", "lyrics", "done", "error"].map((st) => ["all", "done", "todo", "error"].map((f) => inFilter(s(st), f))), [
     [true, false, true, false], [true, false, true, false], [true, true, false, false], [true, false, false, true]]);
+});
+
+import { pickLyrics, koreanLineCount } from "../songs/model.js";
+
+test("pickLyrics takes the first search result with Korean lines, and says why when there is none", () => {
+  const en = { title: "Parallel Night", lyrics: "You looked so pretty last night\nIt was so hard to fake it", instrumental: false };
+  const ko = { title: "Parallel Night", lyrics: "너를 볼 때마다 웃게 돼\nOh baby", instrumental: false };
+  const inst = { title: "Parallel Night (Inst.)", lyrics: null, instrumental: true };
+  assert.deepEqual(pickLyrics([en, inst, ko]), { hit: ko, reason: null });
+  assert.deepEqual(pickLyrics([en]), { hit: null, reason: "noKorean" });
+  assert.deepEqual(pickLyrics([inst]), { hit: null, reason: "noLyrics" });
+  assert.deepEqual(pickLyrics([]), { hit: null, reason: "noLyrics" });
+  assert.equal(koreanLineCount(ko.lyrics), 1);
+  assert.equal(koreanLineCount(en.lyrics), 0);
+  assert.equal(koreanLineCount(null), 0);
+});
+
+test("batchSongs leaves out songs waiting for Korean lyrics, whatever lyrics they hold", () => {
+  const s = (id, status, error, lyrics) => ({ id, title: id, status, error, lyrics });
+  const songs = [s("en", "error", "noKorean", "You looked so pretty"), s("none", "error", "noKorean", null), s("pasted", "lyrics", null, "비가 와도 괜찮아"),
+    s("stale", "lyrics", null, "English only, fetched before this check")];
+  // A song with English lyrics fetched earlier is still offered: translating it marks it noKorean.
+  assert.deepEqual(batchSongs(songs, new Set()).list.map((x) => x.id), ["pasted", "stale"]);
 });
