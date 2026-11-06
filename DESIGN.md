@@ -225,7 +225,7 @@ Pills, 36px, 1.5px border; the selected chip takes the line-strong fill.
 Surface, 1.5px hair-strong border, 12px radius, 16px text (no iOS zoom); focus turns the border line-strong with a soft 3px line-colour halo. Search carries a drawn lens; selects a drawn chevron.
 
 ### Navigation
-Bottom tab bar on surface with drawn 24px stroke icons (1.9 stroke, round caps); the active tab takes ink label, a line-strong icon and a 3px line-colour marker on the top edge. Header: a 32px line-colour roundel with the app's glyph (한, 粵, Aa), the app name, and a due pill outlined in ink ("5 due", "복습 5").
+Bottom tab bar on surface with drawn 24px stroke icons (1.9 stroke, round caps); the active tab takes ink label, a line-strong icon and a 3px line-colour marker on the top edge. The bar holds four destinations plus **More** (a 2×2 grid icon). Korean: Home, Review, Songs, Browse. Cantonese and English: Home, Learn, Review, Quiz. More opens a bottom sheet (a modal `<dialog class="sheet">`, 24px top corners, grab bar, slides up in 260ms) with the remaining destinations as tiles: a 42px line-soft icon chip, the name, and a one-line hint (`ui.tabHints`). Two tiles sit side by side, and an odd last tile runs full width as a row. The open page's tile carries a line-colour ring, and More stays marked active while one of its pages is open. The sheet closes on a tile, Escape, a tap above it, or a swipe down of more than 80px. Header: a 32px line-colour roundel with the app's glyph (한, 粵, Aa), the app name, and a due pill outlined in ink ("5 due", "복습 5").
 
 ### Icons
 Drawn, never glyphs: the speaker, add, back and done marks are CSS masks over `currentColor` (2.2–2.6 stroke), the tab icons inline SVG.

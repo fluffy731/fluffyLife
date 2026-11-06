@@ -377,12 +377,38 @@ details.tip[open] summary::after { transform: rotate(180deg); }
 .song-hit::before { content: "“"; } .song-hit::after { content: "”"; }
 .song-msg .progress-line { margin: 10px 0 2px; }
 
+/* ---------- More sheet: the destinations that don't fit the bottom bar ---------- */
+/* The dialog has no padding, so a tap whose target is the dialog itself is a tap on the backdrop. */
+dialog.sheet { position: fixed; inset: auto 0 0; width: 100%; max-width: 640px; max-height: 86dvh; margin: 0 auto; padding: 0;
+  border-radius: 24px 24px 0 0; background: var(--bg); box-shadow: 0 -10px 36px -14px rgba(0, 0, 0, .4); overflow: auto; overscroll-behavior: contain; }
+dialog.sheet[open] { animation: sheet-up 260ms var(--ease); }
+dialog.sheet.closing { animation: sheet-down 180ms cubic-bezier(.4, 0, 1, 1) forwards; }
+dialog.sheet::backdrop { background: rgba(8, 10, 12, .45); animation: sheet-fade 220ms ease-out; }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+@keyframes sheet-down { to { transform: translateY(100%); } }
+@keyframes sheet-fade { from { opacity: 0; } }
+.sheet-grab { height: 28px; display: grid; place-items: center; }
+.sheet-grab::before { content: ""; width: 40px; height: 5px; border-radius: 3px; background: var(--hair-strong); }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 2px 16px calc(env(safe-area-inset-bottom) + 18px); }
+.tile { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 120px; padding: 14px; border: 1px solid var(--hair); border-radius: 16px;
+  background: var(--surface); color: var(--ink); text-align: left; transition: transform 120ms var(--ease), border-color 150ms; }
+.tile:active { transform: scale(.98); }
+.tile-ic { flex: none; width: 42px; height: 42px; padding: 9px; margin-bottom: 8px; border-radius: 12px; background: var(--route-soft);
+  fill: none; stroke: var(--route-ink); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.tile b { font-size: 16px; font-weight: 700; line-height: 1.25; }
+.tile small { font-size: 12.5px; line-height: 1.35; color: var(--muted); }
+/* an odd last tile runs the full width as a row */
+.tile:last-child:nth-child(odd) { grid-column: 1 / -1; min-height: 0; display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: center; }
+.tile:last-child:nth-child(odd) .tile-ic { grid-row: span 2; margin: 0; }
+.tile.on { border-color: var(--route); box-shadow: inset 0 0 0 1px var(--route); }
+@media (hover: hover) { .tile:hover { border-color: var(--hair-strong); } }
+
 /* ---------- motion: on flip the line draws across the sign, then its subtitles come up ---------- */
 @keyframes rule-draw { from { transform: scaleX(0); } }
 @keyframes sign-in { from { opacity: 0; transform: translateY(5px); } }
 .flash .rule { animation: rule-draw 480ms var(--ease) both; }
 .flash .rule ~ * { animation: sign-in 320ms 60ms var(--ease) both; }
 @media (prefers-reduced-motion: reduce) {
-  .flash .rule, .flash .rule ~ * { animation: none; }
+  .flash .rule, .flash .rule ~ *, dialog.sheet[open], dialog.sheet::backdrop { animation: none; }
   button.btn, .qopt, details.tip summary::after { transition: none; }
 }

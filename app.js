@@ -235,7 +235,10 @@ const VIEWS = { home: renderHome, learn: renderLearn, review: renderReview, quiz
 
 function render() {
   $("#view").innerHTML = VIEWS[tab]();
-  document.querySelectorAll("#tabs button").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll("#tabs button[data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
+  const tile = $(`#more [data-tab="${tab}"]`);
+  $("#tabs [data-more]")?.classList.toggle("active", !!tile);
+  document.querySelectorAll("#more .tile").forEach((b) => b.classList.toggle("on", b === tile));
   const due = dueItems(items, state.progress, Date.now()).length;
   const badge = $("#due-badge"); badge.hidden = !due; badge.textContent = t.dueBadge(due);
 }
@@ -302,7 +305,7 @@ function openEditor(existing, prefill = {}) {
 const Q_KEYS = ["qstart", "qopt", "qnext", "qretake", "qback", "qreplay", "qmiss"];
 function bindEvents() {
   document.addEventListener("click", (e) => {
-    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],[data-lkind],[data-dictadd],[data-s],#card,.item");
+    const el = e.target.closest("[data-speechtest],[data-setting],[data-say],[data-tab],[data-go],[data-flip],[data-grade],[data-tier],[data-kind],[data-add],[data-edit],[data-reset],[data-unit],[data-export],[data-import],[data-wipe],[data-theme],[data-qstart],[data-qopt],[data-qnext],[data-qretake],[data-qback],[data-qreplay],[data-qmiss],[data-lkind],[data-dictadd],[data-s],[data-more],#card,.item");
     if (!el) return;
     if (el.dataset.say !== undefined) { e.stopPropagation(); return speak(el.dataset.say); }
     if (el.dataset.s !== undefined) { if (songs?.click(el, e)) render(); return; }
@@ -312,7 +315,8 @@ function bindEvents() {
       quiz.click(el); return render();
     }
     if (el.dataset.setting) { state.settings[el.dataset.setting] = el.dataset.value; persist(); queue = []; flipped = false; return render(); }
-    if (el.dataset.tab || el.dataset.go) { tab = el.dataset.tab || el.dataset.go; if (el.dataset.go === "learn") learnUnitKey = null; if (tab !== "quiz") quiz.reset(); flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
+    if (el.dataset.more !== undefined) return openMore();
+    if (el.dataset.tab || el.dataset.go) { closeMore(); tab = el.dataset.tab || el.dataset.go; if (el.dataset.go === "learn") learnUnitKey = null; if (tab !== "quiz") quiz.reset(); flipped = false; queue = []; window.scrollTo(0, 0); return render(); }
     if (el.dataset.flip !== undefined || el.id === "card") { flipped = !flipped; return render(); }
     if (el.dataset.grade) {
       const it = queue.shift(); if (!it) return;
@@ -468,6 +472,43 @@ function speechCheck() {
   setTimeout(() => { if (!started) log("test: no start event after 3 s"); report("voices after 3 s"); }, 3000);
 }
 
+// ---------- More sheet ----------
+// The bottom bar keeps four destinations; the rest live in a sheet that slides up from More (korean/, yue/,
+// english/ index.html). It closes on a destination, Escape, a tap above it, or a swipe down.
+function setupMore() {
+  const btn = $("#tabs [data-more]"), sheet = $("#more");
+  if (!btn || !sheet) return;
+  btn.lastChild.textContent = t.tabs.more;
+  sheet.setAttribute("aria-label", t.tabs.more);
+  sheet.querySelectorAll(".tile").forEach((b) => {
+    b.querySelector("b").textContent = t.tabs[b.dataset.tab];
+    b.querySelector("small").textContent = t.tabHints?.[b.dataset.tab] ?? "";
+  });
+  sheet.addEventListener("click", (e) => { if (e.target === sheet) closeMore(); });   // the backdrop
+  sheet.addEventListener("cancel", (e) => { e.preventDefault(); closeMore(); });     // Escape, with the slide
+  let y0 = null;
+  sheet.addEventListener("touchstart", (e) => { y0 = sheet.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+  sheet.addEventListener("touchmove", (e) => {
+    if (y0 === null) return;
+    const dy = Math.max(0, e.touches[0].clientY - y0);
+    sheet.style.transform = dy ? `translateY(${dy}px)` : "";
+  }, { passive: true });
+  sheet.addEventListener("touchend", (e) => {
+    if (y0 === null) return;
+    const dy = e.changedTouches[0].clientY - y0; y0 = null;
+    sheet.style.transform = "";
+    if (dy > 80) closeMore();
+  });
+}
+function openMore() { const sheet = $("#more"); if (sheet && !sheet.open) { sheet.classList.remove("closing"); sheet.showModal(); } }
+function closeMore() {
+  const sheet = $("#more");
+  if (!sheet?.open || sheet.classList.contains("closing")) return;
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { sheet.close(); return; }
+  sheet.classList.add("closing");
+  setTimeout(() => { sheet.close(); sheet.classList.remove("closing"); }, 180);
+}
+
 function applyTheme() {
   const theme = state.settings.theme;
   if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme; else delete document.documentElement.dataset.theme;
@@ -494,7 +535,8 @@ export function start(p) {
     esc, say, speak, t, ls, persist, rebuild, render, state: () => state, items: () => items, grammar: () => grammar,
     currentUnit: () => currentUnit(units, state.progress), tab: () => tab,
   }) : null;
-  document.querySelectorAll("#tabs button").forEach((b) => { b.lastChild.textContent = t.tabs[b.dataset.tab]; });
+  document.querySelectorAll("#tabs button[data-tab]").forEach((b) => { b.lastChild.textContent = t.tabs[b.dataset.tab]; });
+  setupMore();
   bindEvents();
   applyTheme();
   render();

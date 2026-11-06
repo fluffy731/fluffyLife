@@ -4,7 +4,10 @@ const POS = { dict: "사전", n: "명사", v: "동사", adj: "형용사", adv: "
 const THEME = { auto: "자동", light: "밝게", dark: "어둡게" };
 
 export const ui = {
-  tabs: { home: "홈", learn: "학습", review: "복습", quiz: "퀴즈", browse: "찾아보기", settings: "설정", songs: "노래" },
+  tabs: { home: "홈", learn: "학습", review: "복습", quiz: "퀴즈", browse: "찾아보기", settings: "설정", songs: "노래", more: "더보기" },
+  tabHints: { home: "내 노선과 지금 이 시간의 단어", learn: "현재 단원의 새 단어", review: "오늘 복습할 카드",
+    quiz: "단원 시험과 연습 퀴즈", browse: "단어와 사전 검색", settings: "학습 단원, 테마, 백업",
+    songs: "좋아하는 노래로 배우기" },
   now: "지금", minutes: (n) => `${n}분`, hours: (n) => `${n}시간`, days: (n) => `${n}일`,
   listen: "듣기", listenBtn: "듣기", edit: "수정", resetProgress: "진도 초기화", tapToFlip: "카드를 눌러서 뜻을 확인하세요",
   dueNow: "복습할 것", ofSeen: (n) => `/ ${n}개 학습`, unit: "단원", wordOfHour: "지금 이 시간의 단어", noItems: "항목이 없어요",
