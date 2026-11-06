@@ -13,6 +13,14 @@ const srv = createServer(async (req, res) => {
   catch { res.writeHead(404); res.end(); }
 }).listen(0);
 const base = `http://localhost:${srv.address().port}/`;
+// Learn, Quiz, Browse and Settings can sit in the More sheet (Korean: Learn, Quiz, Settings; Cantonese and
+// English: Browse, Settings): tap the tab when it is on the bottom bar, otherwise open More and tap its tile.
+const tabTo = async (p, name) => {
+  if (await p.locator(`#tabs [data-tab="${name}"]`).count()) return p.click(`#tabs [data-tab="${name}"]`);
+  await p.click("#tabs [data-more]");
+  await p.click(`#more [data-tab="${name}"]`);
+  await p.waitForFunction(() => !document.querySelector("#more").open);   // the page behind is inert until the sheet has slid away
+};
 const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} ${name}`);
 const browser = await chromium.launch();
 
@@ -21,13 +29,13 @@ const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
   const tabs = await page.evaluate(() => [...document.querySelectorAll("#tabs button")].map((b) => b.textContent.trim()));
-  ok(`Korean app has 7 tabs ending in Songs (${tabs.join(",")})`, tabs.length === 7 && tabs[6].endsWith("Songs"));
-  await page.click('[data-tab="songs"]');
+  ok(`Korean bottom bar is Home, Review, Songs, Browse, More (${tabs.join(",")})`, tabs.join("|") === "Home|Review|Songs|Browse|More");
+  await tabTo(page, "songs");
   await page.waitForSelector("#view .songs");
   const text = await page.textContent("#view");
   ok("empty Songs tab offers Add song and Import list", text.includes("No songs yet") && text.includes("Add song") && text.includes("Import list"));
   await page.goto(base + "yue/", { waitUntil: "networkidle" });
-  ok("Cantonese app still has 6 tabs", (await page.locator("#tabs button").count()) === 6);
+  ok("Cantonese app has no Songs tab, on the bar or in More", (await page.locator('[data-tab="songs"]').count()) === 0 && (await page.locator("#tabs button").count()) === 5);
   await page.close();
 }
 
@@ -37,10 +45,10 @@ const browser = await chromium.launch();
   await ctx.addInitScript(() => Object.defineProperty(window, "indexedDB", { get: () => undefined, configurable: true }));
   const page = await ctx.newPage();
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.waitForTimeout(200);
   ok("no IndexedDB: Songs explains it can't save", (await page.textContent("#view")).includes("Songs can't be saved on this device"));
-  await page.click('[data-tab="home"]');
+  await tabTo(page, "home");
   ok("no IndexedDB: Home still renders", (await page.locator(".route").count()) === 1);
   await ctx.close();
 }
@@ -88,7 +96,7 @@ let backupText = null;
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
 
   // Key in Settings: stored on its own, never inside the saved state.
-  await page.click('[data-tab="settings"]');
+  await tabTo(page, "settings");
   await page.fill("#song-key", "  sk-ant-test-key-1234  ");
   await page.click('[data-s="key-save"]');
   ok("API key saved under its own key", (await page.evaluate(() => localStorage.getItem("korean.songs.apiKey"))) === "sk-ant-test-key-1234");
@@ -96,7 +104,7 @@ let backupText = null;
   ok("Settings shows the key masked", (await page.textContent("#view")).includes("sk-ant-…1234"));
 
   // Search, pick, save, translate.
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.click('[data-s="add"]');
   await page.fill("#song-title", "빗소리"); await page.fill("#song-artist", "가수");
   await page.click('[data-s="search"]');
@@ -129,11 +137,11 @@ let backupText = null;
   ok("second tap adds nothing", ((await stateOf(page)).custom || []).length === (after.custom || []).length);
   const dueBefore = parseInt((await page.textContent("#due-badge")) || "0", 10) || 0;
   await page.clock.fastForward("25:00:00");
-  await page.click('[data-tab="home"]');
+  await tabTo(page, "home");
   ok("both cards are due the next day", parseInt(await page.textContent("#due-badge"), 10) === dueBefore + 2);
 
   // Export: songs in the file, key not.
-  await page.click('[data-tab="settings"]');
+  await tabTo(page, "settings");
   const [dl] = await Promise.all([page.waitForEvent("download"), page.click("[data-export]")]);
   backupText = await readFile(await dl.path(), "utf8");
   const backup = JSON.parse(backupText);
@@ -141,7 +149,7 @@ let backupText = null;
   ok("backup has no API key", !JSON.stringify(backup).includes("sk-ant"));
 
   // A song with no Korean costs nothing. (The Songs tab reopens the last song viewed.)
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   ok("Songs tab reopens the last song viewed", (await page.locator(".song-sum").count()) === 1);
   await page.click('[data-s="back"]');
   await page.click('[data-s="add"]');
@@ -182,7 +190,7 @@ let backupText = null;
   page.on("dialog", (d) => d.accept());
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
   await page.evaluate(() => localStorage.setItem("korean.songs.apiKey", "sk-ant-test-key-1234"));
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.click('[data-s="import"]');
   await page.fill("#song-list", "하나 – 가수\n둘 – 가수");
   await page.click('[data-s="importGo"]');
@@ -206,7 +214,7 @@ let backupText = null;
   await page.click('[data-s="delete"]');
   await page.waitForTimeout(2500);
   await page.reload({ waitUntil: "networkidle" });
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.waitForSelector(".song-row");
   ok("a song deleted during a batch stays deleted", (await page.locator(".song-row", { hasText: "지울 노래" }).count()) === 0 && apiBodies.length === before + 1);
 
@@ -235,13 +243,13 @@ let backupText = null;
   page.on("dialog", (d) => d.accept());
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
   await page.evaluate(() => localStorage.setItem("korean.songs.apiKey", "sk-ant-test-key-1234"));
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.click('[data-s="import"]');
   await page.fill("#song-list", "하나 – 가수\n둘 – 가수\n셋 – 가수");
   await page.click('[data-s="importGo"]');
   // Closing the app forgets the ticks; one tap still covers every song left to translate.
   await page.reload({ waitUntil: "networkidle" });
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.waitForSelector(".song-row");
   ok("after reopening, the batch offers every untranslated song", (await page.textContent('[data-s="batch"]')).includes("Translate all 3 untranslated"));
 
@@ -289,7 +297,7 @@ let backupText = null;
   page.on("dialog", (d) => d.accept());
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
   await page.evaluate(() => localStorage.setItem("korean.songs.apiKey", "sk-ant-test-key-1234"));
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.click('[data-s="import"]');
   await page.fill("#song-list", "봄 – 그룹\n바다 – 가수 E\nLove story – 볼빨간사춘기");
   await page.click('[data-s="importGo"]');
@@ -341,7 +349,7 @@ let backupText = null;
   const EN = hit("English", "You looked so pretty last night\nIt was so hard to fake it");
   const KO = hit("Korean", LYRICS), KO2 = hit("Korean live", "비가 와도 괜찮아\n비가 와도");
   apiMode = "ok"; apiDelay = 0; lrclibHits = [EN];
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.click('[data-s="import"]');
   await page.fill("#song-list", "Parallel Night – 서영주");
   await page.click('[data-s="importGo"]');
@@ -398,14 +406,14 @@ let backupText = null;
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
   await page.evaluate(() => navigator.serviceWorker.ready);
   await page.reload({ waitUntil: "networkidle" });
-  await page.click('[data-tab="settings"]');
+  await tabTo(page, "settings");
   await page.setInputFiles("#file", { name: "korean-backup.json", mimeType: "application/json", buffer: Buffer.from(backupText) });
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.waitForSelector(".song-row");
   ok("import restores the song", (await page.locator(".song-row").count()) === 1);
   await ctx.setOffline(true);
   await page.reload({ waitUntil: "domcontentloaded" });
-  await page.click('[data-tab="songs"]');
+  await tabTo(page, "songs");
   await page.click('.song-row [data-s="open"]');
   await page.waitForSelector(".song-line .zh");
   ok("translated song opens offline", (await page.textContent(".song-line .zh")).includes("中文1"));

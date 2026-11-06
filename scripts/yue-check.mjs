@@ -8,6 +8,14 @@ const srv = createServer(async (req, res) => {
   catch { res.writeHead(404); res.end(); }
 }).listen(0);
 const base = `http://localhost:${srv.address().port}/`;
+// Learn, Quiz, Browse and Settings can sit in the More sheet (Korean: Learn, Quiz, Settings; Cantonese and
+// English: Browse, Settings): tap the tab when it is on the bottom bar, otherwise open More and tap its tile.
+const tabTo = async (p, name) => {
+  if (await p.locator(`#tabs [data-tab="${name}"]`).count()) return p.click(`#tabs [data-tab="${name}"]`);
+  await p.click("#tabs [data-more]");
+  await p.click(`#more [data-tab="${name}"]`);
+  await p.waitForFunction(() => !document.querySelector("#more").open);   // the page behind is inert until the sheet has slid away
+};
 const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} ${name}`);
 const b = await chromium.launch();
 
@@ -16,12 +24,12 @@ const b = await chromium.launch();
   const page = await b.newPage({ viewport: { width: 390, height: 844 } });
   const errs = []; page.on("pageerror", (e) => errs.push(e.message)); page.on("console", (m) => { if (m.type() === "error") errs.push(m.text()); });
   await page.goto(base + "yue/", { waitUntil: "networkidle" });
-  await page.click('[data-tab="learn"]');
+  await tabTo(page, "learn");
   let n = 0; while ((await page.inputValue("#unit-pick")) === "a0-1" && (await page.locator("[data-flip]").count()) && n < 60) { await page.click("[data-flip]"); await page.click('[data-grade="good"]'); n++; }
   const keys = await page.evaluate(() => ({ ko: localStorage.getItem("korean.v1"), yue: Object.keys(JSON.parse(localStorage.getItem("yue.v1")).progress).length }));
   ok(`learned unit 1 (${n} items) into yue.v1`, keys.yue === n && n >= 24);
   ok("korean.v1 untouched", keys.ko === null);
-  await page.click('[data-tab="home"]');
+  await tabTo(page, "home");
   ok("home now on unit 2", (await page.textContent(".route-now b")).includes("2단원"));
   ok("no console or page errors", errs.length === 0);
   await page.close();
@@ -112,13 +120,13 @@ async function speechRun(voices, path = "yue/") {
   const prog = await page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem("yue.v1")).progress));
   ok("release-1 progress migrated to stable ids (y01-01 → y:詩)", prog.length === 1 && prog[0] === "y:詩");
   ok("Home shows the tone key", (await page.locator(".tonekey .tk").count()) === 6);
-  await page.click('[data-tab="browse"]');
+  await tabTo(page, "browse");
   ok("unfiltered Browse has no raw ${…}", !(await page.textContent("#view")).includes("${"));
-  await page.click('[data-tab="settings"]');
+  await tabTo(page, "settings");
   const msg = await page.evaluate(() => { let m = null; const c = window.confirm; window.confirm = (x) => { m = x; return false; }; document.querySelector("[data-wipe]").click(); window.confirm = c; return m; });
   ok("wipe dialog has its Korean text (review I1)", /진도/.test(msg || ""));
   await page.click('[data-setting="direction"][data-value="meaning"]');
-  await page.click('[data-tab="review"]');
+  await tabTo(page, "review");
   ok("meaning → sound: Review front shows the Korean meaning", (await page.locator(".ko-front").count()) === 1 && (await page.locator("#card .syl").count()) === 0);
   await page.close();
 }
@@ -162,7 +170,7 @@ async function speechRun(voices, path = "yue/") {
     await page.reload({ waitUntil: "networkidle" });
     await page.waitForTimeout(300); // clip index loads in the background
     if (offline) await qctx.setOffline(true);
-    await page.click('[data-tab="quiz"]'); await page.click('[data-qstart="a0-1"]');
+    await tabTo(page, "quiz"); await page.click('[data-qstart="a0-1"]');
     return page;
   }
   const SEED = 1;
@@ -205,7 +213,7 @@ async function speechRun(voices, path = "yue/") {
   await d.route("**/dict/yue.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ source: "test", rows }) }));
   d.on("dialog", (x) => x.accept());
   await d.goto(base + "yue/", { waitUntil: "networkidle" });
-  await d.click('[data-tab="browse"]');
+  await tabTo(d, "browse");
   await d.fill("#q", "경제");
   await d.waitForSelector(".item.dict");
   const txt = await d.textContent(".item.dict");

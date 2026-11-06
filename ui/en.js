@@ -1,6 +1,10 @@
 // English UI strings for the Korean app. Functions take the values they interpolate.
 export const ui = {
-  tabs: { home: "Home", learn: "Learn", review: "Review", quiz: "Quiz", browse: "Browse", settings: "Settings", songs: "Songs" },
+  tabs: { home: "Home", learn: "Learn", review: "Review", quiz: "Quiz", browse: "Browse", settings: "Settings", songs: "Songs", more: "More" },
+  // One line under each destination in the More sheet.
+  tabHints: { home: "Your line and the word of the hour", learn: "New words in your current unit", review: "Cards due today",
+    quiz: "Unit tests and a practice round", browse: "Search your words and the dictionary", settings: "Study track, theme, backup, Songs key",
+    songs: "Learn from the songs you listen to" },
   now: "now", minutes: (n) => `${n} min`, hours: (n) => `${n} h`, days: (n) => `${n} d`,
   listen: "Listen", listenBtn: "Listen", edit: "Edit", resetProgress: "Reset progress", tapToFlip: "tap to flip",
   dueNow: "due now", ofSeen: (n) => `of ${n} seen`, unit: "unit", wordOfHour: "Word of the hour", noItems: "No items",

@@ -14,6 +14,14 @@ const srv = createServer(async (req, res) => {
   try { const body = await readFile(join(root, p)); res.writeHead(200, { "content-type": types[extname(p)] || "text/plain" }); res.end(body); } catch { res.writeHead(404); res.end(); }
 }).listen(0);
 const base = `http://localhost:${srv.address().port}/`;
+// Learn, Quiz, Browse and Settings can sit in the More sheet (Korean: Learn, Quiz, Settings; Cantonese and
+// English: Browse, Settings): tap the tab when it is on the bottom bar, otherwise open More and tap its tile.
+const tabTo = async (p, name) => {
+  if (await p.locator(`#tabs [data-tab="${name}"]`).count()) return p.click(`#tabs [data-tab="${name}"]`);
+  await p.click("#tabs [data-more]");
+  await p.click(`#more [data-tab="${name}"]`);
+  await p.waitForFunction(() => !document.querySelector("#more").open);   // the page behind is inert until the sheet has slid away
+};
 
 const browser = await chromium.launch();
 // Service worker blocked so the dictionary mock below is not bypassed.
@@ -30,14 +38,14 @@ const out = {};
 out.title = await page.title();
 out.tabs = await page.evaluate(() => [...document.querySelectorAll("#tabs button")].map((b) => b.textContent.trim()));
 out.home = await view();
-await page.click('[data-tab="learn"]'); out.learn = await view();
+await tabTo(page, "learn"); out.learn = await view();
 await page.click("[data-flip]"); out.learnFlipped = await view();
-await page.click('[data-tab="review"]'); out.reviewEmpty = await view();
-await page.click('[data-tab="browse"]'); out.browseAll = await view();
+await tabTo(page, "review"); out.reviewEmpty = await view();
+await tabTo(page, "browse"); out.browseAll = await view();
 await page.fill("#q", "경제"); await page.waitForSelector(".item.dict"); out.browseSearch = await view();
 await page.fill("#q", ""); await page.click('[data-kind="grammar"]'); await page.click('[data-tier="int"]');
 await page.locator(".item").first().click(); out.browseGrammar = await view();
-await page.click('[data-tab="settings"]'); out.settings = await view();
+await tabTo(page, "settings"); out.settings = await view();
 out.wipeConfirm = await page.evaluate(() => { let msg = null; const c = window.confirm; window.confirm = (m) => { msg = m; return false; }; document.querySelector("[data-wipe]").click(); window.confirm = c; return msg; });
 await browser.close(); srv.close();
 // The server port is random on every run: keep it out of the comparison.

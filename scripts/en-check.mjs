@@ -8,6 +8,14 @@ const srv = createServer(async (req, res) => {
   catch { res.writeHead(404); res.end(); }
 }).listen(0);
 const base = `http://localhost:${srv.address().port}/`;
+// Learn, Quiz, Browse and Settings can sit in the More sheet (Korean: Learn, Quiz, Settings; Cantonese and
+// English: Browse, Settings): tap the tab when it is on the bottom bar, otherwise open More and tap its tile.
+const tabTo = async (p, name) => {
+  if (await p.locator(`#tabs [data-tab="${name}"]`).count()) return p.click(`#tabs [data-tab="${name}"]`);
+  await p.click("#tabs [data-more]");
+  await p.click(`#more [data-tab="${name}"]`);
+  await p.waitForFunction(() => !document.querySelector("#more").open);   // the page behind is inert until the sheet has slid away
+};
 const b = await chromium.launch();
 const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} ${name}`);
 
@@ -16,8 +24,8 @@ const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} $
   const page = await b.newPage({ viewport: { width: 390, height: 844 } });
   const errs = []; page.on("pageerror", (e) => errs.push(e.message));
   await page.goto(base + "english/", { waitUntil: "networkidle" });
-  ok("title and Korean tabs", (await page.title()).includes("English") && (await page.locator("#tabs button").allTextContents()).join("|") === "홈|학습|복습|퀴즈|찾아보기|설정");
-  await page.click('[data-tab="learn"]');
+  ok("title and Korean tabs", (await page.title()).includes("English") && (await page.locator("#tabs button").allTextContents()).join("|") === "홈|학습|복습|퀴즈|더보기" && (await page.locator("#more .tile").allTextContents()).map((s) => s.trim()).join("|").startsWith("찾아보기"));
+  await tabTo(page, "learn");
   const front = await page.textContent("#card .front");
   ok("Learn card: English word with an IPA line", /[A-Za-z]/.test(front) && /^\/.+\/$/.test((await page.textContent("#card .ipa")).trim()));
   await page.click("[data-flip]");
@@ -44,7 +52,7 @@ const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} $
     localStorage.setItem("en.v1", JSON.stringify({ progress: Object.fromEntries(u.items.map((i) => [i.id, { ease: 2.5, interval: 6, reps: 2, due: Date.now() + 9e9 }])), custom: [], settings: {} }));
   });
   await page.reload({ waitUntil: "networkidle" });
-  await page.click('[data-tab="quiz"]'); await page.click('[data-qstart="int-1"]');
+  await tabTo(page, "quiz"); await page.click('[data-qstart="int-1"]');
   let n = 0;
   while (await page.locator("[data-qopt]").count()) {
     await page.click(`[data-qopt="${await page.evaluate(() => window.__quizAnswer())}"]`, { position: { x: 12, y: 12 } }); await page.click("[data-qnext]"); n++;
@@ -74,7 +82,7 @@ const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} $
   await d.route("**/dict/en.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ source: "test", rows }) }));
   d.on("dialog", (x) => x.accept());
   await d.goto(base + "english/", { waitUntil: "networkidle" });
-  await d.click('[data-tab="browse"]');
+  await tabTo(d, "browse");
   await d.fill("#q", "serendip");
   await d.waitForSelector(".item.dict");
   ok("dictionary: English prefix shows the Korean meaning and IPA", (await d.textContent(".item.dict")).includes("뜻밖의 행운") && (await d.textContent(".item.dict")).includes("/ˌsɛrənˈdɪpɪti/"));
