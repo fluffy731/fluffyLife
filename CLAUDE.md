@@ -12,3 +12,4 @@ After every push, merge or deploy, tell the owner how many GitHub Actions minute
 - A push to any branch runs the `test` job: about 10–20 s, billed as 1 minute. A merge to `mainFluffy` also runs `deploy`: about 45–75 s, billed as 1–2 minutes.
 - The hourly `schedule` run (`.github/workflows/pages.yml`, news and stocks) costs about 2 minutes a run, roughly 48 a day. Mention it when the owner asks about total usage.
 - A docs-only change can skip CI: put `[skip ci]` in the commit message, and in the merge commit title when merging. A skipped push runs nothing and costs 0 minutes.
+- **Branch pushes keep their `test` run here** (owner's ruling, 6 November 2026). Skipping CI on a branch push, when the tests already passed locally, is for **private repos only**: there the merge's own `test` job still guards the deploy, and skipping saves 1 billed minute per change. fluffyLife is public, so the minutes are free and the pull request keeps its green tick.
