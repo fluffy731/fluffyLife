@@ -1,0 +1,15 @@
+{
+  "name": "Builder checklist",
+  "short_name": "Builder",
+  "description": "Victorian Domestic Builder (Unlimited) registration: checklist, project evidence, referees, folders and exam prep.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f2f6fa",
+  "theme_color": "#1f5f99",
+  "icons": [
+    { "src": "../icons/builder.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/builder-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/builder-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Builder Checklist</title>
+<!-- Unlisted: a personal registration tracker, kept out of search engines and off the home page. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Victorian Domestic Builder (Unlimited) registration: checklist, project evidence, referees, OneDrive folders and exam prep. Progress stays on this device.">
+<meta name="theme-color" content="#f2f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1822" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Builder">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="../icons/builder.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/builder-180.png">
+<link rel="stylesheet" href="./builder.css">
+</head>
+<body>
+<header class="mast">
+  <div class="mast-row">
+    <h1 id="title">Checklist</h1>
+    <span class="badge" title="BPC requirements last checked">Victoria · DB-U</span>
+  </div>
+  <div class="prog">
+    <div class="bar" id="barWrap"><i id="bar"></i></div>
+    <span id="count"></span>
+  </div>
+  <div class="tools" id="tools"></div>
+</header>
+
+<main>
+  <div id="view"></div>
+  <footer class="foot">
+    <div class="tools foot-tools">
+      <button type="button" class="chip" id="export">Export backup</button>
+      <label class="chip"><span id="importLbl">Import backup</span><input type="file" id="import" accept="application/json,.json" hidden></label>
+      <button type="button" class="chip danger" id="reset">Reset ticks</button>
+    </div>
+    <p class="hint small" id="sources"></p>
+  </footer>
+</main>
+
+<nav class="tabbar" id="tabbar" aria-label="Builder"></nav>
+
+<script type="module" src="./builder.js"></script>
+</body>
+</html>

@@ -14,7 +14,7 @@ These are the mistakes most likely to creep in. Each shows the wrong claim and t
 | Prescribed course | ~~Cert IV or Diploma~~ | Diploma of Building and Construction (Building) **CPC50210 or CPC50220**, or Holmesglen Bachelor of Construction Management and Economics, or Deakin Bachelor of Construction Management (Honours). |
 | Assessment | ~~Computer-based plan exam plus face-to-face interview~~ | A **single online exam** replaced both, from January 2026, starting with DB-U. Interviews are removed. |
 | Paperwork | ~~About 40 supporting documents~~ | About **7** documents. |
-| Applying | ~~Hard-copy application to the VBA~~ | Online application through a BPC account; technical referee reports moved online from June 2026. |
+| Applying | ~~Hard-copy application to the VBA~~ | Online application through a BPC account. BPC says technical referee reports move online from June 2026, filed from the referee's own BPC account; its Domestic builder page still mentions signed forms, so confirm in the portal. |
 
 ## Requirements at a glance
 
@@ -26,7 +26,7 @@ These are the mistakes most likely to creep in. Each shows the wrong claim and t
 | Experience: length | At least 3 years of practical experience. |
 | Experience: recency | Gained in the last 7 years. |
 | Experience: nature | Supervised by a registered building practitioner; paid (employee or contractor); across technical, supervision and contractual work. Owner-builder and training-course experience may be disregarded. Keep employment and contract records as evidence. |
-| Technical referee | A Domestic Builder registered in the same class or higher who directly supervised the applicant. Form SD-TRR-052 (V9, March 2026), now submitted through the referee's own BPC account. |
+| Technical referee | A Domestic Builder registered in the same class or higher who directly supervised the applicant. Form SD-TRR-052 (V9, March 2026). BPC's reforms page says reports move online in June 2026, submitted from the referee's own BPC account, but its Domestic builder page (updated 30 July 2026) still talks about signing the form. Confirm which applies in the portal. |
 | Exam | Online, proctored (Janison-Proctortrack), randomised and frequently changed questions, designed with ACER. |
 | Fit and proper | Declaration, criminal history check, External Administration Declaration where relevant. Partners in a partnership are assessed too. |
 | Insurance | Domestic building insurance once knowledge and experience are accepted. |

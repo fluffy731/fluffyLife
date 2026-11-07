@@ -25,6 +25,7 @@ The bare address forwards to `/korean/`, so home-screen icons saved from it befo
 | `mainFluffy` | The live site: every app |
 | `languages` | `korean/`, `yue/`, `mongolian/`, `english/` and their data |
 | `travel` | `travel/` |
+| `builder` | `builder/` and `docs/builder/` |
 | `MCscript` | `mc/` |
 | `NightToShine` | `shine/` |
 | `stocks` | `stocks/` |
@@ -175,6 +176,21 @@ Two tabs: **Plan** and **Packing**.
 - **Trips from a link:** a backup file saved as `travel/trips/<name>.json` opens with `…/travel/plan.html#import=<name>`. The link loads the trip into that phone's planner, where it can be edited. If the trip is already there, it asks before replacing it. List the name in `travel/trips/index.json` too: the Trips page then offers it under "On the website". That is how a home-screen app gets it, because the app keeps its own storage and tapped links open in Safari. To change a published trip, edit its file and raise its `"rev"` number. Phones holding an older copy then show "Updated on the website · tap to get it", which asks before replacing the phone's copy. This repo is public, so anything in `travel/trips/` can be read by anyone who finds it, and stays in the history even after it's deleted.
 - **Packing** is the checklist. Edit the list in `travel/items.js`. Each section has `always` items, plus `long` items that only show in Long trip mode. Tag an item `["text", "overseas domestic"]` to limit it to those trip types (Overseas, Domestic, Road trip). Ticks, and items added on the phone, stay in that browser.
 - **Code:** planner logic is in `travel/plan-model.js` and packing logic in `travel/model.js`, both tested in `test/`.
+
+# Builder (`/builder/`, unlisted)
+
+A tracker for Solomon's Victorian Domestic Builder (Unlimited) registration with the Building and Plumbing Commission (BPC). Left off the home page, and its pages ask search engines not to index them. Unlisted is not private: the address still opens for anyone who has it. The repo is public, so it holds only the generic requirements; everything typed in (addresses, referee names, registration numbers) stays in that browser. Back it up with Export backup.
+
+Five tabs:
+
+- **Checklist:** what to do before applying, the qualification, experience evidence, technical referee, fit and proper, lodging, and after approval. Steps the public BPC pages do not spell out carry a **Confirm in portal** tag.
+- **Projects:** details for the three projects, a flag for any that finished more than 7 years ago, and a grid of the 12 BPC activities against the three projects. Amber means no project shows that activity yet.
+- **Referees:** one card per referee with the five steps from asking to seeing the report in your application, each date-stamped when ticked.
+- **Folders:** the OneDrive structure, with Mac and Windows commands that create the folders. Project folders take the addresses typed on the Projects tab. A list of the portal's own document slots goes here too, because BPC does not name them publicly.
+- **Exam:** set-up steps for the proctored online exam, and study topics taken from BPC's activity list (it has published no syllabus).
+
+- **Content:** edit `builder/data.js`. Ticks key on each item's `key`, not its wording. Requirements and sources are written up in `docs/builder/db-u-requirements.md`; recheck them against the BPC pages before relying on them, because BPC is still rolling its reforms out.
+- **Code:** state logic is in `builder/model.js`, tested in `test/builder.test.js`.
 
 # MC script (`/mc/`)
 
