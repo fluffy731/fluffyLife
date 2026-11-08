@@ -28,19 +28,20 @@ test("checklist content is well formed (ticks key on `key`, so keys never repeat
   for (const [label, href] of SOURCES) assert.ok(label && /^https:\/\/www\.bpc\.vic\.gov\.au\//.test(href), `${label}: sources are BPC pages`);
 });
 
-test("each of the three projects gets the same document checklist, with generic wording only", () => {
-  assert.equal(NPROJECTS, 3);
-  const want = PROJECT_DOCS.map(([k]) => k);
-  for (const k of ["working", "structural", "permit"]) assert.ok(want.includes(k), `missing ${k}`);
-  for (let n = 1; n <= NPROJECTS; n++) {
+test("project document checklists name each project by suburb only and list what is still to obtain", () => {
+  assert.equal(PROJECT_DOCS.length, NPROJECTS);
+  assert.deepEqual(PROJECT_DOCS.map((p) => p.place), ["Balwyn North", "Yarraville", "Blackburn"]);
+  for (const { n, place, items } of PROJECT_DOCS) {
     const sec = SECTIONS.find((s) => s.id === `doc${n}`);
-    assert.ok(sec, `no documents section for project ${n}`);
+    assert.ok(sec, `no documents section for ${place}`);
     assert.equal(sec.tab, "list");
-    assert.deepEqual(sec.items.map((i) => i.key), want.map((k) => `doc${n}.${k}`));
+    assert.equal(sec.title, `${place} documents`);
+    assert.deepEqual(sec.items.map((i) => i.key), items.map(([k]) => `doc${n}.${k}`));
+    for (const k of ["permit", "inspections"]) assert.ok(items.some(([key]) => key === k), `${place}: ${k} missing`);
   }
-  // The repo is public: nothing project-specific (permit numbers, application numbers, emails) may sit in the content.
-  const text = PROJECT_DOCS.flat().join("\n");
-  assert.ok(!/\d{4,}|@/.test(text), "document checklist must stay generic");
+  // The repo is public: no street addresses, permit or application numbers, or emails may sit in the content.
+  const text = PROJECT_DOCS.flatMap((p) => [p.place, ...p.items.flat()]).join("\n");
+  assert.ok(!/\d|@|\b(road|rd|street|st|avenue|ave|drive|dr|court|ct|lane|ln|crescent|cres)\b/i.test(text), "document checklist must stay high level");
 });
 
 test("every tab that lists sections has some, and the BPC activity list is complete", () => {

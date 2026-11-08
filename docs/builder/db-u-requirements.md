@@ -51,7 +51,7 @@ The BPC lists the activities a DB-U applicant must show they can do competently 
 
 ## Paperwork per project
 
-BPC publishes no list of documents to hold for each project, so the "Project documents" checklist in the app is our own. It follows the components the technical referee is asked about in SD-TRR-052 Part E: obtaining and reviewing the building permit, arranging mandatory inspections, interpreting the architectural and engineering drawings, and completing handover with the approvals on completion. Treat it as good housekeeping, not a BPC requirement, and confirm in the portal what the application actually accepts.
+BPC publishes no list of documents to hold for each project, so the "documents" checklists in the app are our own. They list what is still to obtain for each project, named by suburb only because the repo is public. It follows the components the technical referee is asked about in SD-TRR-052 Part E: obtaining and reviewing the building permit, arranging mandatory inspections, interpreting the architectural and engineering drawings, and completing handover with the approvals on completion. Treat it as good housekeeping, not a BPC requirement, and confirm in the portal what the application actually accepts.
 
 ## Exam rules that affect how to study
 
