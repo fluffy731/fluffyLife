@@ -330,6 +330,32 @@ const exam = [
   ['What must the builder do at a mandatory notification stage?', 'Notify the RBS and not go beyond the stage until it has been inspected.', 'V', 'vbaMand'],
 ];
 
+
+/* ---------- shared with step 5: the finished roof frame (trusses, permanent bracing, battens) ---------- */
+export { trussParts, mergeTruss, HS, OVER, PLATE_TOP, yc, TAN, COS, ZS };
+export function roofFrame(kit) {
+  const { THREE, mat, boxUV, rod } = kit;
+  const mk = (n) => { const g = new THREE.Group(); g.name = n; return g; };
+  const timber = mat(0xffffff, { tex: 'timber' }), plateM = mat(0xb9c1c9, { metalness: 0.7, roughness: 0.4 }), steel = mat(0xb8c0c9, { metalness: 0.6, roughness: 0.35 });
+  const { timber: tl, plates: pl } = trussParts(HS), tg = mergeTruss(tl, timber, boxUV, { THREE }), pg = mergeTruss(pl, plateM, boxUV, { THREE });
+  const M4 = new THREE.Matrix4(), Q = new THREE.Quaternion(), S1 = new THREE.Vector3(1, 1, 1);
+  const mats = ZS.map((z) => M4.clone().compose(new THREE.Vector3(0, PLATE_TOP, z), Q, S1));
+  const inst = (geo, m) => { const im = new THREE.InstancedMesh(geo, m, mats.length); mats.forEach((x, i) => im.setMatrixAt(i, x)); im.castShadow = true; im.receiveShadow = true; return im; };
+  const trusses = mk('trusses'); trusses.add(inst(tg, timber), inst(pg, plateM));
+  const zf = Z1 - F.E, zb = Z0 + F.E, len = zf - zb, zm = (zf + zb) / 2;
+  const perm = mk('perm');
+  for (const x of [-3.6, -1.2, 1.2, 3.6]) perm.add(rod([x, PLATE_TOP + 0.12, zb], [x, PLATE_TOP + 0.12, zf], 0.016, steel));
+  for (const [za, zz] of [[zb, zb + 3.6], [zf, zf - 3.6]]) { perm.add(rod([-3.6, PLATE_TOP + 0.12, za], [3.6, PLATE_TOP + 0.12, zz], 0.012, steel)); perm.add(rod([3.6, PLATE_TOP + 0.12, za], [-3.6, PLATE_TOP + 0.12, zz], 0.012, steel)); }
+  for (const x of [-0.89, 0.89]) perm.add(rod([x, PLATE_TOP + 1.2, zb], [x, PLATE_TOP + 1.2, zf], 0.016, mat(0xffffff, { tex: 'timber', color: 0xe8c690 })));
+  const battens = mk('battens'), bgeos = [];
+  for (const sgn of [-1, 1]) for (let d = 0.25; d < (HS + OVER) / COS - 0.1; d += 0.33) {
+    const x = sgn * (HS + OVER - d * COS); if (Math.abs(x) < 0.12) continue;
+    const g = new THREE.BoxGeometry(0.07, 0.035, len + 0.8); boxUV(g, 0.07, 0.035, len + 0.8, 'long'); g.rotateZ(-sgn * Math.PI / 8); g.translate(x, PLATE_TOP + yc(x) + 0.075, zm); bgeos.push(g);
+  }
+  const bm = new THREE.Mesh(mergeGeometries(bgeos, false), timber); bm.castShadow = true; bm.receiveShadow = true; battens.add(bm);
+  return { trusses, perm, battens };
+}
+
 export default {
   n: 4, id: 'roofframe', title: 'Roof framing and trusses', subtitle: 'From truss design to a braced, tied-down roof frame ready for inspection.',
   phases, build, details, drawings, howto, trades, materials, quotes, quoteTips, inspections, exam,

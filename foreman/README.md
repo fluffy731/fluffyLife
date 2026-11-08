@@ -1,6 +1,6 @@
 # Foreman
 
-A walkable 3D study aid for the Victorian domestic builder (unlimited) exam. Stages 1 (permits, contract, site establishment), 2 (footings and slab-on-ground), 3 (wall framing) and 4 (roof framing and trusses) are built; the other 14 are planned on the master plan.
+A walkable 3D study aid for the Victorian domestic builder (unlimited) exam. Stages 1 (permits, contract, site establishment), 2 (footings and slab-on-ground), 3 (wall framing), 4 (roof framing and trusses) and 5 (roof cladding, gutters and stormwater) are built; the other 13 are planned on the master plan.
 
 Each built stage has a 3D walk and orbit view, zoomable exploded detail models with labelled components, 2D drawings, step-by-step actions, trades, materials and suppliers, quotes to obtain, inspections, exam cards and pointers to the owner's own study notes, plus NCC 2025 links (Housing Provisions section and Volume Two part) on every stage. Every fact carries a Verified, Typical or Confirm flag and a source.
 

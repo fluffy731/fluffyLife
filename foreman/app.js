@@ -5,8 +5,9 @@ import step1 from './step-01.js';
 import step2 from './step-02.js';
 import step3 from './step-03.js';
 import step4 from './step-04.js';
+import step5 from './step-05.js';
 
-const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4 };
+const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5 };
 const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
