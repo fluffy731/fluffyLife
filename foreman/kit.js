@@ -143,16 +143,21 @@ export function lineSet(segments, color) {
 }
 
 export function textPlane(lines, w, h, { bg = '#ffffff', fg = '#14233a', accent = '#e8590c' } = {}) {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = Math.round(512 * h / w);
+  const K = 2, c = document.createElement('canvas');   // 1024 px wide so small print stays sharp up close
+  c.width = 512 * K; c.height = Math.round(512 * K * h / w);
   const x = c.getContext('2d');
   x.fillStyle = bg; x.fillRect(0, 0, c.width, c.height);
-  x.fillStyle = accent; x.fillRect(0, 0, c.width, 14);
+  x.fillStyle = accent; x.fillRect(0, 0, c.width, 14 * K);
   x.fillStyle = fg; x.textBaseline = 'top';
-  const step = (c.height - 34) / lines.length;
-  lines.forEach((t, i) => { x.font = `${i === 0 ? 700 : 500} ${Math.min(46, step * 0.72)}px Arial, sans-serif`; x.fillText(t, 26, 26 + i * step); });
+  const step = (c.height - 34 * K) / lines.length, room = c.width - 52 * K;
+  lines.forEach((t, i) => {
+    const wt = i === 0 ? 700 : 500; let fs = Math.min(46 * K, step * 0.72);
+    x.font = `${wt} ${fs}px Arial, sans-serif`;
+    const tw = x.measureText(t).width; if (tw > room) { fs *= room / tw; x.font = `${wt} ${fs}px Arial, sans-serif`; }   // shrink a long line to fit instead of clipping it
+    x.fillText(t, 26 * K, 26 * K + i * step);
+  });
   const tex = new THREE.CanvasTexture(c);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
   return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex }));
 }
 

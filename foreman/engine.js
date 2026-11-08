@@ -499,7 +499,12 @@ export class Stage {
   // In a detail room the title card covers the top of the view, so push the model down into the clear area.
   _viewShift() {
     const w = this.w, h = this.h; if (!w || !h) return;
-    const dy = this.mode === 'detail' ? Math.round(Math.min(64, h * 0.13)) : 0;
+    let dy = 0;
+    if (this.mode === 'detail') {
+      const cap = document.getElementById('caption'); let bottom = 0;   // measure the title card so a tall one doesn't hide the labels behind it
+      if (cap && cap.offsetParent) bottom = Math.max(0, cap.getBoundingClientRect().bottom - this.host.getBoundingClientRect().top);
+      dy = Math.round(Math.min(h * 0.3, Math.max(Math.min(64, h * 0.13), bottom * 0.5)));
+    }
     if (dy) this.camera.setViewOffset(w, h, 0, -dy, w, h); else this.camera.clearViewOffset();
     this.camera.updateProjectionMatrix();
   }

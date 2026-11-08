@@ -8,8 +8,9 @@ import step4 from './step-04.js';
 import step5 from './step-05.js';
 import step6 from './step-06.js';
 import step7 from './step-07.js';
+import step8 from './step-08.js';
 
-const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6, 7: step7 };
+const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6, 7: step7, 8: step8 };
 const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -23,6 +24,7 @@ function nccHtml(n) {
   return `<h3 class="sec-title">NCC for this step ${flagHtml('C')}</h3><p class="lead">${esc(NCC_NOTE)}</p>
     <div class="grid"><article class="card"><h3>Housing Provisions</h3><ul class="list">${m.hp.map((k) => nccRow(NCC.hp[k])).join('')}</ul></article>
     <article class="card"><h3>Volume Two (Class 1 and 10)</h3><ul class="list">${m.vt.map((k) => nccRow(NCC.vt[k])).join('')}</ul></article>
+    ${m.v3 ? `<article class="card"><h3>Volume Three (Plumbing Code)</h3><ul class="list">${m.v3.map((k) => nccRow(NCC.v3[k])).join('')}</ul></article>` : ''}
     <article class="card"><h3>Open the text and sources</h3><ul class="list"><li>${srcHtml('ncc25hp')}</li><li>${srcHtml('ncc25v2')}</li>${(m.also || []).map((k) => `<li>${srcHtml(k)}</li>`).join('')}</ul></article></div>
     ${m.note ? `<p class="mini" style="margin-top:8px"><b>Remember:</b> ${esc(m.note)}</p>` : ''}<p class="mini">Part numbers read from the NCC 2025 preview drafts on ${esc(NCC_CHECKED)}. No NCC text is copied here.</p>`;
 }
@@ -146,7 +148,7 @@ $('#phasebar').addEventListener('click', (e) => {
 
 function renderCaption() {
   const def = BUILT[S.step], c = $('#caption'); if (!def) return;
-  if (S.detail) { c.innerHTML = `<b>3D detail</b><strong>${esc(S.detail.title)}</strong><span>${esc(S.detail.sub || '')}</span>`; return; }
+  if (S.detail) { c.innerHTML = `<b>3D detail</b><strong>${esc(S.detail.title)}</strong><span>${esc(S.detail.sub || '')}</span>`; requestAnimationFrame(() => stage?._viewShift?.()); return; }
   const p = def.phases[S.phase] || def.phases[0];
   c.innerHTML = `<b>Phase ${S.phase + 1} of ${def.phases.length}</b><strong>${esc(p.title)}</strong><span>${esc(p.text)}</span>`;
 }
@@ -364,7 +366,7 @@ function renderMaster() {
   $('#pdyn').innerHTML = `<h3 class="sec-title">The 18 stages</h3>
     <div class="grid">${STAGES.map((s) => `<article class="card stage ${s.built ? 'built' : ''}"><div class="top2"><span class="big">${s.n}</span><div><h3>${esc(s.title)}</h3><span class="chip">${s.built ? 'Built' : 'Planned'}</span></div></div>
       <p>${esc(s.blurb)}</p><div class="chips">${s.topics.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>
-      <p class="mini"><b>Trades:</b> ${s.trades.map(esc).join(', ')}</p><p class="mini"><b>NCC:</b> ${[...(NCC_BY_STAGE[s.n]?.hp || []).map((k) => 'HP ' + k), ...(NCC_BY_STAGE[s.n]?.vt || []).map((k) => 'Part ' + k)].join(', ')}</p><p class="mini"><b>Your notes:</b> ${[...new Set((NOTES[s.n] || []).map((n) => n.module.replace(' · ', ' ')))].map(esc).join(', ')}</p>${s.built ? `<div class="actions" style="margin-top:2px"><button class="btn primary small" data-open-step="${s.n}" type="button">Open step ${s.n}</button></div>` : ''}</article>`).join('')}</div>
+      <p class="mini"><b>Trades:</b> ${s.trades.map(esc).join(', ')}</p><p class="mini"><b>NCC:</b> ${[...(NCC_BY_STAGE[s.n]?.hp || []).map((k) => 'HP ' + k), ...(NCC_BY_STAGE[s.n]?.vt || []).map((k) => 'Part ' + k), ...(NCC_BY_STAGE[s.n]?.v3 || []).map((k) => 'Vol 3 ' + k)].join(', ')}</p><p class="mini"><b>Your notes:</b> ${[...new Set((NOTES[s.n] || []).map((n) => n.module.replace(' · ', ' ')))].map(esc).join(', ')}</p>${s.built ? `<div class="actions" style="margin-top:2px"><button class="btn primary small" data-open-step="${s.n}" type="button">Open step ${s.n}</button></div>` : ''}</article>`).join('')}</div>
     <h3 class="sec-title" style="margin-top:26px">Threads that run through every stage</h3>
     <div class="grid">${CROSS.map((c) => `<article class="card"><h3>${esc(c.t)}</h3><p class="sub">${esc(c.d)}</p></article>`).join('')}</div>
     <h3 class="sec-title" style="margin-top:26px">Where the BPC activities are covered</h3>
@@ -379,7 +381,7 @@ function renderPlanned(n) {
   $('#pdyn').innerHTML = `<div class="grid"><article class="card"><h3>What will be covered</h3><ul class="list">${s.topics.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></article>
     <article class="card"><h3>Trades and professionals</h3><ul class="list">${s.trades.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></article>
     <article class="card"><h3>Your notes</h3><ul class="list">${(NOTES[n] || []).map((x) => `<li>${esc(x.module)}: ${esc(x.section)}</li>`).join('')}</ul></article>
-    <article class="card"><h3>NCC parts ${flagHtml('C')}</h3><ul class="list">${(NCC_BY_STAGE[n]?.hp || []).map((k) => nccRow(NCC.hp[k])).join('')}${(NCC_BY_STAGE[n]?.vt || []).map((k) => nccRow(NCC.vt[k])).join('')}</ul><p class="mini">${srcHtml('ncc25hp')} &middot; ${srcHtml('ncc25v2')}</p></article>
+    <article class="card"><h3>NCC parts ${flagHtml('C')}</h3><ul class="list">${(NCC_BY_STAGE[n]?.hp || []).map((k) => nccRow(NCC.hp[k])).join('')}${(NCC_BY_STAGE[n]?.vt || []).map((k) => nccRow(NCC.vt[k])).join('')}${(NCC_BY_STAGE[n]?.v3 || []).map((k) => nccRow(NCC.v3[k])).join('')}</ul><p class="mini">${srcHtml('ncc25hp')} &middot; ${srcHtml('ncc25v2')}</p></article>
     <article class="card"><h3>BPC activities</h3><ul class="list">${(s.acts || []).map((a) => `<li>${esc(ACTS[a - 1])}</li>`).join('') || '<li>See the master plan.</li>'}</ul></article></div>
     <p class="lead" style="margin-top:16px">This step will get the same pages as the built steps: 3D walk-through, zoomable details, drawings, trades, materials, quotes, inspections and exam cards.</p>
     <div class="actions">${STAGES.filter((x) => x.built).map((x, i) => `<button class="btn ${i ? '' : 'primary'}" data-open-step="${x.n}" type="button">Open step ${x.n}</button>`).join('')}<button class="btn" data-open-step="0" type="button">Master plan</button></div>`;
