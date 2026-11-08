@@ -1,16 +1,28 @@
 // Foreman (Victorian build studio): UI shell. The 3D engine lives in engine.js, each step in step-NN.js, the master plan in plan.js.
 import { Stage } from './engine.js';
-import { STAGES, CROSS, ACTS, FLAGS, SOURCES, CHECKED, NOTES, NOTES_FOLDER, LOOP } from './plan.js';
+import { STAGES, CROSS, ACTS, FLAGS, SOURCES, CHECKED, NOTES, NOTES_FOLDER, LOOP, NCC, NCC_BY_STAGE, NCC_NOTE, NCC_CHECKED } from './plan.js';
 import step1 from './step-01.js';
 import step2 from './step-02.js';
+import step3 from './step-03.js';
+import step4 from './step-04.js';
 
-const BUILT = { 1: step1, 2: step2 };
-const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'Your notes']];
+const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4 };
+const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const md = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 const flagHtml = (f) => (FLAGS[f] ? `<span class="flag f${f}" title="${esc(FLAGS[f].hint)}">${FLAGS[f].label}</span>` : '');
+const nccLink = (e) => (e.url ? ` <a href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">NCC 2022 page</a>${e.found ? '' : '<span class="mini"> (address built from the site pattern)</span>'}` : '');
+const nccRow = (e) => `<li><span class="chip">${esc(e.code)}</span> ${esc(e.title)} <span class="mini">${esc(e.sec)}</span>${nccLink(e)}</li>`;
+function nccHtml(n) {
+  const m = NCC_BY_STAGE[n]; if (!m) return '';
+  return `<h3 class="sec-title">NCC for this step ${flagHtml('C')}</h3><p class="lead">${esc(NCC_NOTE)}</p>
+    <div class="grid"><article class="card"><h3>Housing Provisions</h3><ul class="list">${m.hp.map((k) => nccRow(NCC.hp[k])).join('')}</ul></article>
+    <article class="card"><h3>Volume Two (Class 1 and 10)</h3><ul class="list">${m.vt.map((k) => nccRow(NCC.vt[k])).join('')}</ul></article>
+    <article class="card"><h3>Open the 2025 text</h3><ul class="list"><li>${srcHtml('ncc25hp')}</li><li>${srcHtml('ncc25v2')}</li>${(m.also || []).map((k) => `<li>${srcHtml(k)}</li>`).join('')}</ul></article></div>
+    ${m.note ? `<p class="mini" style="margin-top:8px"><b>Remember:</b> ${esc(m.note)}</p>` : ''}<p class="mini">Part numbers read from the NCC 2025 preview drafts on ${esc(NCC_CHECKED)}. No NCC text is copied here.</p>`;
+}
 const srcHtml = (id) => (SOURCES[id] ? `<a href="${esc(SOURCES[id][1])}" target="_blank" rel="noopener noreferrer">${esc(SOURCES[id][0])}</a>` : '');
 const touch = matchMedia('(pointer: coarse)').matches;
 
@@ -22,10 +34,11 @@ const store = {
 const saved = store.get('vbs:v1', {});
 const S = {
   step: Number.isInteger(saved.step) && saved.step >= 0 && saved.step <= STAGES.length ? saved.step : 1,
+  quality: saved.quality === 'standard' || saved.quality === 'high' ? saved.quality : undefined,
   tab: TABS.some((t) => t[0] === saved.tab) ? saved.tab : '3d', ticks: saved.ticks && typeof saved.ticks === 'object' ? saved.ticks : {},
   phase: 0, spot: null, detail: null, part: null, explode: 0, labels: true, mode: 'walk', want: 'walk', drawing: null, locked: false, sceneStep: null,
 };
-const persist = () => store.set('vbs:v1', { step: S.step, tab: S.tab, ticks: S.ticks });
+const persist = () => store.set('vbs:v1', { step: S.step, tab: S.tab, ticks: S.ticks, quality: S.quality });
 
 let stage = null, glFailed = false;
 
@@ -87,6 +100,7 @@ function showTab(tab) {
       st.setActive(true);
     }
     renderPhasebar(); renderCaption(); renderVtools(); renderSide(); updateHelp();
+    if (st) setTimeout(() => showCoach(false), 400);
   } else {
     stage?.setActive(false);
     $('#pdyn').innerHTML = renderers[tab](def);
@@ -96,17 +110,18 @@ function showTab(tab) {
 
 function ensureStage() {
   if (stage || glFailed) return stage;
-  try { stage = new Stage($('#viewport'), $('#hud'), callbacks); }
+  try { stage = new Stage($('#viewport'), $('#hud'), callbacks, { quality: S.quality }); S.quality = stage.quality; }
   catch (err) { glFailed = true; $('#nogl').hidden = false; console.warn('3D unavailable', err); }
   return stage;
 }
 
 /* ---------- 3D callbacks and side panels ---------- */
 const callbacks = {
-  onHotspot(h) { if (document.pointerLockElement) document.exitPointerLock(); S.spot = h; renderSide(); },
+  onHotspot(h) { if (document.pointerLockElement) document.exitPointerLock(); S.spot = h; renderSide(); renderVtools(); },
+  onQuality(q) { S.quality = q; persist(); renderVtools(); },
   onNear(h) { const p = $('#prompt'); if (h) { p.hidden = false; p.innerHTML = `<kbd>${touch ? 'Tap' : 'E'}</kbd>${esc(h.title)}`; } else p.hidden = true; },
   onMode(m) { S.mode = m; renderVtools(); updateHelp(); $('#prompt').hidden = true; },
-  onPhase(i) { S.phase = i; renderPhasebar(); renderCaption(); renderSide(); },
+  onPhase(i) { S.phase = i; renderPhasebar(); renderCaption(); renderSide(); renderVtools(); },
   onDetail(def) { S.detail = def; S.part = null; S.explode = 0; renderVtools(); renderSide(); renderCaption(); updateHelp(); },
   onDetailClose() { S.detail = null; S.part = null; renderVtools(); renderSide(); renderCaption(); updateHelp(); },
   onPart(p) { S.part = p; updatePart(); },
@@ -135,23 +150,52 @@ function renderCaption() {
 
 function renderVtools() {
   const t = $('#vtools');
-  t.innerHTML = S.detail
-    ? '<button class="btn small on" data-v="back" type="button">Back to site</button><button class="btn small" data-v="reset" type="button">Reset view</button>'
-    : `<button class="btn small ${S.mode === 'walk' ? 'on' : ''}" data-v="walk" type="button">Walk</button><button class="btn small ${S.mode === 'orbit' ? 'on' : ''}" data-v="orbit" type="button">Orbit</button>${S.mode === 'walk' && !touch ? `<button class="btn small ${S.locked ? 'on' : ''}" data-v="look" type="button">${S.locked ? 'Mouse look on (Esc)' : 'Mouse look'}</button>` : ''}`;
+  if (S.detail) { t.innerHTML = '<button class="btn small on" data-v="back" type="button">Back to site</button><button class="btn small" data-v="reset" type="button">Reset view</button>'; return; }
+  const vis = stage ? stage.visibleHotspots() : [], i = vis.indexOf(S.spot) + 1;
+  t.innerHTML = `<button class="btn small ${S.mode === 'walk' ? 'on' : ''}" data-v="walk" type="button" title="First person: walk around the site">Walk</button><button class="btn small ${S.mode === 'orbit' ? 'on' : ''}" data-v="orbit" type="button" title="Bird's-eye view you can spin and zoom">Overview</button>`
+    + (vis.length ? `<span class="stops"><button class="btn small" data-v="prev" type="button" aria-label="Previous stop">&lsaquo;</button><span>${i ? `Stop ${i} of ${vis.length}` : `${vis.length} stop${vis.length > 1 ? 's' : ''}`}</span><button class="btn small" data-v="next" type="button" aria-label="Next stop">&rsaquo;</button></span>` : '')
+    + (S.mode === 'walk' && !touch ? `<button class="btn small look ${S.locked ? 'on' : ''}" data-v="look" type="button" title="Capture the mouse for full game-style looking">${S.locked ? 'Mouse look on (Esc)' : 'Mouse look'}</button>` : '')
+    + `<button class="btn small" data-v="quality" type="button" title="High adds ambient occlusion and smoother edges. Standard is lighter on older devices."><span class="gfx-l">Graphics: </span><span class="gfx-s">Gfx: </span>${S.quality === 'high' ? 'High' : 'Std'}</button><button class="btn small" data-v="help" type="button" aria-label="How to move">?</button>`;
+  syncCaption();
 }
+// Keep the title card clear of the toolbar when the toolbar wraps onto a second row (desktop only; phones put the toolbar at the bottom).
+function syncCaption() {
+  const t = $('#vtools'), c = $('#caption'); if (!t || !c) return;
+  c.style.top = matchMedia('(max-width: 760px)').matches ? '' : `${t.offsetHeight + 18}px`;
+}
+if (window.ResizeObserver) new ResizeObserver(syncCaption).observe($('#vtools'));
+addEventListener('resize', syncCaption);
 $('#vtools').addEventListener('click', (e) => {
-  const v = e.target.closest('[data-v]')?.dataset.v; if (!v || !stage) return;
+  const v = e.target.closest('[data-v]')?.dataset.v; if (!v) return;
+  if (v === 'help') { showCoach(true); return; }
+  if (!stage) return;
   if (v === 'walk' || v === 'orbit') { S.want = v; stage.setMode(v); }
   if (v === 'look') stage.lockLook();
   if (v === 'back') stage.closeDetail();
   if (v === 'reset') stage.resetView();
+  if (v === 'prev') stage.stepStop(-1);
+  if (v === 'next') stage.stepStop(1);
+  if (v === 'quality') stage.setQuality(S.quality === 'high' ? 'standard' : 'high');
 });
+
+// First-time guide, reopened with the ? button.
+function showCoach(force) {
+  if (!force && store.get('vbs:coach', false)) return;
+  if ($('#coach')) return;
+  const rows = touch
+    ? [['Stick', 'Use the left joystick to walk.'], ['Drag', 'Drag the view to look around.'], ['Tap', 'Tap the ground to walk there. Tap a numbered pin to go to it.'], ['Map', 'Tap the small plan to jump anywhere on the site.']]
+    : [['Click', 'Click the ground to walk there. Click a numbered pin to go to it.'], ['W A S D', 'Walk with W A S D or the arrow keys. Hold Shift to run.'], ['Drag', 'Drag to look around. Press E at a pin to open it.'], ['Map', 'Click the small plan to jump anywhere. Use the arrows to visit each stop in order.']];
+  const c = document.createElement('div'); c.className = 'coach'; c.id = 'coach'; c.setAttribute('role', 'dialog'); c.setAttribute('aria-label', 'How to move');
+  c.innerHTML = `<div class="box"><h3>How to move around</h3><ul>${rows.map(([k, t]) => `<li><b>${esc(k)}</b><span>${esc(t)}</span></li>`).join('')}</ul><button class="btn primary go" type="button">Got it</button></div>`;
+  c.addEventListener('click', (e) => { if (e.target === c || e.target.closest('.go')) { c.remove(); store.set('vbs:coach', true); } });
+  $('#viewport').appendChild(c); $('.go', c).focus();
+}
 
 function updateHelp() {
   const h = $('#help');
   h.textContent = S.detail ? 'Drag to rotate. Scroll or pinch to zoom in close. Use Explode to take it apart. Tap a part or its label for the specification.'
-    : S.mode === 'walk' ? (touch ? 'Left joystick to walk. Drag to look. Tap a numbered pin to read it.' : 'W A S D or arrow keys to walk. Drag to look around. Shift to run. Press E at a pin to open it. Mouse look gives a full game view.')
-      : 'Drag to rotate. Scroll or pinch to zoom. Right-drag or two fingers to pan. Click a numbered pin to read it.';
+    : S.mode === 'walk' ? (touch ? 'Left joystick to walk. Drag to look. Tap the ground to walk there, or tap a numbered pin to go to it. The small plan jumps you anywhere.' : 'Click the ground or the small plan to walk there. W A S D or arrows also walk, drag looks around, Shift runs, E opens the nearest pin. The arrows step through the stops in order.')
+      : 'Drag to rotate, scroll or pinch to zoom, right-drag or two fingers to pan. Double-click the ground or click the small plan to fly there. Click a numbered pin to read it.';
 }
 
 function spotCard(h) {
@@ -242,7 +286,7 @@ const renderers = {
   },
   study(def) {
     const list = NOTES[def.n] || [], key = (i) => `l${def.n}.${i}`, done = LOOP.filter((_, i) => S.ticks[key(i)]).length;
-    return `<h3 class="sec-title">Your notes for this step</h3><p class="lead">Pointers into your own Builders Academy notes, chosen from section titles. Open the note named on each card, then come back to the walk-through. No course text is copied into this app.</p>
+    return `${nccHtml(def.n)}<h3 class="sec-title" style="margin-top:26px">Your notes for this step</h3><p class="lead">Pointers into your own Builders Academy notes, chosen from section titles. Open the note named on each card, then come back to the walk-through. No course text is copied into this app.</p>
       <div class="grid">${list.map((n) => `<article class="card"><span class="chip">${esc(n.module)}</span><h3 style="margin-top:8px">${esc(n.volume)}</h3>${n.section === n.volume ? '' : `<p class="sub">${esc(n.section)}</p>`}<p class="mini" style="margin-top:6px"><b>Use it for:</b> ${esc(n.use)}</p></article>`).join('')}</div>
       <p class="mini" style="margin-top:8px">Folder on your computer: ${esc(NOTES_FOLDER)}</p>
       <h3 class="sec-title" style="margin-top:22px">Learning loop <span class="chip">${done} of ${LOOP.length} done</span></h3>
@@ -311,13 +355,13 @@ function renderMaster() {
   hideStageUI();
   const built = STAGES.filter((s) => s.built).length;
   $('#head').innerHTML = `<div class="hero"><div class="eyebrow">Master plan</div><h2>From vacant block to occupancy permit</h2>
-    <p class="lead" style="margin:0">Eighteen stages cover what a Victorian domestic builder is expected to know. Each stage will have the same pages as Steps 1 and 2: a walkable 3D site, zoomable detail models with labelled components, drawings, trades, materials and where to buy them, quotes to obtain, inspections and exam cards.</p>
+    <p class="lead" style="margin:0">Eighteen stages cover what a Victorian domestic builder is expected to know. Each stage gets the same pages as the built steps: a walkable 3D site, zoomable detail models with labelled components, drawings, trades, materials and where to buy them, quotes to obtain, inspections and exam cards.</p>
     <div class="stat"><div><b>${STAGES.length}</b><span>stages planned</span></div><div><b>${built}</b><span>built and ready</span></div><div><b>${ACTS.length}</b><span>BPC activities mapped</span></div></div></div>`;
   const cov = ACTS.map((a, i) => [a, STAGES.filter((s) => s.acts?.includes(i + 1)).map((s) => s.n)]);
   $('#pdyn').innerHTML = `<h3 class="sec-title">The 18 stages</h3>
     <div class="grid">${STAGES.map((s) => `<article class="card stage ${s.built ? 'built' : ''}"><div class="top2"><span class="big">${s.n}</span><div><h3>${esc(s.title)}</h3><span class="chip">${s.built ? 'Built' : 'Planned'}</span></div></div>
       <p>${esc(s.blurb)}</p><div class="chips">${s.topics.map((t) => `<span class="chip">${esc(t)}</span>`).join('')}</div>
-      <p class="mini"><b>Trades:</b> ${s.trades.map(esc).join(', ')}</p><p class="mini"><b>Your notes:</b> ${[...new Set((NOTES[s.n] || []).map((n) => n.module.replace(' · ', ' ')))].map(esc).join(', ')}</p>${s.built ? `<div class="actions" style="margin-top:2px"><button class="btn primary small" data-open-step="${s.n}" type="button">Open step ${s.n}</button></div>` : ''}</article>`).join('')}</div>
+      <p class="mini"><b>Trades:</b> ${s.trades.map(esc).join(', ')}</p><p class="mini"><b>NCC:</b> ${[...(NCC_BY_STAGE[s.n]?.hp || []).map((k) => 'HP ' + k), ...(NCC_BY_STAGE[s.n]?.vt || []).map((k) => 'Part ' + k)].join(', ')}</p><p class="mini"><b>Your notes:</b> ${[...new Set((NOTES[s.n] || []).map((n) => n.module.replace(' · ', ' ')))].map(esc).join(', ')}</p>${s.built ? `<div class="actions" style="margin-top:2px"><button class="btn primary small" data-open-step="${s.n}" type="button">Open step ${s.n}</button></div>` : ''}</article>`).join('')}</div>
     <h3 class="sec-title" style="margin-top:26px">Threads that run through every stage</h3>
     <div class="grid">${CROSS.map((c) => `<article class="card"><h3>${esc(c.t)}</h3><p class="sub">${esc(c.d)}</p></article>`).join('')}</div>
     <h3 class="sec-title" style="margin-top:26px">Where the BPC activities are covered</h3>
@@ -332,15 +376,16 @@ function renderPlanned(n) {
   $('#pdyn').innerHTML = `<div class="grid"><article class="card"><h3>What will be covered</h3><ul class="list">${s.topics.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></article>
     <article class="card"><h3>Trades and professionals</h3><ul class="list">${s.trades.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></article>
     <article class="card"><h3>Your notes</h3><ul class="list">${(NOTES[n] || []).map((x) => `<li>${esc(x.module)}: ${esc(x.section)}</li>`).join('')}</ul></article>
+    <article class="card"><h3>NCC parts ${flagHtml('C')}</h3><ul class="list">${(NCC_BY_STAGE[n]?.hp || []).map((k) => nccRow(NCC.hp[k])).join('')}${(NCC_BY_STAGE[n]?.vt || []).map((k) => nccRow(NCC.vt[k])).join('')}</ul><p class="mini">${srcHtml('ncc25hp')} &middot; ${srcHtml('ncc25v2')}</p></article>
     <article class="card"><h3>BPC activities</h3><ul class="list">${(s.acts || []).map((a) => `<li>${esc(ACTS[a - 1])}</li>`).join('') || '<li>See the master plan.</li>'}</ul></article></div>
-    <p class="lead" style="margin-top:16px">This step will get the same pages as Steps 1 and 2: 3D walk-through, zoomable details, drawings, trades, materials, quotes, inspections and exam cards.</p>
-    <div class="actions"><button class="btn primary" data-open-step="1" type="button">Open step 1</button><button class="btn" data-open-step="2" type="button">Open step 2</button><button class="btn" data-open-step="0" type="button">Master plan</button></div>`;
+    <p class="lead" style="margin-top:16px">This step will get the same pages as the built steps: 3D walk-through, zoomable details, drawings, trades, materials, quotes, inspections and exam cards.</p>
+    <div class="actions">${STAGES.filter((x) => x.built).map((x, i) => `<button class="btn ${i ? '' : 'primary'}" data-open-step="${x.n}" type="button">Open step ${x.n}</button>`).join('')}<button class="btn" data-open-step="0" type="button">Master plan</button></div>`;
 }
 $('#head').addEventListener('click', (e) => { const o = e.target.closest('[data-open-step]'); if (o) selectStep(+o.dataset.openStep); });
 
 /* ---------- sources sheet ---------- */
 function openSheet() {
-  const def = BUILT[S.step], ids = def ? def.sources : [...new Set(Object.values(BUILT).flatMap((d) => d.sources))];
+  const def = BUILT[S.step], ids = [...new Set([...(def ? def.sources : Object.values(BUILT).flatMap((d) => d.sources)), 'ncc25hp', 'ncc25v2', ...(def ? NCC_BY_STAGE[def.n]?.also || [] : [])])];
   $('#sheetBox').innerHTML = `<div class="row"><h2 style="font-size:22px">Sources and flags</h2><button class="btn small" id="sheetClose" type="button">Close</button></div>
     <p class="sub">Checked ${esc(CHECKED)}.</p>
     <ul>${['V', 'T', 'C'].map((f) => `<li>${flagHtml(f)} ${esc(FLAGS[f].hint)}</li>`).join('')}</ul>

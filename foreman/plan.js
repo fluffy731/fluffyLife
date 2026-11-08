@@ -1,5 +1,5 @@
 // Master plan: every stage of a Victorian new-home build, mapped to the BPC DB-U activity list.
-// Stages 1 and 2 are built out; the rest are planned and keep the same layout when they are added.
+// Stages marked built are fully out; the rest are planned and keep the same layout when they are added.
 export const CHECKED = '8 November 2026';
 
 export const FLAGS = {
@@ -25,9 +25,9 @@ export const STAGES = [
     blurb: 'Set-out, excavation, under-slab plumbing, membrane, termite barrier, reinforcement, pour and cure. Edge beam, penetration and beam-junction details.',
     topics: ['Site classification and AS 2870', 'Edge beams and rebates', 'Membrane laps and penetrations', 'Cover, chairs and laps', 'Mandatory inspection before the pour', 'Curing'],
     trades: ['Excavator', 'Plumber (drainer)', 'Termite installer', 'Steel fixer', 'Concreter', 'Ready-mix and pump'] },
-  { n: 3, title: 'Wall framing', blurb: 'Timber and steel frames, MGP10 studs, plates, noggings, bracing, tie-down and lintels.',
+  { n: 3, title: 'Wall framing', built: true, acts: [3, 4, 7, 8, 11], blurb: 'Timber and steel frames, MGP10 studs, plates, noggings, bracing, tie-down and lintels.',
     topics: ['AS 1684 and the span tables', 'Bracing and tie-down', 'Lintels and openings', 'Frame inspection stage'], trades: ['Carpenter or framing crew', 'Truss and frame fabricator', 'Engineer (steel)'] },
-  { n: 4, title: 'Roof framing and trusses', blurb: 'Truss design and delivery, crane, temporary bracing, fixing, battens and tie-down.',
+  { n: 4, title: 'Roof framing and trusses', built: true, acts: [3, 4, 7, 8, 9, 11, 12], blurb: 'Truss design and delivery, crane, temporary bracing, fixing, battens and tie-down.',
     topics: ['Truss engineering documents', 'Temporary and permanent bracing', 'Wind classification', 'Crane and working-at-heights safety'], trades: ['Truss manufacturer', 'Crane operator', 'Carpenter'] },
   { n: 5, title: 'Roof cladding, gutters and stormwater', blurb: 'Sarking, metal or tile roofing, flashings, gutters, downpipes and legal point of discharge.',
     topics: ['Roof pitch and cladding rules', 'Flashings and penetrations', 'Gutter and downpipe sizing', 'Stormwater to the legal point of discharge'], trades: ['Roofer', 'Plumber', 'Scaffolder'] },
@@ -67,7 +67,7 @@ export const CROSS = [
   { t: 'Records and certificates', d: 'Permits, engineers\' certificates, plumbing and electrical compliance certificates, inspection records.' },
 ];
 
-// Every source used in the two built steps. Shown on each page and in the Sources panel.
+// Every source used in the built steps. Shown on each page and in the Sources panel.
 export const SOURCES = {
   bpcDomestic: ['BPC: Domestic builder (class scope and experience)', 'https://www.bpc.vic.gov.au/builders/builder-classes/domestic-builder'],
   bpcWork: ['BPC: What is domestic building work', 'https://www.bpc.vic.gov.au/resource-hub/info-sheets/What-is-domestic-building-work'],
@@ -83,6 +83,15 @@ export const SOURCES = {
   infra: ['InfraBuild: Polyethylene building films', 'https://www.infrabuild.com/reinforcing/products/accessories/polyethylene-building-films/'],
   bunnMGP: ['Bunnings: 90 x 45mm MGP10 H2 blue pine 3.0m', 'https://www.bunnings.com.au/90-x-45mm-framing-mgp10-h2-blue-pine-3-0m_p8031024'],
   bunnMGPu: ['Bunnings: 90 x 45mm MGP10 untreated pine 3.6m', 'https://www.bunnings.com.au/90-x-45mm-framing-mgp10-untreated-pine-3-6m_p8030083'],
+  ncc25hp: ['NCC 2025 preview draft, Housing Provisions (PDF from ABCB)', 'https://www.abcb.gov.au/sites/default/files/resources/2026/NCC-2025-preview-draft-Housing-Provisions.pdf'],
+  ncc25v2: ['NCC 2025 preview draft, Volume Two (PDF from ABCB)', 'https://www.abcb.gov.au/sites/default/files/resources/2026/NCC-2025-preview-draft-Volume-Two.pdf'],
+  bpcNcc25: ['BPC: NCC 2025 Victorian variations, Volume 2 (video transcript)', 'https://www.bpc.vic.gov.au/practitioner-education-series/ncc-2025-victoria-amendments/ncc-2025-victorian-variations-volume-2-video-transcript'],
+  bpcNccKey: ['BPC: Key changes in NCC 2025 Volume 2 (video transcript)', 'https://www.bpc.vic.gov.au/practitioner-education-series/jay-geega-video-transcript-key-changes-in-ncc-2025-volume-2'],
+  bpcNccSlides: ['BPC: NCC 2025 Victorian variations, Volume 2 (slides PDF)', 'https://www.bpc.vic.gov.au/__data/assets/pdf_file/0015/24081/View-slides-Vol2-Vic-Var.pdf'],
+  hiaStd25: ['HIA: New and amended NCC 2025 referenced Standards', 'https://hia.com.au/resources-and-advice/building-it-right/australian-standards/articles/new-and-amended-ncc-2025-referenced-standards'],
+  vbaWet: ['VBA: Waterproofing of wet areas', 'https://www.vba.vic.gov.au/building/waterproofing-of-wet-areas'],
+  bpcWetFaq: ['BPC: Waterproofing and structural integrity FAQs', 'https://www.bpc.vic.gov.au/building/building-faqs-pages/waterproofing-and-structural-integrity-faqs'],
+  hiaTiles: ['HIA: Installation of roof tiles', 'https://hia.com.au/resources-and-advice/building-it-right/australian-standards/articles/installation-of-roof-tiles'],
   threeSkill: ['CloudAI-X threejs-skills (MIT), used as guidance for the 3D engine', 'https://github.com/CloudAI-X/threejs-skills'],
 };
 
@@ -123,3 +132,74 @@ export const NOTES = {
 };
 // The learning loop each step follows. It is the level structure if this becomes a game.
 export const LOOP = ['Read your notes for this step', 'Walk the 3D site and open each detail', 'Answer every exam card without peeking', 'Sit the matching module quiz from your quiz bank'];
+
+/* ---------- NCC links (added 9 November 2026) ----------
+   Part numbers and titles were read from the contents of the NCC 2025 preview drafts (ABCB PDFs).
+   The ABCB web pages linked are the NCC 2022 edition: they are the only ones located, ABCB blocks automated
+   reading, so no page text was opened. `found` = the address appeared in a search result; otherwise it was built from
+   the same address pattern and may need correcting. No NCC text is copied into this app. */
+export const NCC_CHECKED = '9 November 2026';
+export const NCC_NOTE = 'Victoria has applied NCC 2025 since 1 May 2026. Part numbers and titles come from the contents of the NCC 2025 preview drafts. The web pages linked are the NCC 2022 edition, because those are the pages that could be located and ABCB does not allow automated reading, so their text was not opened. Open the 2025 PDF to confirm the clause in the edition your permit uses.';
+const HPW = 'https://abcb.gov.au/editions/ncc-2022/adopted/housing-provisions/';
+const VTW = 'https://abcb.gov.au/editions/ncc-2022/adopted/volume-two/h-class-1-and-10-buildings/';
+const h = (code, sec, title, slug, found, url) => [code, { code: 'HP ' + code, sec: 'Section ' + sec, title, url: url || (slug ? HPW + slug : null), found: !!found }];
+export const NCC = {
+  hp: Object.fromEntries([
+    h('2.2', '2 Structure', 'Structural provisions', '2-structure/part-22-structural-provisions'),
+    h('3.2', '3 Site preparation', 'Earthworks', '3-site-preparation/part-32-earthworks'),
+    h('3.3', '3 Site preparation', 'Drainage', '3-site-preparation/part-33-drainage'),
+    h('3.4', '3 Site preparation', 'Termite risk management', '3-site-preparation/part-34-termite-risk-management', true),
+    h('4.2', '4 Footings and slabs', 'Footings, slabs and associated elements', null, true, 'https://abcb.gov.au/editions/ncc-2022/adopted/housing-provisions/8-south-australia/42-footings-slabs-and-associated-elements'),
+    h('5.2', '5 Masonry', 'Masonry veneer', '5-masonry/part-52-masonry-veneer', true),
+    h('5.7', '5 Masonry', 'Weatherproofing of masonry', '5-masonry/part-57-weatherproofing-masonry'),
+    h('6.1', '6 Framing', 'Scope and application of Section 6', '6-framing/part-61-scope-and-application-section-6', true),
+    h('6.3', '6 Framing', 'Structural steel members', '6-framing/part-63-structural-steel-members'),
+    h('7.1', '7 Roof and wall cladding', 'Scope and application of Section 7', '7-roof-and-wall-cladding/part-71-scope-and-application-section-7', true),
+    h('7.2', '7 Roof and wall cladding', 'Sheet roofing', '7-roof-and-wall-cladding/part-72-sheet-roofing', true),
+    h('7.3', '7 Roof and wall cladding', 'Roof tiles and shingles', '7-roof-and-wall-cladding/part-73-roof-tiles-and-shingles'),
+    h('7.4', '7 Roof and wall cladding', 'Gutters and downpipes', '7-roof-and-wall-cladding/part-74-gutters-and-downpipes'),
+    h('7.5', '7 Roof and wall cladding', 'Timber and composite wall cladding', '7-roof-and-wall-cladding/part-75-timber-and-composite-wall-cladding'),
+    h('8.2', '8 Glazing', 'Windows and external glazed doors', '8-glazing/part-82-windows-and-external-glazed-doors'),
+    h('8.4', '8 Glazing', 'Glazing human impact', '8-glazing/part-84-glazing-human-impact'),
+    h('9.2', '9 Fire safety', 'Fire separation of external walls', '9-fire-safety/part-92-fire-separation-of-external-walls'),
+    h('9.3', '9 Fire safety', 'Fire protection of separating walls and floors', '9-fire-safety/part-93-fire-protection-of-separating-walls-and-floors'),
+    h('9.5', '9 Fire safety', 'Smoke alarms and evacuation lighting', '9-fire-safety/part-95-smoke-alarms-and-evacuation-lighting'),
+    h('10.2', '10 Health and amenity', 'Wet area waterproofing', '10-health-and-amenity/part-102-wet-area-waterproofing', true),
+    h('10.7', '10 Health and amenity', 'Sound insulation', '10-health-and-amenity/part-107-sound-insulation'),
+    h('10.8', '10 Health and amenity', 'Condensation management', '10-health-and-amenity/part-108-condensation-management'),
+    h('11.2', '11 Safe movement and access', 'Stairway and ramp construction', '11-safe-movement-and-access/part-112-stairway-and-ramp-construction'),
+    h('11.3', '11 Safe movement and access', 'Barriers and handrails', '11-safe-movement-and-access/part-113-barriers-and-handrails'),
+    h('12.3', '12 Ancillary provisions', 'Attachment of framed decks and balconies to external walls using a waling plate', null),
+    h('13.2', '13 Energy efficiency', 'Building fabric', '13-energy-efficiency/part-132-building-fabric'),
+    h('13.3', '13 Energy efficiency', 'External glazing', '13-energy-efficiency/part-133-external-glazing'),
+    h('13.4', '13 Energy efficiency', 'Building sealing', '13-energy-efficiency/part-134-building-sealing'),
+    h('13.7', '13 Energy efficiency', 'Services', '13-energy-efficiency/part-137-services'),
+  ]),
+  vt: Object.fromEntries([
+    ['H1', 'Structure', 'part-h1-structure'], ['H2', 'Damp and weatherproofing', 'part-h2-damp-and-weatherproofing'], ['H3', 'Fire safety', 'part-h3-fire-safety', true],
+    ['H4', 'Health and amenity', 'part-h4-health-and-amenity'], ['H5', 'Safe movement and access', 'part-h5-safe-movement-and-access'], ['H6', 'Energy efficiency', 'part-h6-energy-efficiency'],
+    ['H7', 'Ancillary provisions and additional construction requirements', 'part-h7-ancillary-provisions-and-additional-construction-requirements'], ['H8', 'Livable housing design', 'part-h8-livable-housing-design'],
+  ].map(([c, t, slug, found]) => [c, { code: 'Part ' + c, sec: 'Volume Two', title: t, url: VTW + slug, found: !!found }])),
+};
+
+// Which parts to read for each stage. `also` are Victorian guidance links from SOURCES. `note` is a plain caution.
+export const NCC_BY_STAGE = {
+  1: { hp: ['3.2', '3.3'], vt: ['H1', 'H2'], also: ['bpcNcc25', 'bpcNccKey'], note: 'Permits, the contract and insurance come from the Building Act 1993, the Building Regulations and the Domestic Building Contracts Act 1995, not the NCC. The NCC governs the work itself once it starts.' },
+  2: { hp: ['3.2', '3.4', '4.2'], vt: ['H1'], also: ['hiaRaft'], note: 'Slab design sits with AS 2870 as called up by Part 4.2 and the engineer\'s drawings. Termite management is Part 3.4.' },
+  3: { hp: ['2.2', '6.1', '6.3'], vt: ['H1'], also: ['hiaStd25'], note: 'Timber framing is built to the referenced Standard (the AS 1684 series) and steel members to Part 6.3. Check how Parts 2.2 and 6.1 call up the Standard in the edition that applies.' },
+  4: { hp: ['2.2', '6.1', '7.1'], vt: ['H1'], also: ['hiaStd25'], note: 'Trusses are designed by the manufacturer to the Standards, so the design documents and the engineer\'s certificate govern the installation.' },
+  5: { hp: ['7.1', '7.2', '7.3', '7.4'], vt: ['H2'], also: ['hiaTiles'] },
+  6: { hp: ['5.2', '5.7', '7.5'], vt: ['H2'] },
+  7: { hp: ['8.2', '8.4', '13.3'], vt: ['H1', 'H2', 'H6'] },
+  8: { hp: ['3.3'], vt: ['H2', 'H4'], note: 'Plumbing and drainage follow the Plumbing Code of Australia (NCC Volume Three) and the Victorian plumbing regulations, by a licensed plumber who issues the certificate of compliance. Volume Three links will be added with the plumbing step.' },
+  9: { hp: ['9.5', '13.7'], vt: ['H3', 'H6'], note: 'Wiring is governed by the Electricity Safety Act and AS/NZS 3000, not the NCC. The NCC covers smoke alarm placement and lighting energy limits.' },
+  10: { hp: ['10.2'], vt: ['H4'], also: ['vbaWet', 'bpcWetFaq'] },
+  11: { hp: ['10.8', '13.2', '13.4'], vt: ['H6'] },
+  12: { hp: ['9.2', '9.3', '10.7'], vt: ['H3', 'H4'] },
+  13: { hp: ['11.2', '11.3'], vt: ['H5'] },
+  14: { hp: ['10.2', '11.2'], vt: ['H4', 'H5'] },
+  15: { hp: ['9.5', '13.7'], vt: ['H3', 'H6'] },
+  16: { hp: ['9.2', '9.5'], vt: ['H3', 'H7'], note: 'Bushfire construction (AS 3959 and the BAL rating) is called up through Volume Two, not the Housing Provisions parts listed. Confirm the clause in the 2025 edition.' },
+  17: { hp: ['3.2', '3.3', '11.3', '12.3'], vt: ['H1', 'H7'] },
+  18: { hp: ['9.5'], vt: ['H3'], note: 'Occupancy permits and final certificates come from the Building Act 1993, not the NCC.' },
+};

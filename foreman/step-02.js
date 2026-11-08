@@ -1,6 +1,6 @@
 // Step 2: footings and slab-on-ground (stiffened raft, brick-veneer edge rebate).
 // Numeric rules marked Verified come from the NCC 2022 Housing Provisions Part 4.2 text (adopted edition), see Sources.
-import { buildBase, buildSiteWorks, HOUSE, BASE_COLLIDERS } from './site.js';
+import { buildBase, buildSiteWorks, HOUSE, BASE_COLLIDERS, MAP } from './site.js';
 import { svg, T, L, R, C as Ci, P, dim, arrow, call } from './dwg.js';
 
 const { x0: X0, x1: X1, z0: Z0, z1: Z1 } = HOUSE;
@@ -41,9 +41,9 @@ function build(kit) {
   const base = buildBase(kit, { pit: { x0: X0, x1: X1, z0: Z0, z1: Z1 } }), w = buildSiteWorks(kit);
   const pm = { sewer: mat(C.sewer), storm: mat(C.storm), water: mat(C.water) };
 
-  const cover = mk('cover'); cover.add(flat(X1 - X0, DZ, mat(C.soil), 0, 0.007, CZ));
+  const cover = mk('cover'); cover.add(flat(X1 - X0, DZ, mat(0xffffff, { tex: 'soil' }), 0, 0.007, CZ));
 
-  const prof = mk('profiles'), tm = mat(C.timber), stake = mat(C.timberDark), O = 1.3, segs = [];
+  const prof = mk('profiles'), tm = mat(0xffffff, { tex: 'timber' }), stake = mat(0xb89060, { tex: 'timber' }), O = 1.3, segs = [];
   for (const [ax, az, bx, bz, o] of [[X0, Z0 - O, X0, Z1 + O, 'z'], [X1, Z0 - O, X1, Z1 + O, 'z'], [X0 - O, Z0, X1 + O, Z0, 'x'], [X0 - O, Z1, X1 + O, Z1, 'x']]) {
     segs.push([[ax, 0.5, az], [bx, 0.5, bz]]);
     for (const [px, pz] of [[ax, az], [bx, bz]]) {
@@ -53,7 +53,7 @@ function build(kit) {
   }
   prof.add(lineSet(segs, 0xffd24a));
 
-  const trench = mk('trench'), dark = mat(C.soilDark), pad = mat(0x8c6a47);
+  const trench = mk('trench'), dark = mat(0x9a8a7a, { tex: 'soil' }), pad = mat(0xe3cba8, { tex: 'soil' });
   trench.add(box(X1 - X0, 0.02, DZ, dark, 0, TR - 0.01, CZ));
   for (const [a, b, c, d] of ISL) trench.add(box(b - a, -TR, d - c, pad, (a + b) / 2, TR / 2, (c + d) / 2));
   trench.add(box(X1 - X0, -TR, 0.04, dark, 0, TR / 2, Z0 + 0.02)); trench.add(box(X1 - X0, -TR, 0.04, dark, 0, TR / 2, Z1 - 0.02));
@@ -72,7 +72,7 @@ function build(kit) {
     risers.add(cyl(r, 0.26, pm[k], x, 0.17, z, 14)); risers.add(cyl(r * 1.2, 0.03, mat(0xf5f5f5), x, 0.31, z, 14));
   }
 
-  const bed = mk('bed'), sand = mat(C.sand), mm = mat(C.membrane, { side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
+  const bed = mk('bed'), sand = mat(0xffffff, { tex: 'sand' }), mm = mat(C.membrane, { side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
   for (const [a, b, c, d] of ISL) {
     bed.add(box(b - a, 0.05, d - c, sand, (a + b) / 2, 0.025, (c + d) / 2));
     bed.add(flat(b - a, d - c, mm, (a + b) / 2, 0.0525, (c + d) / 2));
@@ -89,7 +89,7 @@ function build(kit) {
   }
   const sl = cyl(0.085, 0.35, white, -3.6, 0.04, -5.35, 18, true); sl.rotation.x = Math.PI / 2; bed.add(sl);
 
-  const form = mk('formwork'), fm = mat(C.timber);
+  const form = mk('formwork'), fm = mat(0xffffff, { tex: 'timber' });
   form.add(box(X1 - X0 + 0.14, 0.18, 0.045, fm, 0, 0.09, Z0 - 0.0225)); form.add(box(X1 - X0 + 0.14, 0.18, 0.045, fm, 0, 0.09, Z1 + 0.0225));
   form.add(box(0.045, 0.18, DZ, fm, X0 - 0.0225, 0.09, CZ)); form.add(box(0.045, 0.18, DZ, fm, X1 + 0.0225, 0.09, CZ));
   for (let x = X0; x <= X1 + 0.01; x += 1.8) for (const z of [Z0 - 0.07, Z1 + 0.07]) form.add(cyl(0.02, 0.3, stake, x, 0.1, z, 6));
@@ -121,7 +121,7 @@ function build(kit) {
   };
   const wet = mk('wet'), wetPivot = mk('pivot'); wetPivot.position.z = Z0;
   slabInto(wetPivot, mat(0x7b7e82, { roughness: 0.55 }), Z0); wet.add(wetPivot);
-  const cured = slabInto(mk('cured'), mat(C.concrete), 0);
+  const cured = slabInto(mk('cured'), mat(0xffffff, { tex: 'concrete' }), 0);
   const curing = mk('curing');
   curing.add(flat(X1 - X0, DZ, ghost(0xffffff, 0.3), 0, 0.158, CZ));
   const cs = textPlane(['CURING: 7 DAYS', 'Keep surface moist', 'No stacked loads or plant'], 1.8, 0.9);
@@ -151,7 +151,7 @@ function build(kit) {
   ];
   return {
     layers, colliders: BASE_COLLIDERS, tickers,
-    spawn: { pos: [0, 22], yaw: 0, pitch: -0.12 },
+    spawn: { pos: [0, 22], yaw: 0, pitch: -0.12 }, map: MAP,
     orbit: { pos: [19, 15, 29], target: [0, 0, 4] },
     hotspots: [
       { id: 'setout', title: 'Set-out: profiles and string lines', pos: [X0 - 1.3, 0.8, Z0 - 1.3], stand: [-2, -12], from: 0, until: 5,
@@ -199,9 +199,9 @@ const details = {
     build(kit) {
       const { THREE, C, mat, ghost, box, rod, extrudeProfile, outline } = kit;
       const mk = () => new THREE.Group(), D = 1.2, rebar = mat(C.rebar, { metalness: 0.45, roughness: 0.5 });
-      const soil = mk(), sm = mat(C.soil);
+      const soil = mk(), sm = mat(0xffffff, { tex: 'soil' });
       soil.add(box(0.5, 0.65, D, sm, -0.25, -0.075, 0)); soil.add(box(1.4, 0.4, D, sm, 0.7, -0.2, 0)); soil.add(box(1.1, 0.25, D, sm, 0.85, 0.125, 0));
-      const sandG = mk(); sandG.add(box(0.8, 0.05, D, mat(C.sand), 0.7, 0.275, 0));
+      const sandG = mk(); sandG.add(box(0.8, 0.05, D, mat(0xffffff, { tex: 'sand' }), 0.7, 0.275, 0));
       const mem = mk(), mm = mat(C.membrane, { side: THREE.DoubleSide, transparent: true, opacity: 0.92 });
       const pl = (w, h) => new THREE.Mesh(new THREE.PlaneGeometry(w, h), mm);
       const a = pl(D, 0.25); a.rotation.y = Math.PI / 2; a.position.set(-0.003, 0.125, 0);
@@ -250,9 +250,9 @@ const details = {
     build(kit) {
       const { THREE, C, mat, ghost, box, cyl, rod, pipe, rectWithHoles, outline } = kit;
       const mk = () => new THREE.Group(), rebar = mat(C.rebar, { metalness: 0.45, roughness: 0.5 });
-      const soil = mk(), sm = mat(C.soil);
+      const soil = mk(), sm = mat(0xffffff, { tex: 'soil' });
       soil.add(box(1, 0.45, 0.35, sm, 0, -0.225, 0.325)); soil.add(box(1, 0.45, 0.35, sm, 0, -0.225, -0.325)); soil.add(box(1, 0.28, 0.3, sm, 0, -0.31, 0));
-      const sandG = mk(); sandG.add(box(1, 0.17, 0.3, ghost(C.sand, 0.5), 0, -0.085, 0)); sandG.add(box(1, 0.05, 1, mat(C.sand), 0, 0.025, 0));
+      const sandG = mk(); sandG.add(box(1, 0.17, 0.3, ghost(C.sand, 0.5), 0, -0.085, 0)); sandG.add(box(1, 0.05, 1, mat(0xffffff, { tex: 'sand' }), 0, 0.025, 0));
       const pip = mk(), pm = mat(C.sewer);
       pip.add(pipe([[-0.5, -0.085, 0], [0, -0.085, 0], [0, 0.3, 0]], 0.055, pm)); pip.add(cyl(0.066, 0.03, mat(0xf3f3f3), 0, 0.315, 0, 18));
       const mm = mat(C.membrane, { side: THREE.DoubleSide, transparent: true, opacity: 0.92 });

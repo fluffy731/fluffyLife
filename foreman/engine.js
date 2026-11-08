@@ -1,16 +1,22 @@
 // 3D engine: one renderer, three ways to look (game-style walk, orbit overview, zoomable detail room).
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { kit, disposeTree } from './kit.js';
 
 const EYE = 1.7, RADIUS = 0.45, WALK = 4.2, RUN = 8.5;
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-const SKY = new THREE.Color(0xbfd9ee), DETAIL_BG = new THREE.Color(0xe8edf3);
+const SKY = new THREE.Color(0xcfe3f2), DETAIL_BG = new THREE.Color(0xe8edf3);
+const SUN_DIR = new THREE.Vector3(32, 52, 26).normalize();
+const sstep = (t) => t * t * (3 - 2 * t);
 const el = (tag, cls, parent) => { const e = document.createElement(tag); if (cls) e.className = cls; parent?.appendChild(e); return e; };
 const svgEl = (tag, parent) => { const e = document.createElementNS('http://www.w3.org/2000/svg', tag); parent?.appendChild(e); return e; };
 
 export class Stage {
-  constructor(host, hud, cb = {}) {
+  constructor(host, hud, cb = {}, opts = {}) {
     this.host = host; this.hud = hud; this.cb = cb;
     this.mode = 'orbit'; this.base = 'orbit'; this.phase = 0; this.active = true;
     this.w = 0; this.h = 0;
@@ -21,26 +27,36 @@ export class Stage {
     this.orbitSaved = null; this.def = null; this.detailKey = null;
     this._v = new THREE.Vector3(); this._b = new THREE.Box3(); this._ray = new THREE.Raycaster(); this._m = new THREE.Vector2();
 
-    const r = this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    const r = this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFShadowMap;
+    r.toneMapping = THREE.NeutralToneMapping; r.toneMappingExposure = 1.0;
+    this.coarse = !!window.matchMedia?.('(pointer: coarse)').matches;
+    this.quality = opts.quality || (this.coarse ? 'standard' : 'high');
     r.domElement.className = 'gl'; r.domElement.tabIndex = 0;
     r.domElement.setAttribute('aria-label', '3D view. Use W A S D or arrow keys to walk, drag to look, E to open a detail.');
     host.prepend(r.domElement);
 
     this.scene = new THREE.Scene();
-    this.scene.background = SKY; this.scene.fog = new THREE.Fog(SKY, 80, 200);
-    this.camera = new THREE.PerspectiveCamera(60, 1, 0.05, 600);
+    this.scene.background = SKY; this.scene.fog = new THREE.Fog(SKY, 70, 240);
+    this.camera = new THREE.PerspectiveCamera(62, 1, 0.05, 600);
     this.camera.rotation.order = 'YXZ';
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x7d8a6a, 1.05));
-    const sun = this.sun = new THREE.DirectionalLight(0xfff3dc, 2.2);
-    sun.position.set(32, 52, 26); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
-    Object.assign(sun.shadow.camera, { left: -45, right: 45, top: 45, bottom: -45, near: 5, far: 140 });
-    sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
-    this.scene.add(sun);
+    this._buildSky();
+    this.scene.add(new THREE.HemisphereLight(0xeaf3ff, 0x8a9a74, 0.28));
+    const sun = this.sun = new THREE.DirectionalLight(0xfff0d6, 2.7);
+    sun.position.copy(SUN_DIR).multiplyScalar(66); sun.target.position.set(0, 0, 6);
+    sun.castShadow = true; sun.shadow.mapSize.setScalar(this.coarse ? 2048 : 4096); sun.shadow.radius = 2.5; sun.shadow.intensity = 0.88;
+    this.mainShadow = { left: -40, right: 40, top: 40, bottom: -40, near: 8, far: 150 };
+    Object.assign(sun.shadow.camera, this.mainShadow);
+    sun.shadow.bias = -0.0003; sun.shadow.normalBias = 0.035;
+    this.scene.add(sun, sun.target);
     this.world = new THREE.Group(); this.detailRoot = new THREE.Group();
     this.detailRoot.position.set(2000, 0, 0); this.detailRoot.visible = false;
     this.scene.add(this.world, this.detailRoot);
+    this.marker = new THREE.Mesh(new THREE.RingGeometry(0.26, 0.36, 40), new THREE.MeshBasicMaterial({ color: 0xff7a1a, transparent: true, opacity: 0.9, depthTest: false, toneMapped: false }));
+    this.marker.rotation.x = -Math.PI / 2; this.marker.renderOrder = 20; this.marker.visible = false; this.marker.userData.noAO = true;
+    this.scene.add(this.marker);
+    this.walkTo = null; this.glide = null; this.stuck = 0; this.stop = null; this.map = null; this._mapN = 0;
 
     this.controls = new OrbitControls(this.camera, r.domElement);
     Object.assign(this.controls, { enableDamping: true, dampingFactor: 0.08, enabled: true, screenSpacePanning: true });
@@ -53,12 +69,131 @@ export class Stage {
     this.labelLayer = el('div', 'labels', hud);
     this.fadeEl = el('div', 'fade', hud);
     this.joyEl = el('div', 'joy', hud); this.knob = el('div', 'knob', this.joyEl);
+    this.mapEl = el('canvas', 'minimap', hud); this.mapEl.setAttribute('aria-label', 'Site plan. Tap or click a spot to walk there.'); this.mapEl.style.display = 'none';
+    this.mapCtx = this.mapEl.getContext('2d');
     this._bindInput();
 
     this.timer = new THREE.Timer();
     new ResizeObserver(() => this.resize()).observe(host);
     this.resize();
     r.setAnimationLoop((ts) => this._tick(ts));
+  }
+
+  /* ---------- sky, light and post-processing ---------- */
+  _buildSky() {
+    const mat = new THREE.ShaderMaterial({
+      side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false,
+      uniforms: { top: { value: new THREE.Color(0x3f86cf) }, hor: { value: new THREE.Color(0xcfe3f2) }, gnd: { value: new THREE.Color(0x93a083) }, sunDir: { value: SUN_DIR.clone() }, sunK: { value: 1 } },
+      vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+      fragmentShader: `uniform vec3 top; uniform vec3 hor; uniform vec3 gnd; uniform vec3 sunDir; uniform float sunK; varying vec3 vP;
+        void main(){ vec3 d = normalize(vP); float h = d.y;
+          vec3 c = h > 0.0 ? mix(hor, top, pow(h, 0.5)) : mix(hor, gnd, smoothstep(0.0, 0.3, -h));
+          float s = max(dot(d, normalize(sunDir)), 0.0);
+          c += vec3(1.0, 0.93, 0.75) * (pow(s, 900.0) * 1.4 + pow(s, 14.0) * 0.2) * sunK;
+          gl_FragColor = vec4(c, 1.0);
+          #include <colorspace_fragment>
+        }`,
+    });
+    this.dome = new THREE.Mesh(new THREE.SphereGeometry(300, 32, 16), mat);
+    this.dome.frustumCulled = false; this.dome.renderOrder = -10; this.dome.userData.noAO = true;
+    this.scene.add(this.dome);
+    // Sky-lit image-based lighting: bake a dimmer copy of the dome into a PMREM cube once.
+    const pm = new THREE.PMREMGenerator(this.renderer), es = new THREE.Scene();
+    const ed = new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), mat.clone());
+    ed.material.uniforms.sunK.value = 0.12; es.add(ed);
+    this.scene.environment = pm.fromScene(es, 0).texture; this.scene.environmentIntensity = 1.0;
+    ed.geometry.dispose(); ed.material.dispose(); pm.dispose();
+  }
+
+  _initComposer() {
+    if (this.composer || this.quality !== 'high' || !this.w) return;
+    try {
+      const rt = new THREE.WebGLRenderTarget(this.w, this.h, { type: THREE.HalfFloatType, samples: 4 });
+      const c = this.composer = new EffectComposer(this.renderer, rt);
+      c.addPass(new RenderPass(this.scene, this.camera));
+      const ao = this.gtao = new GTAOPass(this.scene, this.camera, this.w, this.h);
+      ao.updateGtaoMaterial({ radius: 0.5, distanceExponent: 1.4, thickness: 1.2, scale: 1.3, samples: 12 });
+      ao.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 12 });
+      ao.blendIntensity = 0.9;
+      // Ghost (transparent) parts and the sky must not cast ambient occlusion.
+      const hide = ao._overrideVisibility.bind(ao);
+      ao._overrideVisibility = () => { hide(); this.scene.traverse((o) => { if (o.visible && ((o.isMesh && o.material?.transparent && !o.userData.keepAO) || o.userData.noAO)) { ao._visibilityCache.push(o); o.visible = false; } }); };
+      c.addPass(ao); c.addPass(new OutputPass());
+      c.setSize(this.w, this.h);
+    } catch (err) {
+      console.warn('Post-processing unavailable, using standard quality.', err);
+      this.composer = null; this.quality = 'standard'; this.cb.onQuality?.('standard');
+    }
+  }
+
+  setQuality(q) { this.quality = q === 'high' ? 'high' : 'standard'; if (this.quality === 'high') this._initComposer(); this.cb.onQuality?.(this.quality); }
+
+  // The one sun serves both rooms: move it (and shrink its shadow frustum) while a detail room is open.
+  _sunTo(detail) {
+    const sh = this.sun.shadow.camera;
+    if (detail) { this.sun.position.set(2000 + 6.8, 11, 5.5); this.sun.target.position.set(2000, 0.3, 0); Object.assign(sh, { left: -5, right: 5, top: 5, bottom: -5, near: 1, far: 40 }); }
+    else { this.sun.position.copy(SUN_DIR).multiplyScalar(66); this.sun.target.position.set(0, 0, 6); Object.assign(sh, this.mainShadow); }
+    sh.updateProjectionMatrix();
+  }
+
+  // Thin dark edge lines on boxes, extrusions and fat cylinders make detail models read like drawings.
+  _edges(group) {
+    const list = [];
+    group.traverse((o) => {
+      if (!o.isMesh || o.isInstancedMesh || o.userData.noEdge) return;
+      const g = o.geometry, t = g.type;
+      if (t === 'BoxGeometry' || t === 'ExtrudeGeometry' || (t === 'CylinderGeometry' && g.parameters.radiusBottom >= 0.03)) list.push(o);
+    });
+    for (const o of list) {
+      const l = new THREE.LineSegments(new THREE.EdgesGeometry(o.geometry, 25), new THREE.LineBasicMaterial({ color: 0x1f2b3a, transparent: true, opacity: 0.36 }));
+      l.raycast = () => {}; l.userData.noAO = true; o.add(l);
+    }
+  }
+
+  /* ---------- minimap ---------- */
+  _layoutMap() {
+    if (!this.map) return;
+    const m = this.map, w = this.mapEl.clientWidth || 132, h = Math.round(w * (m.z1 - m.z0) / (m.x1 - m.x0)), d = Math.min(window.devicePixelRatio || 1, 2);
+    this.mapEl.style.height = h + 'px'; this.mapEl.width = Math.round(w * d); this.mapEl.height = Math.round(h * d); this._mapW = w; this._mapH = h; this._mapD = d;
+  }
+  _mp(x, z) { const m = this.map; return [((x - m.x0) / (m.x1 - m.x0)) * this._mapW, ((z - m.z0) / (m.z1 - m.z0)) * this._mapH]; }
+  _drawMap() {
+    if (!this.map || this.mode === 'detail' || !this._mapW) return;
+    const c = this.mapCtx, m = this.map, W = this._mapW, H = this._mapH;
+    c.setTransform(this._mapD, 0, 0, this._mapD, 0, 0);
+    c.fillStyle = '#9fc58a'; c.fillRect(0, 0, W, H);
+    for (const sh of m.shapes) {
+      const [x0, y0] = this._mp(sh.x0, sh.z0), [x1, y1] = this._mp(sh.x1, sh.z1);
+      c.fillStyle = sh.fill; c.fillRect(x0, y0, x1 - x0, y1 - y0);
+      if (sh.stroke) { c.strokeStyle = sh.stroke; c.lineWidth = 1; c.setLineDash(sh.dash ? [3, 2] : []); c.strokeRect(x0 + 0.5, y0 + 0.5, x1 - x0 - 1, y1 - y0 - 1); c.setLineDash([]); }
+    }
+    this.visibleHotspots().forEach((h) => {
+      const [x, y] = this._mp(h.pos[0], h.pos[2]), i = this.hotspots.indexOf(h) + 1, on = this.near === h || this.stop === h;
+      c.fillStyle = on ? '#e8590c' : '#16325c'; c.beginPath(); c.arc(x, y, on ? 6 : 5, 0, 6.2832); c.fill();
+      c.fillStyle = '#fff'; c.font = '700 7.5px system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(String(i), x, y + 0.4);
+    });
+    if (this.walkTo) { const [x, y] = this._mp(this.walkTo.x, this.walkTo.z); c.strokeStyle = '#ff7a1a'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x - 3.5, y - 3.5); c.lineTo(x + 3.5, y + 3.5); c.moveTo(x + 3.5, y - 3.5); c.lineTo(x - 3.5, y + 3.5); c.stroke(); }
+    // you are here: a dot with a view cone
+    const walk = this.mode === 'walk', px = walk ? this.pos.x : this.camera.position.x, pz = walk ? this.pos.y : this.camera.position.z;
+    const ang = walk ? Math.atan2(-Math.cos(this.yaw), -Math.sin(this.yaw)) : Math.atan2(this.controls.target.z - pz, this.controls.target.x - px);
+    const [x, y] = this._mp(px, pz);
+    c.fillStyle = 'rgba(232,89,12,.28)'; c.beginPath(); c.moveTo(x, y); c.arc(x, y, 17, ang - 0.55, ang + 0.55); c.closePath(); c.fill();
+    c.fillStyle = '#e8590c'; c.strokeStyle = '#fff'; c.lineWidth = 1.6; c.beginPath(); c.arc(x, y, 4, 0, 6.2832); c.fill(); c.stroke();
+  }
+  _mapClick(e) {
+    if (!this.map) return;
+    const r = this.mapEl.getBoundingClientRect(), m = this.map;
+    const x = m.x0 + ((e.clientX - r.left) / r.width) * (m.x1 - m.x0), z = m.z0 + ((e.clientY - r.top) / r.height) * (m.z1 - m.z0);
+    if (this.mode === 'walk') this._setWalkTarget(x, z);
+    else if (this.mode === 'orbit') this.focus = { target: new THREE.Vector3(x, 0, z), dist: 16 };
+  }
+
+  /* ---------- tour stops ---------- */
+  stepStop(dir = 1) {
+    const vis = this.visibleHotspots(); if (!vis.length || this.mode === 'detail') return null;
+    let i = vis.indexOf(this.stop); i = i < 0 ? (dir > 0 ? 0 : vis.length - 1) : (i + dir + vis.length) % vis.length;
+    const h = vis[i]; this.stop = h; this.goTo(h); this.cb.onHotspot?.(h);
+    return h;
   }
 
   /* ---------- scene loading ---------- */
@@ -79,10 +214,12 @@ export class Stage {
       const b = el('button', 'pin', this.pinLayer);
       b.type = 'button'; b.textContent = String(i + 1); b.title = h.title; b.setAttribute('aria-label', `${i + 1}. ${h.title}`);
       if (h.detail) b.classList.add('has-detail');
-      b.addEventListener('click', () => { this.cb.onHotspot?.(h); });
+      b.addEventListener('click', () => { this.stop = h; this.cb.onHotspot?.(h); if (this.mode !== 'detail') this.goTo(h); });
       this.pins.push({ h, el: b, v: new THREE.Vector3(...h.pos) });
     });
     this.hotspots = (built.hotspots || []);
+    this.stop = null; this.walkTo = null; this.glide = null; this.map = built.map || null;
+    this.mapEl.style.display = this.map ? '' : 'none'; this._layoutMap();
     this.setPhase(0);
     this._applyMode(this.base);
   }
@@ -104,9 +241,9 @@ export class Stage {
   }
   _saveOrbit() { this.orbitSaved = { pos: this.camera.position.clone(), target: this.controls.target.clone() }; }
   _applyMode(m) {
-    this.mode = m; this.hud.dataset.mode = m; this.focus = null;
+    this.mode = m; this.hud.dataset.mode = m; this.focus = null; this._viewShift();
     if (document.pointerLockElement) document.exitPointerLock?.();
-    this.scene.background = SKY; this.scene.fog = new THREE.Fog(SKY, 80, 200);
+    this.scene.background = SKY; this.scene.fog = new THREE.Fog(SKY, 70, 240); this.dome.visible = true; this._sunTo(false);
     this.world.visible = true; this.detailRoot.visible = false;
     this._clearLabels();
     if (m === 'walk') {
@@ -125,11 +262,10 @@ export class Stage {
     this.focus = null;
     if (this.mode === 'walk') {
       const s = h.stand || [h.pos[0], h.pos[2] + 4];
-      this.pos.set(s[0], s[1]);
       const dx = h.pos[0] - s[0], dz = h.pos[2] - s[1];
-      this.yaw = Math.atan2(-dx, -dz);
-      this.pitch = Math.atan2(h.pos[1] - EYE, Math.hypot(dx, dz)) * 0.8;
-      this.camera.position.set(this.pos.x, EYE, this.pos.y); this._look();
+      const to = { x: s[0], z: s[1], yaw: Math.atan2(-dx, -dz), pitch: Math.atan2(h.pos[1] - EYE, Math.hypot(dx, dz)) * 0.8 };
+      this.walkTo = null; this.marker.visible = false;
+      this.glide = { t: 0, dur: clamp(Math.hypot(to.x - this.pos.x, to.z - this.pos.y) / 14, 0.5, 1.4), from: { x: this.pos.x, z: this.pos.y, yaw: this.yaw, pitch: this.pitch }, to };
     } else if (this.mode === 'orbit') {
       this.focus = { target: new THREE.Vector3(...h.pos), dist: h.dist || 7 };
     }
@@ -157,14 +293,18 @@ export class Stage {
         return p;
       });
       if (built.extras) this.detailGroup.add(built.extras);
+      this._edges(this.detailGroup);
       if (def.floor !== undefined) {
         const grid = new THREE.GridHelper(def.gridSize || 6, def.gridSize ? def.gridSize * 4 : 24, 0x9aa7b5, 0xc8d0da);
         grid.position.y = def.floor; this.detailGroup.add(grid);
+        const sc = new THREE.Mesh(new THREE.PlaneGeometry(def.gridSize || 6, def.gridSize || 6), new THREE.ShadowMaterial({ opacity: 0.2 }));
+        sc.rotation.x = -Math.PI / 2; sc.position.y = def.floor + 0.002; sc.receiveShadow = true; sc.userData.noAO = true; this.detailGroup.add(sc);
       }
       this.exNow = this.exGoal = 0; this.selected = null;
       this.mode = 'detail'; this.hud.dataset.mode = 'detail';
+      this._viewShift();
       this.world.visible = false; this.detailRoot.visible = true;
-      this.scene.background = DETAIL_BG; this.scene.fog = null;
+      this.scene.background = DETAIL_BG; this.scene.fog = null; this.dome.visible = false; this._sunTo(true); this.marker.visible = false;
       if (document.pointerLockElement) document.exitPointerLock?.();
       const cam = def.camera;
       this.camera.position.set(2000 + cam.pos[0], cam.pos[1], cam.pos[2]);
@@ -289,20 +429,24 @@ export class Stage {
 
     let drag = null;
     cv.addEventListener('pointerdown', (e) => {
-      if (this.mode === 'walk') { drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; cv.setPointerCapture?.(e.pointerId); cv.focus({ preventScroll: true }); }
+      if (this.mode === 'walk') { drag = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, t: performance.now(), moved: false, walk: true }; cv.setPointerCapture?.(e.pointerId); cv.focus({ preventScroll: true }); }
       else if (this.mode === 'detail') drag = { id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, pick: true };
     });
     cv.addEventListener('pointermove', (e) => {
       if (this.mode !== 'walk') return;
       if (this.locked) { this.yaw -= e.movementX * 0.0022; this.pitch -= e.movementY * 0.0022; this._look(); return; }
       if (!drag || e.pointerId !== drag.id) return;
+      if (!drag.moved) { if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 5) return; drag.moved = true; this.walkTo = null; this.glide = null; this.marker.visible = false; }
       this.yaw += (e.clientX - drag.x) * 0.0042; this.pitch += (e.clientY - drag.y) * 0.0042;
       drag.x = e.clientX; drag.y = e.clientY; this._look();
     });
     const up = (e) => {
       if (drag?.pick && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 5) this._pick(e);
+      else if (drag?.walk && !drag.moved && !this.locked && performance.now() - drag.t < 500) this._walkClick(e);
       drag = null;
     };
+    cv.addEventListener('dblclick', (e) => { if (this.mode === 'orbit') { const p = this._groundPoint(e); if (p) this.focus = { target: new THREE.Vector3(p[0], 0, p[1]), dist: 12 }; } });
+    this.mapEl.addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); this._mapClick(e); });
     cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', () => { drag = null; });
 
     const J = 44;
@@ -318,6 +462,22 @@ export class Stage {
     this.joyEl.addEventListener('pointerup', joyEnd); this.joyEl.addEventListener('pointercancel', joyEnd);
   }
 
+  _groundPoint(e) {
+    const r = this.renderer.domElement.getBoundingClientRect();
+    this._m.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    this._ray.setFromCamera(this._m, this.camera);
+    const o = this._ray.ray.origin, d = this._ray.ray.direction;
+    if (d.y >= -0.01) return null;
+    const t = -o.y / d.y; if (t > 120) return null;
+    return [o.x + d.x * t, o.z + d.z * t];
+  }
+  _walkClick(e) { const p = this._groundPoint(e); if (p) this._setWalkTarget(p[0], p[1]); }
+  _setWalkTarget(x, z) {
+    const [cx, cz] = this._collide(clamp(x, -48, 48), clamp(z, -48, 48));
+    this.walkTo = { x: cx, z: cz }; this.glide = null; this.stuck = 0;
+    this.marker.position.set(cx, 0.03, cz); this.marker.visible = true;
+  }
+
   _pick(e) {
     const r = this.renderer.domElement.getBoundingClientRect();
     this._m.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
@@ -331,9 +491,17 @@ export class Stage {
     const w = this.host.clientWidth, h = this.host.clientHeight;
     if (!w || !h) return;
     this.w = w; this.h = h;
-    this.renderer.setSize(w, h, false);
-    this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
+    this.renderer.setSize(w, h, false); this.composer?.setSize(w, h); this._layoutMap();
+    this.camera.aspect = w / h; this._viewShift();
     if (this.labels) for (const l of this.labels) l.w = l.el.offsetWidth || l.w;
+  }
+
+  // In a detail room the title card covers the top of the view, so push the model down into the clear area.
+  _viewShift() {
+    const w = this.w, h = this.h; if (!w || !h) return;
+    const dy = this.mode === 'detail' ? Math.round(Math.min(64, h * 0.13)) : 0;
+    if (dy) this.camera.setViewOffset(w, h, 0, -dy, w, h); else this.camera.clearViewOffset();
+    this.camera.updateProjectionMatrix();
   }
 
   setActive(on) { this.active = on; if (on) this.resize(); }
@@ -357,7 +525,9 @@ export class Stage {
     this.timer.update(ts);
     const dt = Math.min(this.timer.getDelta(), 0.1), t = this.timer.getElapsed();
     if (!this.active || !this.w) return;
+    if (!this.composer && this.quality === 'high') this._initComposer();
     for (const f of this.tickers) f(dt, t);
+    this.dome.position.copy(this.camera.position);
 
     if (this.mode === 'walk') {
       const k = this.keys, run = k.has('ShiftLeft') || k.has('ShiftRight');
@@ -365,6 +535,25 @@ export class Stage {
       if (turn) { this.yaw += turn * 1.7 * dt; }
       const f = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) - this.joy.y;
       const s = (k.has('KeyD') ? 1 : 0) - (k.has('KeyA') ? 1 : 0) + this.joy.x;
+      if (f || s || turn) { this.glide = null; if (this.walkTo) { this.walkTo = null; this.marker.visible = false; } }
+      if (this.glide) {
+        const g = this.glide; g.t += dt / g.dur; const e = sstep(Math.min(1, g.t));
+        this.pos.set(g.from.x + (g.to.x - g.from.x) * e, g.from.z + (g.to.z - g.from.z) * e);
+        const dy = Math.atan2(Math.sin(g.to.yaw - g.from.yaw), Math.cos(g.to.yaw - g.from.yaw));
+        this.yaw = g.from.yaw + dy * e; this.pitch = g.from.pitch + (g.to.pitch - g.from.pitch) * e;
+        if (g.t >= 1) this.glide = null;
+      } else if (!(f || s) && this.walkTo) {
+        const dx = this.walkTo.x - this.pos.x, dz = this.walkTo.z - this.pos.y, d = Math.hypot(dx, dz);
+        if (d < 0.12) { this.walkTo = null; this.marker.visible = false; }
+        else {
+          const sp = Math.min(d, (run ? RUN : WALK) * dt), [cx, cz] = this._collide(this.pos.x + (dx / d) * sp, this.pos.y + (dz / d) * sp);
+          this.stuck = Math.hypot(cx - this.pos.x, cz - this.pos.y) < sp * 0.25 ? this.stuck + dt : 0;
+          this.pos.set(cx, cz);
+          if (this.stuck > 0.4) { this.walkTo = null; this.marker.visible = false; }
+          const want = Math.atan2(-dx, -dz), dy = Math.atan2(Math.sin(want - this.yaw), Math.cos(want - this.yaw));
+          this.yaw += dy * Math.min(1, dt * 5); this.pitch += (-0.06 - this.pitch) * Math.min(1, dt * 3);
+        }
+      }
       if (f || s) {
         const len = Math.max(1, Math.hypot(f, s)), sp = (run ? RUN : WALK) * dt / len;
         const nx = this.pos.x + (-Math.sin(this.yaw) * f + Math.cos(this.yaw) * s) * sp;
@@ -372,7 +561,8 @@ export class Stage {
         const [cx, cz] = this._collide(clamp(nx, -48, 48), clamp(nz, -48, 48));
         this.pos.set(cx, cz);
       }
-      this.camera.position.set(this.pos.x, EYE + Math.sin(t * 9) * ((f || s) ? 0.012 : 0), this.pos.y);
+      this.camera.position.set(this.pos.x, EYE + Math.sin(t * 9) * ((f || s || this.walkTo) ? 0.012 : 0), this.pos.y);
+      if (this.marker.visible) { this.marker.position.y = 0.03; this.marker.scale.setScalar(1 + 0.12 * Math.sin(t * 8)); }
       this._look();
       // nearest visible hotspot within reach
       let best = null, bd = 5.5;
@@ -384,6 +574,7 @@ export class Stage {
       if (best !== this.near) { this.near = best; this.cb.onNear?.(best); }
     } else {
       if (this.near) { this.near = null; this.cb.onNear?.(null); }
+      if (this.marker.visible && this.mode !== 'walk') this.marker.visible = false;
       if (this.focus) {
         const c = this.controls, a = 1 - Math.exp(-dt * 6);
         c.target.lerp(this.focus.target, a);
@@ -404,24 +595,33 @@ export class Stage {
     } else {
       this._updatePins();
     }
-    this.renderer.render(this.scene, this.camera);
+    if (this.composer && this.quality === 'high' && this.mode !== 'detail') this.composer.render(dt); else this.renderer.render(this.scene, this.camera);
+    if (++this._mapN % 3 === 0) this._drawMap();
   }
 
   _updatePins() {
-    const { w, h } = this;
+    const { w, h } = this, live = [];
     for (const p of this.pins) {
       const hs = p.h, show = this.phase >= (hs.from || 0) && this.phase < (hs.until ?? 99);
       if (!show) { p.el.style.display = 'none'; continue; }
       const v = this._v.copy(p.v).project(this.camera);
       const dist = this.camera.position.distanceTo(p.v);
       const on = v.z < 1 && Math.abs(v.x) < 1.08 && Math.abs(v.y) < 1.08 && dist < 90;
-      p.el.style.display = on ? '' : 'none';
-      if (on) {
-        p.el.style.transform = `translate(${(v.x * 0.5 + 0.5) * w}px, ${(-v.y * 0.5 + 0.5) * h}px) translate(-50%,-50%) scale(${clamp(1.25 - dist / 90, 0.7, 1.15).toFixed(2)})`;
-        p.el.classList.toggle('near', this.near === hs);
-      }
+      if (!on) { p.el.style.display = 'none'; continue; }
+      live.push({ p, x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, dist, rank: this.near === hs || this.focus?.hs === hs ? -1 : dist });
+    }
+    // Declutter: nearest pins win, and a pin that would sit on top of one already placed stays hidden until you move closer.
+    live.sort((m, n) => m.rank - n.rank);
+    const placed = [], gap = w < 600 ? 26 : 32;
+    for (const q of live) {
+      const clash = placed.some((o) => Math.abs(o.x - q.x) < gap && Math.abs(o.y - q.y) < gap);
+      if (clash) { q.p.el.style.display = 'none'; continue; }
+      placed.push(q);
+      q.p.el.style.display = '';
+      q.p.el.style.transform = `translate(${q.x}px, ${q.y}px) translate(-50%,-50%) scale(${clamp(1.25 - q.dist / 90, 0.7, 1.15).toFixed(2)})`;
+      q.p.el.classList.toggle('near', this.near === q.p.h);
     }
   }
 
-  dispose() { this.renderer.setAnimationLoop(null); this.renderer.dispose(); }
+  dispose() { this.renderer.setAnimationLoop(null); this.composer?.dispose?.(); this.renderer.dispose(); }
 }

@@ -1,5 +1,5 @@
 // Step 1: permits, contract and site establishment.
-import { buildBase, buildSiteWorks, BLOCK, HOUSE, BASE_COLLIDERS } from './site.js';
+import { buildBase, buildSiteWorks, BLOCK, HOUSE, BASE_COLLIDERS, MAP } from './site.js';
 import { svg, T, L, R, C as Ci, P, dim, arrow, call } from './dwg.js';
 
 const phases = [
@@ -17,7 +17,7 @@ function build(kit) {
 
   const survey = mk('survey');
   for (const [x, z] of [[BLOCK.x0, BLOCK.z0], [BLOCK.x1, BLOCK.z0], [BLOCK.x0, BLOCK.z1], [BLOCK.x1, BLOCK.z1]]) {
-    survey.add(cyl(0.03, 0.5, mat(C.timber), x, 0.25, z, 8));
+    survey.add(cyl(0.03, 0.5, mat(0xffffff, { tex: 'timber' }), x, 0.25, z, 8));
     survey.add(cyl(0.034, 0.08, mat(C.orange), x, 0.52, z, 8));
   }
 
@@ -50,7 +50,7 @@ function build(kit) {
   ];
   return {
     layers, colliders: BASE_COLLIDERS,
-    spawn: { pos: [0, 22], yaw: 0, pitch: -0.1 },
+    spawn: { pos: [0, 22], yaw: 0, pitch: -0.1 }, map: MAP,
     orbit: { pos: [22, 18, 34], target: [0, 0, 3] },
     hotspots: [
       { id: 'title', title: 'Boundaries, title and survey pegs', pos: [-7.5, 0.9, 17.5], stand: [-8, 25], from: 0,
@@ -89,9 +89,9 @@ const details = {
     build(kit) {
       const { THREE, C, mat, box } = kit;
       const mk = () => new THREE.Group();
-      const sub = mk(); sub.add(box(3, 0.3, 4, mat(C.soil), 0, -0.15, 0));
+      const sub = mk(); sub.add(box(3, 0.3, 4, mat(0xffffff, { tex: 'soil' }), 0, -0.15, 0));
       const geo = mk(); geo.add(box(3.04, 0.012, 4.04, mat(0xe6e9ec), 0, 0.006, 0));
-      const rock = mk(); rock.add(box(3, 0.18, 4, mat(C.rock), 0, 0.1, 0));
+      const rock = mk(); rock.add(box(3, 0.18, 4, mat(0xb3b2ad, { tex: 'concrete', bump: 1.6 }), 0, 0.1, 0));
       const inst = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.1, 0), mat(0x85857f, { flatShading: true }), 260);
       const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(), t = new THREE.Vector3();
       for (let i = 0; i < 260; i++) {
@@ -128,10 +128,10 @@ const details = {
     build(kit) {
       const { THREE, C, mat, ghost, box, cyl, rod } = kit;
       const mk = () => new THREE.Group();
-      const ground = mk(), soil = mat(C.soil);
+      const ground = mk(), soil = mat(0xffffff, { tex: 'soil' });
       ground.add(box(4, 0.5, 1.2, soil, 0, -0.25, 0.75));
       ground.add(box(4, 0.5, 1.2, soil, 0, -0.25, -0.75));
-      ground.add(box(4, 0.35, 0.3, mat(C.soilDark), 0, -0.325, 0));
+      ground.add(box(4, 0.35, 0.3, mat(0x9a8a7a, { tex: 'soil' }), 0, -0.325, 0));
       const fill = mk(); fill.add(box(3.98, 0.15, 0.15, mat(0x8a6a48), 0, -0.075, 0.075));
       const fabric = mk(); const fm = mat(C.black, { side: THREE.DoubleSide, transparent: true, opacity: 0.88 });
       fabric.add(new THREE.Mesh(new THREE.PlaneGeometry(3.98, 0.8), fm)); fabric.children[0].position.set(0, 0.25, 0);
@@ -173,7 +173,7 @@ const details = {
       const stand = mk();
       for (const x of [-1.2, 1.2]) { stand.add(box(0.07, 0.04, 0.9, steel, x, 0.02, 0)); stand.add(cyl(0.028, 0.5, steel, x, 0.27, 0, 10)); }
       const weight = mk();
-      for (const x of [-1.2, 1.2]) for (const z of [-0.28, 0.28]) weight.add(box(0.16, 0.12, 0.3, mat(C.concrete), x, 0.1, z));
+      for (const x of [-1.2, 1.2]) for (const z of [-0.28, 0.28]) weight.add(box(0.16, 0.12, 0.3, mat(0xffffff, { tex: 'concrete' }), x, 0.1, z));
       const clamp = mk();
       for (const x of [-1.2, 1.2]) for (const y of [0.45, 1.5]) clamp.add(cyl(0.038, 0.05, mat(C.orange), x, y, 0, 12));
       const brace = mk(); brace.add(rod([1.2, 1.7, 0], [1.2, 0.04, 1.3], 0.014, steel));
