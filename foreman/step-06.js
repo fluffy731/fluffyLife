@@ -55,7 +55,7 @@ const mergeCells = (list, m, uv = true) => {
 // weephole positions across a span: first at 0.3 m in, then every 1.2 m at most
 const weepAt = (a, b) => { const n = Math.max(1, Math.ceil((b - a - 0.4) / 1.2)), out = []; for (let i = 0; i < n; i++) out.push(n === 1 ? (a + b) / 2 : a + 0.3 + (i * (b - a - 0.6)) / (n - 1)); return out; };
 
-function build(kit) {
+function build(kit, opts = {}) {
   const { C, mat, box, cyl, textPlane } = kit;
   const mk = (n) => { const g = new THREE.Group(); g.name = n; return g; };
   const s5 = step5.build(kit);
@@ -116,9 +116,9 @@ function build(kit) {
   sign.position.set(0, 1.5, Z1 + 1.3); check.add(sign, cyl(0.04, 1.6, mat(C.steel), -0.85, 0.8, Z1 + 1.28, 8), cyl(0.04, 1.6, mat(C.steel), 0.85, 0.8, Z1 + 1.28, 8));
 
   // markers tell the bricklayer ticker which phase is showing
-  const m2 = mk('m2'), m3 = mk('m3'); let shown = 0;
+  const m2 = mk('m2'), m3 = mk('m3'); let shown = opts.done ? NC : 0; // done: a later stage reuses the finished walls without the bricklayer animation
   const tickers = [...s5.tickers, (dt) => {
-    if (!bricks.visible) { shown = 0; courses.forEach((c) => { c.visible = false; }); return; }
+    if (!bricks.visible) { shown = opts.done ? NC : 0; courses.forEach((c) => { c.visible = !!opts.done; }); return; }
     const goal = m3.visible ? NC : m2.visible ? 11 : 1;
     shown = shown > goal ? goal : Math.min(goal, shown + dt * 7);
     courses.forEach((c, i) => { c.visible = i < Math.floor(shown + 1e-6); });
@@ -473,3 +473,6 @@ export default {
   sources: ['nccMas57', 'nccMas52', 'nccMas56', 'nccClad75', 'nswDpc', 'bradFlash', 'bpcMI01', 'hiaStd25', 'hiaNcc25'],
   caution: 'Masonry and cladding figures here come from the ABCB\'s free NCC 2022 web pages and a NSW Building Commission note. NCC 2025 applies in Victoria from 1 May 2026, so check each clause and figure against that edition. The Standards (AS 3700, AS 4773, AS 4100, AS 4200.1) are paywalled and were not opened, and tie spacing and the articulation joint figures are only in drawings that were not read. The dimensions in the models and drawings are typical.',
 };
+
+// Shared with later stages that reuse the finished brick walls and the detail-model helpers.
+export { EXT, cell, YK, Y0, PITCH, BT, KH, NC, grp, bricksIn, mortarBlock, tieAt, weepVent, pl };

@@ -7,8 +7,9 @@ import step3 from './step-03.js';
 import step4 from './step-04.js';
 import step5 from './step-05.js';
 import step6 from './step-06.js';
+import step7 from './step-07.js';
 
-const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6 };
+const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6, 7: step7 };
 const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
