@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
-import { TABS, SECTIONS, ACTIVITIES, STEPS, SOURCES } from "../builder/data.js";
+import { TABS, SECTIONS, ACTIVITIES, STEPS, SOURCES, PROJECT_DOCS } from "../builder/data.js";
 import {
   KEY, blank, normalise, load, save, sectionsFor, progress, evidenceKey, activityGaps, projectCounts, coveredMonths, outsideWindow,
   newRef, refProgress, cleanName, projectFolder, folderTree, folderPaths, macCommands, winCommands, plainList, NPROJECTS, ROOT,
@@ -26,6 +26,21 @@ test("checklist content is well formed (ticks key on `key`, so keys never repeat
   assert.equal(new Set(ACTIVITIES.map(([id]) => id)).size, ACTIVITIES.length, "activity ids repeat");
   assert.equal(new Set(STEPS.map(([k]) => k)).size, STEPS.length, "referee step ids repeat");
   for (const [label, href] of SOURCES) assert.ok(label && /^https:\/\/www\.bpc\.vic\.gov\.au\//.test(href), `${label}: sources are BPC pages`);
+});
+
+test("each of the three projects gets the same document checklist, with generic wording only", () => {
+  assert.equal(NPROJECTS, 3);
+  const want = PROJECT_DOCS.map(([k]) => k);
+  for (const k of ["working", "structural", "permit"]) assert.ok(want.includes(k), `missing ${k}`);
+  for (let n = 1; n <= NPROJECTS; n++) {
+    const sec = SECTIONS.find((s) => s.id === `doc${n}`);
+    assert.ok(sec, `no documents section for project ${n}`);
+    assert.equal(sec.tab, "list");
+    assert.deepEqual(sec.items.map((i) => i.key), want.map((k) => `doc${n}.${k}`));
+  }
+  // The repo is public: nothing project-specific (permit numbers, application numbers, emails) may sit in the content.
+  const text = PROJECT_DOCS.flat().join("\n");
+  assert.ok(!/\d{4,}|@/.test(text), "document checklist must stay generic");
 });
 
 test("every tab that lists sections has some, and the BPC activity list is complete", () => {

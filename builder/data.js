@@ -36,6 +36,23 @@ export const STEPS = [
   ["seen", "Seen in my application"],
 ];
 
+// The paperwork to hold for each of the three projects. BPC publishes no per-project document list, so this one is our own:
+// it follows the components SD-TRR-052 Part E asks the referee about (permit, inspections, drawings, completion).
+// Generic on purpose: the repo is public, so no addresses, permit numbers or names go in here.
+export const PROJECT_DOCS = [
+  ["planning", "Endorsed planning plans, if a planning permit applied", "The council-endorsed set, with the planning permit number showing. Skip it if no planning permit was needed."],
+  ["working", "Architectural working drawings, final revision", "The set the building permit was issued on, stamped by the building surveyor, not an earlier issue."],
+  ["structural", "Structural drawings, final revision", "The engineer's set that matches the permit revision. If two revisions are in circulation, ask the surveyor which one was stamped."],
+  ["permit", "Building permit, including any amendments", "The permit itself, with its number and the surveyor's name. A permit number quoted on another document is not a copy of the permit."],
+  ["inspections", "Mandatory inspection records", "Inspection approvals or the surveyor's inspection log. They show you arranged the inspections and cleared any rectification."],
+  ["final", "Occupancy permit or certificate of final inspection", "The issued permit or certificate, not the application for it."],
+];
+
+const docSection = (n) => ({
+  id: `doc${n}`, tab: "list", title: `Project ${n} documents`, icon: "📐",
+  items: PROJECT_DOCS.map(([k, text, note]) => ({ key: `doc${n}.${k}`, text, note })),
+});
+
 export const SECTIONS = [
   {
     id: "start", tab: "list", title: "Before you apply", icon: "🧭",
@@ -67,6 +84,7 @@ export const SECTIONS = [
       { key: "exp.paid", text: "Proof of paid work on hand: contracts, payslips, invoices or ABN records", note: "BPC may ask for it, so keep it in each project's folder." },
     ],
   },
+  ...[1, 2, 3].map(docSection),
   {
     id: "ref", tab: "list", title: "Technical referee", icon: "✍️",
     items: [

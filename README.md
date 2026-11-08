@@ -183,7 +183,7 @@ A tracker for Solomon's Victorian Domestic Builder (Unlimited) registration with
 
 Five tabs:
 
-- **Checklist:** what to do before applying, the qualification, experience evidence, technical referee, fit and proper, lodging, and after approval. Steps the public BPC pages do not spell out carry a **Confirm in portal** tag.
+- **Checklist:** what to do before applying, the qualification, experience evidence, the paperwork for each project (planning plans, working and structural drawings, building permit, inspection records, occupancy permit), technical referee, fit and proper, lodging, and after approval. Steps the public BPC pages do not spell out carry a **Confirm in portal** tag.
 - **Projects:** details for the three projects, a flag for any that finished more than 7 years ago, and a grid of the 12 BPC activities against the three projects. Amber means no project shows that activity yet.
 - **Referees:** one card per referee with the five steps from asking to seeing the report in your application, each date-stamped when ticked.
 - **Folders:** the OneDrive structure, with Mac and Windows commands that create the folders. Project folders take the addresses typed on the Projects tab. A list of the portal's own document slots goes here too, because BPC does not name them publicly.
