@@ -100,7 +100,7 @@ function finishDwg() {
     body.push(T(c, 130, name, { anchor: 'middle', cls: 'd-bold' }), T(c, 150, sub, { anchor: 'middle', cls: 'd-mute' }));
   };
   panel(40, 'Level 3', 'tape and one coat', 2); panel(320, 'Level 4', 'tape and two coats', 3); panel(600, 'Level 5', 'adds a coat and a skim', 5);
-  body.push(...wrapT(40, 290, 'Level 4 is Knauf\'s default. Level 5 skims the whole face, so it suits strong side light or gloss paint. Levels are from AS/NZS 2589 as set out in the Knauf manual. The standard was not opened.', 112, 16));
+  body.push(...wrapT(40, 290, 'Level 4 is Knauf\'s default and the BPC guide\'s minimum for finished work. Level 5 skims the whole face, so it suits strong side light or gloss paint. Levels are from AS/NZS 2589 as set out in the Knauf manual. The standard was not opened.', 112, 16));
   // B: control joints at 0.03 px per mm
   body.push(T(40, 366, 'B  Control joint spacing, 0.03 px per mm', { cls: 'd-bold' }));
   const k = 0.03, bx = 60, row = (y, label, lenm, js) => {
@@ -111,12 +111,12 @@ function finishDwg() {
   body.push(...wrapT(40, 614, 'A control joint is also needed at every change of lining material. Spacings are from the Knauf manual.', 112, 16));
   // C: flatness
   body.push(T(40, 666, 'C  Flatness check with a 1.8 m straight edge, vertical scale exaggerated', { cls: 'd-bold' }));
-  const sx = 80, sy = 770, sl = 1800 * 0.3, pts = []; for (let i = 0; i <= 60; i++) { const u = i / 60; pts.push([sx + u * sl, sy + 6 * 4 * u * (1 - u)]); }
+  const sx = 80, sy = 770, sl = 1800 * 0.3, pts = []; for (let i = 0; i <= 60; i++) { const u = i / 60; pts.push([sx + u * sl, sy + 7.5 * 4 * u * (1 - u)]); }
   body.push(`<polyline points="${pts.map((q) => q.join(',')).join(' ')}" class="d-cut" fill="none"/>`, L(sx - 20, sy, sx + sl + 20, sy, 'd-line'));
-  body.push(L(sx + sl / 2, sy, sx + sl / 2, sy + 6, 'd-lead'), T(sx + sl / 2 + 14, sy + 30, '4 mm gap at the low point, drawn 5 times too tall', { cls: 'd-mute' }), T(sx, sy + 30, 'wall face', { cls: 'd-mute' }), T(sx, sy - 14, 'straight edge, 1800 mm', { cls: 'd-mute' }));
-  body.push(...wrapT(40, 870, 'A Western Australian bulletin from 2017 gives framing flatness of 4 mm over a 1.8 m straight edge for 90 per cent of the area, for a Level 4 finish. It is not Victorian guidance, so take the figure for the job from the specification.', 112, 16));
-  body.push(...wrapT(40, 930, 'Check by eye in side light, with a lamp held along the surface at a low angle, before the painter starts.', 112, 16));
-  return svg(900, 980, body.join(''), 'Finish levels and control joints');
+  body.push(L(sx + sl / 2, sy, sx + sl / 2, sy + 7.5, 'd-lead'), T(sx + sl / 2 + 14, sy + 30, '5 mm bow at the low point, drawn 5 times too tall', { cls: 'd-mute' }), T(sx, sy + 30, 'wall face', { cls: 'd-mute' }), T(sx, sy - 14, 'straight edge, 1800 mm', { cls: 'd-mute' }));
+  body.push(...wrapT(40, 870, 'The BPC Guide to Standards and Tolerances 2026 treats an internal wall that bows more than 5 mm from a 1.8 m straight edge as outside tolerance, and cornices and plasterboard ceilings that deviate more than 4 mm from a 2 m straight edge. The guide is advisory and applies to contracts entered into or work commenced from 1 August 2026.', 112, 16));
+  body.push(...wrapT(40, 952, 'The guide judges from a normal viewing position of 1.5 m or more in diffused light. A lamp held along the surface shows more than that, so use it to find and fix defects, not to judge compliance.', 112, 16));
+  return svg(900, 1010, body.join(''), 'Finish levels and control joints');
 }
 
 export const drawings = [
@@ -127,7 +127,7 @@ export const drawings = [
   { id: 'sep', title: 'Separating wall', scale: 'Plan section at 0.9 px per mm, elevation at 0.4 px per mm', svg: sepDwg(),
     notes: ['A framed wall between two dwellings: two rows of 90 by 35 studs at 600 mm centres, an air gap of at least 20 mm, insulation and two layers of 13 mm fire-protective grade plasterboard. The model and drawing show two layers on each outer face, which is Confirm.', 'Second-layer joints do not line up with first-layer joints, and all joints are taped and filled solid. Noggings must not bridge the two leaves. Perimeter members are fixed and caulked.', 'Outlets on opposite sides are at least 300 mm apart in framed walls. A pipe serving one dwelling is not fixed to the other leaf and keeps at least 10 mm clearance.', 'A detached house has no separating wall. Whether a wall near a boundary needs fire resistance depends on the setback, which the ABCB 9.2 page read did not give. Take it from the plans and the surveyor.'] },
   { id: 'finish', title: 'Finish levels and joints', scale: 'Sections exaggerated, joints at 0.03 px per mm', svg: finishDwg(),
-    notes: ['Level 3 is tape and one coat, Level 4 is tape and two coats, and Level 5 adds a finishing coat and a skim over the whole face. Knauf names Level 4 as the default.', 'Control joints: walls and ceilings at 12 m centres each way, external ceilings at 6 m, tiled walls at 3.0 to 4.5 m, and at every change of lining material.', 'A WA bulletin gives 4 mm over a 1.8 m straight edge for framing flatness at Level 4. It is Western Australian, so take the Victorian figure from the specification.', 'Inspect in side light before paint. Untaped joints, popped screws and bowed framing show up under a low lamp.'] },
+    notes: ['Level 3 is tape and one coat, Level 4 is tape and two coats, and Level 5 adds a finishing coat and a skim over the whole face. Knauf names Level 4 as the default.', 'Control joints: walls and ceilings at 12 m centres each way, external ceilings at 6 m, tiled walls at 3.0 to 4.5 m, and at every change of lining material.', 'The BPC guide treats a wall that bows more than 5 mm from a 1.8 m straight edge, and a cornice or ceiling that deviates more than 4 mm from a 2 m straight edge, as outside tolerance. The guide is advisory.', 'Inspect before paint. A low lamp shows untaped joints, popped screws and bowed framing, but the BPC guide judges from a normal viewing position of 1.5 m or more.'] },
 ];
 
 /* ---------- steps ---------- */
@@ -196,7 +196,7 @@ export const inspections = [
   ['Separating wall check (if any)', 'Builder and surveyor', 'Before the second layer', 'Two rows of studs, a gap of at least 20 mm, insulation, packed and caulked perimeters, outlets offset and pipes clear. Photographs taken.', 'V', 'nccHp107'],
   ['Surveyor inspection (if required)', 'Building surveyor', 'As the permit lists, or as the surveyor requires', 'Internal linings are not a named stage. The surveyor can require an additional inspection under section 35.', 'T', 'bpcMI01'],
   ['Side-light check', 'Builder', 'Before paint', 'Untaped joints, popped screws, missing back-blocking and gaps at the ceiling are marked and fixed.', 'T'],
-  ['Finish level check', 'Builder and plasterer', 'Before paint', 'The surface matches the finish level in the specification (Level 4 unless the plans say otherwise).', 'V', 'knaufManual'],
+  ['Finish level check', 'Builder and plasterer', 'Before paint', 'The surface is Level 4 or the level in the specification, walls bow no more than 5 mm from a 1.8 m straight edge, and cornices and ceilings deviate no more than 4 mm from a 2 m straight edge.', 'V', 'bpcTol26'],
   ['Records and fixing stage', 'Builder', 'Before claiming the fixing stage', 'Dockets, photographs and the surveyor\'s record are filed. The fixing stage claim waits until all cladding, doors, trims, shelves and fittings are fixed.', 'V', 'cavPay'],
 ];
 
@@ -235,9 +235,14 @@ export const exam = [
   ['How far apart must outlets on opposite sides of a separating wall be?', 'At least 300 mm in a framed wall and 100 mm in masonry. A pipe for one dwelling keeps at least 10 mm from the other leaf.', 'V', 'nccHp107'],
   ['What limits does the NCC give for a cable through a separating wall?', '50 mm from other services, a single cable of up to 2000 mm² with a gap up to 15 mm (otherwise 500 mm²), and the gaps packed. Otherwise use a tested prototype.', 'V', 'nccHp93'],
   ['Is a surveyor inspection of internal linings mandatory?', 'Linings are not a named stage. The surveyor lists the stages on the permit and can require an additional inspection under section 35.', 'T', 'bpcMI01'],
+  ['What finish level is the minimum for plasterboard in a finished Victorian home?', 'Level 4 under AS/NZS 2589. The BPC guide treats a lower finish as outside tolerance.', 'V', 'bpcTol26'],
+  ['How far may an internal wall bow from a 1.8 m straight edge, per the BPC guide?', 'Not more than 5 mm.', 'V', 'bpcTol26'],
+  ['What straight-edge limit applies to plaster cornices and plasterboard ceilings?', 'Not more than 4 mm from a 2 m straight edge.', 'V', 'bpcTol26'],
+  ['When is a plasterboard crack outside tolerance in the BPC guide?', 'If it is present at completion, or is over 1 mm wide within 24 months and visible. Nail popping within 24 months is also outside tolerance.', 'V', 'bpcTol26'],
+  ['What is a normal viewing position in the BPC guide?', '1.5 m or more away, in diffused, non-critical light.', 'V', 'bpcTol26'],
   ['What does "fire-protective grade" mean in the NCC separating wall text?', 'It is not defined on the page read, so ask the designer which product is meant.', 'C', 'nccHp107'],
 ];
 
 /* ---------- sources and caution ---------- */
-export const sources = ['cavPay', 'cavAmend', 'bpcMI01', 'nccHp93', 'nccHp94', 'nccHp92', 'nccHp107', 'hiaExtWall', 'vbaSepWalls', 'knaufManual', 'knaufFirestop', 'waIb85'];
-export const caution = 'Fire and sound rules here come from ABCB NCC web pages. The Part 9.3 page shows no edition, the 9.4 and 10.7 pages carry 2019 cross-references, the 9.2 page is a fragment with no distances or FRL values, and the 10.7 page gives no impact rating and does not define "fire-protective grade". Fixing spacings, finish levels and control joints come from a Knauf installation manual, a manufacturer document with no date, read to about 100,000 of its 138,544 characters, and the flatness, adhesive and ceiling weight figures from a 2017 Western Australian bulletin. AS/NZS 2589, AS/NZS 2588 and AS 2753 are paywalled and were not opened. The payment limits are from a CAV page last updated on 9 July 2025, and the Domestic Building Contracts Amendment Bill 2025 passed on 11 September 2025, so check the current page. The order of waterproofing and lining, and the paint-maker finish-level page, were not confirmed. Sheet sizes, positions and the extent of wet-area board in the model are illustrative.';
+export const sources = ['cavPay', 'cavAmend', 'bpcMI01', 'nccHp93', 'nccHp94', 'nccHp92', 'nccHp107', 'hiaExtWall', 'vbaSepWalls', 'knaufManual', 'knaufFirestop', 'waIb85', 'bpcTol26'];
+export const caution = 'Fire and sound rules here come from ABCB NCC web pages. The Part 9.3 page shows no edition, the 9.4 and 10.7 pages carry 2019 cross-references, the 9.2 page is a fragment with no distances or FRL values, and the 10.7 page gives no impact rating and does not define "fire-protective grade". Fixing spacings, finish levels and control joints come from a Knauf installation manual, a manufacturer document with no date, read to about 100,000 of its 138,544 characters, the adhesive and ceiling weight figures from a 2017 Western Australian bulletin, and the finish tolerances from the BPC Guide to Standards and Tolerances 2026 (advisory, applies from 1 August 2026, sections 16.3 to 21 were partly cut off when read). AS/NZS 2589, AS/NZS 2588 and AS 2753 are paywalled and were not opened. The payment limits are from a CAV page last updated on 9 July 2025, and the Domestic Building Contracts Amendment Bill 2025 passed on 11 September 2025, so check the current page. The order of waterproofing and lining, and the paint-maker finish-level page, were not confirmed. Sheet sizes, positions and the extent of wet-area board in the model are illustrative.';
