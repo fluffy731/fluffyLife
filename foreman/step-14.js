@@ -166,10 +166,11 @@ function build(kit) {
   for (const [x0, x1, z0, z1, y] of [[-5.2, 5.2, 5.6, 11.2, SL + 0.021], [0.1, 5.2, 0.1, 5.4, SL + 0.018]]) for (let x = x0; x < x1 - 0.1; x += 1.2) for (let z = z0; z < z1 - 0.1; z += 2.4) cover.add(box(Math.min(1.19, x1 - x), 0.004, Math.min(2.39, z1 - z), m.sheet, x + Math.min(1.19, x1 - x) / 2, y + 0.002, z + Math.min(2.39, z1 - z) / 2));
   cover.add(sign(['FLOORS PROTECTED', 'Sheets taped at the joints until handover'], 1.4, 0.42, 0.0, 0.5, 9.4, 0), cyl(0.025, 0.5, m.steel, -0.65, 0.25, 9.4, 8), cyl(0.025, 0.5, m.steel, 0.65, 0.25, 9.4, 8));
 
+  const baseCount = layers.length;   // the house layers come first, then this step's own, so a later step can keep the house and the finished floors
   layers.push({ group: stock, until: 1 }, { group: membrane, until: 2 }, { group: setout, from: 1, until: 2 }, { group: gapF, from: 2, until: 3 }, { group: groutF, from: 3 }, { group: ftiles, from: 2 },
     { group: wgap, from: 2, until: 3 }, { group: wgrout, from: 3 }, { group: wtiles, from: 2 }, { group: dry, from: 2 }, { group: thr, from: 3 }, { group: joints, from: 3 },
     { group: timber, from: 4 }, { group: carpet, from: 4 }, { group: strips, from: 4 }, { group: defB, from: 5, until: 6 }, { group: def, from: 5, until: 6 }, { group: cover, from: 6 });
-  return { layers, colliders: s13.colliders.slice(0, -1), tickers: s13.tickers, spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: s13.map, orbit: { pos: [9.5, 9, 18], target: [0, 1.0, 5] }, hotspots: HOTSPOTS };
+  return { layers, baseCount, colliders: s13.colliders.slice(0, -1), tickers: s13.tickers, spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: s13.map, orbit: { pos: [9.5, 9, 18], target: [0, 1.0, 5] }, hotspots: HOTSPOTS };
 }
 
 /* ---------- hotspots ---------- */
