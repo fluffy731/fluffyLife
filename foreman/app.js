@@ -6,8 +6,9 @@ import step2 from './step-02.js';
 import step3 from './step-03.js';
 import step4 from './step-04.js';
 import step5 from './step-05.js';
+import step6 from './step-06.js';
 
-const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5 };
+const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6 };
 const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -21,7 +22,7 @@ function nccHtml(n) {
   return `<h3 class="sec-title">NCC for this step ${flagHtml('C')}</h3><p class="lead">${esc(NCC_NOTE)}</p>
     <div class="grid"><article class="card"><h3>Housing Provisions</h3><ul class="list">${m.hp.map((k) => nccRow(NCC.hp[k])).join('')}</ul></article>
     <article class="card"><h3>Volume Two (Class 1 and 10)</h3><ul class="list">${m.vt.map((k) => nccRow(NCC.vt[k])).join('')}</ul></article>
-    <article class="card"><h3>Open the 2025 text</h3><ul class="list"><li>${srcHtml('ncc25hp')}</li><li>${srcHtml('ncc25v2')}</li>${(m.also || []).map((k) => `<li>${srcHtml(k)}</li>`).join('')}</ul></article></div>
+    <article class="card"><h3>Open the text and sources</h3><ul class="list"><li>${srcHtml('ncc25hp')}</li><li>${srcHtml('ncc25v2')}</li>${(m.also || []).map((k) => `<li>${srcHtml(k)}</li>`).join('')}</ul></article></div>
     ${m.note ? `<p class="mini" style="margin-top:8px"><b>Remember:</b> ${esc(m.note)}</p>` : ''}<p class="mini">Part numbers read from the NCC 2025 preview drafts on ${esc(NCC_CHECKED)}. No NCC text is copied here.</p>`;
 }
 const srcHtml = (id) => (SOURCES[id] ? `<a href="${esc(SOURCES[id][1])}" target="_blank" rel="noopener noreferrer">${esc(SOURCES[id][0])}</a>` : '');
