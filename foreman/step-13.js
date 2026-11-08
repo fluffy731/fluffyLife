@@ -185,10 +185,11 @@ function build(kit) {
   const stage = mk('stage');
   stage.add(sign(['FIXING STAGE', 'Linings, doors, trims, fittings fixed', 'Then the payment is due'], 1.5, 0.65, -5.8, 1.45, 12.4, Math.PI / 2), cyl(0.025, 1.45, m.steel, -5.8, 0.72, 11.65, 8), cyl(0.025, 1.45, m.steel, -5.8, 0.72, 13.15, 8));
 
+  const baseCount = layers.length;   // the Step 12 layers come first, then this step's own, so a later step can keep the house and drop the yard
   layers.push({ group: stock, until: 4 }, { group: setout, until: 2 }, { group: rodG, until: 2 }, { group: doors, from: 1 }, { group: skirt, from: 1 }, { group: stairG, from: 2 }, { group: lmark, from: 2, until: 5 }, { group: entry },
     { group: barG, from: 3 }, { group: skA, from: 3, until: 5 }, { group: skB, from: 6 }, { group: kit1, from: 4 }, { group: ksign, from: 4, until: 5 }, { group: kOkU2, from: 4, until: 5 }, { group: kOkU2b, from: 6 }, { group: ward, from: 4 },
     { group: kBad, from: 5, until: 6 }, { group: defk, from: 5, until: 6 }, { group: defB, from: 5, until: 6 }, { group: stage, from: 6 });
-  return { layers, colliders: [...s12.colliders, { x0: SX - 1.35, x1: SX + 1.35, z0: SZ - st.xe - 0.2, z1: SZ + 0.1 }], tickers: s12.tickers, spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: s12.map, orbit: { pos: [9.5, 9, 18], target: [0, 1.0, 6] }, hotspots: HOTSPOTS };
+  return { layers, baseCount, colliders: [...s12.colliders, { x0: SX - 1.35, x1: SX + 1.35, z0: SZ - st.xe - 0.2, z1: SZ + 0.1 }], tickers: s12.tickers, spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: s12.map, orbit: { pos: [9.5, 9, 18], target: [0, 1.0, 6] }, hotspots: HOTSPOTS };
 }
 
 /* ---------- hotspots ---------- */
