@@ -83,11 +83,22 @@ export class Stage {
   _buildSky() {
     const mat = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false,
-      uniforms: { top: { value: new THREE.Color(0x3f86cf) }, hor: { value: new THREE.Color(0xcfe3f2) }, gnd: { value: new THREE.Color(0x93a083) }, sunDir: { value: SUN_DIR.clone() }, sunK: { value: 1 } },
+      uniforms: { top: { value: new THREE.Color(0x3f86cf) }, hor: { value: new THREE.Color(0xcfe3f2) }, gnd: { value: new THREE.Color(0x93a083) }, sunDir: { value: SUN_DIR.clone() }, sunK: { value: 1 }, cloudK: { value: 1 }, t: { value: 0 } },
       vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
-      fragmentShader: `uniform vec3 top; uniform vec3 hor; uniform vec3 gnd; uniform vec3 sunDir; uniform float sunK; varying vec3 vP;
+      fragmentShader: `uniform vec3 top; uniform vec3 hor; uniform vec3 gnd; uniform vec3 sunDir; uniform float sunK; uniform float cloudK; uniform float t; varying vec3 vP;
+        float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+        float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+          return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
+        float fbm(vec2 p){ float a = 0.5, s = 0.0; for (int i = 0; i < 5; i++) { s += a * noise(p); p = p * 2.03 + vec2(3.1, 1.7); a *= 0.5; } return s; }
         void main(){ vec3 d = normalize(vP); float h = d.y;
           vec3 c = h > 0.0 ? mix(hor, top, pow(h, 0.5)) : mix(hor, gnd, smoothstep(0.0, 0.3, -h));
+          if (h > 0.0 && cloudK > 0.0) {
+            vec2 q = d.xz / (h + 0.22) * 1.25 + vec2(t * 0.012, t * 0.004);
+            float n = fbm(q), cov = smoothstep(0.50, 0.80, n) * smoothstep(0.0, 0.22, h) * cloudK;
+            float lit = smoothstep(0.38, 0.78, fbm(q * 1.0 + normalize(sunDir.xz) * 0.12));
+            vec3 cc = mix(vec3(0.50, 0.58, 0.70), vec3(1.0, 0.99, 0.97), lit);
+            c = mix(c, cc, cov * 0.88);
+          }
           float s = max(dot(d, normalize(sunDir)), 0.0);
           c += vec3(1.0, 0.93, 0.75) * (pow(s, 900.0) * 1.4 + pow(s, 14.0) * 0.2) * sunK;
           gl_FragColor = vec4(c, 1.0);
@@ -100,7 +111,7 @@ export class Stage {
     // Sky-lit image-based lighting: bake a dimmer copy of the dome into a PMREM cube once.
     const pm = new THREE.PMREMGenerator(this.renderer), es = new THREE.Scene();
     const ed = new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), mat.clone());
-    ed.material.uniforms.sunK.value = 0.12; es.add(ed);
+    ed.material.uniforms.sunK.value = 0.12; ed.material.uniforms.cloudK.value = 0; es.add(ed);
     this.scene.environment = pm.fromScene(es, 0).texture; this.scene.environmentIntensity = 1.0;
     ed.geometry.dispose(); ed.material.dispose(); pm.dispose();
   }
@@ -119,12 +130,15 @@ export class Stage {
       const hide = ao._overrideVisibility.bind(ao);
       ao._overrideVisibility = () => { hide(); this.scene.traverse((o) => { if (o.visible && ((o.isMesh && o.material?.transparent && !o.userData.keepAO) || o.userData.noAO)) { ao._visibilityCache.push(o); o.visible = false; } }); };
       c.addPass(ao); c.addPass(new OutputPass());
-      c.setSize(this.w, this.h);
+      c.setSize(this.w, this.h); this._aoFor(this.mode === 'detail');
     } catch (err) {
       console.warn('Post-processing unavailable, using standard quality.', err);
       this.composer = null; this.quality = 'standard'; this.cb.onQuality?.('standard');
     }
   }
+
+  // Ambient occlusion radius follows the scale of the scene: 0.5 m outdoors, a few centimetres inside a zoom room.
+  _aoFor(detail) { this.gtao?.updateGtaoMaterial({ radius: detail ? 0.14 : 0.5, thickness: detail ? 0.5 : 1.2 }); }
 
   setQuality(q) { this.quality = q === 'high' ? 'high' : 'standard'; if (this.quality === 'high') this._initComposer(); this.cb.onQuality?.(this.quality); }
 
@@ -243,7 +257,7 @@ export class Stage {
   _applyMode(m) {
     this.mode = m; this.hud.dataset.mode = m; this.focus = null; this._viewShift();
     if (document.pointerLockElement) document.exitPointerLock?.();
-    this.scene.background = SKY; this.scene.fog = new THREE.Fog(SKY, 70, 240); this.dome.visible = true; this._sunTo(false);
+    this.scene.background = SKY; this.scene.fog = new THREE.Fog(SKY, 70, 240); this.dome.visible = true; this._sunTo(false); this._aoFor(false);
     this.world.visible = true; this.detailRoot.visible = false;
     this._clearLabels();
     if (m === 'walk') {
@@ -304,7 +318,7 @@ export class Stage {
       this.mode = 'detail'; this.hud.dataset.mode = 'detail';
       this._viewShift();
       this.world.visible = false; this.detailRoot.visible = true;
-      this.scene.background = DETAIL_BG; this.scene.fog = null; this.dome.visible = false; this._sunTo(true); this.marker.visible = false;
+      this.scene.background = DETAIL_BG; this.scene.fog = null; this.dome.visible = false; this._sunTo(true); this._aoFor(true); this.marker.visible = false;
       if (document.pointerLockElement) document.exitPointerLock?.();
       const cam = def.camera;
       this.camera.position.set(2000 + cam.pos[0], cam.pos[1], cam.pos[2]);
@@ -533,6 +547,7 @@ export class Stage {
     if (!this.composer && this.quality === 'high') this._initComposer();
     for (const f of this.tickers) f(dt, t);
     this.dome.position.copy(this.camera.position);
+    if (this.dome.visible) this.dome.material.uniforms.t.value = t;
 
     if (this.mode === 'walk') {
       const k = this.keys, run = k.has('ShiftLeft') || k.has('ShiftRight');
@@ -600,7 +615,7 @@ export class Stage {
     } else {
       this._updatePins();
     }
-    if (this.composer && this.quality === 'high' && this.mode !== 'detail') this.composer.render(dt); else this.renderer.render(this.scene, this.camera);
+    if (this.composer && this.quality === 'high') this.composer.render(dt); else this.renderer.render(this.scene, this.camera);
     if (++this._mapN % 3 === 0) this._drawMap();
   }
 
