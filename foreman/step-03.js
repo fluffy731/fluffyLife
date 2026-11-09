@@ -3,7 +3,7 @@
 // so almost every rule is flagged Typical or Confirm. Verified is used only for listings and pages that were opened.
 import { buildBase, buildSiteWorks, HOUSE, BASE_COLLIDERS, MAP } from './site.js';
 import { svg, T, L, R, P, dim, call } from './dwg.js';
-import { F, layout, worldAt, wallMembers, mergeBoxes, buildFrames, buildSlab } from './frame.js';
+import { F, FLOOR1, layout, worldAt, wallMembers, mergeBoxes, buildFrames, buildSlab } from './frame.js';
 
 const { z1: Z1 } = HOUSE;
 const phases = [
@@ -11,8 +11,10 @@ const phases = [
   { title: 'Frames assembled flat', text: 'Plates, studs, noggings and opening members are nailed together on the slab, one wall at a time.' },
   { title: 'Frames stand up', text: 'Each frame is lifted onto its chalk line and fixed. The walls go up one after another.' },
   { title: 'Plumb, line and temporary brace', text: 'Walls are plumbed and lined with string, then held by props until the permanent bracing is in.' },
-  { title: 'Bracing, top plates and tie-down', text: 'The second top plate laps the corners. Permanent bracing and tie-down rods go in to the engineer\'s detail.' },
-  { title: 'Wall frame check', text: 'The frame is checked against the drawings before the trusses are lifted. The formal frame inspection usually follows the roof frame.' },
+  { title: 'Ground-floor bracing, top plates and tie-down', text: 'The second top plate laps the corners. Permanent bracing and tie-down rods go in to the engineer\'s detail.' },
+  { title: 'First floor frame and sheet', text: 'Joists run over the ground-floor walls with a void left for the stair, then the floor sheet goes down as a platform for the upper walls.' },
+  { title: 'Upper-storey walls', text: 'Upper walls are framed on the new floor over the ground walls, with their own openings, then plumbed, braced and capped with a second top plate.' },
+  { title: 'Wall frame check', text: 'Both storeys are checked against the drawings before the trusses are lifted. The formal frame inspection usually follows the roof frame.' },
 ];
 
 function build(kit) {
@@ -43,7 +45,8 @@ function build(kit) {
   const layers = [
     { group: base }, { group: w.fence }, { group: w.sign }, { group: w.silt }, { group: w.entry }, { group: w.amenities }, { group: slab },
     { group: packs, until: 3 }, { group: G.chalk, until: 2 }, { group: G.walls, from: 1 }, { group: marker, from: 2 },
-    { group: G.temp, from: 3, until: 4 }, { group: G.plate2, from: 4 }, { group: G.brace, from: 4 }, { group: G.tie, from: 4 }, { group: check, from: 5 },
+    { group: G.temp, from: 3, until: 4 }, { group: G.plate2, from: 4 }, { group: G.brace, from: 4 }, { group: G.tie, from: 4 },
+    { group: G.floor1, from: 5 }, { group: G.floor1S, from: 5 }, { group: G.walls2, from: 6 }, { group: G.stairT, from: 6 }, { group: G.plate2u, from: 6 }, { group: G.brace2, from: 6 }, { group: check, from: 7 },
   ];
 
   // positions for pins that sit on the generated frame
@@ -83,8 +86,14 @@ function build(kit) {
       { id: 'tiedown', title: 'Tie-down: the load path', pos: tiePos, stand: [tieStand[0], tieStand[2]], from: 4, detail: 'tiedown', drawing: 'secWall',
         summary: 'Wind tries to lift the roof off. Tie-down connects the roof to the top plate, the frame to the bottom plate, and the bottom plate to the slab, in one continuous chain.',
         learn: [['Tie-down resists uplift, bracing resists racking. A chain is only as good as its weakest link, so check every link from roof to slab.', 'T'], ['Wind classification (AS 4055: N1 to N6 for non-cyclonic areas, C1 to C4 for cyclonic) sets how strong the chain must be. The surveyor or engineer determines it for the site.', 'T'], ['Where trusses sit directly over studs, the load path is short and direct. Check the tie-down detail for the connection type, rod size and spacing.', 'C'], ['Rods and anchors go in to the engineer\'s detail, with the embedment, edge distance and washers the product listing requires.', 'C']] },
-      { id: 'check', title: 'Wall frame check', pos: [0, 1.5, Z1 + 1.3], stand: [0, 17], from: 5,
-        summary: 'Before the trusses go on, check the walls against the drawings and fix any defects while they are easy to reach.',
+      { id: 'floor1', title: 'First floor: joists, stair void and sheet', pos: [-2.0, FLOOR1 - 0.1, 6.1], stand: [-2.0, 15.5], from: 5, until: 6,
+        summary: 'In a platform floor the joists and sheet go down before the upper walls, so the sheet is the working deck. Joists bear on the ground-floor walls, and a doubled frame is left around the stair.',
+        learn: [['A platform floor is framed and sheeted first, and the upper walls then stand on it. Joists bear on the top plates of the ground-floor walls, so upper and lower walls should stack.', 'T'], ['Joist size, spacing and span come from the AS 1684 span tables or the engineer. Engineered joists (I-joists or LVL) come with the maker\'s own span tables and layout, and must not be cut, notched or drilled outside the maker\'s rules.', 'C'], ['Around the stair void the joists are doubled (trimmers) and a doubled header carries the cut-off joists. The sizes come from the engineer or the tables.', 'T'], ['The floor sheet is usually a tongue-and-groove structural sheet, glued and screwed. Rain on an exposed sheet swells it, so cover it or keep the wet-weather plan ready.', 'T'], ['An upstairs bathroom or laundry needs the wet-area system (Stage 10). Settle the falls and the sheet type with the waterproofer before the sheet goes down.', 'T'], ['In a two-storey house the bracing and tie-down must work through both storeys. Confirm the load path with the engineer.', 'C']] },
+      { id: 'upper', title: 'Upper-storey walls', pos: worldAt(fw.w, winU, 1.5, 0).map((v, i) => (i === 1 ? FLOOR1 + 1.5 : v)), stand: [winPos[0], 17.5], from: 6, until: 7,
+        summary: 'Upper walls are framed on the sheet, over the ground walls. Upstairs windows need extra care: sill height and fall protection matter once the floor is high above the ground.',
+        learn: [['Frame the upper walls like the ground walls: bottom plate fixed through the sheet into the joists, studs on the grid, lintels over openings, then a second top plate.', 'T'], ['Upper wall height can differ from the ground floor. The model uses 2.55 m upstairs and 2.7 m below. Check wall and ceiling heights on the drawings.', 'T'], ['Stack the walls. A load-bearing upper wall should sit over a ground wall or a beam, or the engineer must design the transfer.', 'C'], ['Openable bedroom windows with the floor well above the ground have rules to stop a child falling out, such as a barrier or a limit on how far the window opens. Check the NCC Housing Provisions and AS 5203 for the sill height and the opening limit.', 'C'], ['Edge protection is needed at the floor edge and the stair void while the upper walls go up. Work-at-heights rules apply from the first floor.', 'T']] },
+      { id: 'check', title: 'Wall frame check', pos: [0, 1.5, Z1 + 1.3], stand: [0, 17], from: 7,
+        summary: 'Before the trusses go on, check both storeys against the drawings and fix any defects while they are easy to reach.',
         learn: [['Check: plumb and straight, openings and lintels as drawn, bracing and tie-down complete, all connections nailed, no cut or damaged members.', 'T'], ['The formal frame inspection by the building surveyor usually covers the wall and roof frame together, so it normally comes after the roof frame. Check the stage list on the permit.', 'C', 'vbaMand'], ['The engineer may inspect the frame and issue a certificate. Ask when they want to see it.', 'T'], ['In Victoria the contract names a frame stage for payment. Confirm the stage wording and percentages in the contract and with Consumer Affairs Victoria, because the rules are changing.', 'C', 'cavPay']] },
     ],
   };
@@ -295,7 +304,9 @@ const howto = [
   ['Fit the second top plate', 'Lap the second plate across corners and joints so that it ties the walls together.', 'Carpenter', 'C'],
   ['Fit the permanent bracing', 'Plywood sheet, metal strap or timber, in the walls the bracing plan shows, nailed or tensioned as detailed.', 'Carpenter', 'C'],
   ['Fit the tie-down rods and anchors', 'Anchors, rods, plate washers and nuts to the engineer\'s detail, then check each link in the chain from slab to top plate.', 'Carpenter', 'C'],
-  ['Check the wall frame', 'Walk every wall against the drawings: plumb, straight, openings, lintels, bracing, tie-down and every nail.', 'Builder', 'T'],
+  ['Frame and sheet the first floor', 'Lay the joists over the ground-floor walls to the floor plan, double the trimmers and header round the stair void, then glue and screw the floor sheet. Cover it if rain is due.', 'Carpenter', 'C'],
+  ['Frame and brace the upper walls', 'Set out on the sheet over the ground walls, then assemble, stand, plumb, brace and cap them as for the ground floor. Fit edge protection at the floor edge and stair void first.', 'Carpenter', 'C'],
+  ['Check the wall frame', 'Walk every wall on both storeys against the drawings: plumb, straight, openings, lintels, bracing, tie-down and every nail.', 'Builder', 'T'],
   ['Book the engineer and surveyor', 'Ask the engineer when to inspect. Ask the building surveyor which stages the permit lists, and book the frame inspection for after the roof frame (Step 4).', 'Builder', 'C', 'vbaMand'],
 ];
 
@@ -359,6 +370,7 @@ const exam = [
   ['Which Standard covers residential timber framing?', 'AS 1684, in parts: non-cyclonic areas, cyclonic areas and a simplified version.', 'T'],
   ['What does bracing resist, and what does tie-down resist?', 'Bracing resists racking from horizontal wind load. Tie-down resists uplift from wind on the roof.', 'T'],
   ['What sets the amount of bracing and the strength of the tie-down?', 'The wind classification, the roof shape, the wall lengths and the design. AS 4055 gives the classes: N1 to N6 for non-cyclonic areas and C1 to C4 for cyclonic areas.', 'T'],
+  ['What is a platform floor, and why does it help in a two-storey house?', 'The whole floor is framed and sheeted before the upper walls go up, so the sheet is a working deck and the upper walls stand on it. The upper walls should stack over the ground walls or a beam.', 'T'],
   ['Name the members around a window opening.', 'King studs, trimmers (jack studs), lintel, sill, cripple studs above and below, and noggings.', 'T'],
   ['What do trimmer studs do, and what do king studs do?', 'Trimmers carry the lintel load down to the bottom plate. King studs run plate to plate beside them and hold them and the lintel in place.', 'T'],
   ['What is a nogging for?', 'It stops studs buckling and gives a fixing edge for linings and fittings. Noggings are staggered so that each end can be nailed.', 'T'],

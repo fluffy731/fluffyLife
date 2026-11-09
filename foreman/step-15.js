@@ -5,11 +5,11 @@
 import * as THREE from 'three';
 import step14 from './step-14.js';
 import { grp } from './step-06.js';
-import { F } from './frame.js';
-import { ALARMS, LIGHTS } from './elec.js';
+import { F, PLATE_UP } from './frame.js';
+import { ALARMS, ALARMS_UP, LIGHTS } from './elec.js';
 import { drawings, howto, trades, materials, quotes, quoteTips, inspections, exam, sources, caution } from './step-15-study.js';
 
-const SL = F.SLAB, CY = F.H + F.SLAB - 0.013;          // slab top, and the underside of the ceiling sheets
+const SL = F.SLAB, CY = F.H + F.SLAB - 0.013, UPS = PLATE_UP - (F.H + F.SLAB);          // slab top, the underside of the ceiling sheets, and the rise to the first-floor ceiling
 const WX = -3.6, WZ = 2.4, fy = (x, z) => SL + 0.012 + Math.hypot(x - WX, z - WZ) / 60;   // bathroom floor from Steps 10 and 14
 
 const phases = [
@@ -86,6 +86,7 @@ function build(kit) {
   const LT = LIGHTS.filter(([x, z]) => !(x === 2.6 && z === 2.75)).concat([[3.9, 2.75]]);   // Step 9 light points, with the bedroom one moved off its smoke alarm
   for (const [x, z] of LT) { const r = x === -3.6 ? 0.08 : 0.13; fit.add(cyl(r, 0.035, m.white, x, CY - 0.0175, z, 24)); glow.add(cyl(r * 0.8, 0.01, m.glow, x, CY - 0.04, z, 24)); }
   for (const [x, z] of ALARMS) fit.add(cyl(0.07, 0.03, m.white, x, CY - 0.015, z, 24), cyl(0.006, 0.004, m.red, x + 0.03, CY - 0.032, z, 8));
+  for (const [x, z] of ALARMS_UP) fit.add(cyl(0.07, 0.03, m.white, x, CY + UPS - 0.015, z, 24), cyl(0.006, 0.004, m.red, x + 0.03, CY + UPS - 0.032, z, 8));   // first-floor alarm on its own storey
   // bathroom: vanity and basin, mirror, toilet, shower fittings and screen
   { const vy = fy(-4.6, 5.18) + 0.013, z0 = 5.4085;
     fit.add(box(0.9, 0.8, 0.45, m.vcab, -4.6, vy + 0.4, z0 - 0.225), box(0.94, 0.03, 0.49, m.stone, -4.6, vy + 0.815, z0 - 0.245), box(0.5, 0.1, 0.36, m.ceram, -4.6, vy + 0.88, z0 - 0.26), cyl(0.014, 0.14, m.steel, -4.6, vy + 0.9, z0 - 0.06, 10), rod([-4.6, vy + 0.97, z0 - 0.06], [-4.6, vy + 0.96, z0 - 0.2], 0.012, m.steel, 8), box(0.8, 0.6, 0.012, m.mirror, -4.6, 1.65, 5.4205 - 0.006));

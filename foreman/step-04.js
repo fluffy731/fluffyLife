@@ -4,11 +4,12 @@
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { buildBase, buildSiteWorks, HOUSE, BASE_COLLIDERS, MAP } from './site.js';
 import { svg, T, L, R, P, dim, call } from './dwg.js';
-import { F, buildFrames, buildSlab } from './frame.js';
+import { F, buildFrames, buildSlab, PLATE_UP } from './frame.js';
 
 const { z0: Z0, z1: Z1 } = HOUSE;
 const TAN = Math.tan(Math.PI / 8), COS = Math.cos(Math.PI / 8);         // 22.5 degree pitch
-const HS = 5.35, OVER = 0.45, PLATE_TOP = F.SLAB + F.H;                 // half span to the outer wall faces, eave overhang, top of the plates
+const HS = 5.35, OVER = 0.45, PLATE_TOP = PLATE_UP;                     // half span to the outer wall faces, eave overhang, top of the upper-storey plates (5.70 m)
+const UP = PLATE_TOP - (F.SLAB + F.H);                                  // how much higher the roof sits than on a single-storey house
 const yc = (x, hs = HS) => (hs - Math.abs(x)) * TAN + 0.05;            // top chord centreline above the plate, at distance x from the centre
 const ZS = []; for (let i = 0; i < 19; i++) ZS.push(Z1 - F.E - i * 0.9); ZS.push(Z0 + F.E);   // 20 trusses, front to back
 
@@ -55,13 +56,13 @@ function build(kit) {
   for (const x of [-3.2, 0, 3.2]) bundle.add(box(0.12, 0.12, 2.4, mat(0x8a6a3c, { tex: 'timber' }), x, 0.06, 14.5));
 
   // crane: truck, outriggers, boom, hook and one truss on the sling
-  const crane = mk('crane'), yel = mat(0xf2b01e), dk = mat(0x3c4a5c), tip = [0, 9.8, 11.3];
+  const crane = mk('crane'), yel = mat(0xf2b01e), dk = mat(0x3c4a5c), tip = [0, 9.8 + UP, 11.3];
   crane.add(box(8.2, 1.0, 2.6, yel, 9.5, 0.9, 23.3), box(2.4, 1.7, 2.5, dk, 13.2, 1.45, 23.3), box(3.0, 1.4, 2.2, yel, 8.2, 1.9, 23.3));
   for (const dz of [-1.9, 1.9]) for (const dx of [-3, 3]) { crane.add(box(0.1, 0.9, 0.1, dk, 9.5 + dx, 0.5, 23.3 + dz)); crane.add(box(0.7, 0.05, 0.7, dk, 9.5 + dx, 0.03, 23.3 + dz)); }
   crane.add(rod([8, 2.4, 23.3], tip, 0.2, yel), cyl(0.2, 0.7, dk, 8, 2.1, 23.3, 12));
-  crane.add(rod(tip, [0, 6.3, 11.3], 0.012, dk), cyl(0.2, 0.3, dk, ...tip, 12));
-  crane.add(rod([0, 6.4, 11.3], [-1.9, 6.15 + yc(-1.9) - 0.05, 11.3], 0.01, dk), rod([0, 6.4, 11.3], [1.9, 6.15 + yc(1.9) - 0.05, 11.3], 0.01, dk));
-  const hang = inst(tg, timber, [M4.clone().compose(new THREE.Vector3(0, 6.1, 11.3), Q, S1)]), hangP = inst(pg, plateM, [M4.clone().compose(new THREE.Vector3(0, 6.1, 11.3), Q, S1)]);
+  crane.add(rod(tip, [0, 6.3 + UP, 11.3], 0.012, dk), cyl(0.2, 0.3, dk, ...tip, 12));
+  crane.add(rod([0, 6.4 + UP, 11.3], [-1.9, 6.15 + UP + yc(-1.9) - 0.05, 11.3], 0.01, dk), rod([0, 6.4 + UP, 11.3], [1.9, 6.15 + UP + yc(1.9) - 0.05, 11.3], 0.01, dk));
+  const hang = inst(tg, timber, [M4.clone().compose(new THREE.Vector3(0, 6.1 + UP, 11.3), Q, S1)]), hangP = inst(pg, plateM, [M4.clone().compose(new THREE.Vector3(0, 6.1 + UP, 11.3), Q, S1)]);
   crane.add(hang, hangP);
 
   // temporary runners and diagonals (top chord plane), permanent bracing, battens
@@ -94,14 +95,14 @@ function build(kit) {
 
   const layers = [
     { group: base }, { group: w.fence }, { group: w.sign }, { group: w.silt }, { group: w.entry }, { group: w.amenities }, { group: slab },
-    { group: G.walls }, { group: G.plate2 }, { group: G.brace }, { group: G.tie },
+    { group: G.walls }, { group: G.plate2 }, { group: G.brace }, { group: G.tie }, { group: G.floor1 }, { group: G.floor1S }, { group: G.walls2 }, { group: G.stairT }, { group: G.plate2u }, { group: G.brace2 },
     { group: bundle, until: 2 }, { group: crane, from: 1, until: 3 }, { group: trusses, from: 2 }, { group: temp, from: 2, until: 4 }, { group: perm, from: 3 }, { group: battens, from: 4 }, { group: hold, from: 5 },
   ];
 
   return {
     layers, colliders: BASE_COLLIDERS, tickers,
     spawn: { pos: [3.5, 18.5], yaw: 0, pitch: 0.14 }, map: MAP,
-    orbit: { pos: [17, 13, 26], target: [0, 3.2, 4] },
+    orbit: { pos: [19, 15, 28], target: [0, 4.2, 4] },
     hotspots: [
       { id: 'design', title: 'Truss design and delivery', pos: [0, 0.8, 15.6], stand: [-3.5, 19], from: 0, until: 2, drawing: 'truss',
         summary: 'A truss is a factory-made, engineered frame. The manufacturer designs it for this house from the spans, pitch, roof weight and wind class you give them.',

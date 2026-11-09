@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import step8 from './step-08.js';
 import { grp } from './step-06.js';
-import { WALLS, wallInfo, wallMembers, worldAt, F } from './frame.js';
+import { WALLS, wallInfo, wallMembers, worldAt, F, STAIR, minusVoid } from './frame.js';
 import { LIGHTS } from './elec.js';
 import { drawings, howto, trades, materials, quotes, quoteTips, inspections, exam, sources, caution } from './step-11-study.js';
 
@@ -95,10 +95,11 @@ function build(kit) {
 
   // ceiling: a faint lining, batts laid over it in a grid, downlight covers and eave vents
   const ceilL = mk('ceilL'), ceilb = mk('ceilb'), fixc = mk('fixc'), covers = mk('covers'), vents = mk('vents'), gapC = [-1.2, 1.6];
-  ceilL.add(box(10.6, 0.012, 16.6, m.lining, 0, CEIL + 0.006, 3.0));
+  for (const [ax, bx, az, bz] of minusVoid(-5.3, 5.3, -5.3, 11.3)) ceilL.add(box(bx - ax, 0.012, bz - az, m.lining, (ax + bx) / 2, CEIL + 0.006, (az + bz) / 2));   // the stair void stays open
   const geos = [], fixGeo = [], TX = 1.18, TZ = 0.592, X0 = -5.3, Z0 = -5.3, TH = 0.17;
   for (let i = 0; i < 9; i++) for (let j = 0; j < 28; j++) {
     const cx = X0 + (i + 0.5) * TX, cz = Z0 + (j + 0.5) * TZ;
+    if (cx + TX / 2 > STAIR.x0 && cx - TX / 2 < STAIR.x1 && cz + TZ / 2 > STAIR.z0 && cz - TZ / 2 < STAIR.z1) continue;   // no batts over the stair void
     if (LIGHTS.some(([lx, lz]) => Math.abs(cx - lx) < TX / 2 + 0.2 && Math.abs(cz - lz) < TZ / 2 + 0.2) || FANS.some(([fx, fz]) => Math.abs(cx - fx) < TX / 2 + 0.2 && Math.abs(cz - fz) < TZ / 2 + 0.2)) continue;
     const g = new THREE.BoxGeometry(TX - 0.012, TH, TZ - 0.012); g.translate(cx, CEIL + 0.012 + TH / 2, cz);
     if (Math.abs(cx - gapC[0]) < TX / 2 && Math.abs(cz - gapC[1]) < TZ / 2) fixGeo.push(g); else geos.push(g);

@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import step6, { grp, bricksIn, mortarBlock, tieAt, pl, PITCH, BT } from './step-06.js';
 import { HOUSE, BASE_COLLIDERS, MAP } from './site.js';
 import { svg, T, L, R, P, dim, call } from './dwg.js';
-import { F, WALLS } from './frame.js';
+import { F, WALLS, WALLS_UP, FLOOR1, mergeStatic } from './frame.js';
 
 const { x0: X0, x1: X1, z0: Z0, z1: Z1 } = HOUSE;
 const HEADY = F.SLAB + F.HEAD;   // underside of the frame lintel, metres above the ground
@@ -45,17 +45,20 @@ function build(kit) {
 
   const windows = mk('windows'), doors = mk('doors'), sealsW = mk('sealsW'), sealsD = mk('sealsD'), hardware = mk('hardware'), labels = mk('labels');
   const bead = (g, w, y0, y1) => { const t = 0.014, cy = (y0 + y1) / 2, z = WZ + 0.035 + 0.004; g.add(box(w + 2 * t, t, 0.012, sealM, 0, y1 + t / 2, z), box(w + 2 * t, t, 0.012, sealM, 0, y0 - t / 2, z), box(t, y1 - y0, 0.012, sealM, -w / 2 - t / 2, cy, z), box(t, y1 - y0, 0.012, sealM, w / 2 + t / 2, cy, z)); };
+  const addWindow = (W, o, y0, y1) => {
+    const g = new THREE.Group(), ww = o.w - 0.02, cy = (y0 + y1) / 2, h = y1 - y0;
+    ring(g, alu, ww, y0, y1, WZ, 0.07);
+    g.add(box(ww - 0.1, h - 0.1, 0.006, o.sill >= 1.5 ? obscure : glassM, 0, cy, WZ));
+    if (o.w >= 1.4) { g.add(box(0.05, h - 0.1, 0.085, alu, 0, cy, WZ - 0.007), box(ww / 2 - 0.05, 0.035, 0.02, alu, ww / 4, y1 - 0.0675, WZ + 0.045), box(ww / 2 - 0.05, 0.035, 0.02, alu, ww / 4, y0 + 0.0675, WZ + 0.045)); }
+    else g.add(box(ww - 0.1, 0.04, 0.07, alu, 0, y0 + h * 0.62, WZ));
+    windows.add(place(W, o, g));
+    const sg = new THREE.Group(); bead(sg, ww, y0, y1); sealsW.add(place(W, o, sg));
+  };
   for (const w of WALLS_EXT) {
     const W = wallGeom(w.id);
     for (const o of w.open) {
       if (o.sill > 0) { // window
-        const g = new THREE.Group(), ww = o.w - 0.02, y0 = F.SLAB + o.sill + 0.005, y1 = HEADY - 0.01, cy = (y0 + y1) / 2, h = y1 - y0;
-        ring(g, alu, ww, y0, y1, WZ, 0.07);
-        g.add(box(ww - 0.1, h - 0.1, 0.006, o.sill >= 1.5 ? obscure : glassM, 0, cy, WZ));
-        if (o.w >= 1.4) { g.add(box(0.05, h - 0.1, 0.085, alu, 0, cy, WZ - 0.007), box(ww / 2 - 0.05, 0.035, 0.02, alu, ww / 4, y1 - 0.0675, WZ + 0.045), box(ww / 2 - 0.05, 0.035, 0.02, alu, ww / 4, y0 + 0.0675, WZ + 0.045)); }
-        else g.add(box(ww - 0.1, 0.04, 0.07, alu, 0, y0 + h * 0.62, WZ));
-        windows.add(place(W, o, g));
-        const sg = new THREE.Group(); bead(sg, ww, y0, y1); sealsW.add(place(W, o, sg));
+        addWindow(W, o, F.SLAB + o.sill + 0.005, HEADY - 0.01);
       } else if (w.id === 'front') { // front door in a timber frame, over a threshold
         const g = new THREE.Group(), y0 = F.SLAB + 0.02, y1 = HEADY - 0.005, h = y1 - y0, cy = (y0 + y1) / 2, lw = o.w - 0.12, lh = h - 0.07;
         g.add(box(0.045, h, 0.07, timber, -o.w / 2 + 0.03, cy, WZ), box(0.045, h, 0.07, timber, o.w / 2 - 0.03, cy, WZ), box(o.w - 0.02, 0.045, 0.07, timber, 0, y1 - 0.0225, WZ));
@@ -78,6 +81,9 @@ function build(kit) {
     }
   }
 
+  // upstairs windows: same frames and seals, measured up from the first-floor sheet
+  for (const w of WALLS_UP.filter((q) => q.ext)) for (const o of w.open) addWindow(wallGeom(w.id.slice(0, -1)), o, FLOOR1 + o.sill + 0.005, FLOOR1 + F.HEAD - 0.01);
+
   // stock on site: window packs and door leaves leaning on a rack; garage-door pack stays until the garage is built
   const crates = mk('crates'), rack = mk('rack'), garage = mk('garage');
   const card = mat(0xc8ad82, { roughness: 0.9 }), plank = mat(0xffffff, { tex: 'timber' });
@@ -94,6 +100,7 @@ function build(kit) {
   const check = mk('check'), sign = textPlane(['CHECK POINT: LOCK-UP', 'Windows and doors fixed, sealed, locked', 'Photograph flashings and glass labels'], 1.9, 0.9);
   sign.position.set(0, 1.5, Z1 + 1.3); check.add(sign, cyl(0.04, 1.6, mat(C.steel), -0.85, 0.8, Z1 + 1.28, 8), cyl(0.04, 1.6, mat(C.steel), 0.85, 0.8, Z1 + 1.28, 8));
 
+  mergeStatic(windows); mergeStatic(sealsW);   // about 20 windows of 8 parts each, merged by material to keep the draw calls down
   layers.push({ group: crates, until: 2 }, { group: rack, until: 3 }, { group: garage }, { group: windows, from: 1 }, { group: sealsW, from: 2 }, { group: doors, from: 3 }, { group: sealsD, from: 3 },
     { group: hardware, from: 4 }, { group: labels, from: 4 }, { group: check, from: 5 });
 
@@ -129,6 +136,9 @@ function build(kit) {
       { id: 'garage', title: 'Garage door (delivery pack)', pos: [4.0, 0.95, 14.7], stand: [4.0, 18.3], from: 0, detail: 'garage',
         summary: 'This house has no garage in the model, so the garage door is shown as a delivery pack: stacked steel panels, tracks and the opener carton. A sectional door is ordered with the other doors, and the supplier usually fits it.',
         learn: [['Check the opening width and height, the headroom above it and the side room for tracks before ordering. The header over a garage opening is sized by the engineer.', 'T'], ['Openers have entrapment protection: photo-eye sensors and auto-reverse when the door meets resistance. Test them at handover and keep the instructions.', 'T'], ['Ask the supplier for the door\'s wind rating and check it suits the wind classification on the permit documents (Step 4).', 'C'], ['Check the contract documents say who supplies the door, the opener and the remotes, and whether a garage door is in the contract price.', 'T']] },
+      { id: 'upwin', title: 'Upstairs windows: reach and fall protection', pos: [-3.4, FLOOR1 + 1.45, Z1 + 0.03], stand: [-3.4, 17], from: 1,
+        summary: 'Upstairs windows are fixed and flashed like the ground-floor ones, but with the floor well above the ground a low openable window is a fall risk, especially for young children.',
+        learn: [['Where the floor is high above the ground and the sill is low, the NCC asks for a barrier or a limit on how far an openable window can open. Check the Housing Provisions barrier part for the heights and the opening limit that apply to your windows.', 'C'], ['AS 5203 is the Standard for testing devices that stop a child falling through an openable window. The product and its test listing must match the permit documents. The Standard itself was not opened.', 'C'], ['Fit the restrictor or screen as the window schedule says, and keep the egress and bushfire rules in mind, since a restrictor can limit escape and ember screens have their own rules.', 'C'], ['Flash the upper windows the same way as the lower ones: sill pan, jamb and head flashings, wrap lapped to the flashing, then the cladding. Follow the cladding maker\'s manual for the order.', 'T']] },
       { id: 'lockup', title: 'Lock-up check', pos: [0, 1.5, Z1 + 1.3], stand: [0, 17], from: 5,
         summary: 'Lock-up is a payment stage, so the contract decides when it is reached. Before any claim, check each condition in the contract, photograph the finished openings and check the payment limit for your contract type.',
         learn: [['Check every condition in your contract\'s lock-up definition before claiming. The Consumer Affairs Victoria page lists external cladding and roof covering fixed, flooring laid, and external doors and windows fixed (even if temporary).', 'C', 'cavPay'], ['The page shows a lock-up payment limit of 40% where the contract is to build to fixing, and 35% where it covers all stages (page last updated 9 July 2025). Step 1 lists the all-stage table.', 'C', 'cavPay'], ['The Domestic Building Contracts Amendment Act 2025 passed on 11 September 2025 and takes effect by 1 December 2026. Regulations can set deposit limits, progress payment stages and limits, and payments must be proportionate to the work done. Check the current figures before using any number here.', 'C', 'cavAmend'], ['Photograph the finished windows, flashings, doors and glass labels. Ask the surveyor whether they want to inspect at lock-up.', 'T']] },
@@ -453,6 +463,7 @@ const inspections = [
 ];
 
 const exam = [
+  ['Why do upstairs bedroom windows need extra thought?', 'With the floor well above the ground and a low sill, an openable window is a fall risk for young children. The NCC asks for a barrier or a limit on opening. Check the Housing Provisions for the heights and the limit.', 'C'],
   ['What must not be transferred to a window assembly?', 'Structural building loads.', 'V', 'nccWin82'],
   ['What gap is needed at the head of a window?', 'At least 10 mm between the top of the window assembly and any loadbearing framing or masonry. It may be bigger to allow for frame settlement over wide openings.', 'V', 'nccWin82'],
   ['Where does packing go, and what must it avoid?', 'Along each side and the bottom, fixed to keep the sides and bottom of the window straight, and clear of any flashing material.', 'V', 'nccWin82'],

@@ -82,7 +82,7 @@ function build(kit) {
     for (const z of [ZB - VERGE, ZF + VERGE]) gutters.add(box(0.115, 0.09, 0.008, dark, sg * (XE + 0.02 + 0.0575), G_BOT + 0.045, z + (z < ZM ? 0.004 : -0.004)));
     for (const z of DP_Z) {
       gutters.add(rod([sg * DP_X, G_BOT, z], [sg * DP_X, 0.15, z], 0.045, dark, 14));
-      for (const y of [0.6, 1.5, 2.3]) gutters.add(box(0.03, 0.04, 0.13, steel, sg * (DP_X + 0.0), y, z));
+      for (const y of [0.6, 1.5, 2.4, 3.3, 4.2, 5.0]) gutters.add(box(0.03, 0.04, 0.13, steel, sg * (DP_X + 0.0), y, z));
     }
   }
 
@@ -104,10 +104,12 @@ function build(kit) {
   const scaf = mk('scaffold');
   for (const sg of [-1, 1]) {
     const z0 = ZB - 0.2, z1 = sg < 0 ? 9.6 : ZF + 0.2, len = z1 - z0, zc = (z0 + z1) / 2;
-    for (let z = z0; z <= z1 + 0.01; z += 2.4) for (const dx of [6.05, 6.95]) scaf.add(rod([sg * dx, 0, z], [sg * dx, 3.6, z], 0.024, steel, 6));
-    scaf.add(box(0.9, 0.05, len, plank, sg * 6.5, 1.95, zc), box(0.03, 0.15, len, plank, sg * 6.95, 2.03, zc));
-    for (const y of [1.9, 2.45, 2.95]) scaf.add(rod([sg * 6.95, y, z0], [sg * 6.95, y, z1], 0.02, steel, 6));
-    scaf.add(rod([sg * 6.05, 1.9, z0], [sg * 6.05, 1.9, z1], 0.02, steel, 6));
+    for (let z = z0; z <= z1 + 0.01; z += 2.4) for (const dx of [6.05, 6.95]) scaf.add(rod([sg * dx, 0, z], [sg * dx, 7.2, z], 0.024, steel, 6));
+    for (const py of [1.95, 3.95, 5.95]) {                                        // three 2 m lifts, the top platform just above the eaves
+      scaf.add(box(0.9, 0.05, len, plank, sg * 6.5, py, zc), box(0.03, 0.15, len, plank, sg * 6.95, py + 0.08, zc));
+      for (const dy of [-0.05, 0.5, 1.0]) scaf.add(rod([sg * 6.95, py + dy, z0], [sg * 6.95, py + dy, z1], 0.02, steel, 6));
+      scaf.add(rod([sg * 6.05, py - 0.05, z0], [sg * 6.05, py - 0.05, z1], 0.02, steel, 6));
+    }
   }
 
   const check = mk('check'), sign = textPlane(['CHECK POINT: ROOF', 'Water test and fixings checked', 'Plumber\'s records on file'], 1.9, 0.9);
@@ -123,7 +125,7 @@ function build(kit) {
 
   const layers = [
     { group: base }, { group: w.fence }, { group: w.sign }, { group: w.silt }, { group: w.entry }, { group: w.amenities }, { group: slab },
-    { group: G.walls }, { group: G.plate2 }, { group: G.brace }, { group: G.tie },
+    { group: G.walls }, { group: G.plate2 }, { group: G.brace }, { group: G.tie }, { group: G.floor1 }, { group: G.floor1S }, { group: G.walls2 }, { group: G.stairT }, { group: G.plate2u }, { group: G.brace2 },
     { group: rf.trusses }, { group: rf.perm }, { group: rf.battens },
     { group: scaf, until: 3 }, { group: fascia }, { group: sarking }, { group: tiles, from: 1 }, { group: ridge, from: 2 }, { group: flash, from: 2 },
     { group: gutters, from: 3 }, { group: storm, from: 4 }, { group: check, from: 5 },
@@ -132,12 +134,12 @@ function build(kit) {
   return {
     layers, colliders: BASE_COLLIDERS, tickers,
     spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: MAP,
-    orbit: { pos: [17, 13, 26], target: [0, 2.8, 4] },
+    orbit: { pos: [19, 15, 28], target: [0, 4.0, 4] },
     hotspots: [
       { id: 'fascia', title: 'Fascia and eaves', pos: [XE + 0.1, YT - 0.03, 2], stand: [8.2, 13], from: 0, drawing: 'gutterdet',
         summary: 'The fascia is the board that closes the ends of the truss tails. It carries the gutter brackets, so it has to be straight, level and fixed to every truss.',
         learn: [['Fix the fascia to the end of every truss tail. The gutter brackets screw into the fascia and the truss ends, so loose fascia means a loose gutter.', 'T'], ['Fascia can be timber, metal or fibre cement. A metal fascia may need less fall in the gutter than a timber one. Check the gutter rules for your edition of the NCC.', 'C'], ['In a bushfire area the eaves, fascia and gutters have their own ember-proofing rules in AS 3959. Check the BAL in the permit.', 'C']] },
-      { id: 'scaffold', title: 'Scaffold and edge protection', pos: [6.95, 2.9, 3], stand: [7.2, 14], from: 0, until: 3,
+      { id: 'scaffold', title: 'Scaffold and edge protection', pos: [6.95, 4.0, 3], stand: [7.2, 14], from: 0, until: 3,
         summary: 'Gutters and tiles go on from a platform at the eaves, with guard rails. The scaffold is planned before anyone goes up and stays until the gutters and flashings are done.',
         learn: [['Work where a person could fall two metres or more needs a safe work method statement and a proper work platform or edge protection. Confirm the current rules with WorkSafe Victoria.', 'C'], ['A scaffolder with the right licence class builds scaffold above the height set in the OHS regulations, and gives you a handover certificate. Confirm the height and class with WorkSafe.', 'C'], ['Keep tiles stacked on the roof in a spread pattern, not in one heap, so no truss is overloaded.', 'T']] },
       { id: 'sarking', title: 'Sarking under the roof', pos: [-2.6, sy(2.6) + 0.1, 4], stand: [-3, 17.5], from: 0, until: 1, detail: 'roofbuild', drawing: 'roofsec',

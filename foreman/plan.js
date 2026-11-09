@@ -212,31 +212,31 @@ export const SOURCES = {
 // These are suggestions taken from the section titles only; no course text is copied into this app.
 // Folder names follow the notes on the owner's computer (Documents\Builders Academy Notes\...).
 const M = {
-  '2.1': ['Module 2 · Volume 1', 'Class 1 and 10 buildings'], '2.3': ['Module 2 · Volume 3', 'Apply structural principles'],
-  '3.4': ['Module 3 · Volume 4', 'Prepare and evaluate tender documentation'], '3.5': ['Module 3 · Volume 5', 'Monitor costing systems'],
-  '3.3': ['Module 3 · Volume 3', 'Manage business risk'], '4.1': ['Module 4 · Volume 1', 'Work health and safety'],
-  '4.2': ['Module 4 · Volume 2', 'Quality and materials'], '4.3': ['Module 4 · Volume 3', 'Legal obligations'],
-  '4.4': ['Module 4 · Volume 4', 'Manage construction work'], '5.1': ['Module 5 · Volume 1', 'Building codes and standards'],
-  '5.2': ['Module 5 · Volume 2', 'Services layout'], '5.3': ['Module 5 · Volume 3', 'Supervising on-site planning'],
+  '2.1': ['Module 2 · Volume 1', 'Building codes and standards (Class 1 and 10)'], '2.3': ['Module 2 · Volume 3', 'Apply structural principles'],
+  '3.4': ['Module 3 · Volume 4', 'Prepare and evaluate tender documentation'], '3.5': ['Module 3 · Volume 5', 'Monitor costing systems on complex projects'],
+  '3.3': ['Module 3 · Volume 3', 'Manage business risk'], '4.1': ['Module 4 · Volume 1', 'Lead WHS risk management'],
+  '4.2': ['Module 4 · Volume 2', 'Quality standards for building materials'], '4.3': ['Module 4 · Volume 3', 'Legal obligations of a building contractor'],
+  '4.4': ['Module 4 · Volume 4', 'Manage construction work'], '5.1': ['Module 5 · Volume 1', 'Building codes and standards (Type B)'],
+  '5.2': ['Module 5 · Volume 2', 'Services layout and connection methods (medium-rise focus)'], '5.3': ['Module 5 · Volume 3', 'Supervising on-site planning'],
   '6.1': ['Module 6 · Volume 1', 'Selecting and managing subcontractors'], '6.2': ['Module 6 · Volume 2', 'Technical and legal reports'],
   '6.3': ['Module 6 · Volume 3', 'Environmental management plans'],
 };
 const p = (k, section, use) => ({ module: M[k][0], volume: M[k][1], section, use });
 export const NOTES_FOLDER = 'Documents\\Builders Academy Notes';
 export const NOTES = {
-  1: [p('2.1', 'S2 Legislation, compliance and classification', 'Permits and who must comply, before you open the permit pathway.'), p('4.3', 'Legal obligations', 'Contract, insurance and statutory duties.'), p('3.4', 'Tender documentation', 'Quotes and estimates for this step.'), p('4.1', 'Work health and safety', 'Site safety plan and inductions.'), p('6.3', 'Environmental management plans', 'Silt, waste and site controls.')],
+  1: [p('2.1', 'S2 Legislation, compliance and classification', 'Permits and who must comply, before you open the permit pathway.'), p('4.3', 'Legal obligations', 'Contract, insurance and statutory duties.'), p('3.4', 'Tender documentation', 'Quotes and estimates for this step.'), p('4.1', 'Lead WHS risk management', 'Site safety plan and inductions. Victoria runs under the OHS Act 2004 and the OHS Regulations 2017, so read the model WHS laws as a comparison only.'), p('6.3', 'Environmental management plans', 'Silt, waste and site controls.')],
   2: [p('2.3', 'S1 Structural behaviour and S2 Laying of footing systems', 'Footing types, site classes and how a slab carries load.'), p('2.1', 'S3 Acceptable construction methods', 'Deemed-to-satisfy slab and footing rules.'), p('4.2', 'Quality and materials', 'Concrete, steel and membrane checks.'), p('5.3', 'Supervising on-site planning', 'Sequencing the trades around the pour.')],
-  3: [p('2.3', 'S4 Building of wall systems', 'Frame members, bracing and tie-down.'), p('2.1', 'S3 Acceptable construction methods', 'Timber framing to the Standard.'), p('5.1', 'Building codes and standards', 'Reading the NCC and referenced Standards.')],
-  4: [p('2.3', 'S5 Roof systems', 'Trusses, rafters, bracing and loads.'), p('4.1', 'Work health and safety', 'Working at heights and crane lifts.')],
+  3: [p('2.3', 'S4 Building of wall systems', 'Frame members, bracing, tie-down, and how much of the bracing the temporary bracing must provide (check your notes).'), p('2.3', 'S3 Laying of floor systems', 'Platform floor: the first floor is framed and sheeted first, then the upper walls stand on it.'), p('2.1', 'S3 Acceptable construction methods', 'Timber framing to the Standard.'), p('5.1', 'Building codes and standards', 'Reading the NCC and referenced Standards.')],
+  4: [p('2.3', 'S5 Roof systems', 'Trusses, rafters, bracing and loads.'), p('4.1', 'Lead WHS risk management', 'Working at heights and crane lifts.')],
   5: [p('2.3', 'S5 Roof systems', 'Roof structure under the cladding.'), p('5.2', 'Services layout', 'Stormwater and the legal point of discharge.')],
   6: [p('2.3', 'S4 Building of wall systems', 'Wall behaviour, ties and articulation.'), p('2.1', 'S3 Acceptable construction methods', 'Masonry veneer rules.')],
-  7: [p('2.1', 'S3 Acceptable construction methods', 'Openings, glazing and flashing rules.'), p('5.1', 'Building codes and standards', 'Energy and glazing provisions.')],
-  8: [p('5.2', 'Services layout', 'Plumbing and drainage layout.'), p('6.1', 'Selecting and managing subcontractors', 'Licensed plumber and certificates.')],
+  7: [p('2.3', 'S5 Roof systems (Topic 6, windows and doors)', 'Checking window and door installation against the NCC, the Standards and the maker\'s specification.'), p('2.1', 'S3 Acceptable construction methods', 'Openings, glazing and flashing rules.'), p('5.1', 'Building codes and standards', 'Energy and glazing provisions.')],
+  8: [p('5.2', 'Services layout', 'Plumbing and drainage layout. The volume is written for medium-rise work, so check what applies to a house.'), p('2.3', 'S5 Roof systems (Topic 5, allowances for services)', 'Service penetrations through walls, floors and ceilings.'), p('6.1', 'Selecting and managing subcontractors', 'Licensed plumber and certificates.')],
   9: [p('5.2', 'Services layout', 'Electrical and data layout.'), p('6.1', 'Selecting and managing subcontractors', 'Licensed electrician and certificates.')],
   10: [p('2.1', 'S3 Acceptable construction methods', 'Wet area rules in the Housing Provisions.'), p('4.2', 'Quality and materials', 'Membrane systems and testing.')],
   11: [p('2.1', 'S5 Assessment methods and compliance', 'Energy and compliance assessment routes.'), p('5.1', 'Building codes and standards', 'Energy efficiency provisions.')],
   12: [p('2.1', 'S6 Fire resistance and compliance', 'Fire-rated linings and separation.'), p('4.2', 'Quality and materials', 'Sheet products and fixing.')],
-  13: [p('2.1', 'S3 Acceptable construction methods', 'Stairs and balustrades.'), p('4.4', 'Manage construction work', 'Programme and quality at fix-out.')],
+  13: [p('5.1', 'Building codes and standards', 'Handrail height range. Compare it with the Housing Provisions figures in this step, which give the 865 mm minimum.'), p('2.1', 'S3 Acceptable construction methods', 'Stairs and balustrades.'), p('4.4', 'Manage construction work', 'Programme and quality at fix-out.')],
   14: [p('4.2', 'Quality and materials', 'Adhesives, tiles and substrate checks.'), p('4.4', 'Manage construction work', 'Programme and defects at finishing.')],
   15: [p('4.4', 'Manage construction work', 'Defects and practical completion.'), p('6.2', 'Technical and legal reports', 'Records and reports.')],
   16: [p('2.1', 'S4 Performance solution and S6 Fire resistance', 'Bushfire and fire safety compliance paths.'), p('5.1', 'Building codes and standards', 'Referenced Standards.')],

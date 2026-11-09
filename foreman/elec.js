@@ -9,6 +9,8 @@ export const STOCK = [6.5, 3.0];                      // cable, conduit and boxe
 export const HUB = [-1.0, 5.425];                     // data hub on the north face of the wall at z = 5.5
 export const TELCO = [-0.6, 17.0];                    // telecommunications pit and lead-in
 export const ALARMS = [[-1.0, 3.2, 'Hall'], [2.6, 2.75, 'Bedroom'], [0.0, 7.5, 'Living']];
+// First floor: one alarm on the landing beside the stairwell, so each storey has its own and the plan view (ground floor) is unchanged.
+export const ALARMS_UP = [[-2.0, 7.4, 'Landing']];
 export const LIGHTS = [[-3.5, -3.8], [0, -3.8], [3.5, -3.8], [-3.5, -1.5], [0, -1.5], [3.5, -1.5], [-3.6, 3.4], [2.6, 2.75], [-3.0, 8.4], [0.5, 8.4], [3.5, 8.4], [0.5, 10.2]];
 
 // Power points, switches and cable runs on every wall, found from the same wall data the frames are built from.

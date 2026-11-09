@@ -1,12 +1,12 @@
 // Step 13: fix-out. The Step 12 house (lined, set and ready for paint) gets internal doors with architraves and skirting, a kitchen run and a wardrobe. A full-size sample entry stair, landing and balustrade
-// stands in the front yard because the model house is single-storey. Rules marked Verified come from the NCC Part 11.2 and 11.3 pages, the NCCB stair FAQ, the BPC Guide to Standards and Tolerances 2026
+// stands in the front yard because the house entry is at ground level. The house's own stair, 17 risers up to the first floor, is finished here too, with a barrier on its open side and a balustrade round the stairwell. Rules marked Verified come from the NCC Part 11.2 and 11.3 pages, the NCCB stair FAQ, the BPC Guide to Standards and Tolerances 2026
 // and the CAV payments page. The 11.2 and 11.3 pages show no edition, the 11.3 page is cut off at 11.3.5, and AS 4586, AS/NZS 1170.1 and AS/NZS 4386.1 were not opened (paywalled).
 // Door and cabinet sizes, hardware heights and the kitchen layout are typical, not rules. The stair uses 6 risers of 185 mm and goings of 250 mm so that 2R + G is 620 mm.
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import step12 from './step-12.js';
 import { grp } from './step-06.js';
-import { WALLS, wallInfo, worldAt, F } from './frame.js';
+import { WALLS, wallInfo, worldAt, F, FLOOR1, STAIR } from './frame.js';
 import { drawings, howto, trades, materials, quotes, quoteTips, inspections, exam, sources, caution } from './step-13-study.js';
 
 const phases = [
@@ -101,7 +101,7 @@ function build(kit) {
   const mk = (n) => { const g = new THREE.Group(); g.name = n; return g; };
   const s12 = step12.build(kit), m = MAT(kit), { H, SLAB } = F, CEIL = H + SLAB;
   const KEEP = ['ceilSet', 'ceilTape', 'wallsSet', 'wallTape', 'ceilb', 'fixc', 'covers'];
-  const layers = s12.layers.filter((l) => (l.from === undefined && l.until === undefined) || KEEP.includes(l.group.name)).map(({ group }) => ({ group }));
+  const layers = s12.layers.filter((l) => l.group.name !== 'stairT' && ((l.from === undefined && l.until === undefined) || KEEP.includes(l.group.name))).map(({ group }) => ({ group }));
   const sign = (lines, w, h, x, y, z, ry = 0) => { const s = textPlane(lines, w, h); s.position.set(x, y, z); s.rotation.y = ry; return s; };
   const post = (g, x, h, z) => g.add(cyl(0.025, h, m.steel, x, h / 2, z, 8));
   const onStair = (n) => { const g = mk(n); g.position.set(SX, 0, SZ); g.rotation.y = Math.PI / 2; return g; };
@@ -177,6 +177,32 @@ function build(kit) {
   entry.add(box(0.82, 2.04, 0.04, m.prime, SX, WY + 0.02 + 1.02, wz + 0.02), box(0.045, 0.045, 0.01, m.steel, SX + 0.3, WY + 1.0, wz + 0.05), rod([SX + 0.3, WY + 1.0, wz + 0.065], [SX + 0.2, WY + 1.0, wz + 0.065], 0.007, m.steel, 8));
   entry.add(sign(['SAMPLE ENTRY STAIR', '6 risers of 185 mm, goings of 250 mm', 'Illustrative: a house with a raised floor'], 1.7, 0.6, SX, 0.85, SZ + 0.75, 0), cyl(0.025, 0.85, m.steel, SX - 0.9, 0.425, SZ + 0.75, 8), cyl(0.025, 0.85, m.steel, SX + 0.9, 0.425, SZ + 0.75, 8));
 
+  // the house's own stair, finished: the rough stair of the carpentry stages (group 'stairT') is dropped from this step on. 17 risers, oak treads and painted risers, a barrier on the open side, a wall handrail, and a
+  // balustrade round the stairwell on the first floor. Built in the stair's own coordinates (x run, y up from the slab, z across) and turned so the flight climbs towards -x.
+  const SR = (FLOOR1 - SLAB) / STAIR.n, SW = 0.95, SZC = (STAIR.z0 + STAIR.z1) / 2, SGO = STAIR.run / (STAIR.n - 1), SFY = STAIR.n * SR;
+  const ist = stairParts(kit, m, { n: STAIR.n, R: SR, G: SGO, W: SW, land: false });
+  ist.treads.remove(ist.treads.children[ist.treads.children.length - 1]);   // the floor sheet is the top tread
+  const placeStair = (g) => { g.position.set(STAIR.xb, SLAB - 0.002, SZC); g.rotation.y = Math.PI; return g; };
+  const intStair = placeStair(mk('intstair')); intStair.add(ist.stringers, ist.treads, ist.risers, ist.nosing);
+  const intBar = placeStair(mk('intbar')), voidBar = placeStair(mk('voidbar'));
+  {
+    const HS = 0.865, HW = 0.9, RAD = 0.0225, BR = 0.09, PITCH = 0.112, zo = -(SW / 2 - 0.04), zW = SZC - STAIR.z0, zw = zW - 0.0675, xl = ist.xl, yn = ist.yn, yr = (x) => yn(x) + HS;
+    intBar.add(box(0.09, yr(0.06) + 0.06, 0.09, m.timber, 0.06, (yr(0.06) + 0.06) / 2, zo));
+    intBar.add(rod([0.06, yr(0.06) - RAD, zo], [xl, yr(xl) - RAD, zo], RAD, m.oak, 12), rod([0.06, yn(0.06) + BR, zo], [xl, yn(xl) + BR, zo], 0.02, m.timber, 8));
+    for (let x = 0.06 + PITCH; x < xl - 0.03; x += PITCH) intBar.add(rod([x, yn(x) + BR, zo], [x, yr(x) - RAD, zo], 0.006, m.steel, 6));
+    const yw = (x) => yn(x) + HW;                                           // handrail fixed to the wall side on brackets
+    intBar.add(rod([0.1, yw(0.1) - RAD, zw], [xl + 0.1, yw(xl + 0.1) - RAD, zw], RAD, m.oak, 12));
+    for (const x of [0.5, 1.7, 2.9, 3.9]) intBar.add(box(0.03, 0.03, 0.035, m.steel, x, yw(x) - RAD - 0.03, zW - 0.0175));
+    // balustrade at the floor edge of the stairwell, 1 m above the first floor: along the open (front) edge and across the east end, standing on the floor sheet
+    const zE = -(SW / 2 + 0.0975), xE = STAIR.xb - STAIR.x1 - 0.045, xT = xl + 0.04, HL = 1.0;
+    const post = (x, z) => voidBar.add(box(0.09, HL, 0.09, m.timber, x, SFY + HL / 2, z));
+    post(xE, zE); post(xT, zE); post((xE + xT) / 2, zE); post(xE, zW - 0.05);
+    voidBar.add(rod([xE, SFY + HL - RAD, zE], [xT, SFY + HL - RAD, zE], RAD, m.oak, 12), rod([xE, SFY + HL - RAD, zE], [xE, SFY + HL - RAD, zW], RAD, m.oak, 12));
+    voidBar.add(rod([xE, SFY + BR, zE], [xT, SFY + BR, zE], 0.02, m.timber, 8), rod([xE, SFY + BR, zE], [xE, SFY + BR, zW], 0.02, m.timber, 8));
+    for (let x = xE + PITCH; x < xT - 0.03; x += PITCH) voidBar.add(rod([x, SFY + BR, zE], [x, SFY + HL - RAD, zE], 0.006, m.steel, 6));
+    for (let z = zE + PITCH; z < zW - 0.03; z += PITCH) voidBar.add(rod([xE, SFY + BR, z], [xE, SFY + HL - RAD, z], 0.006, m.steel, 6));
+  }
+
   // defects to find at inspection: a drawer front 14 mm out of line, and a missing baluster
   const defk = mk('defk');
   defk.add(box(0.606, 0.714, 0.03, m.redGhost, 3.7, 0.5, zf + 0.012), sign(['FRONT OUT OF LINE', '14 mm low: uneven gaps'], 1.1, 0.4, 2.95, 0.5, 6.9, 0), cyl(0.025, 0.5, m.steel, 2.45, 0.25, 6.9, 8), cyl(0.025, 0.5, m.steel, 3.45, 0.25, 6.9, 8));
@@ -187,9 +213,9 @@ function build(kit) {
 
   const baseCount = layers.length;   // the Step 12 layers come first, then this step's own, so a later step can keep the house and drop the yard
   layers.push({ group: stock, until: 4 }, { group: setout, until: 2 }, { group: rodG, until: 2 }, { group: doors, from: 1 }, { group: skirt, from: 1 }, { group: stairG, from: 2 }, { group: lmark, from: 2, until: 5 }, { group: entry },
-    { group: barG, from: 3 }, { group: skA, from: 3, until: 5 }, { group: skB, from: 6 }, { group: kit1, from: 4 }, { group: ksign, from: 4, until: 5 }, { group: kOkU2, from: 4, until: 5 }, { group: kOkU2b, from: 6 }, { group: ward, from: 4 },
+    { group: barG, from: 3 }, { group: intStair, from: 2 }, { group: intBar, from: 3 }, { group: voidBar, from: 3 }, { group: skA, from: 3, until: 5 }, { group: skB, from: 6 }, { group: kit1, from: 4 }, { group: ksign, from: 4, until: 5 }, { group: kOkU2, from: 4, until: 5 }, { group: kOkU2b, from: 6 }, { group: ward, from: 4 },
     { group: kBad, from: 5, until: 6 }, { group: defk, from: 5, until: 6 }, { group: defB, from: 5, until: 6 }, { group: stage, from: 6 });
-  return { layers, baseCount, colliders: [...s12.colliders, { x0: SX - 1.35, x1: SX + 1.35, z0: SZ - st.xe - 0.2, z1: SZ + 0.1 }], tickers: s12.tickers, spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: s12.map, orbit: { pos: [9.5, 9, 18], target: [0, 1.0, 6] }, hotspots: HOTSPOTS };
+  return { layers, baseCount, colliders: [...s12.colliders, { x0: STAIR.x0, x1: STAIR.xb + 0.1, z0: STAIR.z0, z1: STAIR.z1 }, { x0: SX - 1.35, x1: SX + 1.35, z0: SZ - st.xe - 0.2, z1: SZ + 0.1 }], tickers: s12.tickers, spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: s12.map, orbit: { pos: [9.5, 9, 18], target: [0, 1.0, 6] }, hotspots: HOTSPOTS };
 }
 
 /* ---------- hotspots ---------- */
@@ -200,6 +226,13 @@ const HOTSPOTS = [
   { id: 'stair', title: 'Stair geometry: rise, going and set-out', pos: [0.3, 0.65, 14.7], stand: [3.5, 14.7], from: 0, detail: 'stairgeo', drawing: 'stair',
     summary: 'A stair is set out from the total rise. Divide it into equal risers, pick a going, and check the result against the NCC limits before any timber is cut. The sample stair has 6 risers of 185 mm and goings of 250 mm.',
     learn: [['A flight has at least 2 and not more than 18 risers.', 'V', 'nccHp112'], ['For stairs other than spiral stairs: riser 115 to 190 mm, going 240 to 355 mm, and twice the riser plus the going between 550 and 700 mm. The sample stair gives 2 x 185 + 250 = 620 mm.', 'V', 'nccHp112'], ['Dimensions are treated as constant when adjacent risers or goings differ by no more than 5 mm and the largest and smallest in a flight differ by no more than 10 mm.', 'V', 'nccHp112'], ['No opening between treads may let a 125 mm sphere pass. An attic or storeroom stair serving non-habitable rooms used infrequently has its own table (riser 130 to 225 mm, going 215 to 355 mm) and need not meet the 125 mm limit.', 'V', 'nccHp112'], ['Up to 3 consecutive winders replace a quarter landing and up to 6 replace a half landing. A tapered tread\'s going is measured at the middle of the width for treads 1 m wide or less, and 400 mm in from each side for wider treads.', 'V', 'nccHp112'], ['The NCCB FAQ says there is no minimum stair width for a Class 1 house. The FAQ is undated and shows no state variation.', 'V', 'nccbStairFaq'], ['Headroom is not on the 11.2 page, which refers to Part 10.3. That page was not read, so no headroom figure is given here.', 'C', 'nccHp112'], ['Set out with a story rod marked at each riser: total rise divided by the number of risers, measured from the finished floor levels, so floor coverings fitted later do not upset the first and last riser (Typical).', 'T'], ['The archived 2015 VBA guide says riser and going must stay consistent after floor finishes, with up to 5 mm deviation accepted if consistent. It was archived on 11 February 2022, so confirm against the current guide.', 'C', 'vbaStdTol2015']] },
+  { id: 'intstair', title: 'The house stair: 17 risers, barrier and stairwell', pos: [-1.8, 2.5, 6.05], stand: [-1.8, 8.6], from: 2,
+    summary: 'The stair to the first floor is finished here: oak treads and painted risers on two strings, a wall handrail, a barrier on the open side and a balustrade round the stairwell. It uses the same 17 risers the carpenter framed for the rough stair.',
+    learn: [['The first floor is 3.0 m above the slab. Divided into 17 equal risers that gives 176.5 mm each. With a 250 mm going, 2R + G is 603 mm, inside the 550 to 700 mm range, and the riser and going are inside the 115 to 190 mm and 240 to 355 mm limits.', 'V', 'nccHp112'], ['A flight has at least 2 and not more than 18 risers, so 17 fit in one flight. A landing partway up is a design choice, not a rule that is triggered here.', 'V', 'nccHp112'],
+      ['The stairwell is cut back at the east end so the floor above starts where the nosing line is about 0.66 m up. That leaves about 2.2 m to the underside of the floor frame. The Part 11.2 page refers to Part 10.3 for the headroom figure and that page was not read, so confirm the minimum before relying on this number.', 'C', 'nccHp112'],
+      ['Two barriers are needed. The flight needs one on its open side, at least 865 mm above the nosing line. The edge of the first floor needs a balustrade at least 1 m above the floor wherever a person could fall 1 m or more into the stairwell. The model runs the balustrade along the whole open edge.', 'V', 'nccHp113'],
+      ['The wall handrail is set at 900 mm above the nosing line in the model. Some course notes give a handrail range with an upper limit as well as the 865 mm minimum. Compare the notes with the NCC figures before the exam.', 'C', 'nccHp113'],
+      ['The rough stair from the carpentry stages is taken out and the finished stair is fixed once the walls are lined, so the oak and the painted risers are not damaged by trades carrying materials up.', 'T']] },
   { id: 'landing', title: 'Landing, door threshold and slip resistance', pos: [0.3, 1.3, 13.65], stand: [3.3, 13.7], from: 2, drawing: 'stair',
     summary: 'The landing at the top of the sample stair is where the door opens. It has a minimum length, a flat surface, and the tread and nosing surfaces are tested for slip resistance.',
     learn: [['A landing is not less than 750 mm long (600 mm where the stair serves non-habitable rooms only) and no steeper than 1:50.', 'V', 'nccHp112'], ['A landing is needed where a door threshold opens onto a stair or ramp with a change in level of more than 3 risers or 570 mm, and it spans the full width of the doorway. Where a threshold is more than 230 mm above the adjoining surface, the steps must meet 11.2.2. This is a summary of the page, so read the clause.', 'V', 'nccHp112'], ['Slip resistance is tested to AS 4586. A tread surface is P3 or R10 dry and P4 or R11 wet. A nosing or landing edge strip is P3 dry and P4 wet. AS 4586 itself was not opened.', 'V', 'nccHp112'], ['A landing edge that leads to a flight below needs a compliant surface for at least 190 mm from the nosing, or a compliant nosing strip. The orange strips in the model are nosing strips.', 'V', 'nccHp112'], ['A ramp is not steeper than 1:8 and has landings at the top and bottom and at intervals of no more than 15 m. A driveway is not a ramp for this clause. A ramp provided to meet the Livable Housing Design Standard follows that Standard instead.', 'V', 'nccHp112'], ['The NCCB FAQ says entry stairs in uncovered areas are likely treated as wet surfaces, and the building surveyor decides. Stairs that do not serve a building, such as landscaping steps, need not comply.', 'C', 'nccbStairFaq'], ['The VBA says new livable housing requirements will apply to new houses and apartments, but the pages read give no date or level for Victoria. Confirm the adoption date and level before design.', 'C', 'vbaNccGuide']] },

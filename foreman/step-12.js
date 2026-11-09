@@ -6,7 +6,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import step11 from './step-11.js';
 import { grp } from './step-06.js';
-import { WALLS, wallInfo, wallMembers, worldAt, F } from './frame.js';
+import { WALLS, wallInfo, wallMembers, worldAt, F, STAIR, minusVoid } from './frame.js';
 import { drawings, howto, trades, materials, quotes, quoteTips, inspections, exam, sources, caution } from './step-12-study.js';
 
 const phases = [
@@ -120,10 +120,10 @@ function build(kit) {
   for (let k = 0, x = -X1; x < X1 - 0.01; k++, x += 1.2) {
     const xr = Math.min(x + 1.2, X1), zb = [Z0]; for (let z = Z0 + (k % 2 ? 1.8 : 3.6); z < Z1 - 0.1; z += 3.6) zb.push(z); zb.push(Z1);
     for (let i = 0; i < zb.length - 1; i++) {
-      const g = new THREE.BoxGeometry(xr - x - 0.006, LT, zb[i + 1] - zb[i] - 0.006); g.translate((x + xr) / 2, CEIL - LT / 2, (zb[i] + zb[i + 1]) / 2); cG.push(g);
-      if (i > 0) { const t = new THREE.BoxGeometry(xr - x, 0.002, SEAM); t.translate((x + xr) / 2, CEIL - LT - 0.001, zb[i]); cT.push(t); butts.push([(x + xr) / 2, zb[i]]); }
+      for (const [ax, bx, az, bz] of minusVoid(x + 0.003, xr - 0.003, zb[i] + 0.003, zb[i + 1] - 0.003)) { const g = new THREE.BoxGeometry(bx - ax, LT, bz - az); g.translate((ax + bx) / 2, CEIL - LT / 2, (az + bz) / 2); cG.push(g); }   // sheets stop at the stair void
+      if (i > 0 && !(zb[i] > STAIR.z0 && zb[i] < STAIR.z1)) { const t = new THREE.BoxGeometry(xr - x, 0.002, SEAM); t.translate((x + xr) / 2, CEIL - LT - 0.001, zb[i]); cT.push(t); butts.push([(x + xr) / 2, zb[i]]); }
     }
-    if (x > -X1 + 0.01) { const t = new THREE.BoxGeometry(SEAM, 0.002, Z1 - Z0); t.translate(x, CEIL - LT - 0.001, (Z0 + Z1) / 2); cT.push(t); }
+    if (x > -X1 + 0.01) for (const [az, bz] of (x > STAIR.x0 && x < STAIR.x1 ? [[Z0, STAIR.z0], [STAIR.z1, Z1]] : [[Z0, Z1]])) { const t = new THREE.BoxGeometry(SEAM, 0.002, bz - az); t.translate(x, CEIL - LT - 0.001, (az + bz) / 2); cT.push(t); }
   }
   const ceilPre = mk('ceilPre'), ceilSet = mk('ceilSet'), ceilTape = mk('ceilTape');
   ceilPre.add(mesh(cG, m.ceilb)); ceilSet.add(mesh(cG, m.setC)); ceilTape.add(mesh(cT, m.tape));

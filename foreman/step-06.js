@@ -7,7 +7,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import step5 from './step-05.js';
 import { HOUSE, BASE_COLLIDERS, MAP } from './site.js';
 import { svg, T, L, R, P, dim, call, arrow } from './dwg.js';
-import { F, WALLS } from './frame.js';
+import { F, WALLS, WALLS_UP, FLOOR1, PLATE_UP } from './frame.js';
 
 const { x0: X0, x1: X1, z0: Z0, z1: Z1 } = HOUSE;
 const BT = 0.11, PITCH = 0.086, Y0 = 0.153, NC = 31, KH = 25, YK = (k) => Y0 + k * PITCH; // brick leaf, course pitch (76 + 10 mm), first course height, courses, head course
@@ -17,7 +17,7 @@ const phases = [
   { title: 'Wall wrap and brick delivery', text: 'The frame is wrapped, the cavity space is kept clear and the bricks, sand and cement are delivered and stacked where the bricklayer can reach them.' },
   { title: 'Damp-proof course and first course', text: 'A continuous damp-proof course goes on the slab edge, then the first course of bricks with weepholes left open in the joints just above it.' },
   { title: 'Brickwork up to the window sills', text: 'The bricklayer builds the veneer up in a running bond, fixing a tie into every other course and keeping the cavity clear of mortar.' },
-  { title: 'Lintels, flashings and the walls to the eaves', text: 'Steel lintels carry the bricks over each opening, flashings turn water out of the cavity and the brickwork runs up to the eave.' },
+  { title: 'Lintels, flashings and the upper storey', text: 'Steel lintels carry the bricks over each opening, flashings turn water out of the cavity, the brickwork runs up to the first floor and the upper storey is clad in lightweight sheet.' },
   { title: 'Articulation joints and weepholes', text: 'Vertical movement joints are cut or left in the brickwork and sealed, and the weepholes above the flashings are checked open.' },
   { title: 'Brickwork and flashing check', text: 'Ties, damp-proof course, weepholes, lintels and flashings are checked and photographed before the windows and the lining cover them.' },
 ];
@@ -27,6 +27,13 @@ const EXT = WALLS.filter((w) => w.ext).map((w) => {
   const ew = w.id === 'front' || w.id === 'back', out = (w.id === 'front' || w.id === 'east') ? 1 : -1;
   const fixed = ew ? (out > 0 ? Z1 : Z0) : (out > 0 ? X1 : X0), u0 = ew ? X0 : Z0 + BT, u1 = ew ? X1 : Z1 - BT;
   const opens = w.open.map((o) => ({ a: o.at - o.w / 2, b: o.at + o.w / 2, w: o.w, at: o.at, sill: o.sill, kS: o.sill === 0 ? 0 : Math.round((F.SLAB + o.sill - Y0) / PITCH) })).sort((p, q) => p.a - q.a);
+  return { id: w.id, ew, out, fixed, u0, u1, opens };
+});
+// upper storey: same wall lines, own openings, measured up from the first-floor sheet
+const EXT2 = WALLS_UP.filter((w) => w.ext).map((w) => {
+  const ew = w.id === 'front2' || w.id === 'back2', out = (w.id === 'front2' || w.id === 'east2') ? 1 : -1;
+  const fixed = ew ? (out > 0 ? Z1 : Z0) : (out > 0 ? X1 : X0), u0 = ew ? X0 : Z0 + BT, u1 = ew ? X1 : Z1 - BT;
+  const opens = w.open.map((o) => ({ a: o.at - o.w / 2, b: o.at + o.w / 2, w: o.w, at: o.at, sill: o.sill })).sort((p, q) => p.a - q.a);
   return { id: w.id, ew, out, fixed, u0, u1, opens };
 });
 // box in world metres for wall W: u along the wall, d inward from the outer brick face
@@ -74,6 +81,25 @@ function build(kit, opts = {}) {
     panel(cur, W.u1, 0.15, 2.85);
   }
   wrap.add(mergeCells(wl, foil, false));
+  // upper storey: wall wrap over the floor zone and the upper walls, then lightweight cladding on the cavity (brick below, cladding above)
+  const wl2 = [];
+  for (const W of EXT2) {
+    let cur = W.u0;
+    const panel = (a, b, y0, y1) => { if (b - a > 0.01 && y1 - y0 > 0.01) wl2.push(cell(W, a, b, y0, y1, 0.136, 0.138)); };
+    for (const o of W.opens) { panel(cur, o.a, 2.85, PLATE_UP - 0.04); panel(o.a, o.b, 2.85, FLOOR1 + o.sill); panel(o.a, o.b, FLOOR1 + F.HEAD, PLATE_UP - 0.04); cur = o.b; }
+    panel(cur, W.u1, 2.85, PLATE_UP - 0.04);
+  }
+  wrap.add(mergeCells(wl2, foil, false));
+  const clad = mk('clad'), cl = [];
+  for (let y = 2.82; y < PLATE_UP - 0.06; y += 0.2) {
+    const y1 = Math.min(y + 0.188, PLATE_UP - 0.04);
+    for (const W of EXT2) {
+      let cur = W.u0;
+      for (const o of W.opens) if (y1 > FLOOR1 + o.sill - 0.01 && y < FLOOR1 + F.HEAD + 0.02) { if (o.a > cur) cl.push(cell(W, cur, o.a, y, y1, 0.07, 0.09)); cur = Math.max(cur, o.b); }
+      if (W.u1 > cur) cl.push(cell(W, cur, W.u1, y, y1, 0.07, 0.09));
+    }
+  }
+  clad.add(mergeCells(cl, mat(0xd8d2c4, { roughness: 0.85 }), false));
 
   // brick courses, one merged mesh per course so the bricklayer can build them up
   const bricks = mk('bricks'), courses = [];
@@ -125,12 +151,12 @@ function build(kit, opts = {}) {
   }];
 
   layers.push({ group: wrap }, { group: stock, until: 4 }, { group: dpc, from: 1 }, { group: bricks, from: 1 }, { group: weepB, from: 1 }, { group: sills, from: 2 },
-    { group: lintels, from: 3 }, { group: weepH, from: 3 }, { group: joints, from: 4 }, { group: check, from: 5 }, { group: m2, from: 2 }, { group: m3, from: 3 });
+    { group: lintels, from: 3 }, { group: clad, from: 3 }, { group: weepH, from: 3 }, { group: joints, from: 4 }, { group: check, from: 5 }, { group: m2, from: 2 }, { group: m3, from: 3 });
 
   return {
     layers, colliders: [...BASE_COLLIDERS, { x0: X0, x1: X1, z0: Z0, z1: Z1 }], tickers,
     spawn: { pos: [4, 18.5], yaw: 0, pitch: 0.2 }, map: MAP,
-    orbit: { pos: [17, 11, 26], target: [0, 1.8, 4] },
+    orbit: { pos: [19, 14, 28], target: [0, 3.0, 4] },
     hotspots: [
       { id: 'wrap', title: 'Wall wrap on the frame', pos: [-2.2, 1.7, Z1 - 0.14], stand: [-2.2, 15.5], from: 0, until: 3, detail: 'veneer', drawing: 'wallsec',
         summary: 'A sheet of wall wrap (sarking) goes over the frame before any brick, so water that gets behind the brick runs down it and out through the weepholes instead of reaching the timber.',
@@ -150,6 +176,9 @@ function build(kit, opts = {}) {
       { id: 'sill', title: 'Sill brick and sill flashing', pos: [3.9, 1.04, Z1 + 0.03], stand: [3.9, 17.5], from: 2, detail: 'sill', drawing: 'headsill',
         summary: 'Under each window the veneer stops at a sloping sill brick, and a flashing tray below it carries any water that runs down the window out to the weepholes.',
         learn: [['Sill and head flashings extend at least 150 mm past the reveals each side, and sit no more than one course below the sill brick course.', 'V', 'nccMas57'], ['The window goes in at Step 7. Sill flashing must sit smooth and not sag into the cavity, and have weepholes at no more than 1 200 mm centres (manufacturer guide, edition not stated).', 'C', 'bradFlash'], ['A sloping sill brick, with a drip or an overhang, throws water clear of the wall below.', 'T']] },
+      { id: 'clad', title: 'Upper-storey cladding over the brick', pos: [-1.2, 4.2, Z1 - 0.05], stand: [-1.2, 15.8], from: 3,
+        summary: 'The ground floor is brick veneer and the upper storey is clad in lightweight sheet. The cladding sits on the same cavity, over wall wrap, and the change between brick and cladding needs a flashing so water cannot get behind either.',
+        learn: [['A common two-storey form is brick veneer below and lightweight cladding above. The cladding is fixed over the wall wrap, usually on cavity battens, to the maker\'s installation instructions.', 'T'], ['Where the cladding meets the top of the brickwork, a flashing turns water out over the brick. Check the flashing and the weep detail in the cladding maker\'s manual.', 'C'], ['The floor zone is covered too: the cladding runs down past the floor joists to the top of the brick, so the joist ends are never left exposed.', 'T'], ['Fibre-cement and timber cladding have their own clearances above ground, roofs and decks, and in a bushfire area their own rules. Check the BAL in the permit and the maker\'s manual.', 'C'], ['Cladding and brick move differently. Keep the joint between them sealed and flashed, and do not let the cladding sit on the brick ledge.', 'T']] },
       { id: 'lintel', title: 'Steel lintel and head flashing', pos: [-3.4, 2.36, Z1 + 0.03], stand: [-3.4, 16.2], from: 3, detail: 'lintel', drawing: 'headsill',
         summary: 'A steel angle carries the brickwork over every window and door, and a flashing laid over it turns water that runs down the cavity out through the weepholes above the lintel.',
         learn: [['Openings in masonry veneer need steel lintels, except openings up to and including 500 mm wide that are adequately supported.', 'V', 'nccMas52'], ['Lintel steel is at least 300 MPa (AS 4100) with the long leg of an angle vertical. Masonry may not overhang the horizontal leg by more than 25 mm. There must be at least three courses over the opening and no more than 3 m of masonry above it.', 'V', 'nccMas56'], ['Bearing at each end is at least 100 mm for clear spans up to 1 m and at least 150 mm over 1 m. Lintels are hot-dip galvanised (300 or 600 g/m² by durability class) or stainless 316L.', 'V', 'nccMas56'], ['Head flashing extends at least 150 mm past the opening each side, sits no more than 300 mm above the opening and turns up at least 150 mm in the cavity. No head flashing is needed where an eave wider than three times the height of veneer above the opening protects it.', 'V', 'nccMas57'], ['A common defect (NSW note): the lintel bears 100 mm but the flashing must run at least 150 mm past the opening, so a flashing cut to the lintel ends short and drains water back into the cavity. Turn the end out or lengthen it.', 'V', 'nswDpc']] },
