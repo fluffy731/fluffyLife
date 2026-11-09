@@ -5,7 +5,7 @@ import { svg, T, L, R, C as Ci, P, dim, arrow, call } from './dwg.js';
 const phases = [
   { title: 'The block', text: 'A vacant 15 m by 35 m block with a house on each side. Survey pegs mark the title boundaries.' },
   { title: 'Survey and services', text: 'The footprint is set out and underground services are located before the design is locked in.' },
-  { title: 'Fence and permit sign', text: 'With the permit issued and the contract and DBI in place, the site is fenced and signed.' },
+  { title: 'Fence and permit sign', text: 'With the permit issued and the contract and insurance cover in place, the site is fenced and signed.' },
   { title: 'Erosion control and entry', text: 'Sediment fence and a stabilised entry go in before any digging starts.' },
   { title: 'Amenities and power', text: 'Toilet, temporary power, skip and storage complete the site establishment.' },
 ];
@@ -63,8 +63,8 @@ function build(kit) {
         summary: 'The blue ghost slab is the approved footprint. The planning permit and the endorsed plans fix the setback to each boundary.',
         learn: [['Boundary setbacks come from the endorsed plans and the siting rules in the Building Regulations 2018. The building surveyor checks them at permit stage.', 'C'], ['Check the footprint against easements, tree protection zones and the sewer location before ordering anything.', 'T']], drawing: 'site' },
       { id: 'sign', title: 'Permit sign and site records', pos: [-0.4, 1.95, 16.9], stand: [-0.4, 22], from: 2,
-        summary: 'Display the permit and builder details as the permit conditions and council rules require. Keep the permit, plans, engineer\'s documents and DBI certificate on site.',
-        learn: [['Builders must take out DBI before asking for or receiving any payment, and give the owner a copy of the certificate within seven days of receiving it.', 'V', 'bpcDBI'], ['The building surveyor must not issue the permit unless the builder named matches the contract and the DBI certificate (Building Act 1993 s 24A).', 'V', 'bpcDBI'], ['Building work must not start until the permit is in force (Building Act 1993 s 16).', 'C'], ['Sign wording and size: confirm what your permit conditions and council local law require.', 'C']], drawing: 'pathway' },
+        summary: 'Display the permit and builder details as the permit conditions and council rules require. Keep the permit, plans, engineer\'s documents and the Notice of Cover (the DBI certificate for older contracts) on site.',
+        learn: [['Home Warranty replaces DBI for eligible work under contracts signed on or after 1 July 2026: work over $20,000, up to three storeys. The builder pays the premium and the BPC gives the owner a Notice of Cover.', 'V', 'bpcHW'], ['Before 1 July 2026 the builder had to take out DBI before any payment and give the owner a copy of the certificate within seven days. Existing DBI policies stay on their original terms.', 'C', 'bpcDBI'], ['The surveyor must not issue the permit unless the builder named matches the contract and the insurance evidence (Building Act 1993 s 24A). What counts as the evidence under Home Warranty is Confirm.', 'C', 'bpcDBI'], ['Building work must not start until the permit is in force (Building Act 1993 s 16).', 'C'], ['Sign wording and size: confirm what your permit conditions and council local law require.', 'C']], drawing: 'pathway' },
       { id: 'fence', title: 'Temporary site fence', pos: [-4.5, 1.4, 17.15], stand: [-4.5, 22], from: 2, detail: 'fence',
         summary: 'Keeps the public out and neighbours\' children safe. Panels are clamped, the stands are weighted and the gate locks.',
         learn: [['Typical panel is 2.4 m wide by 1.8 m high with weighted stands and clamps. Hire is usually cheaper than buying for one build.', 'T'], ['Check council local laws for permits if the fence or hoarding extends past the boundary or occupies the footpath.', 'C'], ['Lock the gate when the site is unattended and check the fence after storms.', 'T']] },
@@ -232,8 +232,8 @@ function pathway() {
   const steps = [
     ['1', 'Check planning', 'Zone and overlays. Planning permit needed?', 'T'],
     ['2', 'Design and reports', 'Plans, engineer, soil report, energy rating', 'T'],
-    ['3', 'Contract and DBI', 'Major contract over $10,000. DBI over $16,000', 'V'],
-    ['4', 'Building permit application', 'Surveyor checks builder registration and DBI', 'V'],
+    ['3', 'Contract and Home Warranty', 'Major contract over $10,000. Warranty over $20,000', 'V'],
+    ['4', 'Building permit application', 'Surveyor checks registration and insurance evidence', 'C'],
     ['5', 'Permit issued', 'Form 2 lists the mandatory notification stages', 'V'],
     ['6', 'Site establishment', 'Fence, sign, erosion control, safety plan', 'T'],
     ['7', 'Build and notify', 'Stop at each nominated stage until inspected', 'V'],
@@ -255,7 +255,7 @@ const drawings = [
   { id: 'site', title: 'Site plan', scale: 'Illustrative, about 1:60 on the page', svg: sitePlan(),
     notes: ['Setbacks of 6 m front, 2 m sides and 12 m rear are examples. The planning permit and endorsed plans set the real ones.', 'Services run where the authority plans show them. The colours here are for learning.', 'The temporary fence has a gap for the stabilised entry. Sediment fence runs along the low (street) side.'] },
   { id: 'pathway', title: 'Permit pathway', scale: 'Flow, not to scale', svg: pathway(),
-    notes: ['Order matters in the exam: planning, then building permit, with the contract and DBI in place before the permit is issued.', 'The permit lists the mandatory notification stages. Do not go past a stage until it has been inspected.', 'Confirm time limits for starting and finishing under the Building Act 1993 with your surveyor.'] },
+    notes: ['Order matters in the exam: planning, then building permit, with the contract and the insurance cover in place before the permit is issued.', 'The permit lists the mandatory notification stages. Do not go past a stage until it has been inspected.', 'Confirm time limits for starting and finishing under the Building Act 1993 with your surveyor.'] },
 ];
 
 const howto = [
@@ -265,8 +265,8 @@ const howto = [
   ['Get the soil report', 'Boreholes and a report classify the site under AS 2870 (A, S, M, H1, H2, E, P). The footing design follows from this class.', 'Geotechnical engineer', 'T'],
   ['Estimate and quote', 'Work out quantities and take trade and supplier quotes. Compare inclusions, exclusions, validity period and GST. Add allowances, overheads and margin.', 'Builder', 'T'],
   ['Sign a compliant major domestic building contract', 'A written contract is needed for domestic building work over $10,000, and only a registered builder may enter it. The deposit is capped at 10% under $20,000 and 5% at $20,000 or more.', 'Builder and owner', 'V', 'cavPay'],
-  ['Take out domestic building insurance', 'Required for work over $16,000. The builder must take it out before asking for or receiving any payment, including the deposit, and give the owner a copy of the certificate within seven days of receiving it.', 'Builder', 'V', 'bpcDBI'],
-  ['Appoint the building surveyor and apply for the permit', 'The relevant building surveyor (RBS) checks the documents and, before issuing the permit, that the named builder matches the contract and the DBI certificate (Building Act 1993 s 24A).', 'Owner or builder and RBS', 'V', 'bpcDBI'],
+  ['Arrange Home Warranty cover', 'Under contracts signed on or after 1 July 2026, eligible work over $20,000 and up to three storeys needs Home Warranty cover. The builder pays the premium before the earlier of 10 business days after signing or the work starting, and the BPC gives the owner a Notice of Cover once it accepts the premium. For contracts before that date, DBI applied over $16,000.', 'Builder', 'V', 'bpcHW'],
+  ['Appoint the building surveyor and apply for the permit', 'The relevant building surveyor (RBS) checks the documents and, before issuing the permit, that the named builder matches the contract and the insurance evidence (Building Act 1993 s 24A). What the surveyor now asks for under Home Warranty is Confirm.', 'Owner or builder and RBS', 'C', 'bpcDBI'],
   ['Receive the permit and read the stage list', 'The RBS lists the mandatory notification stages on the permit (Form 2). Builders must notify the RBS at each stage and not go beyond it until it has been inspected.', 'Builder', 'V', 'vbaMand'],
   ['Write the safety plan and run inductions', 'Site-specific safety plan, safe work method statements for high-risk construction work, and inductions for every worker. Keep records.', 'Builder', 'C'],
   ['Establish the site', 'Fence, permit sign, sediment fence and stabilised entry first. Then toilet, temporary power, skip and storage. Photograph the neighbours\' boundaries and street assets before starting.', 'Builder and hire companies', 'T'],
@@ -279,7 +279,7 @@ const trades = [
   { t: 'Structural engineer', role: 'Footing, slab, frame, lintel and steel design with inspection certificates.', when: 'Before permit application', reg: 'Registered engineer (confirm the current registration scheme)', ask: ['Scope: footings, slab, frame, steel, roof tie-down', 'Site visits and inspection certificates included', 'Revisions if the design changes'] },
   { t: 'Energy rater', role: 'NatHERS or other compliance report for the building permit.', when: 'Alongside design', reg: 'Accredited assessor', ask: ['Which route the report uses', 'Revisions after window or layout changes', 'Final compliance sign-off after build'] },
   { t: 'Building surveyor (RBS)', role: 'Assesses documents, issues the permit, nominates the mandatory stages, inspects and issues the occupancy permit.', when: 'Appointed before application', reg: 'Registered building surveyor (BPC)', ask: ['Permit fee and who lodges levies', 'Inspection fee per visit and the stage list', 'Typical turnaround for permit and inspections'] },
-  { t: 'Insurance provider', role: 'Domestic building insurance and builder\'s contract works and liability cover.', when: 'Before the permit and deposit', reg: 'Approved insurer', ask: ['Premium for this contract price', 'Policy conditions and exclusions', 'How the certificate is issued'] },
+  { t: 'Insurer and the BPC', role: 'The Home Warranty premium goes to the BPC. Contract works and public liability cover come from an insurer.', when: 'Before the work starts', reg: 'BPC; approved insurer', ask: ['Premium for this contract price', 'Policy conditions and exclusions', 'How the Notice of Cover or certificate is issued'] },
   { t: 'Site establishment hire', role: 'Temporary fence, toilet, skip bins and site sheds.', when: 'Before work starts', reg: 'Hire companies', ask: ['Hire period and weekly rate', 'Delivery, removal and damage charges', 'Gates, wind rating and shade cloth'] },
   { t: 'Electrician (temporary power)', role: 'Temporary supply, board with RCDs, test and tag.', when: 'Site establishment', reg: 'Licensed electrical contractor (Energy Safe Victoria)', ask: ['Supply authority application included', 'RCD protection and test and tag', 'Removal at the end'] },
 ];
@@ -303,7 +303,7 @@ const quotes = [
   { who: 'Geotechnical engineer', n: '2', what: ['Number and depth of bores', 'Classification report to AS 2870', 'Footing recommendations'] },
   { who: 'Building surveyor (RBS)', n: '3', what: ['Permit fee and levies', 'Fee per inspection and the number of stages', 'Occupancy permit and final inspection'] },
   { who: 'Structural engineer and energy rater', n: '2 each', what: ['Scope and drawings issued', 'Site visits and inspection certificates', 'Revisions if the design changes'] },
-  { who: 'Insurance provider (DBI)', n: '2 or more', what: ['Premium for the contract price', 'Exclusions and conditions', 'When the certificate is issued'] },
+  { who: 'Insurer (contract works and liability)', n: '2 or more', what: ['Premium for the contract price', 'Exclusions and conditions', 'When the certificate is issued'] },
   { who: 'Site establishment hire', n: '3', what: ['Fence, toilet and skip, with delivery and collection', 'Hire period and extensions', 'Damage and cleaning charges'] },
 ];
 const quoteTips = [
@@ -316,7 +316,7 @@ const quoteTips = [
 
 const inspections = [
   ['Building permit in force before any work', 'Building surveyor', 'Before site establishment', 'Permit issued with the stage list on Form 2.', 'C'],
-  ['Builder registration and DBI evidence', 'Building surveyor', 'Before the permit is issued', 'Builder named on the permit matches the contract and DBI certificate.', 'V', 'bpcDBI'],
+  ['Builder registration and insurance evidence', 'Building surveyor', 'Before the permit is issued', 'Builder named on the permit matches the contract and the insurance evidence.', 'C', 'bpcDBI'],
   ['Mandatory notification stages understood', 'Builder', 'When the permit is received', 'Every stage on Form 2 is in the programme. You must not go past a stage until it is inspected.', 'V', 'vbaMand'],
   ['Council asset protection or road permits', 'Council', 'Before site establishment', 'Permits held for crossover protection, skips on the road or footpath occupation, if required.', 'C'],
   ['Safety plan and inductions', 'Builder', 'Before the first worker', 'Safety plan written, safe work method statements ready, inductions recorded.', 'C'],
@@ -326,13 +326,13 @@ const inspections = [
 
 const exam = [
   ['What is the contract price above which a major domestic building contract is required, and who may enter into it?', 'Over $10,000, and only a registered builder may enter into it.', 'V'],
-  ['At what price is domestic building insurance required, and when must the builder take it out?', 'Over $16,000. Before asking for or receiving any payment, including the deposit. A copy of the certificate goes to the owner within seven days of the builder receiving it.', 'V'],
+  ['At what price is Home Warranty cover required, and when must the premium be paid?', 'Over $20,000, for work up to three storeys under contracts signed on or after 1 July 2026. The premium is due before the earlier of 10 business days after signing or the work starting. Before that, DBI applied over $16,000.', 'V'],
   ['What is the maximum deposit for a major domestic building contract?', '10% if the price is under $20,000. 5% if it is $20,000 or more.', 'V'],
   ['In a contract to build all stages, what are the listed stage payment limits?', 'Base 10%, frame 15%, lock-up 35%, fixing 25%, with the balance after fixing as the final payment. Confirm the final balance and the 2025 amendments.', 'C'],
   ['Who lists the mandatory notification stages and where?', 'The relevant building surveyor, on the building permit (Form 2).', 'V'],
   ['What must a builder do at a mandatory notification stage?', 'Notify the RBS and not go beyond the stage until it has been inspected.', 'V'],
-  ['What must the building surveyor check before issuing the permit?', 'That the builder named matches the contract and the DBI certificate (Building Act 1993 s 24A).', 'V'],
-  ['Put in order: contract, building permit, DBI, site establishment, planning check.', 'Planning check, contract, DBI, building permit, site establishment. DBI and the contract are in place before the permit is issued.', 'V'],
+  ['What must the building surveyor check before issuing the permit?', 'That the builder named matches the contract and the insurance evidence (Building Act 1993 s 24A). What counts as the evidence under Home Warranty is Confirm.', 'C'],
+  ['Put in order: contract, building permit, Home Warranty cover, site establishment, planning check.', 'Planning check, contract, Home Warranty cover, building permit, site establishment. The contract and the insurance cover are in place before the permit is issued. The exact timing under Home Warranty is Confirm.', 'C'],
   ['Why does a stabilised entry exist?', 'To remove mud from truck wheels before they reach the road, so sediment does not enter the stormwater system.', 'T'],
   ['Where does a sediment fence go and what does it need?', 'Along a contour on the downhill side of the disturbed area, with the toe buried in a trench and the fabric fixed to the uphill face of the posts.', 'T'],
 ];
@@ -340,6 +340,6 @@ const exam = [
 export default {
   n: 1, id: 'permits', title: 'Permits, contract and site establishment', subtitle: 'Everything that has to be in place before the first shovel goes in the ground.',
   phases, build, details, drawings, howto, trades, materials, quotes, quoteTips, inspections, exam,
-  sources: ['bpcDBI', 'cavPay', 'cavContract', 'vbaMand', 'bpcMI01', 'bpcWork', 'hiaAct', 'bunnMGP'],
-  caution: 'Deposit and stage-payment rules are changing under the Domestic Building Contracts Amendment Act 2025, with the limits to be set by regulation. Check current figures on the CAV site before relying on any figure here.',
+  sources: ['bpcHW', 'bpcHWb', 'bpcDBI', 'cavPay', 'cavContract', 'vbaMand', 'bpcMI01', 'bpcWork', 'hiaAct', 'bunnMGP'],
+  caution: 'Home Warranty replaced Domestic Building Insurance for contracts signed on or after 1 July 2026, so the old DBI figures ($16,000, six years) apply only to earlier contracts. Deposit and stage-payment rules are changing under the Domestic Building Contracts Amendment Act 2025, with the limits to be set by regulation. Check current figures on the CAV site before relying on any figure here.',
 };

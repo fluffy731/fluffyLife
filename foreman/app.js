@@ -17,8 +17,10 @@ import step13 from './step-13.js';
 import step14 from './step-14.js';
 import step15 from './step-15.js';
 import step16 from './step-16.js';
+import step17 from './step-17.js';
+import step18 from './step-18.js';
 
-const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6, 7: step7, 8: step8, 9: step9, 10: step10, 11: step11, 12: step12, 13: step13, 14: step14, 15: step15, 16: step16 };
+const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6, 7: step7, 8: step8, 9: step9, 10: step10, 11: step11, 12: step12, 13: step13, 14: step14, 15: step15, 16: step16, 17: step17, 18: step18 };
 const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
