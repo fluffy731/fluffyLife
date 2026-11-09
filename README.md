@@ -26,6 +26,7 @@ The bare address forwards to `/korean/`, so home-screen icons saved from it befo
 | `languages` | `korean/`, `yue/`, `mongolian/`, `english/` and their data |
 | `travel` | `travel/` |
 | `builder` | `builder/` and `docs/builder/` |
+| `foreman` | `foreman/` (also carries `builder/` until it is merged) |
 | `MCscript` | `mc/` |
 | `NightToShine` | `shine/` |
 | `stocks` | `stocks/` |
@@ -191,6 +192,10 @@ Five tabs:
 
 - **Content:** edit `builder/data.js`. Ticks key on each item's `key`, not its wording. Requirements and sources are written up in `docs/builder/db-u-requirements.md`; recheck them against the BPC pages before relying on them, because BPC is still rolling its reforms out.
 - **Code:** state logic is in `builder/model.js`, tested in `test/builder.test.js`.
+
+# Foreman (`/foreman/`, unlisted)
+
+A walkable 3D study aid for the Victorian domestic builder (unlimited) exam: 18 stages from permits to handover, each with a 3D walk, zoomable labelled detail models, drawings, steps, trades, materials, quotes, inspections and exam cards. Left off the home page, and its pages ask search engines not to index them. Unlisted is not private: the address still opens for anyone who has it. Every fact carries a Verified, Typical or Confirm flag with its source. The repo is public, so no course or quiz text is stored here. Details are in `foreman/README.md`; the engine is in `foreman/engine.js` and each stage is a `foreman/step-NN.js` file with its drawings and cards in `foreman/step-NN-study.js`.
 
 # MC script (`/mc/`)
 
