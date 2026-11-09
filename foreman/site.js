@@ -77,7 +77,7 @@ function canopy(kit, r, seed) {
   return geo;
 }
 
-function tree(kit, x, z, s = 1, seed = 1) {
+export function tree(kit, x, z, s = 1, seed = 1) {
   const { THREE, C, mat, cyl } = kit;
   const g = new THREE.Group();
   g.add(cyl(0.2 * s, 2.4 * s, mat(C.trunk, { roughness: 1 }), x, 1.2 * s, z, 8, false, 0.12 * s));
