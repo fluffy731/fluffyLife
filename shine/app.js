@@ -1,6 +1,6 @@
 // A Night to Shine · MC script. Two MCs; who speaks which language is set by SPEAKER in data.js (for now Solomon: English, Wade: Mandarin in simplified Chinese).
 // TBC answers are kept in this browser only (localStorage); "Copy for co-MC" moves them to the other phone.
-import { EVENT, SPEAKER, GROUPS, FIELDS, LISTS, ENTRANCE, SEGMENTS, RUNSHEET, RUNSHEET_NOTE, NOTES } from "./data.js";
+import { EVENT, SPEAKER, DEFAULTS, GROUPS, FIELDS, LISTS, ENTRANCE, SEGMENTS, RUNSHEET, RUNSHEET_NOTE, NOTES } from "./data.js";
 
 const KEY = "shine-2026-11-13";
 const $ = (s, el = document) => el.querySelector(s);
@@ -17,7 +17,9 @@ const META = {};
 for (const [k, zh, en, group, ex, opt] of FIELDS) META[k] = { zh, en, group, ex, opt: !!opt };
 for (const [name, L] of Object.entries(LISTS))
   for (let i = 1; i <= L.n; i++) for (const [c, zh, en] of L.cols) META[c + i] = { zh: `${zh} ${i}`, en: `${en} ${i}`, group: L.group, list: name };
-const val = (k) => String(S.f[k] ?? "").trim();
+// A value typed in this browser (even an empty one) wins over the default shipped in data.js.
+const raw = (k) => S.f[k] ?? DEFAULTS[k] ?? "";
+const val = (k) => String(raw(k)).trim();
 const rowDone = (L, j) => L.cols.every(([c]) => val(c + j));
 const rowAny = (L, j) => L.cols.some(([c]) => val(c + j));
 const listDone = (L) => {
@@ -130,14 +132,14 @@ function fieldHTML(k) {
   const m = META[k];
   return `<label class="field" data-key="${k}" for="f-${k}">
     <span class="lab"><span class="zh">${esc(m.zh)}</span><span class="en">${esc(m.en)}</span><span class="tag"></span></span>
-    <input id="f-${k}" data-f="${k}" value="${esc(S.f[k] ?? "")}" placeholder="${esc(m.ex || "")}" autocomplete="off" autocapitalize="words" enterkeyhint="next">
+    <input id="f-${k}" data-f="${k}" value="${esc(raw(k))}" placeholder="${esc(m.ex || "")}" autocomplete="off" autocapitalize="words" enterkeyhint="next">
   </label>`;
 }
 function listFormHTML(name) {
   const L = LISTS[name];
   return `<div class="lform" data-list="${name}"><p class="lab"><span class="zh">${esc(L.zh)}</span><span class="en">${esc(L.en)}</span><span class="tag"></span></p>` +
     Array.from({ length: L.n }, (_, j) => `<div class="lrow" data-row="${j + 1}"><span class="n">${j + 1}</span>` +
-      L.cols.map(([c, zh, en]) => `<input id="f-${c}${j + 1}" data-f="${c}${j + 1}" value="${esc(S.f[c + (j + 1)] ?? "")}" placeholder="${esc(`${zh} · ${en}`)}" aria-label="${esc(`${zh} ${en} ${j + 1}`)}" autocomplete="off" enterkeyhint="next">`).join("") +
+      L.cols.map(([c, zh, en]) => `<input id="f-${c}${j + 1}" data-f="${c}${j + 1}" value="${esc(raw(c + (j + 1)))}" placeholder="${esc(`${zh} · ${en}`)}" aria-label="${esc(`${zh} ${en} ${j + 1}`)}" autocomplete="off" enterkeyhint="next">`).join("") +
       `</div>`).join("") + `</div>`;
 }
 function buildForm() {

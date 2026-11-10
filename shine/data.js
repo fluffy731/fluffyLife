@@ -18,6 +18,17 @@ export const EVENT = {
 // 10 Nov: Solomon speaks English and Wade speaks Mandarin, "for now". To swap them, swap the two values; nothing else changes.
 export const SPEAKER = { zh: "W", en: "S" };
 
+// Values filled in from the 10 Nov sponsor slide, officer name pins and Operation Bear flyer. They show as ordinary text and can still be
+// edited in the TBC tab; clearing one makes it TBC again. The Communications Chairman (board5) is left blank on purpose.
+export const DEFAULTS = {
+  sponsors: "Auscrown, Cookie Chef and Co, Harcourts Balwyn, Klér, Mindmetta, Motif Aesthetic Clinic, Pureessense, Quaternity, Sensory Lab, Tokyo-7 Japanese Restaurant",
+  vp: "Mireille Leong",
+  boboName: "Bobo Law",
+  bearCharity: "Operation Bear",
+  board1: "Cindy Tai", board2: "Milly Chen", board3: "Bobo Law", board4: "Monique Chen",
+  board6: "Felicia Seah", board7: "Michelle Chen", board8: "Connie Long",
+};
+
 export const GROUPS = [
   ["guests", "嘉宾", "Guests"],
   ["club", "她慧狮子会", "She Rises"],
@@ -29,7 +40,7 @@ export const GROUPS = [
 
 // [key, zh label, en label, group, example, optional?]
 export const FIELDS = [
-  ["sponsors", "赞助商", "Sponsors", "guests", "用逗号分隔 · comma-separated"],
+  ["sponsors", "赞助商", "Sponsors", "guests", "用逗号分隔 · comma-separated（已按鸣谢页 10 家填好 · from the sponsor slide）"],
   ["vips", "其他贵宾", "Other VIPs", "guests", "没有就留空 · leave blank if none", true],
   ["vp", "副会长", "Vice President", "club", "姓名 · name"],
   ["tianBioZh", "Tian 简介（中文）", "Tian's introduction, Chinese", "show", "资料之后补 · to come"],
@@ -39,12 +50,12 @@ export const FIELDS = [
   ["raffleClose", "抽奖券截止时间", "Raffle sales close", "draw", "如 7:30 pm（流程写至 7:00）"],
   ["unclaimed", "无人认领规则", "Unclaimed prize rule", "draw", "如 30 秒无人上台即重抽"],
   ["bestDress", "Best Dress 得奖者", "Best Dress winner", "awards", "姓名 · name（会长 Salli 当晚评选 · picked by Salli on the night）"],
-  ["boboName", "Bobo 全名", "Bobo's full name", "awards", "姓名 · name"],
+  ["boboName", "Bobo 全名", "Bobo's full name", "awards", "按名牌填 Bobo Law · from the name pins"],
   ["boboZh", "Bobo 一句话介绍（中文）", "Bobo citation, Chinese", "awards", "可留空 · optional", true],
   ["boboEn", "Bobo 一句话介绍（英文）", "Bobo citation, English", "awards", "optional", true],
   ["sponsorPrice", "赞助商品价格", "Sponsor product prices", "sales", "如 见标价 · as marked"],
   ["pay", "付款方式", "Payment methods", "sales", "如 现金、刷卡 · cash or card"],
-  ["bearCharity", "小熊善款接收机构", "Charity that gets the bear money", "sales", "帮助意外受伤儿童康复的中心 · 录音听成「Action」，请核实全名"],
+  ["bearCharity", "小熊善款接收机构", "Charity that gets the bear money", "sales", "传单写的是 Operation Bear · 录音听成「Action」，请核实"],
   ["fundsFor", "徽章及其他义卖款项用途", "Where pin and other sales go", "sales", "没有就留空 · leave blank if none", true],
   ["cakeBy", "切蛋糕的人", "Cake cut by", "sales", "如 十一月生日的会员代表 · e.g. a November-birthday member"],
   ["photoSpot", "大合照位置", "Group photo spot", "sales", "如 舞台前 · the front of the stage"],
@@ -81,8 +92,8 @@ const PRIZE_PATTERN = [
 export const SEGMENTS = [
   { t: "18:30", e: "18:50", zh: "背景广播 · 介绍 Calico 乐队", en: "Doors & check-in · Calico intro", at: ["后台麦，不上台", "Off-stage mic"], items: [
     ["cue", "两位 MC 6:00 到场。6:30 广播一次；约 6:45 再广播并介绍乐队", "Both MCs on site by 6:00. Announce at 6:30, then again at about 6:45 with the band introduction"],
-    ["zh", "各位来宾晚上好，欢迎来到她慧狮子会的 A Night to Shine！请先到签到台签到。七位小天使正在各桌售卖：抽奖券 5 澳元一张，徽章 20 澳元一个，还有狮子会小熊公仔 20 澳元一只。"],
-    ["en", "Good evening, and welcome to A Night to Shine. Please check in at the front desk. Our seven Little Angels are coming round with raffle tickets at $5 each, pins at $20, and Lions teddy bears at $20."],
+    ["zh", "各位来宾晚上好，欢迎来到她慧狮子会的 A Night to Shine！请先到签到台签到。七位小天使正在各桌售卖：抽奖券 5 澳元一张，徽章 20 澳元一个，还有 Operation Bear 狮子会小熊公仔 20 澳元一只。"],
+    ["en", "Good evening, and welcome to A Night to Shine. Please check in at the front desk. Our seven Little Angels are coming round with raffle tickets at $5 each, pins at $20, and Operation Bear teddy bears at $20."],
     ["cue", "约 6:45 简短介绍乐队", "At about 6:45, a short band introduction"],
     ["zh", "今晚的现场音乐，由 Calico 乐队为大家带来。Calico 成立于 2022 年，是墨尔本的一支三语融合现场乐队，擅长英语、粤语和华语歌曲，风格横跨 Pop、R&B、Jazz 和 Blues。三位成员是：鼓手兼音响师 Zayne Guo，键盘手 Fujia Luo，以及主唱 Yolanda Li。"],
     ["en", "Tonight's music comes from Calico, a Melbourne fusion live band formed in 2022. They play in English, Cantonese and Mandarin, across pop, R&B, jazz and blues. On drums, and running the sound, Zayne Guo; on keys, Fujia Luo; and on vocals, Yolanda Li."],
@@ -138,8 +149,9 @@ export const SEGMENTS = [
     ["zh", "今晚的着装是银色、香槟色和金色。穿金色的朋友，欢呼一下！香槟色的！银色的！"],
     ["en", "Make some noise if you're wearing gold! Champagne! Silver!"],
     ["cue", "每个颜色停一下，等欢呼", "Pause after each colour for the cheer"],
-    ["en", "Tonight we're honoured to welcome our District leaders: District Governor Sheryl Li, Immediate Past District Governor Samantha Wu, and Vice District Governor Gita Khatri. We also welcome our sponsors, {sponsors}. Thank you for your support."],
+    ["en", "Tonight we're honoured to welcome our District leaders: District Governor Sheryl Li, Immediate Past District Governor Samantha Wu, and Vice District Governor Gita Khatri. We also welcome our sponsors: {sponsors}. Thank you for your support."],
     ["zh", "今晚我们荣幸地欢迎区域领导们：现任区域总监 Sheryl Li，上一届区域总监 Samantha Wu，还有副区域总监 Gita Khatri。同时感谢各位赞助商：{sponsors}。谢谢你们的支持！"],
+    ["cue", "赞助商鸣谢页（PDF）如在屏幕上，念赞助商名单时翻到该页；致谢环节再放一次", "If the sponsor thank-you slide (the PDF) is on screen, bring it up while reading the sponsor list, and again at the final thank-yous"],
     ["zh", "同时欢迎今晚的贵宾：{vips}。", { if: "vips" }],
     ["en", "We also welcome {vips}.", { if: "vips" }],
     ["zh", "提醒大家：幸运抽奖只限购买了抽奖券的来宾参加。抽奖券 5 澳元一张，{raffleClose}前向小天使购买。8 点 10 分开始抽奖，共 10 份奖品。"],
@@ -212,8 +224,8 @@ export const SEGMENTS = [
     ["cue", "一首，约 3 分钟。抽奖助理带票根和奖品到侧台", "One song, about 3 minutes. Draw assistant brings the stubs and prizes to the side of the stage"],
   ] },
   { t: "20:10", e: "20:20", key: true, zh: "义卖开始 + 幸运抽奖（第一轮）", en: "Fundraising sales + lucky draw, round 1", at: ["两位 MC 台中，赞助商品在台上", "Both MCs centre stage, sponsor products on display"], items: [
-    ["en", "Thank you, Eric! It's fundraising time. Teddy bears are $20 each: buy one and it is donated; buy two for $40, and you take one home while the other is donated. Pins are $20 each, and the sponsor products here on stage are {sponsorPrice}. The bear money goes to {bearCharity}, which helps children recover after accidents."],
-    ["zh", "谢谢 Eric！义卖时间到！小熊公仔每只 20 澳元：买一只，是直接捐出；买两只共 40 澳元，一只带回家，一只捐出。徽章每个 20 澳元，台上还有赞助商品 {sponsorPrice}。小熊的善款将捐给 {bearCharity}，帮助在意外中受伤的孩子康复。"],
+    ["en", "Thank you, Eric! It's fundraising time. Teddy bears are $20 each: buy one and it is donated; buy two for $40, and you take one home while the other is donated. Pins are $20 each, and the sponsor products here on stage are {sponsorPrice}. The bear money goes to {bearCharity}, which gives teddy bears to children facing trauma, accidents and emergencies, through Victoria Police, Ambulance Victoria, the CFA, the SES and hospitals."],
+    ["zh", "谢谢 Eric！义卖时间到！小熊公仔每只 20 澳元：买一只，是直接捐出；买两只共 40 澳元，一只带回家，一只捐出。徽章每个 20 澳元，台上还有赞助商品 {sponsorPrice}。小熊的善款将捐给 {bearCharity}，把小熊送给遭遇创伤、意外和紧急状况的孩子，通过维州警察、救护服务、CFA 消防、SES 和医院送到孩子们手中。"],
     ["zh", "徽章和其他义卖所得将用于 {fundsFor}。", { if: "fundsFor" }],
     ["en", "Pin and other sales go to {fundsFor}.", { if: "fundsFor" }],
     ["zh", "小天使现在就到各桌，可用 {pay} 付款。"],
@@ -242,8 +254,8 @@ export const SEGMENTS = [
     ["zh", "接下来是两个长期服务奖。首先是十年：有请我们的会长 Salli Hon 上台，领取 10 年长期服务奖，由 Gita 颁发！"],
     ["zh", "十年，谢谢您，Salli！"],
     ["en", "Ten years. Thank you, Salli!"],
-    ["en", "And now, twenty years of service. Please welcome Bobo, {boboName}, to receive the 20-Year Long Service Award, presented by Gita."],
-    ["zh", "下一个奖项，表彰二十年的付出。有请 Bobo（{boboName}）上台，领取 20 年长期服务奖，由 Gita 颁发！"],
+    ["en", "And now, twenty years of service. Please welcome {boboName} to receive the 20-Year Long Service Award, presented by Gita."],
+    ["zh", "下一个奖项，表彰二十年的付出。有请 {boboName} 上台，领取 20 年长期服务奖，由 Gita 颁发！"],
     ["zh", "{boboZh}", { if: "boboZh" }],
     ["en", "{boboEn}", { if: "boboEn" }],
     ["zh", "二十年，谢谢您，Bobo！"],
@@ -360,14 +372,15 @@ export const NOTES = {
     ["切蛋糕：确认由谁切、蛋糕放哪里、刀和盘子、谁拍照", "Cake: confirm who cuts it, where it sits, the knife and plates, and who photographs it"],
     ["Tian《女神》：确认副歌「我是女神」在第几秒开始，带位员据此放行；伴奏和能否拉长前奏", "Tian's 《女神》: confirm when the chorus \"我是女神\" starts so the ushers can cue it; backing track, and whether the intro can be extended"],
     ["抽奖券截止：流程写 6:30–7:00 售卖，但 7:00 开场才讲规则，听完规则的来宾已买不到。建议延长到开场后（填在「待填」）", "Raffle sales close at 7:00 in the run sheet, but the rules are announced at 7:00, so guests who hear them can't buy. Extend sales past the opening (set it in TBC)"],
-    ["宣誓 8 位理事：确认名单并交给 Gita 念名。入场人数以名单为准", "Confirm the names of the 8 board members and give them to Gita to call out. The entrance number follows the list"],
+    ["宣誓 8 位理事：按名牌已填 7 位，第 5 位 Communications Chairman 的名字待填。名单交给 Gita 念名；入场人数以名单为准", "The 8 board members: 7 names are filled in from the name pins, and the 5th, the Communications Chairman, is still to be typed in. Give the list to Gita to call out; the entrance number follows the list"],
+    ["请核对按名牌、传单和鸣谢页填入的内容：副会长 Mireille Leong；20 年奖的 Bobo 按名牌 Bobo Law 填写；小熊善款按传单写 Operation Bear（录音听成「Action」）；10 家赞助商是看 logo 辨认的，Klér 和 Pureessense 的拼写请核对", "Check what was filled in from the name pins, flyer and sponsor slide: Vice President Mireille Leong; Bobo for the 20-year award entered as Bobo Law from the pins; the bear money entered as Operation Bear from the flyer (the recording sounded like \"Action\"); the 10 sponsors were read from their logos, so check the spelling of Klér and Pureessense"],
     ["宣誓由 Gita 主持，理事逐一回答「I do」：确认誓词和流程", "Gita leads the oath and each board member answers \"I do\": confirm the wording and procedure"],
     ["尼泊尔筹款颁奖：6 枚 Melvin Jones Fellowship，确认得奖者名单和上台顺序。颁奖人是 Gita，请提前告诉她，并把奖牌和奖状交给她", "Nepal awards: the six Melvin Jones Fellowships. Confirm the recipients and the order. Gita presents them, so tell her beforehand and hand her the medals and certificates"],
     ["赞助商品价格、付款方式（现金 / 刷卡 / 转账）、抽奖方式。小熊和徽章已定为 $20", "Sponsor product prices, payment methods (cash / card / transfer), how the draw is run. Bears and pins are settled at $20"],
     ["双人开场秀（6:50–7:00）：稿里是建议方案「后援团大考」，两位看过、排练过再定；要和 Calico 说好鼓点", "Opening show (6:50 to 7:00): the script has a suggested format, the Backup Crew Audition. Read it, rehearse it, then settle it; agree the drum groove with Calico"],
     ["5 条祝贺视频：确认文件、顺序、总长（约 5–10 分钟）和谁播放", "Five congratulatory videos: confirm the files, order, total length (about 5 to 10 minutes) and who plays them"],
     ["Best Dress 神秘大奖：奖品当晚再定。会长 Salli 评选后，得奖者名字要在 8:50 前交给 MC", "Mystery Best Dress prize: the prize is decided on the night. After President Salli judges, the winner's name must reach the MCs before 8:50"],
-    ["还缺的资料：副会长姓名、Tian 简介、Eric 两首歌名、小熊善款机构全名（录音听成 Action）", "Still missing: the Vice President's name, Tian's introduction, Eric's two songs, and the full name of the charity that gets the bear money (heard as Action)"],
+    ["还缺的资料：Tian 简介、Eric 两首歌名、宣誓名单第 5 位（Communications Chairman）的名字", "Still missing: Tian's introduction, Eric's two songs, and the name of the 5th board member (the Communications Chairman)"],
   ],
   link: ["串场三步：收尾上一环节 → 预告下一环节 → 邀请下一位上台", "Every link: wrap up the last segment → say what's next → invite the next person up"],
 };
