@@ -144,7 +144,10 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
   assert.match(seg("19:25"), /Sheryl Li/);
   assert.doesNotMatch(flat, /Sherry|Sheri\b|李慈/, "the spelling is Sheryl");
   // Six Nepal awards are Melvin Jones Fellowships.
-  assert.match(seg("20:20"), /Melvin Jones Fellowships/);
+  assert.match(seg("20:20"), /Melvin Jones Fellowships, presented by Vice District Governor Gita Khatri/);
+  assert.match(seg("20:20"), /landslide/);
+  assert.match(seg("20:20"), /山体滑坡/);
+  assert.equal((seg("20:20").match(/presented by Gita/g) || []).length, 2, "Gita also presents Salli's and Bobo's awards");
   assert.equal(LISTS.nepal.n, 6);
   // Goddess has two reasons: Tian's song and an all-female club.
   assert.match(seg("19:00"), /Two reasons/);
@@ -155,5 +158,5 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
   assert.match(seg("20:50"), /会长 Salli 亲自评选/);
   // Resolved questions are no longer fields.
   const keys = FIELDS.map((f) => f[0]);
-  for (const k of ["pres", "oathBy", "oathLang", "act", "sallyName", "distName", "band"]) assert.ok(!keys.includes(k), `${k} should be gone`);
+  for (const k of ["pres", "oathBy", "oathLang", "act", "sallyName", "distName", "band", "nepalBy", "boboBy"]) assert.ok(!keys.includes(k), `${k} should be gone`);
 });
