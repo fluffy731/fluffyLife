@@ -17,7 +17,7 @@ const FILES = [
   "./packs/mn.js", "./cards/mn.js", "./ui/zh.js", "./quiz/mn.js",
   "./packs/en.js", "./cards/en.js", "./ui/ko-en.js", "./quiz/en.js",
   "./mc/", "./mc/index.html", "./mc/mc.js", "./mc/mc.css", "./icons/mc.svg", "./icons/mc-180.png",
-  "./shine/", "./shine/index.html", "./shine/app.js", "./shine/data.js", "./shine/shine.css", "./icons/shine.svg", "./icons/shine-180.png",
+  "./shine/", "./shine/index.html", "./shine/app.js", "./shine/data.js", "./shine/shine.css", "./shine/manifest.json", "./icons/shine.svg", "./icons/shine-180.png", "./icons/shine-192.png", "./icons/shine-512.png",
   "./travel/", "./travel/index.html", "./travel/travel.js", "./travel/model.js", "./travel/items.js", "./travel/plan.html", "./travel/plan.js", "./travel/plan-model.js", "./travel/travel.css", "./travel/manifest.json", "./icons/travel.svg", "./icons/travel-180.png", "./icons/travel-512.png",
   "./builder/", "./builder/index.html", "./builder/builder.js", "./builder/model.js", "./builder/data.js", "./builder/builder.css", "./builder/manifest.json", "./icons/builder.svg", "./icons/builder-180.png", "./icons/builder-512.png",
   "./english/", "./english/index.html", "./english/manifest.json", "./icons/en.svg", "./icons/en-180.png", "./icons/en-512.png",
