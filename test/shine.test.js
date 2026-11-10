@@ -164,7 +164,7 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
 test("10 Nov documents: defaults come from the sponsor slide, name pins and Operation Bear flyer", () => {
   for (const k of Object.keys(DEFAULTS)) assert.ok(keys.has(k), `default for unknown field ${k}`);
   assert.equal(DEFAULTS.vp, "Mireille Leong");
-  assert.equal(DEFAULTS.bearCharity, "Operation Bear");
+  assert.equal(DEFAULTS.bearCharity, "Operation Teddy Bear");
   assert.equal(DEFAULTS.sponsors.split(", ").length, 10, "ten sponsors on the thank-you slide");
   // Eight oath-takers are the ten officers without the President and Vice President; the Communications Chairman's name is left blank.
   const board = Array.from({ length: LISTS.board.n }, (_, j) => DEFAULTS["board" + (j + 1)]);
@@ -173,8 +173,7 @@ test("10 Nov documents: defaults come from the sponsor slide, name pins and Oper
   assert.ok(!Object.values(DEFAULTS).some((v) => /Salli Hon/.test(v)), "the President speaks separately and is not in the oath list");
   const flat = SEGMENTS.flatMap((s) => s.items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))).join("\n");
   assert.doesNotMatch(flat, /Bobo, \{boboName\}|Bobo（\{boboName\}）/, "Bobo's full name is used on its own");
-  assert.match(flat, /Operation Bear teddy bears at \$20/);
-  assert.match(flat, /Victoria Police, Ambulance Victoria, the CFA, the SES and hospitals/);
+  assert.match(flat, /comfort teddy bears at \$20/);
   assert.doesNotMatch(flat, /recover after accidents/);
 });
 
@@ -188,5 +187,19 @@ test("11 Nov: Tian's introduction is filled in, in simplified Chinese and in Eng
   // Read right after the song, at the start of the 7:05 segment: Chinese line, then English line.
   const items = SEGMENTS.find((s) => s.t === "19:05").items.filter((it) => /tianBio/.test(it[1]));
   assert.deepEqual(items.map((it) => [it[0], it[1]]), [["zh", "{tianBioZh}"], ["en", "{tianBioEn}"]]);
-  assert.match(SEGMENTS.flatMap((s) => s.items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))).join("\n"), /A small bear, a big difference/);
+});
+
+test("11 Nov: the bear announcement is two sentences in Chinese and two in English, from the Operation Teddy Bear speech", () => {
+  const lines = SEGMENTS.find((s) => s.t === "20:10").items.filter((it) => typeof it[1] === "string" && it[1].includes("{bearCharity}"));
+  assert.deepEqual(lines.map((it) => it[0]), ["en", "zh"], "one English line and one Chinese line");
+  const [en, zh] = [lines[0][1], lines[1][1]];
+  assert.equal(en.split(/(?<=[.!?])\s+/).length, 2, "two English sentences");
+  assert.equal((zh.match(/。/g) || []).length, 2, "two Chinese sentences");
+  for (const x of [en, zh]) assert.match(x, /53,000/);
+  assert.match(en, /police, paramedics, firefighters, the SES, the CFA and hospitals/);
+  assert.match(en, /\$5 or \$10/);
+  assert.match(zh, /5 澳元或 10 澳元/);
+  assert.match(en, /one little bear, one big hug, one act of kindness/);
+  assert.match(zh, /一只小熊，一个大拥抱，一份善意/);
+  assert.doesNotMatch(zh, /[們個這來說會長為與對時間謝歡請頒發獎樂隊誕禮員臺義賣聖點鐘閃華開關門車書東無經認領隨當後從麼還進邊過運動電話題頭體護驚擁]/, "simplified characters only");
 });

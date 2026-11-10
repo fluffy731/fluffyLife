@@ -18,13 +18,13 @@ export const EVENT = {
 // 10 Nov: Solomon speaks English and Wade speaks Mandarin, "for now". To swap them, swap the two values; nothing else changes.
 export const SPEAKER = { zh: "W", en: "S" };
 
-// Values filled in from the 10 Nov sponsor slide, officer name pins and Operation Bear flyer. They show as ordinary text and can still be
+// Values filled in from the 10 Nov sponsor slide, officer name pins and Operation Bear flyer, and the 11 Nov teddy bear speech. They show as ordinary text and can still be
 // edited in the TBC tab; clearing one makes it TBC again. The Communications Chairman (board5) is left blank on purpose.
 export const DEFAULTS = {
   sponsors: "Auscrown, Cookie Chef and Co, Harcourts Balwyn, Klér, Mindmetta, Motif Aesthetic Clinic, Pureessense, Quaternity, Sensory Lab, Tokyo-7 Japanese Restaurant",
   vp: "Mireille Leong",
   boboName: "Bobo Law",
-  bearCharity: "Operation Bear",
+  bearCharity: "Operation Teddy Bear",
   tianBioZh: "Tian 是来自墨尔本的华人歌手、司仪、歌唱导师及社交媒体 Influencer。曾获「全球华人新秀歌唱大赛」墨尔本区冠军及《中国好声音》澳洲赛区亚军，并曾担任广州电视台春节晚会表演嘉宾。现主要活跃于主持、音乐及社交媒体领域。",
   tianBioEn: "Tian is a Melbourne-based Chinese singer, MC, vocal coach and social media influencer. Tian won the Melbourne round of the Global Chinese New Talent Singing Competition, was runner-up in the Australian round of The Voice of China, and has performed as a guest at the Guangzhou TV Spring Festival Gala. Tian is now mainly active in hosting, music and social media.",
   board1: "Cindy Tai", board2: "Milly Chen", board3: "Bobo Law", board4: "Monique Chen",
@@ -57,7 +57,7 @@ export const FIELDS = [
   ["boboEn", "Bobo 一句话介绍（英文）", "Bobo citation, English", "awards", "optional", true],
   ["sponsorPrice", "赞助商品价格", "Sponsor product prices", "sales", "如 见标价 · as marked"],
   ["pay", "付款方式", "Payment methods", "sales", "如 现金、刷卡 · cash or card"],
-  ["bearCharity", "小熊善款接收机构", "Charity that gets the bear money", "sales", "传单写的是 Operation Bear · 录音听成「Action」，请核实"],
+  ["bearCharity", "小熊善款接收机构", "Charity that gets the bear money", "sales", "讲稿写的是 Operation Teddy Bear（爱心熊仔计划） · from the 11 Nov speech"],
   ["fundsFor", "徽章及其他义卖款项用途", "Where pin and other sales go", "sales", "没有就留空 · leave blank if none", true],
   ["cakeBy", "切蛋糕的人", "Cake cut by", "sales", "如 十一月生日的会员代表 · e.g. a November-birthday member"],
   ["photoSpot", "大合照位置", "Group photo spot", "sales", "如 舞台前 · the front of the stage"],
@@ -94,8 +94,8 @@ const PRIZE_PATTERN = [
 export const SEGMENTS = [
   { t: "18:30", e: "18:50", zh: "背景广播 · 介绍 Calico 乐队", en: "Doors & check-in · Calico intro", at: ["后台麦，不上台", "Off-stage mic"], items: [
     ["cue", "两位 MC 6:00 到场。6:30 广播一次；约 6:45 再广播并介绍乐队", "Both MCs on site by 6:00. Announce at 6:30, then again at about 6:45 with the band introduction"],
-    ["zh", "各位来宾晚上好，欢迎来到她慧狮子会的 A Night to Shine！请先到签到台签到。七位小天使正在各桌售卖：抽奖券 5 澳元一张，徽章 20 澳元一个，还有 Operation Bear 狮子会小熊公仔 20 澳元一只。"],
-    ["en", "Good evening, and welcome to A Night to Shine. Please check in at the front desk. Our seven Little Angels are coming round with raffle tickets at $5 each, pins at $20, and Operation Bear teddy bears at $20."],
+    ["zh", "各位来宾晚上好，欢迎来到她慧狮子会的 A Night to Shine！请先到签到台签到。七位小天使正在各桌售卖：抽奖券 5 澳元一张，徽章 20 澳元一个，还有爱心熊仔 20 澳元一只。"],
+    ["en", "Good evening, and welcome to A Night to Shine. Please check in at the front desk. Our seven Little Angels are coming round with raffle tickets at $5 each, pins at $20, and comfort teddy bears at $20."],
     ["cue", "约 6:45 简短介绍乐队", "At about 6:45, a short band introduction"],
     ["zh", "今晚的现场音乐，由 Calico 乐队为大家带来。Calico 成立于 2022 年，是墨尔本的一支三语融合现场乐队，擅长英语、粤语和华语歌曲，风格横跨 Pop、R&B、Jazz 和 Blues。三位成员是：鼓手兼音响师 Zayne Guo，键盘手 Fujia Luo，以及主唱 Yolanda Li。"],
     ["en", "Tonight's music comes from Calico, a Melbourne fusion live band formed in 2022. They play in English, Cantonese and Mandarin, across pop, R&B, jazz and blues. On drums, and running the sound, Zayne Guo; on keys, Fujia Luo; and on vocals, Yolanda Li."],
@@ -226,8 +226,12 @@ export const SEGMENTS = [
     ["cue", "一首，约 3 分钟。抽奖助理带票根和奖品到侧台", "One song, about 3 minutes. Draw assistant brings the stubs and prizes to the side of the stage"],
   ] },
   { t: "20:10", e: "20:20", key: true, zh: "义卖开始 + 幸运抽奖（第一轮）", en: "Fundraising sales + lucky draw, round 1", at: ["两位 MC 台中，赞助商品在台上", "Both MCs centre stage, sponsor products on display"], items: [
-    ["en", "Thank you, Eric! It's fundraising time. Teddy bears are $20 each: buy one and it is donated; buy two for $40, and you take one home while the other is donated. Pins are $20 each, and the sponsor products here on stage are {sponsorPrice}. The bear money goes to {bearCharity}, which gives teddy bears to children facing trauma, accidents and emergencies, through Victoria Police, Ambulance Victoria, the CFA, the SES and hospitals. A small bear, a big difference."],
-    ["zh", "谢谢 Eric！义卖时间到！小熊公仔每只 20 澳元：买一只，是直接捐出；买两只共 40 澳元，一只带回家，一只捐出。徽章每个 20 澳元，台上还有赞助商品 {sponsorPrice}。小熊的善款将捐给 {bearCharity}，把小熊送给遭遇创伤、意外和紧急状况的孩子，通过维州警察、救护服务、CFA 消防、SES 和医院送到孩子们手中。小小的熊仔，大大的爱心！"],
+    ["en", "Thank you, Eric! It's fundraising time, and it starts with our teddy bears."],
+    ["zh", "谢谢 Eric！义卖时间到，先从我们的小熊说起！"],
+    ["en", "For more than 30 years, {bearCharity} has put comfort teddy bears, over 53,000 so far, into the hands of frightened children through police, paramedics, firefighters, the SES, the CFA and hospitals. Every bear you take home helps send another hug to a child in need, and if you'd rather not take one, a $5 or $10 donation is just as welcome: one little bear, one big hug, one act of kindness."],
+    ["zh", "{bearCharity}（爱心熊仔计划）在澳洲已经传递了三十多年的爱心，超过 53,000 只安慰熊仔，通过警察、救护员、消防员、SES、CFA 和医院，交到惊慌的孩子手中。各位今晚带一只熊仔回家，就是帮忙把另一个拥抱送给有需要的孩子；不想带熊仔回家，捐 5 澳元或 10 澳元同样欢迎：一只小熊，一个大拥抱，一份善意。"],
+    ["en", "Teddy bears are $20 each: buy one and it is donated; buy two for $40, and you take one home while the other is donated. Pins are $20 each, and the sponsor products here on stage are {sponsorPrice}."],
+    ["zh", "小熊公仔每只 20 澳元：买一只，是直接捐出；买两只共 40 澳元，一只带回家，一只捐出。徽章每个 20 澳元，台上还有赞助商品 {sponsorPrice}。"],
     ["zh", "徽章和其他义卖所得将用于 {fundsFor}。", { if: "fundsFor" }],
     ["en", "Pin and other sales go to {fundsFor}.", { if: "fundsFor" }],
     ["zh", "小天使现在就到各桌，可用 {pay} 付款。"],
@@ -375,8 +379,10 @@ export const NOTES = {
     ["Tian《女神》：确认副歌「我是女神」在第几秒开始，带位员据此放行；伴奏和能否拉长前奏", "Tian's 《女神》: confirm when the chorus \"我是女神\" starts so the ushers can cue it; backing track, and whether the intro can be extended"],
     ["抽奖券截止：流程写 6:30–7:00 售卖，但 7:00 开场才讲规则，听完规则的来宾已买不到。建议延长到开场后（填在「待填」）", "Raffle sales close at 7:00 in the run sheet, but the rules are announced at 7:00, so guests who hear them can't buy. Extend sales past the opening (set it in TBC)"],
     ["宣誓 8 位理事：按名牌已填 7 位，第 5 位 Communications Chairman 的名字待填。名单交给 Gita 念名；入场人数以名单为准", "The 8 board members: 7 names are filled in from the name pins, and the 5th, the Communications Chairman, is still to be typed in. Give the list to Gita to call out; the entrance number follows the list"],
+    ["⚠ Bobo 今晚不能出席（见熊仔讲稿）：稿里她要上台领 20 年奖，宣誓名单上也有 Bobo Law。请确认怎么处理：由谁代领、顺延，还是删掉；宣誓名单是否改为 7 位", "Bobo cannot attend tonight (per the teddy bear speech), but the script has her on stage for the 20-year award and Bobo Law is on the oath list. Please confirm what to do: someone accepts for her, the award is deferred, or it is dropped; and whether the oath list becomes 7"],
+    ["小熊说法：讲稿说「带一只回家，同时帮忙送出另一只」，也欢迎 5 澳元或 10 澳元的捐款；稿里售价仍写「买一只是直接捐出，买两只共 40 澳元，一只带回家」。请确认实际规则", "Bear wording: the speech says a bear taken home also helps send another, and that $5 or $10 donations are welcome, while the script's prices still say one bear is donated and two for $40 means one goes home. Please confirm the actual rule"],
     ["Tian 简介：中文由你发的繁体转成简体；英文是翻译稿，「全球华人新秀歌唱大赛」的官方英文名请核对。简介在 Tian 唱完《女神》后念，中英各约 30 秒", "Tian's introduction: the Chinese is your traditional text converted to simplified; the English is a translation, so check the official English name of the Global Chinese singing competition. It is read after Tian finishes 《女神》, about 30 seconds in each language"],
-    ["请核对按名牌、传单和鸣谢页填入的内容：副会长 Mireille Leong；20 年奖的 Bobo 按名牌 Bobo Law 填写；小熊善款按传单写 Operation Bear（录音听成「Action」；Bundaberg Lions 的页面称该项目为 Lions Operation Teddy Bear，稿里沿用传单的名字）；10 家赞助商是看 logo 辨认的，Klér 和 Pureessense 的拼写请核对", "Check what was filled in from the name pins, flyer and sponsor slide: Vice President Mireille Leong; Bobo for the 20-year award entered as Bobo Law from the pins; the bear money entered as Operation Bear from the flyer (the recording sounded like \"Action\"; the Bundaberg Lions page calls the project Lions Operation Teddy Bear, and the script keeps the flyer's name); the 10 sponsors were read from their logos, so check the spelling of Klér and Pureessense"],
+    ["请核对按名牌、传单和鸣谢页填入的内容：副会长 Mireille Leong；20 年奖的 Bobo 按名牌 Bobo Law 填写；小熊善款按讲稿写 Operation Teddy Bear（传单上简写为 Operation Bear）；10 家赞助商是看 logo 辨认的，Klér 和 Pureessense 的拼写请核对", "Check what was filled in from the name pins, flyer and sponsor slide: Vice President Mireille Leong; Bobo for the 20-year award entered as Bobo Law from the pins; the bear money entered as Operation Teddy Bear from the speech (the flyer shortens it to Operation Bear); the 10 sponsors were read from their logos, so check the spelling of Klér and Pureessense"],
     ["宣誓由 Gita 主持，理事逐一回答「I do」：确认誓词和流程", "Gita leads the oath and each board member answers \"I do\": confirm the wording and procedure"],
     ["尼泊尔筹款颁奖：6 枚 Melvin Jones Fellowship，确认得奖者名单和上台顺序。颁奖人是 Gita，请提前告诉她，并把奖牌和奖状交给她", "Nepal awards: the six Melvin Jones Fellowships. Confirm the recipients and the order. Gita presents them, so tell her beforehand and hand her the medals and certificates"],
     ["赞助商品价格、付款方式（现金 / 刷卡 / 转账）、抽奖方式。小熊和徽章已定为 $20", "Sponsor product prices, payment methods (cash / card / transfer), how the draw is run. Bears and pins are settled at $20"],
