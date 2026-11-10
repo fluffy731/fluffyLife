@@ -1,6 +1,6 @@
-// A Night to Shine · MC script. Two MCs: Solomon (简体中文) and Wade (English).
+// A Night to Shine · MC script. Two MCs; who speaks which language is set by SPEAKER in data.js (for now Solomon: English, Wade: Mandarin in simplified Chinese).
 // TBC answers are kept in this browser only (localStorage); "Copy for co-MC" moves them to the other phone.
-import { EVENT, GROUPS, FIELDS, LISTS, ENTRANCE, SEGMENTS, RUNSHEET, RUNSHEET_NOTE, NOTES } from "./data.js";
+import { EVENT, SPEAKER, GROUPS, FIELDS, LISTS, ENTRANCE, SEGMENTS, RUNSHEET, RUNSHEET_NOTE, NOTES } from "./data.js";
 
 const KEY = "shine-2026-11-13";
 const $ = (s, el = document) => el.querySelector(s);
@@ -46,8 +46,12 @@ function now() {
 }
 
 // ---------- Rendering helpers ----------
-const lang = () => (S.who === "W" ? "en" : "zh");
-const bi = (zh, en) => (S.who === "W" ? en : S.who === "S" ? zh : `${zh} · ${en}`);
+// A speaker letter ("S" or "W") maps to the language that MC speaks; "both" shows both languages.
+const LANG = Object.fromEntries(Object.entries(SPEAKER).map(([l, who]) => [who, l]));
+const NAME = { S: "Solomon", W: "Wade" };
+const showLang = () => LANG[S.who] || "both";
+const lang = () => (showLang() === "en" ? "en" : "zh");
+const bi = (zh, en) => (showLang() === "en" ? en : showLang() === "zh" ? zh : `${zh} · ${en}`);
 function chip(k, l) {
   const m = META[k];
   if (!m) return esc(`{${k}}`);
@@ -59,9 +63,11 @@ function chip(k, l) {
 const fill = (text, l) => esc(text).replace(/\{(\w+)\}/g, (_, k) => chip(k, l));
 const duo = (zh, en, tag = "span") => `<${tag} class="zh" lang="zh-Hans">${fill(zh, "zh")}</${tag}><${tag} class="en" lang="en">${fill(en, "en")}</${tag}>`;
 
-function lineHTML([who, text, o = {}]) {
+function lineHTML([tag, text, o = {}]) {
   if (o.if && !val(o.if)) return "";
-  const l = who === "W" ? "en" : "zh", label = { S: "Solomon", W: "Wade", SW: "Solomon + Wade" }[who];
+  // Line tags are languages ("zh", "en") or "SW" (said together, shown as Chinese then English).
+  const who = tag === "SW" ? "SW" : SPEAKER[tag], l = tag === "en" ? "en" : "zh";
+  const label = { S: NAME.S, W: NAME.W, SW: `${NAME.S} + ${NAME.W}` }[who];
   return `<div class="ln${o.tpl ? " tpl" : ""}" data-s="${who}"><b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>` +
     `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(text, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}</p></div>`;
 }
@@ -91,7 +97,7 @@ function listHTML(name, o = {}) {
 
 function itemHTML(it) {
   const [type] = it;
-  if (type === "S" || type === "W" || type === "SW") return lineHTML(it);
+  if (type === "zh" || type === "en" || type === "SW") return lineHTML(it);
   if (type === "cue") return `<p class="cue">${duo(it[1], it[2])}</p>`;
   if (type === "crit") return `<p class="crit">${duo(it[1], it[2])}</p>`;
   if (type === "list") return listHTML(it[1], it[2]);
@@ -115,7 +121,7 @@ function segHTML(s) {
 
 function renderScript() {
   $("#segs").innerHTML = SEGS.map(segHTML).join("");
-  $("#toc").innerHTML = SEGS.map((s) => `<button type="button" data-seg="${s.i}"${s.key ? ' class="key"' : ""}><time>${hm12(s.t)}</time>${esc(S.who === "W" ? s.en : s.zh)}</button>`).join("");
+  $("#toc").innerHTML = SEGS.map((s) => `<button type="button" data-seg="${s.i}"${s.key ? ' class="key"' : ""}><time>${hm12(s.t)}</time>${esc(lang() === "en" ? s.en : s.zh)}</button>`).join("");
   tick();
 }
 
@@ -182,15 +188,16 @@ function renderNotes() {
     <section class="note-card check-card"><h3>${bi("活动前要定", "Settle before the night")}</h3><ul>${li(NOTES.check)}</ul></section>
     <section class="note-card"><h3>${bi("串场", "Linking segments")}</h3><p>${duo(NOTES.link[0], NOTES.link[1])}</p></section>
     <section class="note-card"><h3>${bi("两位 MC", "The two MCs")}</h3>
-      <div class="ln" data-s="S"><b class="b S">S</b><p>${duo("Solomon · 普通话（简体中文台词）", "Solomon · Mandarin (script in simplified Chinese)")}</p></div>
-      <div class="ln" data-s="W"><b class="b W">W</b><p>${duo("Wade · 英语", "Wade · English")}</p></div>
+      ${["S", "W"].map((who) => `<div class="ln" data-s="${who}"><b class="b ${who}">${who}</b><p>${LANG[who] === "en"
+        ? duo(`${NAME[who]} · 英语`, `${NAME[who]} · English`)
+        : duo(`${NAME[who]} · 普通话（简体中文台词）`, `${NAME[who]} · Mandarin (script in simplified Chinese)`)}</p></div>`).join("")}
       <div class="ln" data-s="SW"><b class="b SW">S+W</b><p>${duo("一起说", "Said together")}</p></div>
       <p class="hint">${duo("各自在手机上选自己的名字：自己的台词放大，搭档的台词变小，用来接话。", "Each MC picks their own name on their phone: your lines show large, your partner's show small so you know when to come in.")}</p></section>
     <section class="note-card"><h3>${bi("活动信息", "Event")}</h3><p>${esc(EVENT.title)} · ${esc(EVENT.en)}<br>${duo("2026 年 11 月 13 日（星期五）", "Friday 13 November 2026")}<br>${esc(EVENT.venue)}<br>${duo("着装：银色 / 香槟色 / 金色", "Dress: silver, champagne, gold")}</p></section>`;
 }
 
 function renderAll() {
-  document.body.dataset.who = S.who;
+  document.body.dataset.who = S.who; document.body.dataset.lang = showLang();
   for (const b of $$("[data-who]")) b.setAttribute("aria-pressed", String(b.dataset.who === S.who));
   renderScript(); renderRun(); renderNotes(); paintPager();
 }
@@ -251,7 +258,7 @@ function step(d) {
   if (cur && cur.getBoundingClientRect().top < headBottom() - 40) goTo(cur);
   else if (i > 0) goTo(list[i - 1]);
 }
-const segName = (s) => `${hm12(s.t)} ${S.who === "W" ? s.en : s.zh}`;
+const segName = (s) => `${hm12(s.t)} ${lang() === "en" ? s.en : s.zh}`;
 function paintPager() {
   const pager = $("#pager");
   pager.hidden = S.tab !== "script" && S.tab !== undefined;
