@@ -3,6 +3,8 @@
 // {key} is a TBC field from FIELDS or LISTS: blank ones show highlighted in the script until filled in.
 // Timings follow the organiser's run sheet updated 4 Nov: walk-in from the chorus 「我是女神」, President first;
 // Eric at 8:00 and 8:50; fundraising sales and the lucky draw from 8:10 to 8:50; cake and group photo at 9:00.
+// 10 Nov: updated from Solomon's handwritten notes on the run sheet and his voice recording (prices, Calico, the District
+// leaders, five congratulatory videos, Sally's 10-year award, Best Dress, November birthdays, the two-man opener).
 
 export const EVENT = {
   date: [2026, 11, 13],
@@ -24,30 +26,31 @@ export const GROUPS = [
 
 // [key, zh label, en label, group, example, optional?]
 export const FIELDS = [
-  ["distName", "District 代表姓名", "District rep's name", "guests", "如 Jane Citizen"],
-  ["distTitleZh", "代表职衔（中文）", "Rep's title, Chinese", "guests", "如 区总监"],
-  ["distTitleEn", "代表职衔（英文）", "Rep's title, English", "guests", "e.g. District Governor"],
   ["sponsors", "赞助商", "Sponsors", "guests", "用逗号分隔 · comma-separated"],
   ["vips", "其他贵宾", "Other VIPs", "guests", "没有就留空 · leave blank if none", true],
   ["pres", "会长", "President", "club", "姓名 · name"],
   ["vp", "副会长", "Vice President", "club", "姓名 · name"],
   ["oathLang", "宣誓语言", "Oath language", "club", "拟用 English，需与 District 确认"],
-  ["band", "乐队名称", "Band name", "show", "the band"],
+  ["oathBy", "监誓人", "Who administers the oath", "club", "如 Sheryl Li 或 Gita Khatri · 待定"],
+  ["act", "双人开场表演（约 10 分钟）", "Two-man opener (about 10 minutes)", "show", "对答 / 短剧 · banter or a short skit"],
+  ["tianBioZh", "Tian 简介（中文）", "Tian's introduction, Chinese", "show", "资料之后补 · to come"],
+  ["tianBioEn", "Tian 简介（英文）", "Tian's introduction, English", "show", "to come"],
   ["eric1", "Eric 第一首（8:00）", "Eric's song 1 (8:00)", "show", "歌名 · title"],
   ["eric2", "Eric 第二首（8:50）", "Eric's song 2 (8:50)", "show", "歌名 · title"],
-  ["tianEn", "Tian 英文歌", "Tian's English song", "show", "歌名 · title"],
   ["raffleClose", "抽奖券截止时间", "Raffle sales close", "draw", "如 7:30 pm（流程写至 7:00）"],
   ["unclaimed", "无人认领规则", "Unclaimed prize rule", "draw", "如 30 秒无人上台即重抽"],
-  ["nepalBy", "尼泊尔奖杯颁奖人", "Nepal trophies presented by", "awards", "姓名 · name"],
+  ["nepalBy", "尼泊尔奖牌颁奖人", "Nepal awards presented by", "awards", "姓名 · name"],
+  ["bestDress", "Best Dress 得奖者", "Best Dress winner", "awards", "姓名 · name（评选方式待定）"],
+  ["sallyName", "Sally 全名", "Sally's full name", "awards", "姓名 · name"],
   ["boboName", "Bobo 全名", "Bobo's full name", "awards", "姓名 · name"],
-  ["boboBy", "Bobo 奖颁奖人", "Bobo's award presented by", "awards", "姓名 · name"],
+  ["boboBy", "长期服务奖颁奖人（Sally 和 Bobo）", "Long Service Awards presented by (Sally and Bobo)", "awards", "姓名 · name"],
   ["boboZh", "Bobo 一句话介绍（中文）", "Bobo citation, Chinese", "awards", "可留空 · optional", true],
   ["boboEn", "Bobo 一句话介绍（英文）", "Bobo citation, English", "awards", "optional", true],
-  ["bearPrice", "小熊价格", "Bear price", "sales", "如 $25"],
   ["sponsorPrice", "赞助商品价格", "Sponsor product prices", "sales", "如 见标价 · as marked"],
   ["pay", "付款方式", "Payment methods", "sales", "如 现金、刷卡 · cash or card"],
-  ["fundsFor", "义卖款项用途", "Funds raised go to", "sales", "如 尼泊尔项目 · the Nepal project"],
-  ["cakeBy", "切蛋糕嘉宾", "Cake cut by", "sales", "如 会长、副会长和理事 · names"],
+  ["bearCharity", "小熊善款接收机构", "Charity that gets the bear money", "sales", "帮助意外受伤儿童康复的中心 · 录音听成「Action」，请核实全名"],
+  ["fundsFor", "徽章及其他义卖款项用途", "Where pin and other sales go", "sales", "没有就留空 · leave blank if none", true],
+  ["cakeBy", "切蛋糕的人", "Cake cut by", "sales", "如 十一月生日的会员代表 · e.g. a November-birthday member"],
   ["photoSpot", "大合照位置", "Group photo spot", "sales", "如 舞台前 · the front of the stage"],
 ];
 
@@ -57,7 +60,7 @@ export const LISTS = {
     cols: [["board", "姓名", "Name"]] },
   prizes: { group: "draw", zh: "奖品（1–5 第一轮 8:10，6–10 第二轮 8:40）", en: "Prizes (1–5 at 8:10, 6–10 at 8:40)", n: 10, need: "all",
     cols: [["prize", "奖品", "Prize"], ["prizeBy", "提供者", "Donated by"]] },
-  nepal: { group: "awards", zh: "尼泊尔筹款奖项", en: "Nepal fundraising awards", n: 8, need: "one",
+  nepal: { group: "awards", zh: "尼泊尔筹款奖牌（6 枚）", en: "Nepal fundraising awards (6)", n: 6, need: "one",
     cols: [["award", "奖项", "Award"], ["winner", "得奖者", "Recipient"]] },
 };
 
@@ -80,13 +83,20 @@ const PRIZE_PATTERN = [
 ];
 
 export const SEGMENTS = [
-  { t: "18:30", e: "18:50", zh: "背景广播", en: "Doors & check-in", at: ["后台麦，不上台", "Off-stage mic"], items: [
-    ["cue", "6:30 和 6:45 各广播一次", "Announce at 6:30 and again at 6:45"],
-    ["S", "各位来宾晚上好，欢迎来到她慧狮子会的 A Night to Shine！请先到签到台签到。小天使正在各桌售卖抽奖券，5 澳元一张；徽章 15 澳元一个。"],
-    ["W", "Good evening, and welcome to A Night to Shine. Please check in at the front desk. Our Little Angels are coming round with raffle tickets at $5 each, and pins at $15."],
+  { t: "18:30", e: "18:50", zh: "背景广播 · 介绍 Calico 乐队", en: "Doors & check-in · Calico intro", at: ["后台麦，不上台", "Off-stage mic"], items: [
+    ["cue", "两位 MC 6:00 到场。6:30 广播一次；约 6:45 再广播并介绍乐队", "Both MCs on site by 6:00. Announce at 6:30, then again at about 6:45 with the band introduction"],
+    ["S", "各位来宾晚上好，欢迎来到她慧狮子会的 A Night to Shine！请先到签到台签到。七位小天使正在各桌售卖：抽奖券 5 澳元一张，徽章 20 澳元一个，还有狮子会小熊公仔 20 澳元一只。"],
+    ["W", "Good evening, and welcome to A Night to Shine. Please check in at the front desk. Our seven Little Angels are coming round with raffle tickets at $5 each, pins at $20, and Lions teddy bears at $20."],
+    ["cue", "约 6:45 简短介绍乐队", "At about 6:45, a short band introduction"],
+    ["S", "今晚的现场音乐，由 Calico 乐队为大家带来。Calico 成立于 2022 年，是墨尔本的一支三语融合现场乐队，擅长英语、粤语和华语歌曲，风格横跨 Pop、R&B、Jazz 和 Blues。三位成员是：鼓手兼音响师 Zayne Guo，键盘手 Fujia Luo，以及主唱 Yolanda Li。"],
+    ["W", "Tonight's music comes from Calico, a Melbourne fusion live band formed in 2022. They play in English, Cantonese and Mandarin, across pop, R&B, jazz and blues. On drums, and running the sound, Zayne Guo; on keys, Fujia Luo; and on vocals, Yolanda Li."],
   ] },
-  { t: "18:50", e: "19:00", zh: "入场排队 · 准备", en: "Line-up & standby", at: ["两位 MC 到台侧", "Both MCs to the side of the stage"], items: [
+  { t: "18:50", e: "19:00", zh: "入场排队 · 双人开场表演", en: "Line-up & two-man opener", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
     ["crit", "入场人员（人数以名单为准）离座到入口排队：会长、副会长在最前，理事其后，会员最后", "Everyone in the entrance (number as per the list) lines up at the entrance: President and VP at the front, then board, then members"],
+    ["crit", "双人表演约 10 分钟，7:00 准时接欢迎词", "The two-man opener runs about 10 minutes; hand over to the welcome at 7:00 sharp"],
+    ["cue", "表演内容：{act}", "Opener: {act}"],
+    ["cue", "主题：女性成长、良好沟通、情绪稳定、鼓励女性。这是女性狮子会，两位男士当陪衬，突出她们", "Theme: women's growth, good communication, emotional stability, encouraging women. It is a women's Lions club, so the two men play backup and make them shine"],
+    ["cue", "风格：别太闷，尺度可以大一点，把现场气氛带起来", "Style: not too boring; the humour can be a little cheekier; get the room lively"],
     ["cue", "试麦；确认 Tian 和《女神》伴奏就位", "Mic check; Tian and the 《女神》 track ready"],
     ["cue", "走道清空；靠舞台预留 2 桌给入场者", "Aisle clear; 2 tables near the stage reserved for those walking in"],
   ] },
@@ -102,8 +112,8 @@ export const SEGMENTS = [
     ["S", "今晚的着装是银色、香槟色和金色。穿金色的朋友，欢呼一下！香槟色的！银色的！"],
     ["W", "Make some noise if you're wearing gold! Champagne! Silver!"],
     ["cue", "每个颜色停一下，等欢呼", "Pause after each colour for the cheer"],
-    ["W", "Tonight we're honoured to welcome {distTitleEn} {distName}, and our sponsors, {sponsors}. Thank you for your support."],
-    ["S", "热烈欢迎 {distTitleZh} {distName}，以及各位赞助商：{sponsors}。谢谢你们的支持！"],
+    ["W", "Tonight we're honoured to welcome our District leaders: District Governor Sheryl Li, Immediate Past District Governor Samantha Wu, and Vice District Governor Gita Khatri. We also welcome our sponsors, {sponsors}. Thank you for your support."],
+    ["S", "今晚我们荣幸地欢迎区域领导们：现任区域总监 Sheryl Li，上一届区域总监 Samantha Wu，还有副区域总监 Gita Khatri。同时感谢各位赞助商：{sponsors}。谢谢你们的支持！"],
     ["S", "同时欢迎今晚的贵宾：{vips}。", { if: "vips" }],
     ["W", "We also welcome {vips}.", { if: "vips" }],
     ["S", "提醒大家：幸运抽奖只限购买了抽奖券的来宾参加。抽奖券 5 澳元一张，{raffleClose}前向小天使购买。8 点 10 分开始抽奖，共 10 份奖品。"],
@@ -116,6 +126,7 @@ export const SEGMENTS = [
   ] },
   { t: "19:02", e: "19:05", key: true, zh: "女神入场 · Tian《女神》", en: "Goddess Entrance · Tian sings 《女神》", at: ["MC 台侧，不说话", "MCs at the side, silent"], items: [
     ["crit", "MC 全程不说话，只带掌声。副歌「我是女神」响起、会长起步时，带最热烈的掌声", "MCs stay silent and lead the applause. Biggest applause when the chorus \"wǒ shì nǚshén\" starts and the President sets off"],
+    ["cue", "约 10–20 位创会会员正式入场（人数以名单为准）", "About 10 to 20 charter members walk in formally (number as per the list)"],
     ["table", "entrance"],
     ["cue", "Tian 唱完整首后，MC 再上台", "MCs go back up once Tian finishes the song"],
   ] },
@@ -123,41 +134,49 @@ export const SEGMENTS = [
     ["cue", "歌曲结束，带掌声", "Song ends; lead the applause"],
     ["S", "谢谢 Tian！刚才由会长带领入场的，就是她慧狮子会的理事团队和会员们，再次掌声送给她们！"],
     ["W", "Thank you, Tian! Ladies and gentlemen, led by our President, the board and members of She Rises. One more round of applause!"],
+    ["S", "{tianBioZh}"],
+    ["W", "{tianBioEn}"],
     ["S", "现在，有请她慧狮子会会长 {pres} 和副会长 {vp} 上台！"],
     ["W", "Please welcome our President, {pres}, and Vice President, {vp}!"],
     ["cue", "两人一起致辞约 10 分钟，一人普通话、一人英语；MC 不翻译", "They speak together for about 10 minutes, one in Mandarin, one in English. No MC translation"],
   ] },
-  { t: "19:15", e: "19:20", zh: "前菜", en: "Entrée", at: ["MC 台中", "Centre stage"], items: [
+  { t: "19:15", e: "19:20", zh: "乐队配乐 · 理事就位", en: "Band interlude · board gets ready", at: ["MC 台中", "Centre stage"], items: [
     ["crit", "舞台监督现在带 8 位理事到侧台", "Stage manager takes the 8 board members to the side of the stage now"],
-    ["W", "Thank you, {pres} and {vp}. Entrée is now being served. Please enjoy, with music from {band}."],
-    ["S", "谢谢会长和副会长！现在请大家享用前菜，乐队为大家演奏。"],
+    ["W", "Thank you, {pres} and {vp}! A little music from Calico while our board members get ready."],
+    ["S", "谢谢会长和副会长！请欣赏 Calico 乐队的演奏，理事们正在做准备。"],
   ] },
-  { t: "19:20", e: "19:25", zh: "District 代表致辞", en: "District representative", at: ["MC 台中，致辞时台侧", "Centre, then the side"], items: [
-    ["S", "各位来宾，接下来，我们荣幸邀请 {distTitleZh} {distName} 为大家致辞。"],
-    ["W", "It's our honour to invite {distTitleEn} {distName} to the stage. Please welcome {distName}."],
-    ["cue", "约 5 分钟。致辞后请代表留在台上", "About 5 minutes. Afterwards, ask the representative to stay on stage"],
+  { t: "19:20", e: "19:25", zh: "District 领导上台", en: "District leaders", at: ["MC 台中，致辞时台侧", "Centre, then the side"], items: [
+    ["S", "各位来宾，接下来，我们荣幸邀请两位区域领导上台：上一届区域总监 Samantha Wu，以及副区域总监 Gita Khatri。"],
+    ["W", "It's our honour to invite two District leaders to the stage: Immediate Past District Governor Samantha Wu and Vice District Governor Gita Khatri."],
+    ["S", "Gita Khatri 是 Lions 201 V1-4 区的副区域总监。她出生在印度，在澳大利亚生活了很多年，是一位物理治疗师，也是一位创业者；搬过无数次家，最后在 Trentham 安顿下来。她的领导风格亲切务实，热心帮助各个狮子会更强大、更紧密，也一起享受这段旅程。"],
+    ["W", "Gita Khatri is Vice District Governor for Lions District 201 V1-4, blending community spirit with a good dose of common sense. Born in India and at home in Australia for many years, she's a qualified physiotherapist and entrepreneur who has lived in more postcodes than she cares to count before settling in Trentham, with two dogs, Ziggy and Dewey, who are convinced they run the place. She's known for a warm, practical leadership style, and for helping clubs grow stronger and enjoy the journey together."],
+    ["cue", "约 5 分钟。谁致辞待确认（见「提醒」）。致辞后两位请留在台上。时间紧的话，Gita 的介绍只念前两句", "About 5 minutes. Who speaks is still to be confirmed (see Notes). Ask both to stay on stage afterwards. If time is short, read only the first two sentences of Gita's introduction"],
   ] },
-  { t: "19:25", e: "19:45", key: true, zh: "理事宣誓仪式", en: "Board oath ceremony", at: ["MC 台侧", "MCs at the side"], items: [
-    ["W", "Thank you, {distName}. Please stay with us: you'll be administering tonight's oath."],
-    ["S", "谢谢 {distName}，请您留步。"],
+  { t: "19:25", e: "19:45", key: true, zh: "理事宣誓仪式（Charter Ceremony）", en: "Board oath ceremony (Charter Ceremony)", at: ["MC 台侧", "MCs at the side"], items: [
+    ["W", "Thank you, Samantha and Gita. Please stay with us for the charter ceremony."],
+    ["S", "谢谢两位，请留步，一起见证接下来的 Charter Ceremony。"],
     ["S", "宣誓，是理事们对会员和社区的承诺。现在，有请她慧狮子会的 8 位理事上台！"],
     ["W", "An oath is a promise to our members and our community. Please welcome the eight board members of She Rises!"],
     ["cue", "逐一念名，每位上台带掌声，两位 MC 轮流念", "Read each name as they walk up, taking turns"],
     ["list", "board"],
-    ["cue", "宣誓语言：{oathLang}。交给 District 代表主持", "Oath in {oathLang}, administered by the representative"],
-    ["W", "{distName}, over to you."],
+    ["cue", "宣誓语言：{oathLang}。监誓人：{oathBy}（谁监誓、谁颁发给 8 位理事还没定，见「提醒」）", "Oath in {oathLang}, administered by {oathBy} (who administers it and who presents to the eight is not settled; see Notes)"],
+    ["W", "{oathBy}, over to you."],
     ["cue", "宣誓结束", "After the oath"],
     ["S", "恭喜她慧狮子会理事团队！掌声送给她们！"],
     ["W", "Congratulations to the board of She Rises!"],
+    ["cue", "待确认：现任区域总监 Sheryl Li 可能在宣誓后讲几句话，再合照", "To confirm: the current District Governor, Sheryl Li, may say a few words after the oath, before the photo"],
+    ["S", "有请现任区域总监 Sheryl Li 为大家讲几句话！"],
+    ["W", "Please welcome our District Governor, Sheryl Li, for a few words."],
   ] },
   { t: "19:45", e: "19:50", zh: "宣誓合照", en: "Oath photo", at: ["MC 台侧", "MCs at the side"], items: [
-    ["W", "Could all our members please join the board and {distName} on stage for a photo."],
-    ["S", "请所有会员上台，和理事团队、{distName}一起合照！"],
+    ["W", "Could all our members please join the board and our District leaders on stage for a photo."],
+    ["S", "请所有会员上台，和理事团队、区域领导们一起合照！"],
     ["cue", "摄影就位，约 5 分钟", "Photographer ready; about 5 minutes"],
   ] },
-  { t: "19:50", e: "20:00", zh: "主菜", en: "Main course", at: ["MC 台中", "Centre stage"], items: [
-    ["S", "谢谢大家，请理事和会员们回座。主菜马上上桌，请慢用。"],
-    ["W", "Thank you, everyone. Please return to your seats. Main course is on its way. Enjoy!"],
+  { t: "19:50", e: "20:00", zh: "祝贺视频（5 条）", en: "Five congratulatory videos", at: ["MC 台中", "Centre stage"], items: [
+    ["S", "谢谢大家，请理事和会员们回座。接下来，请看来自各地狮子会，送给她慧狮子会的祝贺视频！"],
+    ["W", "Thank you, everyone. Please return to your seats. Now, congratulations to She Rises from Lions clubs near and far, in five short videos."],
+    ["cue", "5 条视频，约 5–10 分钟，放完接 Eric。确认视频文件、顺序和音响", "Five videos, about 5 to 10 minutes, then Eric. Confirm the files, the order and the sound"],
     ["cue", "8:00 前确认 Eric 就位", "Confirm Eric is ready before 8:00"],
   ] },
   { t: "20:00", e: "20:10", zh: "Eric 演唱", en: "Eric performs", at: ["MC 台中，演唱时台侧", "Centre, then the side"], items: [
@@ -166,11 +185,13 @@ export const SEGMENTS = [
     ["cue", "一首，约 3 分钟。抽奖助理带票根和奖品到侧台", "One song, about 3 minutes. Draw assistant brings the stubs and prizes to the side of the stage"],
   ] },
   { t: "20:10", e: "20:20", key: true, zh: "义卖开始 + 幸运抽奖（第一轮）", en: "Fundraising sales + lucky draw, round 1", at: ["两位 MC 台中，赞助商品在台上", "Both MCs centre stage, sponsor products on display"], items: [
-    ["W", "Thank you, Eric! It's fundraising time. Teddy bears at {bearPrice}, pins at $15, and the sponsor products here on stage, {sponsorPrice}. Funds raised go to {fundsFor}."],
-    ["S", "谢谢 Eric！义卖时间到！今晚的义卖品有：小熊公仔 {bearPrice}，徽章 15 澳元，还有台上的赞助商品 {sponsorPrice}。义卖所得将用于 {fundsFor}。"],
+    ["W", "Thank you, Eric! It's fundraising time. Teddy bears are $20 each: buy one and it is donated; buy two for $40, and you take one home while the other is donated. Pins are $20 each, and the sponsor products here on stage are {sponsorPrice}. The bear money goes to {bearCharity}, which helps children recover after accidents."],
+    ["S", "谢谢 Eric！义卖时间到！小熊公仔每只 20 澳元：买一只，是直接捐出；买两只共 40 澳元，一只带回家，一只捐出。徽章每个 20 澳元，台上还有赞助商品 {sponsorPrice}。小熊的善款将捐给 {bearCharity}，帮助在意外中受伤的孩子康复。"],
+    ["S", "徽章和其他义卖所得将用于 {fundsFor}。", { if: "fundsFor" }],
+    ["W", "Pin and other sales go to {fundsFor}.", { if: "fundsFor" }],
     ["S", "小天使现在就到各桌，可用 {pay} 付款。"],
     ["W", "Our Little Angels are coming to your tables now. You can pay by {pay}."],
-    ["cue", "同时开始抽奖", "Start the draw while they sell"],
+    ["cue", "同时开始抽奖，由 Michelle 统筹；10 份奖品穿插进行，随机应变", "Start the draw while they sell; Michelle runs it, and the ten prizes are drawn in between, as the night allows"],
     ["W", "And while they do, let's start the lucky draw! Raffle tickets out, please. Who's feeling lucky tonight? Hands up!"],
     ["S", "同时，幸运抽奖开始！请拿出抽奖券。觉得自己今晚手气好的，举手！感谢各位赞助商提供奖品。10 份奖品分两轮抽，现在先抽前 5 份。"],
     ...PRIZE_PATTERN,
@@ -180,16 +201,23 @@ export const SEGMENTS = [
     ["W", "Congratulations! Five more prizes at about 8:40, so hold on to your tickets."],
     ["crit", "8:20 准时颁奖", "Awards start at 8:20 sharp"],
   ] },
-  { t: "20:20", e: "20:30", key: true, zh: "尼泊尔筹款颁奖 + Bobo 20 年长期服务奖", en: "Nepal awards + Bobo's 20-Year Long Service Award", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
-    ["S", "今年，她慧狮子会为尼泊尔筹得一万五千澳元！感谢每一位支持者。"],
-    ["W", "This year, She Rises raised fifteen thousand dollars for Nepal. Thank you to everyone who gave."],
-    ["S", "下面颁发尼泊尔筹款奖杯，由 {nepalBy} 颁发。念到名字的得奖者，请上台领奖。"],
-    ["W", "Our trophies will be presented by {nepalBy}. When we call your name, please come up."],
+  { t: "20:20", e: "20:30", key: true, zh: "尼泊尔筹款颁奖 + 长期服务奖（Sally 10 年、Bobo 20 年）", en: "Nepal awards + Long Service Awards (Sally 10 years, Bobo 20 years)", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
+    ["S", "短短一个星期，她慧狮子会就为尼泊尔筹得一万五千澳元！感谢每一位支持者。"],
+    ["W", "In just one week, She Rises raised fifteen thousand dollars for Nepal. Thank you to everyone who gave."],
+    ["cue", "待确认：Melvin Jones Fellowship 是不是这 6 枚奖牌？是的话在颁发前念下面两句；不是的话，移到对应的奖项前", "To confirm: is the Melvin Jones Fellowship these six awards? If so, read the next two lines just before presenting them; if not, move them to the right award"],
+    ["S", "Melvin Jones Fellowship，以国际狮子会 Lions Clubs International 的创始人 Melvin Jones 命名。"],
+    ["W", "The Melvin Jones Fellowship is named after Melvin Jones, the founder of Lions Clubs International."],
+    ["S", "下面颁发尼泊尔筹款奖牌，一共 6 枚，由 {nepalBy} 颁发。念到名字的得奖者，请上台领奖。"],
+    ["W", "Six awards will be presented by {nepalBy}. When we call your name, please come up."],
     ["list", "nepal"],
     ["S", "请所有得奖者留在台上，一起合照！"],
     ["W", "Recipients, please stay on stage for a group photo."],
     ["cue", "合照后得奖者回座", "After the photo, recipients return to their seats"],
-    ["W", "Our next award honours twenty years of service. Please welcome Bobo, {boboName}, to receive the 20-Year Long Service Award, presented by {boboBy}."],
+    ["W", "Next, two awards honouring long service. First, ten years: please welcome Sally, {sallyName}, to receive the 10-Year Long Service Award, presented by {boboBy}."],
+    ["S", "接下来是两个长期服务奖。首先是十年：有请 Sally（{sallyName}）上台，领取 10 年长期服务奖，由 {boboBy} 颁发！"],
+    ["S", "十年，谢谢您，Sally！"],
+    ["W", "Ten years. Thank you, Sally!"],
+    ["W", "And now, twenty years of service. Please welcome Bobo, {boboName}, to receive the 20-Year Long Service Award, presented by {boboBy}."],
     ["S", "下一个奖项，表彰二十年的付出。有请 Bobo（{boboName}）上台，领取 20 年长期服务奖，由 {boboBy} 颁发！"],
     ["S", "{boboZh}", { if: "boboZh" }],
     ["W", "{boboEn}", { if: "boboEn" }],
@@ -197,13 +225,13 @@ export const SEGMENTS = [
     ["W", "Twenty years. Thank you, Bobo!"],
   ] },
   { t: "20:30", e: "20:35", zh: "会员分享（Victoria）", en: "Member sharing (Victoria)", at: ["MC 台中，分享时台侧", "Centre, then the side"], items: [
-    ["S", "恭喜 Bobo！接下来，有请会员 Victoria，分享她这一年参加她慧狮子会活动的感受。"],
-    ["W", "Next, Victoria will share what this year with She Rises has meant to her. Please welcome Victoria."],
+    ["S", "恭喜 Bobo！接下来，有请会员 Victoria。Victoria，可以和我们分享一下做会员的心得和经历吗？"],
+    ["W", "Next, please welcome Victoria. Victoria, would you share what being a member of She Rises has meant to you?"],
     ["cue", "约 3 分钟", "About 3 minutes"],
   ] },
   { t: "20:35", e: "20:40", zh: "Tian 演唱英文歌", en: "Tian's English song", at: ["MC 台中，演唱时台侧", "Centre, then the side"], items: [
-    ["W", "Thank you, Victoria. Tian is back, with an English song: {tianEn}. Please welcome Tian!"],
-    ["S", "谢谢 Victoria 的分享！Tian 再次登场，为我们演唱英文歌《{tianEn}》，掌声有请！"],
+    ["W", "Thank you, Victoria. Tian is back, with an English song: A Million Dreams. Please welcome Tian!"],
+    ["S", "谢谢 Victoria 的分享！Tian 再次登场，为我们演唱英文歌《A Million Dreams》，掌声有请！"],
     ["cue", "约 5 分钟。唱完接第二轮抽奖", "About 5 minutes. The second draw round follows"],
   ] },
   { t: "20:40", e: "20:50", key: true, zh: "幸运抽奖（第二轮）", en: "Lucky draw, round 2", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
@@ -216,14 +244,26 @@ export const SEGMENTS = [
     ["S", "恭喜所有中奖的来宾！"],
     ["crit", "8:50 前抽完，接 Eric", "Finish by 8:50; Eric is next"],
   ] },
-  { t: "20:50", e: "21:00", zh: "Eric 再次演唱", en: "Eric performs again", at: ["MC 台中，演唱时台侧", "Centre, then the side"], items: [
+  { t: "20:50", e: "21:00", zh: "Eric 再次演唱 · Best Dress 大奖", en: "Eric performs again · Best Dress prize", at: ["MC 台中，演唱时台侧", "Centre, then the side"], items: [
     ["S", "接下来，Eric 再次登场，为我们带来《{eric2}》！掌声有请！"],
     ["W", "And Eric is back with one more: {eric2}. Please welcome Eric!"],
     ["cue", "一首，约 3 分钟。准备蛋糕和刀，摄影就位", "One song, about 3 minutes. Cake and knife ready; photographer in place"],
+    ["cue", "Eric 唱完后、切蛋糕前宣布 Best Dress 神秘大奖，颁给今晚在场穿得最靓的来宾。谁评选、奖品是什么还没定", "After Eric and before the cake, announce the mystery Best Dress prize for the best-dressed guest tonight. Who judges it and what the prize is are still open"],
+    ["W", "Thank you, Eric! One more surprise before the cake: our mystery Best Dress prize, for the best-dressed guest here tonight. And the winner is... {bestDress}!"],
+    ["S", "谢谢 Eric！切蛋糕之前，还有一个惊喜：Best Dress 神秘大奖，送给今晚在场穿得最靓的来宾。得奖者是……{bestDress}！"],
   ] },
-  { t: "21:00", e: "21:10", key: true, zh: "切蛋糕 · 大合照", en: "Cake cutting & group photo", at: ["MC 台中，蛋糕在台上", "Centre stage, cake on stage"], items: [
-    ["W", "Thank you, Eric! It's She Rises' first Christmas, and that calls for cake. Please welcome {cakeBy} to cut the cake!"],
-    ["S", "谢谢 Eric！今晚是她慧狮子会的第一个圣诞，当然要切蛋糕！有请 {cakeBy} 上台！"],
+  { t: "21:00", e: "21:10", key: true, zh: "切蛋糕 · 十一月生日 · 大合照", en: "Cake, November birthdays & group photo", at: ["MC 台中，蛋糕在台上", "Centre stage, cake on stage"], items: [
+    ["W", "Thank you, everyone! It's She Rises' first Christmas, and that calls for cake. Tonight we're also celebrating everyone with a November birthday!"],
+    ["S", "今晚是她慧狮子会的第一个圣诞，当然要切蛋糕！而且我们还要一起庆祝所有十一月生日的朋友！"],
+    ["cue", "三批依次上台：① 她慧狮子会会员 ② 其他狮子会的朋友 ③ 其他十一月生日的来宾", "Three groups come up in turn: 1) She Rises members, 2) friends from other Lions clubs, 3) any other guest born in November"],
+    ["S", "首先，她慧狮子会的会员里，十一月生日的，请上台！"],
+    ["W", "First, members of She Rises with a November birthday, please come up!"],
+    ["S", "接下来，来自其他狮子会、十一月生日的朋友们，请上台！"],
+    ["W", "Next, our friends from other Lions clubs with a November birthday!"],
+    ["S", "最后，今晚其他十一月生日的来宾，也请上台！"],
+    ["W", "And finally, any other guest with a November birthday, please join us!"],
+    ["W", "Please welcome {cakeBy} to cut the cake!"],
+    ["S", "有请 {cakeBy} 切蛋糕！"],
     ["cue", "带全场倒数：三、二、一！切蛋糕时带掌声", "Lead a countdown, three, two, one, and applause for the cut"],
     ["S", "切完蛋糕，请全场来宾到 {photoSpot}，一起大合照！甜品也已经上桌了。"],
     ["W", "Now let's get everyone in one photo. Please join us at {photoSpot}. Dessert is being served."],
@@ -231,13 +271,13 @@ export const SEGMENTS = [
   ] },
   { t: "21:10", e: "21:30", zh: "Live band", en: "Live band", at: ["MC 台中，之后自由", "Centre, then free"], items: [
     ["S", "谢谢大家！接下来是 Live band 时间，请尽情享受音乐、自由交流。小天使还在各桌义卖徽章和小熊，到 9 点 15 分。"],
-    ["W", "Thank you! It's live band time with {band}. Enjoy the music and the night. Our Little Angels are still selling pins and bears until 9:15."],
+    ["W", "Thank you! It's live band time with Calico. Enjoy the music and the night. Our Little Angels are still selling pins and bears until 9:15."],
     ["cue", "第二轮不再卖抽奖券", "No more raffle tickets"],
   ] },
   { t: "21:30", e: "22:00", zh: "致谢 · 送客", en: "Thank-yous & farewell", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
     ["W", "Ladies and gentlemen, that brings us to the end of A Night to Shine. A few thank-yous."],
-    ["S", "感谢各位赞助商、各位来宾、{distName}、Tian、Eric 和乐队、她慧狮子会理事团队、所有义工和小天使，还有 Rombe Rooftop。"],
-    ["W", "Thank you to our sponsors, our guests, {distName}, Tian, Eric and {band}, the She Rises board, our volunteers and Little Angels, and Rombe Rooftop."],
+    ["S", "感谢各位赞助商、各位来宾、区域领导 Sheryl Li、Samantha Wu 和 Gita Khatri、Tian、Eric 和 Calico 乐队、她慧狮子会理事团队、所有义工和小天使，还有 Rombe Rooftop。"],
+    ["W", "Thank you to our sponsors, our guests, our District leaders Sheryl Li, Samantha Wu and Gita Khatri, Tian, Eric and Calico, the She Rises board, our volunteers and Little Angels, and Rombe Rooftop."],
     ["S", "离开前别忘了带走伴手礼。祝大家圣诞快乐，晚安！"],
     ["W", "Don't forget your gift bag on the way out. Merry Christmas, and good night!"],
   ] },
@@ -270,19 +310,21 @@ export const RUNSHEET = [
 ];
 
 export const RUNSHEET_NOTE = [
-  "时间调整（11 月 4 日版）：义卖与幸运抽奖于 8:10 一同开始（至 8:50）；Eric 于 8:50 再次演唱；9:00 切蛋糕大合照并上甜品，Live band 顺延至 9:10。金线标出为本次更新项目。MC 稿把 10 份奖品分两轮：8:10 抽 1–5，8:40（Tian 之后）抽 6–10。",
-  "Timing (4 November version): fundraising sales and the lucky draw start together at 8:10 (until 8:50); Eric sings again at 8:50; cake cutting, group photo and dessert at 9:00, with the live band at 9:10. Gold-edged rows changed in this update. The MC script splits the 10 prizes into two rounds: 1–5 at 8:10, 6–10 at 8:40 after Tian.",
+  "时间调整（11 月 4 日版）：义卖与幸运抽奖于 8:10 一同开始（至 8:50）；Eric 于 8:50 再次演唱；9:00 切蛋糕大合照并上甜品，Live band 顺延至 9:10。金线标出为本次更新项目。MC 稿把 10 份奖品分两轮：8:10 抽 1–5，8:40（Tian 之后）抽 6–10。手写更新（11 月 10 日）：7:15 前菜和 7:50 主菜被划掉；MC 稿把 7:15 当作乐队配乐，7:50 当作 5 条祝贺视频。",
+  "Timing (4 November version): fundraising sales and the lucky draw start together at 8:10 (until 8:50); Eric sings again at 8:50; cake cutting, group photo and dessert at 9:00, with the live band at 9:10. Gold-edged rows changed in this update. The MC script splits the 10 prizes into two rounds: 1–5 at 8:10, 6–10 at 8:40 after Tian. Handwritten update (10 November): the 7:15 entrée and 7:50 main course are crossed out; the MC script treats 7:15 as a band interlude and 7:50 as five congratulatory videos.",
 ];
 
 // Notes tab. crit = must-not-miss items; check = open questions to settle before the night.
 export const NOTES = {
   crit: [
+    ["两位 MC 6:00 到场。Felicia 统筹台下和幕后", "Both MCs on site by 6:00. Felicia coordinates offstage and backstage"],
+    ["价格：抽奖券 $5，徽章 $20，小熊 $20。单买一只小熊全部捐出，不能带走；买两只 $40，一只带回家，一只捐出", "Prices: raffle ticket $5, pin $20, bear $20. One bear is donated and not taken home; two bears cost $40, with one taken home and one donated"],
     ["幸运抽奖只限购买抽奖券的来宾。海报写过「包含幸运抽奖」，开场必须讲清楚", "The lucky draw is for raffle ticket holders only. The poster mentioned a lucky draw, so say this clearly at the opening"],
     ["音乐开始前讲完全部介绍；Tian 唱歌时 MC 不说话，只带掌声。入场者的介绍留到歌后", "Finish all introductions before the music. While Tian sings, MCs stay silent and only lead applause. Introduce those who walked in after the song"],
     ["6:50 入场人员（人数以名单为准）离座到入口排队：会长、副会长在最前，理事其后，会员最后", "At 6:50 everyone in the entrance (number as per the list) lines up: President and VP in front, board behind, members last"],
     ["副歌「我是女神」响起时才起步，会长先走", "Nobody walks until the chorus \"wǒ shì nǚshén\" begins; the President goes first"],
     ["预留 2 桌靠近舞台给入场者，大家走到同一区域入座", "2 tables near the stage are reserved for those walking in, so everyone sits in one area"],
-    ["District 代表致辞时，8 位理事已在侧台；7:15 前菜时集合", "The 8 board members are waiting at the side of the stage during the District speech; they gather at 7:15"],
+    ["District 领导上台时，8 位理事已在侧台；7:15 乐队配乐时集合", "The 8 board members are waiting at the side of the stage while the District leaders are on stage; they gather at 7:15 during the band interlude"],
     ["抽奖分两轮：8:10 抽 1–5，8:40 抽 6–10，8:50 前抽完；8:20 准时颁奖", "The draw runs in two rounds: 1–5 at 8:10, 6–10 at 8:40, done by 8:50. Awards start at 8:20 sharp"],
   ],
   check: [
@@ -294,8 +336,15 @@ export const NOTES = {
     ["抽奖券截止：流程写 6:30–7:00 售卖，但 7:00 开场才讲规则，听完规则的来宾已买不到。建议延长到开场后（填在「待填」）", "Raffle sales close at 7:00 in the run sheet, but the rules are announced at 7:00, so guests who hear them can't buy. Extend sales past the opening (set it in TBC)"],
     ["宣誓 8 位理事：确认名单。入场人数以名单为准", "Confirm the names of the 8 board members taking the oath. The entrance number follows the list"],
     ["宣誓语言拟用英文，需与 District 确认誓词和流程", "The oath will likely be in English; confirm the wording and procedure with the District"],
-    ["尼泊尔筹款颁奖：确认奖项名称、奖杯数量和上台顺序，提前交给 MC", "Nepal awards: confirm award names, trophy count and order, and give them to the MCs in advance"],
-    ["小熊和赞助商品价格、付款方式（现金 / 刷卡 / 转账）、抽奖方式", "Bear and sponsor product prices, payment methods (cash / card / transfer), how the draw is run"],
+    ["尼泊尔筹款颁奖：6 枚奖牌，确认奖项名称、得奖者名单和上台顺序；Melvin Jones Fellowship 是否就是这 6 枚；一句话说明筹款背景（录音里没说清是什么事件）", "Nepal awards: six awards, so confirm award names, recipients and order; whether the Melvin Jones Fellowship is these six; and one line on the background to the fundraising (the recording did not make clear what happened)"],
+    ["赞助商品价格、付款方式（现金 / 刷卡 / 转账）、抽奖方式。小熊和徽章已定为 $20", "Sponsor product prices, payment methods (cash / card / transfer), how the draw is run. Bears and pins are settled at $20"],
+    ["District 领导的分工还没理清：7:20 谁致辞？谁监誓、谁颁发给 8 位理事？Sheryl Li 是否在宣誓后讲话？拼写也请核对（手写 Cheryl Lee，打字 Sheryl Li）", "The District leaders' roles are not settled: who speaks at 7:20, who administers the oath, who presents to the eight, and does Sheryl Li speak after the oath? Please also check the spelling (handwritten Cheryl Lee, typed Sheryl Li)"],
+    ["双人开场表演（6:50–7:00，约 10 分钟）：主题已定，形式未定（对答还是短剧）", "Two-man opener (6:50 to 7:00, about 10 minutes): the theme is set, the format is not (banter or a short skit)"],
+    ["前菜和主菜在流程表上被手写划掉，稿里不再报上菜。确认当晚是否上菜、几点上", "The entrée and main course are crossed out by hand on the run sheet, so the script no longer announces food. Confirm whether food is served and when"],
+    ["女神集合位置：手写写「门外」，录音说在会场一端的长桌旁。确认在哪里集合", "Where the goddesses gather: the handwritten note says outside the door, the recording says beside the long tables at one end of the venue. Confirm which"],
+    ["5 条祝贺视频：确认文件、顺序、总长（约 5–10 分钟）和谁播放", "Five congratulatory videos: confirm the files, order, total length (about 5 to 10 minutes) and who plays them"],
+    ["Best Dress 神秘大奖：谁评选、奖品是什么、得奖者几点前定下来", "Mystery Best Dress prize: who judges, what the prize is, and when the winner is settled"],
+    ["还缺的资料：Tian 简介、Eric 两首歌名、Sally 全名、小熊善款机构全名（录音听成 Action）、「女神」的第二个原因（录音只讲了第一个：Tian 唱《女神》）", "Still missing: Tian's introduction, Eric's two songs, Sally's full name, the full name of the charity that gets the bear money (heard as Action), and the second reason for the name Goddess (the recording gave only the first: Tian sings 《女神》)"],
   ],
   link: ["串场三步：收尾上一环节 → 预告下一环节 → 邀请下一位上台", "Every link: wrap up the last segment → say what's next → invite the next person up"],
 };

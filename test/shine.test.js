@@ -83,3 +83,38 @@ test("every segment has both languages, and MC lines alternate speakers within r
   }
   assert.ok(ENTRANCE.every((r) => r.length === 3 && r.every(Boolean)), "entrance cue rows need a cue, zh and en");
 });
+
+test("10 Nov updates: prices, Calico, District leaders, videos, Sally, Best Dress and November birthdays", () => {
+  const flat = SEGMENTS.flatMap((s) => [s.zh, s.en, ...s.items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))]).join("\n");
+  const at = (t) => SEGMENTS.find((s) => s.t === t);
+  const seg = (t) => [at(t).zh, at(t).en, ...at(t).items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))].join("\n");
+  // Prices: raffle $5, pins $20, bears $20 (one donated; two for $40, one taken home).
+  assert.doesNotMatch(flat, /15 澳元|pins at \$15/, "pins are $20, not $15");
+  assert.match(flat, /徽章 20 澳元/);
+  assert.match(flat, /pins at \$20/);
+  assert.match(seg("20:10"), /buy two for \$40/);
+  assert.match(seg("20:10"), /买两只共 40 澳元/);
+  // Calico replaces the band-name placeholder and is introduced at about 6:45.
+  assert.match(seg("18:30"), /Zayne Guo[\s\S]*Fujia Luo[\s\S]*Yolanda Li/);
+  assert.doesNotMatch(flat, /\{band\}/);
+  // The three District leaders by name.
+  for (const n of ["Sheryl Li", "Samantha Wu", "Gita Khatri"]) assert.match(flat, new RegExp(n));
+  assert.match(seg("19:20"), /Ziggy and Dewey/);
+  // 7:15 and 7:50 were crossed out on the run sheet: no food announcements, a band interlude and five videos instead.
+  assert.doesNotMatch(flat, /Entrée|Main course|前菜|主菜/);
+  assert.match(at("19:15").en, /Band interlude/);
+  assert.match(at("19:50").zh, /视频/);
+  assert.match(seg("19:50"), /five short videos/);
+  // Two long-service awards, Nepal awards are six, and the Best Dress prize comes before the cake.
+  assert.equal(LISTS.nepal.n, 6);
+  assert.match(seg("20:20"), /10-Year Long Service Award/);
+  assert.match(seg("20:20"), /20-Year Long Service Award/);
+  assert.ok(seg("20:20").indexOf("Sally") < seg("20:20").indexOf("Bobo"), "Sally's ten years come before Bobo's twenty");
+  assert.match(seg("20:50"), /Best Dress/);
+  assert.match(seg("21:00"), /November birthday/);
+  assert.match(seg("21:00"), /十一月生日/);
+  assert.match(seg("20:35"), /A Million Dreams/);
+  // The two-man opener fills 6:50 to 7:00 and is a placeholder until the format is decided.
+  assert.equal(at("18:50").e, "19:00");
+  assert.match(seg("18:50"), /\{act\}/);
+});
