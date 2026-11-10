@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { FIELDS, LISTS, GROUPS, SEGMENTS, RUNSHEET, ENTRANCE, SPEAKER } from "../shine/data.js";
+import { FIELDS, LISTS, GROUPS, SEGMENTS, RUNSHEET, ENTRANCE, SPEAKER, DEFAULTS } from "../shine/data.js";
 
 const keys = new Set(FIELDS.map((f) => f[0]));
 for (const L of Object.values(LISTS)) for (let i = 1; i <= L.n; i++) for (const [c] of L.cols) keys.add(c + i);
@@ -159,4 +159,21 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
   // Resolved questions are no longer fields.
   const keys = FIELDS.map((f) => f[0]);
   for (const k of ["pres", "oathBy", "oathLang", "act", "sallyName", "distName", "band", "nepalBy", "boboBy"]) assert.ok(!keys.includes(k), `${k} should be gone`);
+});
+
+test("10 Nov documents: defaults come from the sponsor slide, name pins and Operation Bear flyer", () => {
+  for (const k of Object.keys(DEFAULTS)) assert.ok(keys.has(k), `default for unknown field ${k}`);
+  assert.equal(DEFAULTS.vp, "Mireille Leong");
+  assert.equal(DEFAULTS.bearCharity, "Operation Bear");
+  assert.equal(DEFAULTS.sponsors.split(", ").length, 10, "ten sponsors on the thank-you slide");
+  // Eight oath-takers are the ten officers without the President and Vice President; the Communications Chairman's name is left blank.
+  const board = Array.from({ length: LISTS.board.n }, (_, j) => DEFAULTS["board" + (j + 1)]);
+  assert.equal(LISTS.board.n, 8);
+  assert.deepEqual(board.map((b) => !!b), [true, true, true, true, false, true, true, true]);
+  assert.ok(!Object.values(DEFAULTS).some((v) => /Salli Hon/.test(v)), "the President speaks separately and is not in the oath list");
+  const flat = SEGMENTS.flatMap((s) => s.items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))).join("\n");
+  assert.doesNotMatch(flat, /Bobo, \{boboName\}|Bobo（\{boboName\}）/, "Bobo's full name is used on its own");
+  assert.match(flat, /Operation Bear teddy bears at \$20/);
+  assert.match(flat, /Victoria Police, Ambulance Victoria, the CFA, the SES and hospitals/);
+  assert.doesNotMatch(flat, /recover after accidents/);
 });
