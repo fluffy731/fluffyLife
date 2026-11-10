@@ -12,7 +12,7 @@ All things life, and whatever comes up next: language trainers, a no-opinion new
 | English · 영어 | [`/english/`](https://fluffy731.github.io/fluffyLife/english/) | Intermediate-to-advanced English for a Korean speaker |
 | Briefing · 뉴스 | [`/news/`](https://fluffy731.github.io/fluffyLife/news/) | Hourly news from free-to-read outlets, opinion removed |
 | MC 主持稿 | [`/mc/`](https://fluffy731.github.io/fluffyLife/mc/) | MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final |
-| A Night to Shine MC | [`/shine/`](https://fluffy731.github.io/fluffyLife/shine/) | Two-MC script (Solomon 普通话, Wade English) for She Rises' 13 November black-tie Christmas night |
+| A Night to Shine MC | [`/shine/`](https://fluffy731.github.io/fluffyLife/shine/) | Two-MC script (Solomon English, Wade 普通话, for now) for She Rises' 13 November black-tie Christmas night |
 
 The bare address forwards to `/korean/`, so home-screen icons saved from it before the other apps existed keep working.
 
@@ -203,12 +203,12 @@ The MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final: mornin
 
 # A Night to Shine MC (`/shine/`)
 
-The two-MC script for She Rises' A Night to Shine, Friday 13 November 2026, Rombe Rooftop. Solomon's lines are Mandarin in simplified Chinese, Wade's are English. Timings follow the organiser's run sheet updated 4 November: a warm-up opening, the Goddess Entrance at 7:02 walking in from the chorus 「我是女神」 with the President first and members last, Eric at 8:00 and 8:50, fundraising sales and the lucky draw from 8:10 (prizes 1–5 at 8:10, 6–10 at 8:40), awards at 8:20, cake cutting and the group photo at 9:00, live band at 9:10.
+The two-MC script for She Rises' A Night to Shine, Friday 13 November 2026, Rombe Rooftop. From 10 November Solomon speaks English and Wade speaks Mandarin in simplified Chinese, for now; the `SPEAKER` constant in `shine/data.js` swaps them back. Timings follow the organiser's run sheet updated 4 November: a warm-up opening, the Goddess Entrance at 7:02 walking in from the chorus 「我是女神」 with the President first and members last, Eric at 8:00 and 8:50, fundraising sales and the lucky draw from 8:10 (prizes 1–5 at 8:10, 6–10 at 8:40), awards at 8:20, cake cutting and the group photo at 9:00, live band at 9:10.
 
 - **Whose lines:** each MC picks their name at the top of the script. Their own lines show large; the partner's shrink to hand-off cues, and stage directions show in their language only.
 - **TBC fields:** names, songs, prizes, prices and the like that are not confirmed yet show in yellow in the script. Tap one to fill it in on the 待填 TBC tab, which counts what is left. Entries stay in that browser; **Copy entries** makes a link (or code) the other MC opens to import them.
 - **On the night:** the bar under the title shows the current segment and the minutes left, the pager and a Bluetooth page-turner step through segments, prizes can be ticked off as they are drawn, and the screen is kept awake. Add `?at=19:12` to the address to rehearse at a given time on any day.
-- **Edit the script:** everything is in `shine/data.js`; `node --test test/shine.test.js` checks that every `{field}` exists, segments run back to back, Solomon's lines use simplified characters and Wade's are English only.
+- **Edit the script:** everything is in `shine/data.js`; `node --test test/shine.test.js` checks that every `{field}` exists, segments run back to back, Chinese lines use simplified characters, English lines have no Chinese, and both MCs speak in every spoken segment.
 
 # Stocks (`/stocks/`, unlisted)
 
