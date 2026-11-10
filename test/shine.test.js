@@ -177,3 +177,16 @@ test("10 Nov documents: defaults come from the sponsor slide, name pins and Oper
   assert.match(flat, /Victoria Police, Ambulance Victoria, the CFA, the SES and hospitals/);
   assert.doesNotMatch(flat, /recover after accidents/);
 });
+
+test("11 Nov: Tian's introduction is filled in, in simplified Chinese and in English", () => {
+  const TRAD = /[來華導獲賽區軍國聲亞擔視廣躍樂體領現儀]/;
+  assert.doesNotMatch(DEFAULTS.tianBioZh, TRAD, "the Chinese introduction must use simplified characters");
+  assert.match(DEFAULTS.tianBioZh, /墨尔本[\s\S]*《中国好声音》澳洲赛区亚军[\s\S]*广州电视台春节晚会/);
+  assert.doesNotMatch(DEFAULTS.tianBioEn, /[㐀-鿿]/, "the English introduction has no Chinese");
+  assert.match(DEFAULTS.tianBioEn, /Melbourne[\s\S]*runner-up[\s\S]*The Voice of China[\s\S]*Guangzhou TV Spring Festival Gala/);
+  assert.doesNotMatch(DEFAULTS.tianBioEn, /\b(she|her|he|his)\b/i, "the bio does not say which pronoun Tian uses");
+  // Read right after the song, at the start of the 7:05 segment: Chinese line, then English line.
+  const items = SEGMENTS.find((s) => s.t === "19:05").items.filter((it) => /tianBio/.test(it[1]));
+  assert.deepEqual(items.map((it) => [it[0], it[1]]), [["zh", "{tianBioZh}"], ["en", "{tianBioEn}"]]);
+  assert.match(SEGMENTS.flatMap((s) => s.items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))).join("\n"), /A small bear, a big difference/);
+});
