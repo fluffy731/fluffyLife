@@ -19,7 +19,7 @@ export const EVENT = {
 export const SPEAKER = { zh: "W", en: "S" };
 
 // Values filled in from the 10 Nov sponsor slide, officer name pins and Operation Bear flyer, and the 11 Nov teddy bear speech. They show as ordinary text and can still be
-// edited in the TBC tab; clearing one makes it TBC again. The Communications Chairman (board5) is left blank on purpose.
+// edited in the TBC tab; clearing one makes it TBC again. board1 to board9 are the committee list sent on 11 Nov.
 export const DEFAULTS = {
   sponsors: "Auscrown, Cookie Chef and Co, Harcourts Balwyn, Klér, Mindmetta, Motif Aesthetic Clinic, Pureessense, Quaternity, Sensory Lab, Tokyo-7 Japanese Restaurant",
   vp: "Mireille Leong",
@@ -27,8 +27,8 @@ export const DEFAULTS = {
   bearCharity: "Operation Teddy Bear",
   tianBioZh: "Tian 是来自墨尔本的华人歌手、司仪、歌唱导师及社交媒体 Influencer。曾获「全球华人新秀歌唱大赛」墨尔本区冠军及《中国好声音》澳洲赛区亚军，并曾担任广州电视台春节晚会表演嘉宾。现主要活跃于主持、音乐及社交媒体领域。",
   tianBioEn: "Tian is a Melbourne-based Chinese singer, MC, vocal coach and social media influencer. Tian won the Melbourne round of the Global Chinese New Talent Singing Competition, was runner-up in the Australian round of The Voice of China, and has performed as a guest at the Guangzhou TV Spring Festival Gala. Tian is now mainly active in hosting, music and social media.",
-  board1: "Cindy Tai", board2: "Milly Chen", board3: "Bobo Law", board4: "Monique Chen",
-  board6: "Felicia Seah", board7: "Michelle Chen", board8: "Connie Long",
+  board1: "Salli Hon", board2: "Mireille Leong", board3: "Cindy Tai", board4: "Milly Chen", board5: "Bobo Law",
+  board6: "Monique Chen", board7: "Felicia Seah", board8: "Michelle Chen", board9: "Connie Long",
 };
 
 export const GROUPS = [
@@ -63,9 +63,9 @@ export const FIELDS = [
   ["photoSpot", "大合照位置", "Group photo spot", "sales", "如 舞台前 · the front of the stage"],
 ];
 
-// Repeating rows. Field keys are col + row number (board1 … board8, prize1, prizeBy1 …).
+// Repeating rows. Field keys are col + row number (board1 … board9, prize1, prizeBy1 …).
 export const LISTS = {
-  board: { group: "club", zh: "宣誓理事（8 位）", en: "Board members taking the oath (8)", n: 8, need: "all",
+  board: { group: "club", zh: "宣誓委员（全体 9 位）", en: "Committee members taking the oath (all 9)", n: 9, need: "all",
     cols: [["board", "姓名", "Name"]] },
   prizes: { group: "draw", zh: "奖品（1–5 第一轮 8:10，6–10 第二轮 8:40）", en: "Prizes (1–5 at 8:10, 6–10 at 8:40)", n: 10, need: "all",
     cols: [["prize", "奖品", "Prize"], ["prizeBy", "提供者", "Donated by"]] },
@@ -181,7 +181,7 @@ export const SEGMENTS = [
     ["cue", "两人一起致辞约 10 分钟，一人普通话、一人英语；MC 不翻译", "They speak together for about 10 minutes, one in Mandarin, one in English. No MC translation"],
   ] },
   { t: "19:15", e: "19:20", zh: "乐队配乐 · 理事就位", en: "Band interlude · board gets ready", at: ["MC 台中", "Centre stage"], items: [
-    ["crit", "舞台监督现在带 8 位理事到侧台", "Stage manager takes the 8 board members to the side of the stage now"],
+    ["crit", "舞台监督现在带全体委员（9 位，含会长和副会长）到侧台", "Stage manager takes the whole committee (all 9, including the President and VP) to the side of the stage now"],
     ["en", "Thank you, Salli Hon and {vp}! A little music from Calico while our board members get ready."],
     ["zh", "谢谢会长和副会长！请欣赏 Calico 乐队的演奏，理事们正在做准备。"],
   ] },
@@ -197,11 +197,11 @@ export const SEGMENTS = [
   { t: "19:25", e: "19:45", key: true, zh: "理事宣誓仪式（Charter Ceremony）", en: "Board oath ceremony (Charter Ceremony)", at: ["MC 台侧", "MCs at the side"], items: [
     ["en", "Thank you, Samantha and Gita. Please stay with us for the charter ceremony."],
     ["zh", "谢谢两位，请留步，一起见证接下来的 Charter Ceremony。"],
-    ["zh", "宣誓，是理事们对会员和社区的承诺。现在，有请她慧狮子会的 8 位理事上台！"],
-    ["en", "An oath is a promise to our members and our community. Please welcome the eight board members of She Rises!"],
-    ["cue", "8 位理事上台站好，带掌声。MC 不念名，由 Gita 逐一念名", "The eight board members walk up and line up; lead the applause. The MCs do not read the names: Gita calls them one by one"],
+    ["zh", "宣誓，是理事们对会员和社区的承诺。现在，有请她慧狮子会的全体委员上台！"],
+    ["en", "An oath is a promise to our members and our community. Please welcome the committee of She Rises!"],
+    ["cue", "全体委员（9 位，含会长和副会长）上台站好，带掌声。MC 不念名，由 Gita 逐一念名", "The whole committee (all 9, including the President and VP) walks up and lines up; lead the applause. The MCs do not read the names: Gita calls them one by one"],
     ["list", "board"],
-    ["cue", "由 Gita 主持宣誓：她逐一念名，每位理事依次回答「I do」", "Gita leads the oath: she calls each name and each board member answers \"I do\" in turn"],
+    ["cue", "由 Gita 主持宣誓：她逐一念名，每位委员依次回答「I do」", "Gita leads the oath: she calls each name and each committee member answers \"I do\" in turn"],
     ["en", "Gita, over to you."],
     ["cue", "宣誓结束", "After the oath"],
     ["zh", "恭喜她慧狮子会理事团队！掌声送给她们！"],
@@ -228,8 +228,8 @@ export const SEGMENTS = [
   { t: "20:10", e: "20:20", key: true, zh: "义卖开始 + 幸运抽奖（第一轮）", en: "Fundraising sales + lucky draw, round 1", at: ["两位 MC 台中，赞助商品在台上", "Both MCs centre stage, sponsor products on display"], items: [
     ["en", "Thank you, Eric! It's fundraising time, and it starts with our teddy bears."],
     ["zh", "谢谢 Eric！义卖时间到，先从我们的小熊说起！"],
-    ["en", "For more than 30 years, {bearCharity} has put comfort teddy bears, over 53,000 so far, into the hands of frightened children through police, paramedics, firefighters, the SES, the CFA and hospitals. Every bear you take home helps send another hug to a child in need, and if you'd rather not take one, a $5 or $10 donation is just as welcome: one little bear, one big hug, one act of kindness."],
-    ["zh", "{bearCharity}（爱心熊仔计划）在澳洲已经传递了三十多年的爱心，超过 53,000 只安慰熊仔，通过警察、救护员、消防员、SES、CFA 和医院，交到惊慌的孩子手中。各位今晚带一只熊仔回家，就是帮忙把另一个拥抱送给有需要的孩子；不想带熊仔回家，捐 5 澳元或 10 澳元同样欢迎：一只小熊，一个大拥抱，一份善意。"],
+    ["en", "For more than 30 years, {bearCharity} has put comfort teddy bears, over 53,000 so far, into the hands of frightened children through police, paramedics, firefighters, the SES, the CFA and hospitals. Every bear you support tonight helps send a hug to a child in need: one little bear, one big hug, one act of kindness."],
+    ["zh", "{bearCharity}（爱心熊仔计划）在澳洲已经传递了三十多年的爱心，超过 53,000 只安慰熊仔，通过警察、救护员、消防员、SES、CFA 和医院，交到惊慌的孩子手中。各位今晚每支持一只熊仔，就是帮忙把一个拥抱送给有需要的孩子：一只小熊，一个大拥抱，一份善意。"],
     ["en", "Teddy bears are $20 each: buy one and it is donated; buy two for $40, and you take one home while the other is donated. Pins are $20 each, and the sponsor products here on stage are {sponsorPrice}."],
     ["zh", "小熊公仔每只 20 澳元：买一只，是直接捐出；买两只共 40 澳元，一只带回家，一只捐出。徽章每个 20 澳元，台上还有赞助商品 {sponsorPrice}。"],
     ["zh", "徽章和其他义卖所得将用于 {fundsFor}。", { if: "fundsFor" }],
@@ -335,7 +335,7 @@ export const RUNSHEET = [
   ["19:00", "主持人开场", "MC opening", "欢迎、介绍贵宾、说明抽奖规则；介绍 Tian 与女神入场", "Welcome, VIPs, raffle rules; introduce Tian and the Goddess Entrance"],
   ["19:02", "女神入场｜Tian 演唱《女神》", "Goddess Entrance / Tian sings 《女神》", "副歌「我是女神」开始时起步入场；顺序：会长 → 副会长 → 理事 → 会员", "Walk-in starts when the chorus \"我是女神\" begins; order: President → VP → board → members"],
   ["19:05", "会长 + 副会长致辞", "President + VP speech", "10 分钟；普通话 + 英语", "10 minutes; Mandarin + English"],
-  ["19:15", "前菜", "Entrée", "乐队配乐；8 位理事到侧台准备", "Band plays; 8 board members ready at the side of the stage"],
+  ["19:15", "前菜", "Entrée", "乐队配乐；全体委员到侧台准备", "Band plays; the whole committee ready at the side of the stage"],
   ["19:20", "District 代表致辞", "District representative's speech", "5 分钟；致辞后留步", "5 minutes; stays on stage afterwards"],
   ["19:25", "理事宣誓仪式", "Board oath ceremony", "20 分钟；District 代表监誓", "20 minutes; administered by the District representative"],
   ["19:45", "宣誓合照", "Oath group photo", "5 分钟；之后理事和会员下台", "5 minutes; then board and members return to seats"],
@@ -368,7 +368,7 @@ export const NOTES = {
     ["6:50 入场人员（人数以名单为准）离座到会场另一端排队：会长、副会长在最前，理事其后，会员最后", "At 6:50 everyone entering (number as per the list) lines up at the other end of the venue: President and VP in front, board behind, members last"],
     ["副歌「我是女神」响起时才起步，会长先走", "Nobody walks until the chorus \"wǒ shì nǚshén\" begins; the President goes first"],
     ["预留 2 桌靠近舞台给入场者，大家走到同一区域入座", "2 tables near the stage are reserved for those walking in, so everyone sits in one area"],
-    ["District 领导上台时，8 位理事已在侧台；7:15 乐队配乐时集合", "The 8 board members are waiting at the side of the stage while the District leaders are on stage; they gather at 7:15 during the band interlude"],
+    ["District 领导上台时，全体委员已在侧台；7:15 乐队配乐时集合", "The whole committee is waiting at the side of the stage while the District leaders are on stage; they gather at 7:15 during the band interlude"],
     ["抽奖分两轮：8:10 抽 1–5，8:40 抽 6–10，8:50 前抽完；8:20 准时颁奖", "The draw runs in two rounds: 1–5 at 8:10, 6–10 at 8:40, done by 8:50. Awards start at 8:20 sharp"],
   ],
   check: [
@@ -378,9 +378,7 @@ export const NOTES = {
     ["切蛋糕：确认由谁切、蛋糕放哪里、刀和盘子、谁拍照", "Cake: confirm who cuts it, where it sits, the knife and plates, and who photographs it"],
     ["Tian《女神》：确认副歌「我是女神」在第几秒开始，带位员据此放行；伴奏和能否拉长前奏", "Tian's 《女神》: confirm when the chorus \"我是女神\" starts so the ushers can cue it; backing track, and whether the intro can be extended"],
     ["抽奖券截止：流程写 6:30–7:00 售卖，但 7:00 开场才讲规则，听完规则的来宾已买不到。建议延长到开场后（填在「待填」）", "Raffle sales close at 7:00 in the run sheet, but the rules are announced at 7:00, so guests who hear them can't buy. Extend sales past the opening (set it in TBC)"],
-    ["宣誓 8 位理事：按名牌已填 7 位，第 5 位 Communications Chairman 的名字待填。名单交给 Gita 念名；入场人数以名单为准", "The 8 board members: 7 names are filled in from the name pins, and the 5th, the Communications Chairman, is still to be typed in. Give the list to Gita to call out; the entrance number follows the list"],
-    ["⚠ Bobo 今晚不能出席（见熊仔讲稿）：稿里她要上台领 20 年奖，宣誓名单上也有 Bobo Law。请确认怎么处理：由谁代领、顺延，还是删掉；宣誓名单是否改为 7 位", "Bobo cannot attend tonight (per the teddy bear speech), but the script has her on stage for the 20-year award and Bobo Law is on the oath list. Please confirm what to do: someone accepts for her, the award is deferred, or it is dropped; and whether the oath list becomes 7"],
-    ["小熊说法：讲稿说「带一只回家，同时帮忙送出另一只」，也欢迎 5 澳元或 10 澳元的捐款；稿里售价仍写「买一只是直接捐出，买两只共 40 澳元，一只带回家」。请确认实际规则", "Bear wording: the speech says a bear taken home also helps send another, and that $5 or $10 donations are welcome, while the script's prices still say one bear is donated and two for $40 means one goes home. Please confirm the actual rule"],
+    ["宣誓：Gita 按委员名单逐一念全体委员（9 位）的名字，各人答「I do」；名单已按 11 月 11 日发来的委员名单填好，MC 不念名；入场人数以名单为准", "Oath: Gita calls the names of the whole committee (all 9) and each answers \"I do\". The list is filled in from the committee list sent on 11 Nov and the MCs do not read the names; the entrance number follows the list"],
     ["Tian 简介：中文由你发的繁体转成简体；英文是翻译稿，「全球华人新秀歌唱大赛」的官方英文名请核对。简介在 Tian 唱完《女神》后念，中英各约 30 秒", "Tian's introduction: the Chinese is your traditional text converted to simplified; the English is a translation, so check the official English name of the Global Chinese singing competition. It is read after Tian finishes 《女神》, about 30 seconds in each language"],
     ["请核对按名牌、传单和鸣谢页填入的内容：副会长 Mireille Leong；20 年奖的 Bobo 按名牌 Bobo Law 填写；小熊善款按讲稿写 Operation Teddy Bear（传单上简写为 Operation Bear）；10 家赞助商是看 logo 辨认的，Klér 和 Pureessense 的拼写请核对", "Check what was filled in from the name pins, flyer and sponsor slide: Vice President Mireille Leong; Bobo for the 20-year award entered as Bobo Law from the pins; the bear money entered as Operation Teddy Bear from the speech (the flyer shortens it to Operation Bear); the 10 sponsors were read from their logos, so check the spelling of Klér and Pureessense"],
     ["宣誓由 Gita 主持，理事逐一回答「I do」：确认誓词和流程", "Gita leads the oath and each board member answers \"I do\": confirm the wording and procedure"],
@@ -389,7 +387,7 @@ export const NOTES = {
     ["双人开场秀（6:50–7:00）：稿里是建议方案「后援团大考」，两位看过、排练过再定；要和 Calico 说好鼓点", "Opening show (6:50 to 7:00): the script has a suggested format, the Backup Crew Audition. Read it, rehearse it, then settle it; agree the drum groove with Calico"],
     ["5 条祝贺视频：确认文件、顺序、总长（约 5–10 分钟）和谁播放", "Five congratulatory videos: confirm the files, order, total length (about 5 to 10 minutes) and who plays them"],
     ["Best Dress 神秘大奖：奖品当晚再定。会长 Salli 评选后，得奖者名字要在 8:50 前交给 MC", "Mystery Best Dress prize: the prize is decided on the night. After President Salli judges, the winner's name must reach the MCs before 8:50"],
-    ["还缺的资料：Eric 两首歌名、宣誓名单第 5 位（Communications Chairman）的名字", "Still missing: Eric's two songs and the name of the 5th board member (the Communications Chairman)"],
+    ["还缺的资料：Eric 两首歌名", "Still missing: Eric's two songs"],
   ],
   link: ["串场三步：收尾上一环节 → 预告下一环节 → 邀请下一位上台", "Every link: wrap up the last segment → say what's next → invite the next person up"],
 };

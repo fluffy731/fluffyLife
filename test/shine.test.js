@@ -136,7 +136,7 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
   const at = (t) => SEGMENTS.find((s) => s.t === t);
   const seg = (t) => [at(t).zh, at(t).en, ...at(t).items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))].join("\n");
   assert.match(seg("19:05"), /President, Salli Hon/);
-  // 7:20 Gita's speech; 7:25 Gita calls the eight names and each answers "I do".
+  // 7:20 Gita's speech; 7:25 Gita calls every name on the committee list and each answers "I do".
   assert.match(seg("19:20"), /Gita, the floor is yours/);
   assert.match(seg("19:25"), /Gita calls them one by one/);
   assert.match(seg("19:25"), /I do/);
@@ -166,11 +166,11 @@ test("10 Nov documents: defaults come from the sponsor slide, name pins and Oper
   assert.equal(DEFAULTS.vp, "Mireille Leong");
   assert.equal(DEFAULTS.bearCharity, "Operation Teddy Bear");
   assert.equal(DEFAULTS.sponsors.split(", ").length, 10, "ten sponsors on the thank-you slide");
-  // Eight oath-takers are the ten officers without the President and Vice President; the Communications Chairman's name is left blank.
+  // 11 Nov: the whole committee (the nine names on the committee list) takes the oath and Gita calls every name.
   const board = Array.from({ length: LISTS.board.n }, (_, j) => DEFAULTS["board" + (j + 1)]);
-  assert.equal(LISTS.board.n, 8);
-  assert.deepEqual(board.map((b) => !!b), [true, true, true, true, false, true, true, true]);
-  assert.ok(!Object.values(DEFAULTS).some((v) => /Salli Hon/.test(v)), "the President speaks separately and is not in the oath list");
+  assert.equal(LISTS.board.n, 9);
+  assert.deepEqual(board, ["Salli Hon", "Mireille Leong", "Cindy Tai", "Milly Chen", "Bobo Law", "Monique Chen", "Felicia Seah", "Michelle Chen", "Connie Long"]);
+  assert.match(SEGMENTS.find((s) => s.t === "19:25").items.flatMap((it) => it.slice(1)).filter((x) => typeof x === "string").join("\n"), /whole committee/);
   const flat = SEGMENTS.flatMap((s) => s.items.flatMap((it) => it.slice(1).filter((x) => typeof x === "string"))).join("\n");
   assert.doesNotMatch(flat, /Bobo, \{boboName\}|Bobo（\{boboName\}）/, "Bobo's full name is used on its own");
   assert.match(flat, /comfort teddy bears at \$20/);
@@ -197,8 +197,8 @@ test("11 Nov: the bear announcement is two sentences in Chinese and two in Engli
   assert.equal((zh.match(/。/g) || []).length, 2, "two Chinese sentences");
   for (const x of [en, zh]) assert.match(x, /53,000/);
   assert.match(en, /police, paramedics, firefighters, the SES, the CFA and hospitals/);
-  assert.match(en, /\$5 or \$10/);
-  assert.match(zh, /5 澳元或 10 澳元/);
+  assert.match(en, /Every bear you support tonight/);
+  assert.match(zh, /今晚每支持一只熊仔/);
   assert.match(en, /one little bear, one big hug, one act of kindness/);
   assert.match(zh, /一只小熊，一个大拥抱，一份善意/);
   assert.doesNotMatch(zh, /[們個這來說會長為與對時間謝歡請頒發獎樂隊誕禮員臺義賣聖點鐘閃華開關門車書東無經認領隨當後從麼還進邊過運動電話題頭體護驚擁]/, "simplified characters only");
