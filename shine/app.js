@@ -68,7 +68,8 @@ const duo = (zh, en, tag = "span") => `<${tag} class="zh" lang="zh-Hans">${fill(
 function lineHTML([tag, text, o = {}]) {
   if (o.if && !val(o.if)) return "";
   // Line tags are languages ("zh", "en") or "SW" (said together, shown as Chinese then English).
-  const who = tag === "SW" ? "SW" : SPEAKER[tag], l = tag === "en" ? "en" : "zh";
+  // o.who ("S" or "W") overrides who speaks the line, e.g. Solomon in Chinese in the two-man opener.
+  const who = tag === "SW" ? "SW" : o.who || SPEAKER[tag], l = tag === "en" ? "en" : "zh";
   const label = { S: NAME.S, W: NAME.W, SW: `${NAME.S} + ${NAME.W}` }[who];
   return `<div class="ln${o.tpl ? " tpl" : ""}" data-s="${who}"><b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>` +
     `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(text, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}</p></div>`;
