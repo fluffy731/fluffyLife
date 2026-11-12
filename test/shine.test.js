@@ -57,8 +57,9 @@ test("segments run back to back from 6:30 to 10:00 and follow the updated run sh
   assert.match(opening, /8 点 15 分第一轮/);
   assert.match(opening, /the first at about 8:15/);
   assert.match(opening, /只限购买了抽奖券/, "the opening must say the draw is for ticket holders only");
-  assert.match(opening, /two men/, "the warm-up comes before Tian");
-  assert.ok(opening.indexOf("two men") < opening.indexOf("Please welcome Tian"), "warm-up first, then Tian");
+  assert.match(opening, /very first She Rises event/, "the warm-up comes before Tian");
+  assert.ok(opening.indexOf("very first She Rises event") < opening.indexOf("Please welcome Tian"), "warm-up first, then Tian");
+  assert.doesNotMatch(opening, /two men/, "the two-man opener already makes the backup joke; the 7:00 opening does not repeat it");
   // Walk-in starts on the line Mireille chose, President first, then VP, committee and charter members.
   assert.match(ENTRANCE[1][0] + ENTRANCE[1][1], /Mireille 选定.*会长/);
   assert.match(ENTRANCE[2][1], /副会长.*理事.*charter members/);
@@ -93,9 +94,10 @@ test("10 Nov: Solomon speaks English and Wade speaks Mandarin, and that is the o
 test("every segment has both languages, and both MCs speak in every spoken segment", () => {
   for (const s of SEGMENTS) {
     assert.ok(s.zh && s.en && s.at?.length === 2, `${s.t}: needs zh, en and at`);
-    const langs = new Set(s.items.map((it) => it[0]).filter((l) => l === "zh" || l === "en"));
+    // A line's speaker is its { who } override if it has one, otherwise the MC who speaks its language; "SW" is both.
+    const speakers = new Set(s.items.filter((it) => ["zh", "en", "SW"].includes(it[0])).flatMap((it) => (it[0] === "SW" ? ["S", "W"] : [it[2]?.who || SPEAKER[it[0]]])));
     const spoken = s.items.some((it) => ["zh", "en", "SW"].includes(it[0]));
-    if (spoken) assert.ok(langs.has("zh") && langs.has("en"), `${s.t} ${s.zh}: both MCs should speak`);
+    if (spoken) assert.ok(speakers.has("S") && speakers.has("W"), `${s.t} ${s.zh}: both MCs should speak`);
   }
   assert.ok(ENTRANCE.every((r) => r.length === 3 && r.every(Boolean)), "entrance cue rows need a cue, zh and en");
 });
@@ -134,14 +136,11 @@ test("10 Nov updates: prices, Calico, District leaders, videos, Salli, Best Dres
   assert.match(seg("21:05"), /November birthday/);
   assert.match(seg("21:05"), /十一月生日/);
   assert.match(seg("20:35"), /A Million Dreams/);
-  // The two-man opener fills 6:50 to 7:00 with a suggested interactive show and hands over at 7:00 sharp.
+  // The two-man opener fills 6:50 to 7:00 and runs straight into the 7:00 opening. 12 Nov: it is Solomon's three-act banter.
   assert.equal(at("18:50").e, "19:00");
-  assert.match(seg("18:50"), /Suggested format/);
-  for (const r of ["Round 1", "Round 2", "Round 3", "Round 4"]) assert.match(seg("18:50"), new RegExp(r));
-  assert.match(seg("18:50"), /7:00 sharp/);
-  assert.match(seg("18:50"), /waiting at check-in/);
-  // 13 Nov: the run sheet leaves 6:50 to 7:00 blank; the opener stays and says so.
-  assert.match(seg("18:50"), /leaves 6:50 to 7:00 blank/);
+  assert.match(seg("18:50"), /leaves 6:50 to 7:00 blank/, "the run sheet leaves 6:50 to 7:00 blank and the cue says so");
+  assert.match(seg("18:50"), /straight into the (7:00|formal) opening/);
+  assert.doesNotMatch(seg("18:50") + seg("19:00"), /Backup Crew Audition|后援团大考/, "the audition format is replaced by the banter");
 });
 
 test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Melvin Jones, two reasons for Goddess", () => {
@@ -275,4 +274,35 @@ test("12 Nov: the run sheet table is the 13 Nov version, with the 11 Nov details
   for (const r of RUNSHEET) assert.ok(!/[㐀-鿿]/.test(r[4]), `${r[0]}: the English note has no Chinese`);
   // Every segment start time sits inside the run sheet's day.
   for (const s of SEGMENTS) assert.ok(mins(s.t) >= mins("18:30") && mins(s.t) < mins("22:00"));
+});
+
+test("12 Nov: the two-man opener is Solomon's three-act banter, Solomon as A and Wade as B, both in Chinese", () => {
+  const s = SEGMENTS.find((x) => x.t === "18:50");
+  const lines = s.items.filter((it) => it[0] === "zh");
+  const A = lines.filter((it) => it[2]?.who === "S"), B = lines.filter((it) => !it[2]?.who);
+  assert.equal(lines.length, 44, "16 + 23 + 5 spoken lines across the three acts");
+  assert.equal(A.length + B.length, 44);
+  assert.equal(lines.filter((it) => it[2] && it[2].who !== "S").length, 0, "only Solomon's lines carry an override; Wade's are the default Mandarin speaker");
+  assert.ok(A.length >= 20 && B.length >= 20, "both MCs carry the banter");
+  // Alternating A/B in the opening exchange, as written.
+  assert.deepEqual(lines.slice(0, 6).map((it) => it[2]?.who || "W"), ["S", "W", "S", "W", "S", "W"]);
+  // Three act cues, in order, and the first and last lines as written.
+  const acts = s.items.filter((it) => it[0] === "cue" && /^第[一二三]幕/.test(it[1])).map((it) => it[1].slice(0, 3));
+  assert.deepEqual(acts, ["第一幕", "第二幕", "第三幕"]);
+  assert.match(lines[0][1], /欢迎大家出席今晚的圣诞晚宴/);
+  assert.equal(lines[0][2].who, "S");
+  assert.match(lines.at(-1)[1], /各位男士，请继续努力跟上/);
+  assert.equal(lines.at(-1)[2].who, "S");
+  // Wade is called Wade 哥, Solomon is named in the phone gag, and the typos in the source are fixed.
+  const text = lines.map((it) => it[1]).join("\n");
+  assert.match(text, /Wade 哥/);
+  assert.match(text, /问 Solomon 是哪个 app/);
+  assert.doesNotMatch(text, /soloman/i);
+  assert.match(text, /吓？你现在才跟我说/);
+  // The 7:00 opening still gives the English welcome and names the MCs, and it follows the banter directly.
+  assert.equal(SEGMENTS[SEGMENTS.indexOf(s) + 1].t, "19:00");
+  assert.match(seg2(SEGMENTS.find((x) => x.t === "19:00")), /I'm Solomon/);
+  // Speaker overrides are only used where an MC speaks the other language: the banter, nowhere else.
+  const overridden = SEGMENTS.filter((x) => x.items.some((it) => it[2]?.who));
+  assert.deepEqual(overridden.map((x) => x.t), ["18:50"]);
 });
