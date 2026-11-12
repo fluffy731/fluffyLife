@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { FIELDS, LISTS, GROUPS, SEGMENTS, RUNSHEET, ENTRANCE, SPEAKER, DEFAULTS } from "../shine/data.js";
+import { FIELDS, LISTS, GROUPS, SEGMENTS, RUNSHEET, ENTRANCE, SPEAKER, DEFAULTS, NOTES } from "../shine/data.js";
 
 const keys = new Set(FIELDS.map((f) => f[0]));
 for (const L of Object.values(LISTS)) for (let i = 1; i <= L.n; i++) for (const [c] of L.cols) keys.add(c + i);
@@ -202,9 +202,9 @@ test("11 Nov: Tian's introduction is filled in, in simplified Chinese and in Eng
   assert.doesNotMatch(DEFAULTS.tianBioEn, /[㐀-鿿]/, "the English introduction has no Chinese");
   assert.match(DEFAULTS.tianBioEn, /Melbourne[\s\S]*runner-up[\s\S]*The Voice of China[\s\S]*Guangzhou TV Spring Festival Gala/);
   assert.doesNotMatch(DEFAULTS.tianBioEn, /\b(she|her|he|his)\b/i, "the bio does not say which pronoun Tian uses");
-  // Read right after the song, in the 7:06 segment: Chinese line, then English line.
+  // Read right after the song, in the 7:06 segment: English line, then Chinese line.
   const items = SEGMENTS.find((s) => s.t === "19:06").items.filter((it) => /tianBio/.test(it[1]));
-  assert.deepEqual(items.map((it) => [it[0], it[1]]), [["zh", "{tianBioZh}"], ["en", "{tianBioEn}"]]);
+  assert.deepEqual(items.map((it) => [it[0], it[1]]), [["en", "{tianBioEn}"], ["zh", "{tianBioZh}"]]);
 });
 
 test("11 Nov: the bear announcement is two sentences in Chinese and two in English, from the Operation Teddy Bear speech", () => {
@@ -254,7 +254,7 @@ test("12 Nov: the MC hand-off after Salli and Mireille's bell, then Samantha, Gi
   assert.ok(seg("20:40").indexOf("Do not start drawing until sales close at 8:42") < seg("20:40").indexOf("Sales are now closed"));
   // Birthdays, then the cake, then the total, then the band; the group photo is taken from the seats.
   assert.deepEqual(order.slice(order.indexOf("20:55")), ["20:55", "21:05", "21:11", "21:15", "21:30"]);
-  assert.match(seg("21:11"), /from your seats/);
+  assert.match(seg("21:11"), /from the seats/);
   assert.match(seg("21:11"), /Connie and Cindy/);
   assert.match(seg("21:15"), /\{fundTotal\}/);
   assert.match(seg("21:05"), /Connie|Felicia/);
@@ -305,4 +305,52 @@ test("12 Nov: the two-man opener is Solomon's three-act banter, Solomon as A and
   // Speaker overrides are only used where an MC speaks the other language: the banter, nowhere else.
   const overridden = SEGMENTS.filter((x) => x.items.some((it) => it[2]?.who));
   assert.deepEqual(overridden.map((x) => x.t), ["18:50"]);
+});
+
+test("12 Nov: English comes first in every English and Mandarin pair, and Humanitix is gone", () => {
+  const spoken = (s) => s.items.filter((it) => ["zh", "en", "SW"].includes(it[0]));
+  // Every segment that speaks starts in English, except the Chinese-only banter, which starts with Solomon's Chinese line.
+  for (const s of SEGMENTS.filter((x) => spoken(x).length && x.t !== "18:50")) assert.equal(spoken(s)[0][0], "en", `${s.t}: the first spoken line is English`);
+  // Pairs are read left to right: an English line followed by a Chinese line is a pair; a Chinese line followed by an English line never is.
+  for (const s of SEGMENTS.filter((x) => x.t !== "18:50")) {
+    const seq = s.items;
+    for (let i = 0; i < seq.length; i++) {
+      if (seq[i][0] === "en" && seq[i + 1]?.[0] === "zh") { i++; continue; }
+      if (seq[i][0] === "zh" && seq[i + 1]?.[0] === "en") assert.fail(`${s.t}: a Chinese line comes before its English line: "${seq[i][1].slice(0, 30)}"`);
+    }
+  }
+  assert.match(SEGMENTS.find((s) => s.t === "19:00").items.find((it) => it[0] === "SW")[1], /^Please welcome Tian! 有请 Tian！$/);
+  // The Chinese for the thank-yous follows the English, as in every other pair.
+  const end = spoken(SEGMENTS.find((s) => s.t === "21:30")).map((it) => it[0]).join("");
+  assert.equal(end, "enenzhenzh", "an English lead-in, then English and Chinese pairs");
+  // Humanitix is a crew note on the run sheet: it is not announced and not on the run sheet tab either.
+  assert.doesNotMatch(JSON.stringify([SEGMENTS, RUNSHEET, NOTES, DEFAULTS, FIELDS]), /humanitix/i);
+  assert.match(SEGMENTS.find((s) => s.t === "18:30").items.flatMap((it) => it.slice(1)).filter((x) => typeof x === "string").join(" "), /check in at the front desk/, "the check-in prompt stays, as an ad-lib");
+});
+
+test("12 Nov: coordination phrases are ad-lib cues, not lines to read", () => {
+  const at = (t) => SEGMENTS.find((s) => s.t === t);
+  const lines = (s) => s.items.filter((it) => ["zh", "en", "SW"].includes(it[0])).map((it) => it[1]).join("\n");
+  const cues = (s) => s.items.filter((it) => it[0] === "cue" || it[0] === "crit").map((it) => it[1] + " " + it[2]).join("\n");
+  const adlib = (s) => s.items.filter((it) => (it[0] === "cue" || it[0] === "crit") && /^(临场发挥|Ad-lib)/.test(it[1]) && /^(Ad-lib)/.test(it[2]));
+  // Seating and line-up at 6:45 and the photo at 7:45 are entirely ad-lib: no spoken lines at all.
+  assert.equal(lines(at("18:45")), "");
+  assert.equal(adlib(at("18:45")).length, 1);
+  assert.equal(lines(at("19:45")), "");
+  assert.match(cues(at("19:45")), /Ad-lib: ask all members to come up/);
+  // Cues cover the rest; none of the logistics wording is left in a spoken line.
+  const script = SEGMENTS.map(lines).join("\n");
+  for (const gone of [/take your seats/, /return to your seats/, /stand in one row/, /stay on stage for a group photo/, /Connie and Cindy will slice/, /group photo, right from your seats/, /coming to your tables/, /Please check in at the front desk/, /请回到座位/, /回座/, /站成一排，我们来决定/, /小天使现在就到各桌/]) assert.doesNotMatch(script, gone);
+  assert.equal(adlib(at("18:30")).length, 1);
+  assert.equal(adlib(at("19:50")).length, 1);
+  assert.equal(adlib(at("20:07")).length, 1);
+  assert.match(cues(at("20:07")), /payment by \{pay\}/, "the pay field is still used, in the cue");
+  assert.equal(adlib(at("20:20")).length, 1);
+  assert.equal(adlib(at("20:55")).length, 1);
+  assert.equal(adlib(at("21:11")).length, 1);
+  // The announcements that carry real content stay as lines: Sheryl's introduction, the prices, the results and the farewell.
+  assert.match(lines(at("19:50")), /Sheryl Li/);
+  assert.match(lines(at("20:07")), /Teddy bears are \$20 each/);
+  assert.match(lines(at("20:55")), /first place, \$100/);
+  assert.match(lines(at("21:11")), /three, two, one/);
 });
