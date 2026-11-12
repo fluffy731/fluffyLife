@@ -9,7 +9,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 
 let S = {};
 try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { S = {}; }
-S.f ||= {}; S.drawn ||= {}; S.who ||= "both";
+S.f ||= {}; S.drawn ||= {}; S.who ||= "both"; S.done ||= {};
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* private mode: keep working without saving */ } };
 
 // ---------- Field registry ----------
@@ -185,8 +185,13 @@ function renderRun() {
   $("#runNote").innerHTML = duo(RUNSHEET_NOTE[0], RUNSHEET_NOTE[1]);
 }
 function renderNotes() {
-  const li = (rows) => rows.map(([zh, en]) => `<li>${duo(zh, en)}</li>`).join("");
+  // A reminder with a clock time (third value) gets a tick box and a live countdown; tick() paints the countdown.
+  const li = (rows) => rows.map(([zh, en, t]) => t
+    ? `<li class="rem" data-a="${mins(t)}" data-k="${t}"><label class="tk"><input type="checkbox"${S.done[t] ? " checked" : ""}><span class="rt"><span class="rh"><time>${hm12(t)} ${ampm(t)}</time><span class="when"></span></span>${duo(zh, en)}</span></label></li>`
+    : `<li>${duo(zh, en)}</li>`).join("");
   $("#notesBody").innerHTML = `
+    <section class="note-card now-card"><h3>${bi("现在", "Right now")}</h3>
+      <p class="big"><time id="noteClock">--:--</time></p><p class="sub" id="noteState"></p><p class="sub" id="noteNext"></p></section>
     <section class="note-card crit-card"><h3>${bi("必须做到", "Must not miss")}</h3><ul>${li(NOTES.crit)}</ul></section>
     <section class="note-card check-card"><h3>${bi("活动前要定", "Settle before the night")}</h3><ul>${li(NOTES.check)}</ul></section>
     <section class="note-card"><h3>${bi("串场", "Linking segments")}</h3><p>${duo(NOTES.link[0], NOTES.link[1])}</p></section>
@@ -202,8 +207,15 @@ function renderNotes() {
 function renderAll() {
   document.body.dataset.who = S.who; document.body.dataset.lang = showLang();
   for (const b of $$("[data-who]")) b.setAttribute("aria-pressed", String(b.dataset.who === S.who));
-  renderScript(); renderRun(); renderNotes(); paintPager();
+  renderScript(); renderRun(); renderNotes(); paintPager(); tick();
 }
+$("#notesBody").addEventListener("change", (e) => {
+  const c = e.target.closest("li.rem input");
+  if (!c) return;
+  const k = c.closest("li.rem").dataset.k;
+  if (c.checked) S.done[k] = 1; else delete S.done[k];
+  save(); tick();
+});
 
 // ---------- Tabs ----------
 const PANELS = ["script", "tbc", "run", "notes"];
@@ -235,7 +247,40 @@ function tick() {
   let curRow = null;
   if (n.day) for (const r of rows) if (+r.dataset.a <= n.m) curRow = r;
   for (const r of rows) r.classList.toggle("now", r === curRow && n.m < 22 * 60);
+  paintNotes(n, txt);
   return n;
+}
+// Notes tab: the live clock, and each timed reminder as "in 12 min", "now" or "overdue 4 min" until it is ticked off.
+// Red only for the first 30 minutes after its time: a night of un-ticked boxes would otherwise be a wall of red.
+const OVERDUE = 30;
+const gapZh = (d) => { const h = Math.floor(d / 60), m = d % 60; return h ? `${h} 小时${m ? ` ${m} 分钟` : ""}` : `${m} 分钟`; };
+const gapEn = (d) => { const h = Math.floor(d / 60), m = d % 60; return h ? `${h} h${m ? ` ${m} min` : ""}` : `${m} min`; };
+function paintNotes(n, state) {
+  const clock = $("#noteClock");
+  if (!clock) return;
+  clock.textContent = `${hm12(n.m)} ${n.m >= 720 ? "pm" : "am"}`;
+  $("#noteState").textContent = state;
+  let next = null, over = 0;
+  for (const li of $$("#notesBody li.rem")) {
+    const d = +li.dataset.a - n.m, done = !!S.done[li.dataset.k];
+    let st = "", txt = "";
+    if (done) { st = "done"; txt = bi("✓ 已完成", "✓ done"); }
+    else if (n.day) {
+      if (d > 0) { st = d <= 10 ? "soon" : "later"; txt = bi(`还有 ${gapZh(d)}`, `in ${gapEn(d)}`); if (!next || d < next.d) next = { li, d }; }
+      else if (d === 0) { st = "soon"; txt = bi("现在", "now"); }
+      else if (-d <= OVERDUE) { st = "over"; txt = bi(`已超时 ${gapZh(-d)}`, `overdue ${gapEn(-d)}`); over++; }
+      else { st = "past"; txt = bi(`${gapZh(-d)}前`, `${gapEn(-d)} ago`); }
+    }
+    li.dataset.st = st;
+    $(".when", li).textContent = txt;
+  }
+  const el = $("#noteNext");
+  if (!n.day) { el.textContent = bi("活动当天，这里会显示倒计时；过了时间还没勾掉的，30 分钟内标红", "On the night this shows countdowns; a reminder past its time and not ticked shows red for 30 minutes"); el.className = "sub"; return; }
+  const at = next ? `${hm12(+next.li.dataset.a)} ${+next.li.dataset.a >= 720 ? "pm" : "am"}` : "";
+  const nx = next ? bi(`下一项：${at}（还有 ${gapZh(next.d)}）`, `Next: ${at} (in ${gapEn(next.d)})`) : "";
+  const ov = over ? bi(`${over} 项已超时`, `${over} overdue`) : "";
+  el.className = over ? "sub over" : "sub";
+  el.textContent = [ov, nx].filter(Boolean).join(" · ") || bi("提醒都已处理", "All reminders handled");
 }
 $("#nowbar").addEventListener("click", () => {
   const n = tick();

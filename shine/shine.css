@@ -228,6 +228,22 @@ textarea { resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, m
 .check-card h3 { color: var(--gold); }
 .note-card .ln p { font-size: 15px; }
 .note-card p { font-size: 15px; }
+/* Live clock and timed reminders */
+.now-card .big { margin: 0 0 2px; font: 600 38px/1.1 var(--display); color: var(--gold); font-variant-numeric: tabular-nums; }
+.now-card .sub { margin: 2px 0; }
+.now-card .sub.over { color: var(--crit); font-weight: 700; }
+li.rem { list-style: none; margin-left: -1.2em; }
+li.rem .tk { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; cursor: pointer; }
+li.rem input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--gold); }
+li.rem .rh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 2px; font-size: 13px; font-weight: 700; }
+li.rem time { color: var(--gold); font-variant-numeric: tabular-nums; }
+li.rem .when { color: var(--muted); }
+li.rem[data-st="soon"] .when { color: var(--gold); }
+li.rem[data-st="over"] .when { color: var(--crit); }
+li.rem[data-st="over"] .tk { background: var(--crit-soft); border-radius: 8px; margin: -4px -6px; padding: 4px 6px; }
+li.rem[data-st="past"] .rt { opacity: 0.7; }
+li.rem[data-st="done"] .rt { opacity: 0.55; }
+li.rem[data-st="done"] .when { color: var(--ok); }
 
 /* Pager */
 .pager { position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: grid; grid-template-columns: 1fr 1.35fr; gap: 8px;

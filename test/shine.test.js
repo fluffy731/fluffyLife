@@ -354,3 +354,22 @@ test("12 Nov: coordination phrases are ad-lib cues, not lines to read", () => {
   assert.match(lines(at("20:55")), /first place, \$100/);
   assert.match(lines(at("21:11")), /three, two, one/);
 });
+
+test("12 Nov: timed reminders in the Notes tab carry a clock time", () => {
+  const timed = NOTES.crit.filter((r) => r[2]);
+  const times = timed.map((r) => r[2]);
+  assert.ok(timed.length >= 8, "the arrival, seating, opening, committee, draw, cash, birthday and total reminders are timed");
+  for (const t of times) {
+    assert.match(t, /^\d{2}:\d{2}$/, `${t} is HH:MM`);
+    assert.ok(t >= "17:00" && t <= "22:00", `${t} falls on the night`);
+  }
+  assert.equal(new Set(times).size, times.length, "a time is the tick-box key, so each is unique");
+  // The cash and the birthday lists have separate deadlines (8:45 and 9:00), so each is its own tickable reminder.
+  const by = (t) => timed.find((r) => r[2] === t);
+  assert.match(by("20:45")[1], /Best Dress/);
+  assert.doesNotMatch(by("20:45")[1], /birthday/);
+  assert.match(by("21:00")[1], /birthday lists/);
+  // The Chinese side stays simplified, and no reminder is empty.
+  const TRAD = /[們個這來說會長為與對時間謝歡請頒發獎樂隊誕禮員臺義賣聖點鐘閃華開關門車書東無經認領隨當後從麼還進邊過運動電話題頭體]/;
+  for (const [zh, en] of NOTES.crit) { assert.ok(zh && en); assert.doesNotMatch(zh, TRAD); }
+});
