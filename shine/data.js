@@ -33,6 +33,14 @@ export const DEFAULTS = {
   tianBioEn: "Tian is a Melbourne-based Chinese singer, MC, vocal coach and social media influencer. Tian won the Melbourne round of the Global Chinese New Talent Singing Competition, was runner-up in the Australian round of The Voice of China, and has performed as a guest at the Guangzhou TV Spring Festival Gala. Tian is now mainly active in hosting, music and social media.",
   board1: "Salli Hon", board2: "Mireille Leong", board3: "Cindy Tai", board4: "Milly Chen", board5: "Bobo Law",
   board6: "Monique Chen", board7: "Felicia Seah", board8: "Michelle Chen", board9: "Connie Long",
+  // The names engraved on the Melvin Jones medals (list received 13 Nov), in that order.
+  award1: "Melvin Jones Fellowship", winner1: "Guan Cheng Gong",
+  award2: "Melvin Jones Fellowship", winner2: "Say Hue Tan",
+  award3: "Melvin Jones Fellowship", winner3: "Xiao Pingguo",
+  award4: "Melvin Jones Fellowship", winner4: "DY",
+  award5: "Melvin Jones Fellowship", winner5: "See Wai Seong",
+  award6: "Melvin Jones Fellowship", winner6: "Felica Seah",
+  award7: "Melvin Jones Fellowship", winner7: "Cindy Tai",
 };
 
 export const GROUPS = [
@@ -74,7 +82,7 @@ export const LISTS = {
     cols: [["board", "姓名", "Name"]] },
   prizes: { group: "draw", zh: "奖品（1–5 第一轮 8:15，6–10 第二轮 8:42 后）", en: "Prizes (1–5 at 8:15, 6–10 after sales close at 8:42)", n: 10, need: "all",
     cols: [["prize", "奖品", "Prize"], ["prizeBy", "提供者", "Donated by"]] },
-  nepal: { group: "awards", zh: "Melvin Jones 奖得奖者（6 位）", en: "Melvin Jones Fellowship recipients (6)", n: 6, need: "one",
+  nepal: { group: "awards", zh: "Melvin Jones 奖得奖者（7 位）", en: "Melvin Jones Fellowship recipients (7)", n: 7, need: "one",
     cols: [["award", "奖项", "Award"], ["winner", "得奖者", "Recipient"]] },
 };
 
@@ -283,10 +291,10 @@ export const SEGMENTS = [
     ["crit", "5 份奖品只有 5 分钟，8:20 准时颁奖", "Five prizes in five minutes; awards start at 8:20 sharp"],
   ] },
   { t: "20:20", e: "20:30", key: true, zh: "颁奖：Melvin Jones · 长期服务奖 · 尼泊尔支票", en: "Awards: Melvin Jones, Long Service, Nepal cheque", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
-    ["cue", "Sheryl 颁 Melvin Jones 奖给 6 位得奖者（一排上台、一张合照）；Gita 颁长期服务奖：Salli 10 年先，Bobo 20 年后；尼泊尔 15,000 澳元以支票颁发。得奖者坐近舞台（当天协调）；名单和读音交给 MC；奖项按顺序排好", "Sheryl presents the Melvin Jones awards to 6 recipients (up together, one photo); Gita presents the Long Service Awards, Salli's 10 years first and Bobo's 20 years after; the Nepal $15,000 is presented as a cheque. Recipients sit near the stage (arranged on the day); the names and pronunciations go to the MCs; the awards are lined up in order"],
+    ["cue", "Sheryl 颁 Melvin Jones 奖给 7 位得奖者（一排上台、一张合照，按奖牌名单的顺序叫名）；Gita 颁长期服务奖：Salli 10 年先，Bobo 20 年后；尼泊尔 15,000 澳元以支票颁发。得奖者坐近舞台（当天协调）；名单和读音交给 MC；奖项按顺序排好", "Sheryl presents the Melvin Jones awards to 7 recipients (up together, one photo, called in the order of the medals list); Gita presents the Long Service Awards, Salli's 10 years first and Bobo's 20 years after; the Nepal $15,000 is presented as a cheque. Recipients sit near the stage (arranged on the day); the names and pronunciations go to the MCs; the awards are lined up in order"],
     ["crit", "颁奖只有 10 分钟：得奖者一排上台、只合照一次，不要逐位拍照", "Only 10 minutes for the awards: recipients come up in one row and have one photo, not one at a time"],
-    ["en", "Thank you, everyone! Now for the awards. First, our District Governor, Sheryl Li, presents six Melvin Jones Fellowships. Melvin Jones founded Lions Clubs International. When we call your name, please come up and stand in a row."],
-    ["zh", "谢谢大家！接下来是颁奖时间。首先，有请现任区域总监 Sheryl Li 颁发 Melvin Jones Fellowship，共 6 位得奖者。Melvin Jones 是国际狮子会 Lions Clubs International 的创始人。念到名字的得奖者，请上台，站成一排。"],
+    ["en", "Thank you, everyone! Now for the awards. First, our District Governor, Sheryl Li, presents seven Melvin Jones Fellowships. Melvin Jones founded Lions Clubs International. When we call your name, please come up and stand in a row."],
+    ["zh", "谢谢大家！接下来是颁奖时间。首先，有请现任区域总监 Sheryl Li 颁发 Melvin Jones Fellowship，共 7 位得奖者。Melvin Jones 是国际狮子会 Lions Clubs International 的创始人。念到名字的得奖者，请上台，站成一排。"],
     ["list", "nepal"],
     ["cue", "临场发挥：请所有得奖者留在台上一起合照；合照后回座", "Ad-lib: ask all recipients to stay on stage for a group photo, then return to their seats"],
     ["en", "Next, two awards honouring long service, presented by Gita. First, ten years: please welcome our President, Salli Hon, to receive the 10-Year Long Service Award."],
@@ -446,7 +454,7 @@ export const NOTES = {
     ["Tian 简介中英各约 30 秒，会把 Salli 和 Mireille 的致辞推迟约 1 分钟；时间紧就只念第一句。「全球华人新秀歌唱大赛」的官方英文名请核对", "Tian's introduction is about 30 seconds in each language and pushes Salli and Mireille's speech back about a minute; if time is short, read only the first sentence. Check the official English name of the Global Chinese singing competition"],
     ["Tian《女神》：确认 Mireille 选定的是哪一句、在第几秒，带位员据此放行；伴奏和歌长要刚好走到全员上台", "Tian's 《女神》: confirm which line Mireille chose and when it comes, so the ushers can cue it; the track and its length must end just as everyone is on stage"],
     ["宣誓：流程只写「监誓人」，没写名字；稿子仍按 Gita 监誓、逐一念全体委员（9 位）。请确认是不是 Gita，以及誓词和披带由谁颁", "Oath: the run sheet says only \"oath officer\" with no name; the script still has Gita leading it and calling all 9 committee members. Confirm it is Gita and who presents the vows and sashes"],
-    ["颁奖分工：流程写 Sheryl 颁 Melvin Jones 奖、Gita 颁长期服务奖，和你之前说的「Gita 颁尼泊尔奖」不同；稿子已按流程改。请确认 6 位 Melvin Jones 得奖者名单、读音和上台顺序，并提前告诉 Sheryl 和 Gita", "Awards: the run sheet has Sheryl presenting the Melvin Jones awards and Gita the Long Service Awards, which differs from Gita presenting the Nepal awards as you said earlier; the script now follows the run sheet. Confirm the 6 Melvin Jones recipients, their pronunciations and the order, and tell Sheryl and Gita beforehand"],
+    ["颁奖分工：流程写 Sheryl 颁 Melvin Jones 奖、Gita 颁长期服务奖，和你之前说的「Gita 颁尼泊尔奖」不同；稿子已按流程改。Melvin Jones 得奖者：奖牌名单有 7 位（流程表写 6 位，稿子按 7 位，已填入「待填」）。请确认 7 位都由 Sheryl 颁；读音：Guan Cheng Gong、Say Hue Tan、See Wai Seong；Xiao Pingguo 是不是昵称；DY 是缩写（念字母还是全名）；Felica 的拼法和理事名单的 Felicia Seah 不同；叫名顺序按名单。并提前告诉 Sheryl 和 Gita", "Awards: the run sheet has Sheryl presenting the Melvin Jones awards and Gita the Long Service Awards, which differs from Gita presenting the Nepal awards as you said earlier; the script now follows the run sheet. Melvin Jones recipients: the medals list has 7 names (the run sheet says 6; the script uses 7, filled in on the TBC tab). Confirm all 7 are presented by Sheryl; the pronunciations of Guan Cheng Gong, Say Hue Tan and See Wai Seong; whether Xiao Pingguo is a nickname; whether DY is initials (say the letters or a full name); that Felica is spelled differently from Felicia Seah on the committee list; and that names are called in list order. Tell Sheryl and Gita beforehand"],
     ["尼泊尔 15,000 澳元支票：谁交给谁，流程没写（填在「待填」）。稿子不再讲筹款用了多久，Salli 的讲稿讲「两周」，由她们讲", "The Nepal $15,000 cheque: the run sheet does not say who presents it to whom (set it in TBC). The script no longer says how long the fundraising took; Salli's card says two weeks and she covers it"],
     ["Best Dress：「三女两男、掌声定名次」怎么排名，流程没细写。稿子建议女士选前 3、男士选前 2，五人再一起定 1–5 名；请确认", "Best Dress: the run sheet does not say how three women and two men are ranked by applause. The script suggests the top 3 women and top 2 men, then all five together for places 1 to 5; confirm"],
     ["赞助商：Salli 和 Mireille 的讲稿感谢了 Secret de Beauty，但鸣谢页上没有这家（Pureessense 是不是同一家？）；Cookie Chef and Co、Klér 和 Sensory Lab 她们没提。MC 念的仍是鸣谢页的 10 家；Klér 和 Pureessense 的拼写请核对", "Sponsors: Salli and Mireille's cards thank Secret de Beauty, which is not on the sponsor slide (is Pureessense the same company?), and they do not mention Cookie Chef and Co, Klér or Sensory Lab. The MC list is still the slide's 10; check the spelling of Klér and Pureessense"],

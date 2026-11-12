@@ -125,8 +125,8 @@ test("10 Nov updates: prices, Calico, District leaders, videos, Salli, Best Dres
   assert.match(seg("19:54"), /Lions club presidents overseas/);
   assert.match(seg("19:54"), /Three or four clips/);
   assert.doesNotMatch(flat, /five short videos|五条|5 条/, "the run sheet now has 3–4 clips");
-  // Two long-service awards, six Melvin Jones awards, and the Best Dress prize comes before the birthdays and the cake.
-  assert.equal(LISTS.nepal.n, 6);
+  // Two long-service awards, seven Melvin Jones awards, and the Best Dress prize comes before the birthdays and the cake.
+  assert.equal(LISTS.nepal.n, 7);
   assert.match(seg("20:20"), /10-Year Long Service Award/);
   assert.match(seg("20:20"), /20-Year Long Service Award/);
   assert.match(seg("20:20"), /President, Salli Hon, to receive the 10-Year/);
@@ -157,12 +157,12 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
   assert.match(seg("19:50"), /Sheryl Li/);
   assert.match(seg("19:50"), /3 minutes/);
   assert.doesNotMatch(flat, /Sherry|Sheri\b|李慈/, "the spelling is Sheryl");
-  // 11 Nov meeting: Sheryl presents the six Melvin Jones awards, Gita the two Long Service Awards; Nepal's money is a cheque.
-  assert.match(seg("20:20"), /Sheryl Li, presents six Melvin Jones Fellowships/);
+  // 11 Nov meeting: Sheryl presents the seven Melvin Jones awards, Gita the two Long Service Awards; Nepal's money is a cheque.
+  assert.match(seg("20:20"), /Sheryl Li, presents seven Melvin Jones Fellowships/);
   assert.equal((seg("20:20").match(/presented by Gita/g) || []).length, 1, "Gita presents Salli's and Bobo's awards together");
   assert.match(seg("20:20"), /\{chequeBy\}/);
   assert.doesNotMatch(seg("20:20"), /In just one week|短短一个星期/, "Salli's card says two weeks and she covers it");
-  assert.equal(LISTS.nepal.n, 6);
+  assert.equal(LISTS.nepal.n, 7);
   // Goddess has two reasons: Tian's song and an all-female club.
   assert.match(seg("19:00"), /Two reasons/);
   assert.match(seg("19:00"), /all-female club/);
@@ -372,4 +372,20 @@ test("12 Nov: timed reminders in the Notes tab carry a clock time", () => {
   // The Chinese side stays simplified, and no reminder is empty.
   const TRAD = /[們個這來說會長為與對時間謝歡請頒發獎樂隊誕禮員臺義賣聖點鐘閃華開關門車書東無經認領隨當後從麼還進邊過運動電話題頭體]/;
   for (const [zh, en] of NOTES.crit) { assert.ok(zh && en); assert.doesNotMatch(zh, TRAD); }
+});
+
+test("13 Nov: the seven names on the Melvin Jones medals are filled in, in list order", () => {
+  const names = ["Guan Cheng Gong", "Say Hue Tan", "Xiao Pingguo", "DY", "See Wai Seong", "Felica Seah", "Cindy Tai"];
+  assert.equal(LISTS.nepal.n, names.length);
+  names.forEach((n, i) => {
+    assert.equal(DEFAULTS["winner" + (i + 1)], n);
+    assert.equal(DEFAULTS["award" + (i + 1)], "Melvin Jones Fellowship");
+  });
+  const seg = SEGMENTS.find((s) => s.t === "20:20");
+  assert.ok(seg.items.some((it) => it[0] === "list" && it[1] === "nepal"), "the recipients list is in the awards segment");
+  const spoken = seg.items.filter((it) => ["zh", "en"].includes(it[0])).map((it) => it[1]).join(" ");
+  assert.match(spoken, /seven Melvin Jones Fellowships/);
+  assert.match(spoken, /共 7 位得奖者/);
+  assert.doesNotMatch(spoken, /\bsix\b|共 6 位/, "the spoken count matches the seven names");
+  assert.match(JSON.stringify(NOTES.check), /Felica.*Felicia Seah/, "the open question flags the Felica spelling");
 });
