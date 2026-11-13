@@ -231,6 +231,10 @@ Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scor
 - **Moving between stocks:** a stock opened from a list, card or the map has ‹ › buttons (and a sideways swipe, or the arrow keys) to step to the next one in that list without closing it.
 - **Checks:** `node --test test/stocks*.test.js`; `node scripts/build-stocks.mjs --force` builds the feed and the chart histories locally. Each deploy leaves a "Stocks feed" notice on its run with the build summary.
 
+# PureLift (`/purelift/`, unlisted draft)
+
+A one-page website for PureLift, an aesthetic and skin clinic: hero, treatments, approach, practitioner, what to expect, FAQ, booking and contact. Plain HTML and CSS with self-hosted fonts and a few lines of JavaScript (phone menu, floating booking button). It is a draft: yellow-highlighted text is a placeholder until the clinic's brief is added, and the page asks search engines not to index it. Like the other unlisted apps it is left off the home page, but the address opens for anyone who has it. `purelift/README.md` has the launch checklist; `node --test test/purelift.test.js` checks that every linked file and section exists and every image has alt text.
+
 # Development
 
 No build step. Serve the folder with any static server to try it locally.
