@@ -459,26 +459,81 @@ $("#copy").addEventListener("click", () => {
   const done = (ok) => { $("#copyMsg").textContent = ok ? (onPages ? "已复制链接，发给搭档打开即可 · Link copied: send it to your co-MC" : "已复制，发给搭档粘贴到下方 · Copied: your co-MC pastes it below") : "请手动全选复制 · Select and copy the text above"; if (!ok) out.select(); };
   try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch { done(false); }
 });
-// One-tap sync from the script tab: the master phone sends its version (share sheet, else the clipboard); the other phone copies the message
-// and taps "Get master version" (or opens the link, or pastes it on the TBC tab). Applying replaces that phone's edits.
+// One-tap sync. The master phone taps "Publish my version": the code goes to a small public relay (ntfy.sh, one private room for this event).
+// Every other phone taps "Sync from master": it fetches the newest version, applies it (replacing that phone's edits) and offers Undo.
+// If the relay can't be reached (venue wifi, offline) or the code is too big for it, the old route still works: share link, clipboard, or paste on the TBC tab.
+const RELAY = "https://ntfy.sh/", ROOM = "shine-2026-11-13-034ba6ad3b6ea35b", RELAY_MAX = 3600;
 const syncMsg = (t) => { const el = $("#syncMsg"); el.textContent = t; el.hidden = !t; };
+const hhmm = (ms) => new Date(ms).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: false });
+const relay = async (path, init) => {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
+  try { const r = await fetch(RELAY + ROOM + path, { ...init, signal: ctl.signal, cache: "no-store" }); if (!r.ok) throw new Error("relay " + r.status); return r; }
+  finally { clearTimeout(t); }
+};
+async function latestMaster() {
+  const lines = (await (await relay("/json?poll=1&since=all")).text()).split("\n");
+  let last = null;
+  for (const ln of lines) {
+    try { const m = JSON.parse(ln); if (m.event === "message" && typeof m.message === "string" && CODE_RE.test(m.message) && (!last || m.time >= last.time)) last = m; } catch { /* not a message line */ }
+  }
+  return last;
+}
+function applyMaster(p) {
+  S.f = { ...p.f }; S.cut = Object.fromEntries(p.cut.map((k) => [k, 1])); S.ed = { ...p.ed };
+  editKey = null; save(); buildForm(); redrawScript();
+}
+let undoSnap = null;
 $("#sendMaster").addEventListener("click", async () => {
   const code = toCode(), link = onPages ? `${location.origin}${location.pathname}#${code}` : code;
-  const note = "A Night to Shine: master script version. In the app, copy this message, then tap 接收主版本 / Get master version.";
+  let pre = "";
+  if (code.length <= RELAY_MAX) {
+    try {
+      await relay("", { method: "POST", body: code });
+      try { await navigator.clipboard.writeText(link); } catch { /* the copy is only a spare */ }
+      syncMsg(bi(`已发布（${hhmm(Date.now())}）：其他手机点「同步主版本」即可`, `Published at ${hhmm(Date.now())}: other phones just tap Sync from master`));
+      return;
+    } catch { pre = bi("连不上同步服务，改用分享链接。", "Couldn't reach the sync service, so using the share link."); }
+  } else pre = bi("内容太长，同步服务放不下，改用分享链接。", "Too big for the sync service, so using the share link.");
+  const say = (t) => syncMsg(pre ? `${pre} ${t}` : t);
+  const note = "A Night to Shine: master script version. Open the link, or copy this message and tap 同步主版本 / Sync from master.";
   let copied = false;
   try { await navigator.clipboard.writeText(link); copied = true; } catch { /* the share sheet or the TBC tab still work */ }
   try {
-    if (navigator.share) { await navigator.share(onPages ? { title: "A Night to Shine · 主版本", text: note, url: link } : { title: "A Night to Shine · 主版本", text: `${note}\n${link}` }); syncMsg(bi("已打开分享，也已复制链接", "Share sheet opened; the link is also copied")); return; }
-  } catch (e) { if (e && e.name === "AbortError") { syncMsg(copied ? bi("已取消分享，链接已复制，可直接粘贴发送", "Share cancelled; the link is copied, so you can paste it into a message") : ""); return; } }
-  if (copied) syncMsg(bi("已复制主版本链接：粘贴发给搭档", "Master version link copied: paste it to your co-MC"));
+    if (navigator.share) { await navigator.share(onPages ? { title: "A Night to Shine · 主版本", text: note, url: link } : { title: "A Night to Shine · 主版本", text: `${note}\n${link}` }); say(bi("已打开分享，也已复制链接", "Share sheet opened; the link is also copied")); return; }
+  } catch (e) { if (e && e.name === "AbortError") { say(copied ? bi("已取消分享，链接已复制，可直接粘贴发送", "Share cancelled; the link is copied, so you can paste it into a message") : ""); return; } }
+  if (copied) say(bi("已复制主版本链接：粘贴发给搭档", "Master version link copied: paste it to your co-MC"));
   else { show("tbc"); $("#copy").click(); }
 });
-$("#getMaster").addEventListener("click", async () => {
+async function fromClipboard(pre) {
+  const say = (t) => syncMsg(pre ? `${pre} ${t}` : t);
   try {
     const p = fromCode(await navigator.clipboard.readText());
     if (p) { syncMsg(""); offer(p); scrollTo(0, 0); return; }
-    syncMsg(bi("剪贴板里没有主版本：先把搭档发来的消息拷贝下来", "No master version on the clipboard: copy your co-MC's message first"));
-  } catch { syncMsg(bi("读不到剪贴板：到「待填」页最下面粘贴", "Can't read the clipboard: paste it at the bottom of the TBC tab")); }
+    say(bi("剪贴板里没有主版本：先把搭档发来的消息拷贝下来", "No master version on the clipboard: copy your co-MC's message first"));
+  } catch { say(bi("读不到剪贴板：到「待填」页最下面粘贴", "Can't read the clipboard: paste it at the bottom of the TBC tab")); }
+}
+$("#getMaster").addEventListener("click", async () => {
+  const btn = $("#getMaster"); btn.disabled = true; syncMsg(bi("正在同步…", "Syncing…"));
+  try {
+    let m = null, down = false;
+    try { m = await latestMaster(); } catch { down = true; }
+    const p = m && fromCode(m.message);
+    if (p && p.master) {
+      undoSnap = { f: S.f, cut: S.cut, ed: S.ed };
+      applyMaster(p);
+      const t = hhmm(m.time * 1000);
+      $("#undoSync").hidden = false;
+      syncMsg(bi(`已同步（主版本发布于 ${t}）：${Object.keys(p.f).length} 项填写，${Object.keys(p.ed).length} 行改过，${p.cut.length} 行删除`, `Synced (master published ${t}): ${Object.keys(p.f).length} entries, ${Object.keys(p.ed).length} reworded, ${p.cut.length} removed`));
+      return;
+    }
+    await fromClipboard(down ? bi("连不上同步服务。", "Couldn't reach the sync service.") : bi("主版本还没有发布。", "Nothing published yet."));
+  } finally { btn.disabled = false; }
+});
+$("#undoSync").addEventListener("click", () => {
+  if (!undoSnap) return;
+  S.f = undoSnap.f; S.cut = undoSnap.cut; S.ed = undoSnap.ed; undoSnap = null;
+  editKey = null; save(); buildForm(); redrawScript();
+  $("#undoSync").hidden = true; syncMsg(bi("已撤销同步，恢复到同步前", "Sync undone: back to how it was before"));
 });
 let pending = null;
 function offer(p) {
@@ -493,7 +548,7 @@ function offer(p) {
 }
 $("#doImport").addEventListener("click", () => {
   const master = pending && pending.master;
-  if (pending && master) { S.f = { ...pending.f }; S.cut = Object.fromEntries(pending.cut.map((k) => [k, 1])); S.ed = { ...pending.ed }; editKey = null; save(); buildForm(); redrawScript(); }
+  if (pending && master) applyMaster(pending);
   else if (pending) { Object.assign(S.f, pending.f); save(); buildForm(); renderScript(); }
   $("#importBanner").hidden = true; pending = null; show(master ? "script" : "tbc");
 });
