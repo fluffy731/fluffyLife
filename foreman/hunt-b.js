@@ -39,7 +39,7 @@ export default {
         const { mat, box } = kit, m = mat(0xd5d7d8, { roughness: 0.4 });
         return grp(kit, box(0.11, 0.08, 0.022, m, -4.0, 2.34, 11.505), box(0.11, 0.08, 0.022, m, -2.8, 2.34, 11.505), box(1.92, 0.016, 0.014, m, -3.4, 2.31, 11.506));
       } },
-    { id: '7-door-annealed', phase: 4, title: 'Ordinary glass in the front door', pos: [1.3, 1.0, 11.35], r: 0.3, box: [[1.2, 0.75, 11.28], [1.4, 1.9, 11.4]],
+    { id: '7-door-annealed', phase: 4, title: 'Ordinary glass in the front door', pos: [1.3, 1.25, 11.35], r: 0.3, box: [[1.2, 0.75, 11.28], [1.4, 1.9, 11.4]],
       hint: 'Read the sticker on the glass in the front door.',
       explain: 'The narrow glass panel in the front door carries a supplier sticker for 4 mm annealed float glass and no safety glass mark. Glass in a door must be Grade A safety glass, apart from a few listed exceptions such as small leadlights.',
       fix: 'Replace it with Grade A safety glass of the right thickness for its area, marked by etching or a non-reusable label.',
@@ -125,8 +125,8 @@ export default {
         const board = new THREE.Group(), sign = textPlane(['TEMPORARY SUPPLY'], 0.6, 0.15);
         sign.position.set(0, 0.8, 0.125);
         board.add(box(0.55, 0.7, 0.24, encl, 0, 0.35, 0), box(0.5, 0.64, 0.012, dark, 0, 0.35, 0.125), sign);
-        board.position.set(5.8, 0.2, 14.38); board.rotation.set(-0.2, 0, 0.07);
-        return grp(kit, board, box(0.4, 0.2, 0.2, mat(0xffffff, { tex: 'concrete' }), 5.8, 0.1, 14.4), rod([5.72, 0.78, 14.2], [5.66, 0.0, 13.75], 0.025, mat(0xffffff, { tex: 'timber' })),
+        board.position.set(5.8, 0.26, 14.38); board.rotation.set(-0.2, 0, 0.07);
+        return grp(kit, board, box(0.4, 0.2, 0.2, mat(0xffffff, { tex: 'concrete' }), 5.8, 0.16, 14.4), rod([5.72, 0.78, 14.2], [5.66, 0.0, 13.75], 0.025, mat(0xffffff, { tex: 'timber' })),
           rod([6.4, 0.03, 17.0], [5.95, 0.03, 14.45], 0.04, orange), cyl(0.028, 0.22, orange, 5.95, 0.11, 14.45, 10), cyl(0.045, 0.18, mat(0xb9c2cd, { metalness: 0.6, roughness: 0.35 }), 5.95, 0.09, 14.45, 12));
       } },
     { id: '9-cable-face', phase: 2, title: 'Cable stapled across the stud faces', pos: [-0.75, 1.15, 11.245], r: 0.3, box: [[-2.25, 0.5, 11.15], [0.75, 1.8, 11.3]],
@@ -168,7 +168,7 @@ export default {
       flag: 'V', src: 'esvCoesConsumers',
       build(kit) {
         const { mat, box, rod, pipe } = kit, yel = mat(0xf2c94c, { roughness: 0.6 }), dark = mat(0x2a2e33, { roughness: 0.6 }), glow = mat(0xfff4c2, { emissive: 0xffe680, emissiveIntensity: 1.6 });
-        const g = grp(kit, box(0.32, 0.22, 0.09, dark, 6.4, 1.45, 8.5), box(0.27, 0.17, 0.01, glow, 6.4, 1.45, 8.55), box(0.05, 0.07, 0.05, yel, 5.66, 0.62, 10.15),
+        const g = grp(kit, box(0.32, 0.22, 0.09, dark, 6.4, 1.45, 8.5), box(0.27, 0.17, 0.01, glow, 6.4, 1.45, 8.55), box(0.27, 0.17, 0.01, glow, 6.4, 1.45, 8.45), box(0.05, 0.07, 0.05, yel, 5.66, 0.62, 10.15),
           pipe([[5.66, 0.6, 10.12], [5.85, 0.03, 9.95], [6.38, 0.03, 8.75], [6.4, 1.3, 8.5]], 0.009, yel));
         for (const [dx, dz] of [[0.35, 0.2], [-0.35, 0.2], [0, -0.38]]) g.add(rod([6.4, 1.32, 8.5], [6.4 + dx, 0, 8.5 + dz], 0.012, dark));
         return g;
@@ -250,8 +250,8 @@ export default {
       fix: 'Patch the tear with a piece of wrap lapped well past the hole on every side, upper piece over lower, and tape it with the maker\'s tape.',
       flag: 'T', src: '',
       build(kit) {
-        const { mat, box } = kit, flap = box(0.004, 0.5, 0.3, mat(0xb4bcc6, { metalness: 0.2, roughness: 0.5 }), -5.358 + Math.sin(0.55) * 0.25, 1.53 - Math.cos(0.55) * 0.25, 10.56);
-        flap.rotation.z = 0.55;
+        const { mat, box } = kit, flap = box(0.004, 0.4, 0.3, mat(0xb4bcc6, { metalness: 0.2, roughness: 0.5 }), -5.358 + Math.sin(1.1) * 0.2, 1.53 - Math.cos(1.1) * 0.2, 10.56);
+        flap.rotation.z = 1.1;
         return grp(kit, box(0.004, 0.52, 0.32, mat(0x6b3b2c, { roughness: 1 }), -5.358, 1.27, 10.56), flap);
       } },
     { id: '11-batt-downlight', phase: 6, title: 'Batt laid over a downlight', pos: [3.5, 3.0, 8.4], r: 0.8,
@@ -260,8 +260,9 @@ export default {
       fix: 'Keep the clearance the light maker and the Wiring Rules require, or use a fitting rated for insulation contact, and lay the batts up to the cover, not over it.',
       flag: 'C', src: '',
       build(kit) {
-        const b = kit.box(0.95, 0.2, 0.62, kit.mat(0xf2d27a, { roughness: 1 }), 3.52, CEIL + 0.13, 8.42); b.rotation.set(0.06, 0.25, -0.08);
-        return grp(kit, b);
+        const m = kit.mat(0xf2d27a, { roughness: 1 }), b = kit.box(0.95, 0.17, 0.62, m, 3.55, CEIL + 0.27, 8.45), c = kit.box(0.6, 0.12, 0.45, m, 3.4, CEIL + 0.38, 8.35);
+        b.rotation.set(0.1, 0.35, -0.12); c.rotation.set(-0.15, -0.4, 0.1);
+        return grp(kit, b, c);
       } },
     { id: '11-eave-blocked', phase: 6, title: 'Batts pushed over the eave vent', pos: [2.5, 2.92, 11.6], r: 0.3, box: [[1.4, 2.8, 11.25], [3.6, 3.05, 11.9]],
       hint: 'Look where the ceiling batts meet the front eave.',
@@ -279,8 +280,10 @@ export default {
       fix: 'Use batts made for the stud depth so they sit at full thickness inside the frame, giving the R-value the energy report assumes.',
       flag: 'V', src: 'nccHp132',
       build(kit) {
-        const { mat, box } = kit, m = mat(0xf0a6b4, { roughness: 1 }), g = grp(kit);
-        for (const x of [0.5575, 0.1075]) g.add(box(0.4, 1.3, 0.05, m, x, 1.2, 11.235), box(0.34, 1.0, 0.04, m, x, 1.2, 11.195), box(0.26, 0.6, 0.03, m, x, 1.2, 11.165));
+        const { mat, box } = kit, m = mat(0xf0a6b4, { roughness: 1, emissive: 0x4a2830 }), g = grp(kit);
+        for (const [x, y, w, h, d, z, r] of [[0.56, 1.25, 0.52, 1.25, 0.05, 11.225, 0.04], [0.54, 1.15, 0.42, 0.9, 0.05, 11.185, -0.06], [0.11, 1.1, 0.5, 1.1, 0.05, 11.225, -0.03], [0.13, 1.25, 0.38, 0.7, 0.05, 11.185, 0.07], [0.34, 0.8, 0.3, 0.35, 0.04, 11.2, 0.2]]) {
+          const b = box(w, h, d, m, x, y, z); b.rotation.z = r; g.add(b);
+        }
         return g;
       } },
   ],
@@ -331,7 +334,7 @@ export default {
         }
         return g;
       } },
-    { id: '12-claim-early', phase: 6, title: 'Fixing stage claimed before the fit-out', pos: [-1.0, 1.25, 12.6], r: 0.8,
+    { id: '12-claim-early', phase: 6, title: 'Fixing stage claimed before the fit-out', pos: [-1.0, 1.62, 12.6], r: 0.8,
       hint: 'Read the paperwork posted at the front of the house and compare it with what is fixed inside.',
       explain: 'A claim for the fixing stage has been issued now the linings are up, but no doors, architraves, skirting, cabinets or fittings are fixed yet. The fixing stage is not reached until they are all fitted and fixed in position.',
       fix: 'Hold the fixing stage claim until all internal cladding, architraves, skirting, doors, built-in shelves and the listed fittings are fixed, and claim no more than the contract allows for the stage.',

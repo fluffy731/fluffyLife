@@ -328,7 +328,7 @@ export default {
         // removal van reversed up the driveway with its back doors open
         g.add(box(2.0, 2.2, 3.4, white, 4.5, 1.45, 15.4), box(2.0, 1.45, 1.3, white, 4.5, 1.08, 17.75), box(1.8, 0.6, 0.02, glass, 4.5, 1.45, 18.41));
         for (const [x, z] of [[3.55, 14.3], [5.45, 14.3], [3.55, 17.7], [5.45, 17.7]]) { const w = cyl(0.36, 0.25, dark, x, 0.36, z, 16); w.rotation.z = Math.PI / 2; g.add(w); }
-        for (const s of [-1, 1]) g.add(box(0.96, 2.0, 0.03, white, 4.5 + s * 1.48, 1.45, 13.69));
+        for (const s of [-1, 1]) g.add(box(0.96, 2.0, 0.03, white, 4.5 + s * 1.48, 1.45, 13.69), box(0.02, 0.3, 3.4, mat(0xe8590c, { roughness: 0.6 }), 4.5 + s * 1.005, 1.2, 15.4));
         const ramp = box(0.9, 0.03, 1.35, mat(0xb9c2cd, { metalness: 0.6, roughness: 0.35 }), 4.5, 0.2, 13.05); ramp.rotation.x = -0.28; g.add(ramp);
         // a sofa and cartons on the driveway, heading for the front door
         g.add(box(0.8, 0.42, 1.8, sofa, 3.35, 0.21, 12.9), box(0.16, 0.4, 1.8, sofa, 3.03, 0.62, 12.9), box(0.8, 0.22, 0.14, sofa, 3.35, 0.53, 12.07), box(0.8, 0.22, 0.14, sofa, 3.35, 0.53, 13.73));

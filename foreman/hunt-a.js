@@ -420,15 +420,15 @@ export default {
         const side = new THREE.Group(); side.position.set(2.2, 1.3, zf + 0.004); side.rotation.y = 0.9; side.add(box(0.25, 0.6, 0.003, foil, -0.125, 0, 0)); g.add(side);
         return g;
       } },
-    { id: '6-brick-overhang', phase: 1, title: 'First course overhangs the slab edge', pos: [3.75, 0.2, 11.56], r: 0.35, box: [[2.0, 0.1, 11.4], [5.5, 0.3, 11.6]],
+    { id: '6-brick-overhang', phase: 1, title: 'First course overhangs the slab edge', pos: [0.02, 0.2, 11.57], r: 0.35, box: [[-1.0, 0.1, 11.4], [1.04, 0.3, 11.62]],
       hint: 'Sight along the first course where it meets the slab edge.',
-      explain: 'East of the front door the first course has been laid about 60 mm out past the slab edge. The outer leaf may overhang the slab by no more than 15 mm, or the bricks lose their bearing.',
+      explain: 'Along the wall just west of the front door, the first course has been laid about 70 mm out past the slab edge. The outer leaf may overhang the slab by no more than 15 mm, or the bricks lose their bearing.',
       fix: 'Take up and relay the course so its face sits no more than 15 mm past the slab edge, on a continuous DPC.',
       flag: 'V', src: 'nccMas57',
       build(kit) {
         const { THREE, mat, box } = kit, g = new THREE.Group(), h = 0.086;
-        g.add(box(3.5, h, 0.17, mat(0xffffff, { tex: 'brick' }), 3.75, YK(0) + h / 2, 11.475));
-        for (const x of [2.26, 3.73, 5.2]) g.add(box(0.012, 0.05, 0.035, mat(0x16181b, { roughness: 0.6 }), x, YK(0) + 0.037, 11.545));
+        g.add(box(2.04, h, 0.18, mat(0xffffff, { tex: 'brick' }), 0.02, YK(0) + h / 2, 11.48));
+        for (const x of [-0.45, 0.74]) g.add(box(0.012, 0.05, 0.035, mat(0x16181b, { roughness: 0.6 }), x, YK(0) + 0.037, 11.555));
         return g;
       } },
     { id: '6-mortar-bridge', phase: 2, title: 'Mortar bridging the cavity', pos: [-0.75, 1.14, 11.43], r: 1.0,

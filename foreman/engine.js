@@ -568,15 +568,18 @@ export class Stage {
     const inst = []; this.scene.traverseVisible((o) => { if (o.isInstancedMesh && !o.userData.cap) inst.push(o); });
     const extra = new THREE.Group(), m4 = new THREE.Matrix4(), col = new THREE.Color(), clones = [];
     for (const o of inst) {
+      // thousands of small stones would swamp the tracer's BVH, so heavy sets trace as simple twelve-sided proxies
+      let src = o.geometry;
+      if (src.attributes.position.count * o.count > 150000) { src.computeBoundingSphere(); src = new THREE.IcosahedronGeometry(src.boundingSphere.radius * 0.8, 0); }
       const geos = [];
       for (let i = 0; i < o.count; i++) {
-        const g = o.geometry.clone(); o.getMatrixAt(i, m4); g.applyMatrix4(m4);
+        const g = src.clone(); o.getMatrixAt(i, m4); g.applyMatrix4(m4);
         if (o.instanceColor) { o.getColorAt(i, col); const n = g.attributes.position.count, c = new Float32Array(n * 3); for (let k = 0; k < n; k++) c.set([col.r, col.g, col.b], k * 3); g.setAttribute('color', new THREE.BufferAttribute(c, 3)); }
         geos.push(g.index ? g.toNonIndexed() : g);
       }
       const mt = o.instanceColor ? Object.assign(o.material.clone(), { vertexColors: true }) : o.material; if (mt !== o.material) clones.push(mt);
       const merged = new THREE.Mesh(mergeGeometries(geos, false), mt);
-      geos.forEach((g) => g.dispose()); o.updateMatrixWorld(); merged.applyMatrix4(o.matrixWorld); extra.add(merged); hide(o);
+      geos.forEach((g) => g.dispose()); if (src !== o.geometry) src.dispose(); o.updateMatrixWorld(); merged.applyMatrix4(o.matrixWorld); extra.add(merged); hide(o);
     }
     this.scene.add(extra);
     restore.push(() => { this.scene.remove(extra); extra.traverse((q) => q.geometry?.dispose()); clones.forEach((m) => m.dispose()); });
@@ -638,7 +641,11 @@ export class Stage {
     for (const d of h.list) {
       if (h.found.has(d.id)) continue;
       let dist;
-      if (d.box) { const bx = this._b.set(this._v.set(...d.box[0]), new THREE.Vector3(...d.box[1])); dist = this._ray.ray.intersectsBox(bx) ? 0 : bx.distanceToPoint(p); }
+      if (d.box) {
+        // inside the zone, or the ray crossing it close to where it landed (a long low zone must not catch clicks well behind it)
+        const bx = this._b.set(this._v.set(...d.box[0]), new THREE.Vector3(...d.box[1])), ip = this._ray.ray.intersectBox(bx, new THREE.Vector3());
+        dist = ip && ip.distanceTo(p) < 1.5 ? 0 : bx.distanceToPoint(p);
+      }
       else { const c = this._v.set(...d.pos); dist = Math.min(c.distanceTo(p), this._ray.ray.distanceToPoint(c) * 1.4); }
       if (dist <= (d.r ?? 1) && dist < bd) { bd = dist; best = d; }
     }
@@ -675,7 +682,7 @@ export class Stage {
     if (this.mode !== 'orbit') this.setMode('orbit');
     const b = s.bounds || { x0: -6, x1: 6, z0: -6, z1: 12 }, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, k = s.flip ? -1 : 1;
     // high enough to look over the neighbours' roofs, close enough that the cut fills the view
-    const pos = s.axis === 'x' ? [s.at + k * 9, 7.5, cz] : s.axis === 'y' ? [cx + 0.01, 24, cz + 0.01] : [cx + 1.5, 4.2, s.at + k * 12];
+    const pos = s.axis === 'x' ? [s.at + k * 6.8, 4.5, cz + 10] : s.axis === 'y' ? [cx + 0.01, 24, cz + 0.01] : [cx + 1.5, 4.2, s.at + k * 12];
     const tgt = s.axis === 'x' ? [s.at, 1.2, cz] : s.axis === 'y' ? [cx, 0, cz] : [cx, 1.3, s.at];
     this.focus = null; this.camera.position.set(...pos); this.controls.target.set(...tgt); this.controls.update();
   }
