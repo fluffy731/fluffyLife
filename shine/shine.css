@@ -133,7 +133,17 @@ body[data-who="S"] .seg .ln[data-s="W"] .b, body[data-who="W"] .seg .ln[data-s="
 .cutbar button[aria-pressed="true"] { background: var(--ink); color: var(--bg); font-weight: 600; }
 #cutN { font-size: 13px; color: var(--muted); }
 .cuthint { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--muted); }
-.ln.edit { grid-template-columns: 34px minmax(0, 1fr) 44px; }
+.ln.edit { grid-template-columns: 34px minmax(0, 1fr) auto; }
+.ln.editing { grid-template-columns: 34px minmax(0, 1fr); }
+.lacts { display: flex; gap: 6px; align-self: center; }
+.lbtn.ed { color: var(--ink); }
+.ebox { display: grid; gap: 8px; }
+.ledit { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); font: inherit; font-size: var(--fs); line-height: 1.5; resize: vertical; }
+.ehint { margin: 0; font-size: 13px; color: var(--muted); }
+.eact { display: flex; flex-wrap: wrap; gap: 8px; }
+.eact button { min-height: 40px; padding: 0 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-size: 14px; }
+.eact .primary { background: var(--ink); color: var(--bg); font-weight: 600; }
+.ln.edited:not(.edit) p { border-left: 3px solid var(--gold); padding-left: 8px; }
 .lbtn { width: 44px; height: 44px; align-self: center; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 18px; color: var(--crit); }
 .lbtn.back { color: var(--ok); }
 .ln.cut p { text-decoration: line-through; opacity: 0.5; }
