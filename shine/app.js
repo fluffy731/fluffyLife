@@ -429,7 +429,7 @@ $("#groups").addEventListener("input", (e) => {
 // SHINE2 carries the whole master version: TBC entries, removed lines and reworded lines. SHINE1 (entries only) still imports.
 const CODE = "SHINE2.", CODE_RE = /SHINE([12])\.([A-Za-z0-9_-]+)/;
 function toCode() {
-  const f = Object.fromEntries(Object.entries(S.f).filter(([k, v]) => META[k] && String(v).trim()));
+  const f = Object.fromEntries(Object.entries(S.f).filter(([k, v]) => META[k] && String(v).trim() !== String(DEFAULTS[k] ?? "").trim()));
   const live = liveKeys();
   const cut = Object.keys(S.cut).filter((k) => live.has(k));
   const ed = Object.fromEntries(Object.entries(S.ed).filter(([k]) => live.has(k)));
@@ -462,7 +462,9 @@ $("#copy").addEventListener("click", () => {
 // One-tap sync. The master phone taps "Publish my version": the code goes to a small public relay (ntfy.sh, one private room for this event).
 // Every other phone taps "Sync from master": it fetches the newest version, applies it (replacing that phone's edits) and offers Undo.
 // If the relay can't be reached (venue wifi, offline) or the code is too big for it, the old route still works: share link, clipboard, or paste on the TBC tab.
-const RELAY = "https://ntfy.sh/", ROOM = "shine-2026-11-13-034ba6ad3b6ea35b", RELAY_MAX = 3600;
+// ntfy.sh keeps a message to 4096 bytes, so a big version goes up as numbered parts (SHINE2C.<id>.<part>.<parts>.<text>) and is only used once every part has arrived.
+const RELAY = "https://ntfy.sh/", ROOM = "shine-2026-11-13-034ba6ad3b6ea35b", RELAY_MAX = 3600, CHUNK = 3500, MAX_PARTS = 40;
+const PART_RE = /^SHINE2C\.([0-9a-z]+)\.(\d+)\.(\d+)\.([\s\S]*)$/;
 const syncMsg = (t) => { const el = $("#syncMsg"); el.textContent = t; el.hidden = !t; };
 const hhmm = (ms) => new Date(ms).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: false });
 const relay = async (path, init) => {
@@ -470,13 +472,31 @@ const relay = async (path, init) => {
   try { const r = await fetch(RELAY + ROOM + path, { ...init, signal: ctl.signal, cache: "no-store" }); if (!r.ok) throw new Error("relay " + r.status); return r; }
   finally { clearTimeout(t); }
 };
+async function publish(code) {
+  if (code.length <= RELAY_MAX) { await relay("", { method: "POST", body: code }); return 1; }
+  const n = Math.ceil(code.length / CHUNK);
+  if (n > MAX_PARTS) throw new Error("too big");
+  const id = Date.now().toString(36);
+  for (let i = 0; i < n; i++) await relay("", { method: "POST", body: `SHINE2C.${id}.${i}.${n}.${code.slice(i * CHUNK, (i + 1) * CHUNK)}` });
+  return n;
+}
 async function latestMaster() {
   const lines = (await (await relay("/json?poll=1&since=all")).text()).split("\n");
-  let last = null;
+  let best = null; const groups = new Map();
+  const take = (message, time) => { if (!best || time >= best.time) best = { message, time }; };
   for (const ln of lines) {
-    try { const m = JSON.parse(ln); if (m.event === "message" && typeof m.message === "string" && CODE_RE.test(m.message) && (!last || m.time >= last.time)) last = m; } catch { /* not a message line */ }
+    let m; try { m = JSON.parse(ln); } catch { continue; /* not a message line */ }
+    if (m.event !== "message" || typeof m.message !== "string") continue;
+    const c = m.message.match(PART_RE);
+    if (c) {
+      const id = c[1], i = +c[2], n = +c[3];
+      if (!(n >= 1 && n <= MAX_PARTS && i < n)) continue;
+      const g = groups.get(id) || { n, parts: {}, time: 0 };
+      g.parts[i] = c[4]; g.time = Math.max(g.time, m.time); groups.set(id, g);
+      if (g.n === n && Array.from({ length: n }, (_, j) => j in g.parts).every(Boolean)) take(Array.from({ length: n }, (_, j) => g.parts[j]).join(""), g.time);
+    } else if (CODE_RE.test(m.message)) take(m.message, m.time);
   }
-  return last;
+  return best;
 }
 function applyMaster(p) {
   S.f = { ...p.f }; S.cut = Object.fromEntries(p.cut.map((k) => [k, 1])); S.ed = { ...p.ed };
@@ -486,14 +506,14 @@ let undoSnap = null;
 $("#sendMaster").addEventListener("click", async () => {
   const code = toCode(), link = onPages ? `${location.origin}${location.pathname}#${code}` : code;
   let pre = "";
-  if (code.length <= RELAY_MAX) {
-    try {
-      await relay("", { method: "POST", body: code });
-      try { await navigator.clipboard.writeText(link); } catch { /* the copy is only a spare */ }
-      syncMsg(bi(`已发布（${hhmm(Date.now())}）：其他手机点「同步主版本」即可`, `Published at ${hhmm(Date.now())}: other phones just tap Sync from master`));
-      return;
-    } catch { pre = bi("连不上同步服务，改用分享链接。", "Couldn't reach the sync service, so using the share link."); }
-  } else pre = bi("内容太长，同步服务放不下，改用分享链接。", "Too big for the sync service, so using the share link.");
+  try {
+    await publish(code);
+    try { await navigator.clipboard.writeText(link); } catch { /* the copy is only a spare */ }
+    syncMsg(bi(`已发布（${hhmm(Date.now())}）：其他手机点「同步主版本」即可`, `Published at ${hhmm(Date.now())}: other phones just tap Sync from master`));
+    return;
+  } catch (e) {
+    pre = e && e.message === "too big" ? bi("内容太长，同步服务放不下，改用分享链接。", "Too big for the sync service, so using the share link.") : bi("连不上同步服务，改用分享链接。", "Couldn't reach the sync service, so using the share link.");
+  }
   const say = (t) => syncMsg(pre ? `${pre} ${t}` : t);
   const note = "A Night to Shine: master script version. Open the link, or copy this message and tap 同步主版本 / Sync from master.";
   let copied = false;
