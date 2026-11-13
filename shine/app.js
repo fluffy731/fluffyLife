@@ -9,7 +9,11 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 
 let S = {};
 try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { S = {}; }
-S.f ||= {}; S.drawn ||= {}; S.who ||= "both"; S.done ||= {};
+S.f ||= {}; S.drawn ||= {}; S.who ||= "both"; S.done ||= {}; S.cut ||= {};
+// Delete-a-line (last-minute changes): S.cut holds the lines this phone has removed. A line is keyed by its segment, position and
+// first words, so if the script is updated and that line changes, it simply comes back. Edit mode is never saved, so a reload is safe.
+let editing = false;
+const keyOf = (s, it, i) => `${s.t}|${i}|${String(it[1]).slice(0, 20)}`;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* private mode: keep working without saving */ } };
 
 // ---------- Field registry ----------
@@ -65,14 +69,17 @@ function chip(k, l) {
 const fill = (text, l) => esc(text).replace(/\{(\w+)\}/g, (_, k) => chip(k, l));
 const duo = (zh, en, tag = "span") => `<${tag} class="zh" lang="zh-Hans">${fill(zh, "zh")}</${tag}><${tag} class="en" lang="en">${fill(en, "en")}</${tag}>`;
 
-function lineHTML([tag, text, o = {}]) {
+function lineHTML([tag, text, o = {}], k) {
   if (o.if && !val(o.if)) return "";
+  const cut = !!S.cut[k];
+  if (cut && !editing) return "";
   // Line tags are languages ("zh", "en") or "SW" (said together, shown as Chinese then English).
   // o.who ("S" or "W") overrides who speaks the line, e.g. Solomon in Chinese in the two-man opener.
   const who = tag === "SW" ? "SW" : o.who || SPEAKER[tag], l = tag === "en" ? "en" : "zh";
   const label = { S: NAME.S, W: NAME.W, SW: `${NAME.S} + ${NAME.W}` }[who];
-  return `<div class="ln${o.tpl ? " tpl" : ""}" data-s="${who}"><b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>` +
-    `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(text, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}</p></div>`;
+  const btn = editing ? `<button type="button" class="lbtn${cut ? " back" : ""}" data-cut="${esc(k)}" aria-label="${cut ? bi("恢复这一行", "Restore this line") : bi("删除这一行", "Delete this line")}">${cut ? "↩" : "✕"}</button>` : "";
+  return `<div class="ln${o.tpl ? " tpl" : ""}${cut ? " cut" : ""}${editing ? " edit" : ""}" data-s="${who}"><b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>` +
+    `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(text, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}</p>${btn}</div>`;
 }
 
 function listHTML(name, o = {}) {
@@ -98,9 +105,9 @@ function listHTML(name, o = {}) {
   return `<ol class="awards">${rows.map((j) => `<li><span class="aw">${chip("award" + j, l)}</span><span class="wn">${chip("winner" + j, l)}</span></li>`).join("")}</ol>`;
 }
 
-function itemHTML(it) {
+function itemHTML(it, s, i) {
   const [type] = it;
-  if (type === "zh" || type === "en" || type === "SW") return lineHTML(it);
+  if (type === "zh" || type === "en" || type === "SW") return lineHTML(it, keyOf(s, it, i));
   if (type === "cue") return `<p class="cue">${duo(it[1], it[2])}</p>`;
   if (type === "crit") return `<p class="crit">${duo(it[1], it[2])}</p>`;
   if (type === "list") return listHTML(it[1], it[2]);
@@ -118,7 +125,7 @@ function segHTML(s) {
       <h2>${duo(s.zh, s.en)}</h2>
       <p class="at">${duo(s.at[0], s.at[1])}</p>
     </header>
-    ${s.items.map(itemHTML).join("")}
+    ${s.items.map((it, i) => itemHTML(it, s, i)).join("")}
   </article>`;
 }
 
@@ -204,10 +211,26 @@ function renderNotes() {
     <section class="note-card"><h3>${bi("活动信息", "Event")}</h3><p>${esc(EVENT.title)} · ${esc(EVENT.en)}<br>${duo("2026 年 11 月 13 日（星期五）", "Friday 13 November 2026")}<br>${esc(EVENT.venue)}<br>${duo("着装：银色 / 香槟色 / 金色", "Dress: silver, champagne, gold")}</p></section>`;
 }
 
+// The "Delete lines" bar above the script: edit mode on/off, how many lines are removed, and restore-all.
+function renderCutbar() {
+  const live = new Set(SEGS.flatMap((s) => s.items.map((it, i) => keyOf(s, it, i))));
+  const n = Object.keys(S.cut).filter((k) => live.has(k)).length;
+  const eb = $("#editLines");
+  eb.setAttribute("aria-pressed", String(editing));
+  eb.textContent = (editing ? "✓ " : "✂ ") + (editing ? bi("完成", "Done") : bi("删行", "Delete lines"));
+  $("#cutN").textContent = n ? bi(`已删 ${n} 行`, `${n} removed`) : "";
+  $("#restoreAll").textContent = bi("全部恢复", "Restore all");
+  $("#restoreAll").hidden = !n;
+  $("#cutHint").hidden = !editing;
+  $("#cutHint").textContent = bi("点 ✕ 删掉这一行；灰色划线的是已删，点 ↩ 恢复。只影响这部手机。", "Tap ✕ to remove a line; struck-through lines are removed, tap ↩ to bring one back. This only changes this phone.");
+}
+function redrawScript() { const y = scrollY; renderScript(); renderCutbar(); scrollTo(0, y); }
+$("#editLines").addEventListener("click", () => { editing = !editing; redrawScript(); });
+$("#restoreAll").addEventListener("click", () => { S.cut = {}; save(); redrawScript(); });
 function renderAll() {
   document.body.dataset.who = S.who; document.body.dataset.lang = showLang();
   for (const b of $$("[data-who]")) b.setAttribute("aria-pressed", String(b.dataset.who === S.who));
-  renderScript(); renderRun(); renderNotes(); paintPager(); tick();
+  renderScript(); renderRun(); renderNotes(); paintPager(); tick(); renderCutbar();
 }
 $("#notesBody").addEventListener("change", (e) => {
   const c = e.target.closest("li.rem input");
@@ -339,6 +362,13 @@ document.addEventListener("click", (e) => {
       input.focus({ preventScroll: true });
       box.classList.remove("flash"); void box.offsetWidth; box.classList.add("flash");
     }
+    return;
+  }
+  const cutBtn = e.target.closest("button[data-cut]");
+  if (cutBtn) {
+    const k = cutBtn.dataset.cut;
+    if (S.cut[k]) delete S.cut[k]; else S.cut[k] = 1;
+    save(); redrawScript();
     return;
   }
   const who = e.target.closest("button[data-who]");
