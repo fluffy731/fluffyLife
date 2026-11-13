@@ -29,8 +29,13 @@ export const DEFAULTS = {
   boboName: "Bobo Law",
   bearCharity: "Operation Teddy Bear",
   raffleClose: "8:42 pm",
-  tianBioZh: "Tian 是来自墨尔本的华人歌手、司仪、歌唱导师及社交媒体 Influencer。曾获「全球华人新秀歌唱大赛」墨尔本区冠军及《中国好声音》澳洲赛区亚军，并曾担任广州电视台春节晚会表演嘉宾。现主要活跃于主持、音乐及社交媒体领域。",
-  tianBioEn: "Tian is a Melbourne-based Chinese singer, MC, vocal coach and social media influencer. Tian won the Melbourne round of the Global Chinese New Talent Singing Competition, was runner-up in the Australian round of The Voice of China, and has performed as a guest at the Guangzhou TV Spring Festival Gala. Tian is now mainly active in hosting, music and social media.",
+  tianBioZh: "Tian Tsui 是墨尔本的多语歌手及表演者，曾获 2007 年 TVB 全球华人新秀歌唱大赛墨尔本区冠军，以及 2015 年《中国好声音》澳洲赛区亚军，并曾于 2017 年担任广州电视台春节晚会的嘉宾表演者。她能以英语、粤语和华语演唱，凭着多变的嗓音和充满活力的舞台魅力，为各类活动的观众带来精彩演出。",
+  tianBioEn: "Tian Tsui is a Melbourne-based multilingual singer and performer, crowned 2007 TVB Global Chinese New Talent Singing Awards Melbourne Champion and 2015 The Voice of China Australia Runner-Up. She was also a guest performer at Guangzhou Television's 2017 Spring Festival Gala. Performing in English, Cantonese and Mandarin, Tian brings her versatile vocals and vibrant stage presence to audiences across diverse events.",
+  // Tian's English song at 8:35: her 13 Nov list has two (I Have Nothing, It's All Coming Back To Me Now) and the run sheet has one slot of about 5 minutes.
+  tianEn: "I Have Nothing",
+  ericBioZh: "Eric 谢昉益，墨尔本著名华人歌手，乐队 8PM 主唱。曾代表澳大利亚，分别到香港 TVB 和广州广播电视台参与电视节目录制，并获佳绩。他也多次担任歌唱比赛评委，从大学校园比赛，到《星梦传奇》《中国好声音》澳洲赛区等大型比赛，都能在评委席上看到他的身影。",
+  ericBioEn: "Eric Tse is a well-known Melbourne-based Chinese singer and the lead vocalist of the band 8PM. He has represented Australia on television programmes for TVB in Hong Kong and Guangzhou Television, with great success. He has also judged many singing competitions, from university contests to major ones such as The Voice of China Australia.",
+  eric1: "爱在记忆中找你", eric2: "大会堂演奏厅",
   board1: "Salli Hon", board2: "Mireille Leong", board3: "Cindy Tai", board4: "Milly Chen", board5: "Bobo Law",
   board6: "Monique Chen", board7: "Felicia Seah", board8: "Michelle Chen", board9: "Connie Long",
   // The names engraved on the Melvin Jones medals (list received 13 Nov), in that order.
@@ -57,10 +62,13 @@ export const FIELDS = [
   ["sponsors", "赞助商", "Sponsors", "guests", "用逗号分隔 · comma-separated（已按鸣谢页 10 家填好 · from the sponsor slide）"],
   ["vips", "其他贵宾", "Other VIPs", "guests", "没有就留空 · leave blank if none", true],
   ["vp", "副会长", "Vice President", "club", "姓名 · name"],
-  ["tianBioZh", "Tian 简介（中文）", "Tian's introduction, Chinese", "show", "已按 11 月 11 日资料填好 · filled in on 11 Nov"],
-  ["tianBioEn", "Tian 简介（英文）", "Tian's introduction, English", "show", "英文为翻译稿 · translated from the Chinese"],
-  ["eric1", "Eric 第一首（8:00）", "Eric's song 1 (8:00)", "show", "歌名 · title"],
-  ["eric2", "Eric 第二首（8:50）", "Eric's song 2 (8:50)", "show", "歌名 · title"],
+  ["tianBioZh", "Tian 简介（中文）", "Tian's introduction, Chinese", "show", "按 13 日她的英文简介翻译 · translated from her 13 Nov English bio"],
+  ["tianBioEn", "Tian 简介（英文）", "Tian's introduction, English", "show", "13 日她提供的英文简介 · her own bio, received 13 Nov"],
+  ["tianEn", "Tian 英文歌（8:35）", "Tian's English song (8:35)", "show", "13 日歌单有两首，先填第一首 · two on the 13 Nov list, the first is filled in"],
+  ["ericBioZh", "Eric 简介（中文）", "Eric's introduction, Chinese", "show", "13 日提供的中文简介 · received 13 Nov"],
+  ["ericBioEn", "Eric 简介（英文）", "Eric's introduction, English", "show", "英文为翻译稿 · translated from the Chinese"],
+  ["eric1", "Eric 第一首（8:00）", "Eric's song 1 (8:00)", "show", "13 日歌单 · from the 13 Nov list"],
+  ["eric2", "Eric 第二首（8:50）", "Eric's song 2 (8:50)", "show", "13 日歌单 · from the 13 Nov list"],
   ["raffleClose", "抽奖券截止时间", "Raffle sales close", "draw", "已按 11 月 11 日会议填 8:42 pm · from the 11 Nov meeting"],
   ["unclaimed", "无人认领规则", "Unclaimed prize rule", "draw", "如 30 秒无人上台即重抽"],
   ["chequeBy", "尼泊尔支票：谁交给谁", "Nepal cheque: who presents it to whom", "awards", "流程只写「以支票颁发」· the run sheet only says \"presented as a cheque\""],
@@ -264,9 +272,12 @@ export const SEGMENTS = [
     ["cue", "8:00 前确认 Eric 就位（Monique 叫 Eric 候场）", "Confirm Eric is ready before 8:00 (Monique calls Eric to stand by)"],
   ] },
   { t: "20:00", e: "20:07", zh: "MC 接手 · Eric 演唱", en: "MCs take over · Eric performs", at: ["MC 台中，演唱时台侧", "Centre, then the side"], items: [
+    ["crit", "Eric 简介中英各约 30 秒，再加一首 3–4 分钟的歌，8:07 就要义卖，很紧；时间紧就只念简介的第一句", "Eric's introduction is about 30 seconds in each language, plus a 3 to 4 minute song, and sales start at 8:07, so it is tight; if short of time, read only the first sentence"],
+    ["en", "{ericBioEn}"],
+    ["zh", "{ericBioZh}"],
     ["en", "Please welcome Eric, singing {eric1}. Eric!"],
     ["zh", "希望大家吃得开心！接下来，有请 Eric 为我们演唱《{eric1}》。掌声有请 Eric！"],
-    ["cue", "一首，约 3–4 分钟。小天使准备到各桌；Michelle 带票根和奖品到侧台", "One song, about 3 to 4 minutes. The Little Angels get ready to go to the tables; Michelle brings the stubs and prizes to the side of the stage"],
+    ["cue", "一首（林峯原唱），约 3–4 分钟。小天使准备到各桌；Michelle 带票根和奖品到侧台", "One song (originally by Raymond Lam), about 3 to 4 minutes. The Little Angels get ready to go to the tables; Michelle brings the stubs and prizes to the side of the stage"],
   ] },
   { t: "20:07", e: "20:15", key: true, zh: "义卖开始", en: "Fundraising sales begin", at: ["两位 MC 台中，赞助商品在台上", "Both MCs centre stage, sponsor products on display"], items: [
     ["en", "Thank you, Eric! It's fundraising time, and it starts with our teddy bears."],
@@ -317,9 +328,9 @@ export const SEGMENTS = [
     ["cue", "约 3 分钟，超时可截。是否用 PowerPoint 待定。小天使 8:30–8:42 最后一轮卖抽奖券，与台上同时进行", "About 3 minutes; can be cut. Whether she uses PowerPoint is still to be decided. The Little Angels make their last round of raffle sales from 8:30 to 8:42, alongside the stage"],
   ] },
   { t: "20:35", e: "20:40", zh: "Tian 演唱英文歌", en: "Tian's English song", at: ["MC 台中，演唱时台侧", "Centre, then the side"], items: [
-    ["en", "Thank you, Victoria. Tian is back, with an English song: A Million Dreams. Please welcome Tian!"],
-    ["zh", "谢谢 Victoria 的分享！Tian 再次登场，为我们演唱英文歌《A Million Dreams》，掌声有请！"],
-    ["cue", "独唱约 5 分钟（Monique 叫 Tian 候场）。唱完 MC 回台，接第二轮抽奖", "A solo of about 5 minutes (Monique calls Tian to stand by). When it ends the MCs go back on stage for the second draw"],
+    ["en", "Thank you, Victoria. Tian is back, to sing for us in English: {tianEn}. Please welcome Tian!"],
+    ["zh", "谢谢 Victoria 的分享！Tian 再次登场，为我们演唱英文歌：{tianEn}。掌声有请！"],
+    ["cue", "独唱约 5 分钟（Monique 叫 Tian 候场）。Tian 的英文歌单有两首：Whitney Houston《I Have Nothing》、Céline Dion《It's All Coming Back To Me Now》，流程只排一首，稿子先报「{tianEn}」；两首都唱要多留约 5 分钟，并改「待填」里的歌名。唱完 MC 回台，接第二轮抽奖", "A solo of about 5 minutes (Monique calls Tian to stand by). Tian's English list has two songs, Whitney Houston's \"I Have Nothing\" and Céline Dion's \"It's All Coming Back To Me Now\"; the run sheet has room for one, so the script announces \"{tianEn}\". If she sings both, leave about 5 more minutes and change the song name on the TBC tab. When it ends the MCs go back on stage for the second draw"],
   ] },
   { t: "20:40", e: "20:50", key: true, zh: "第二轮抽奖（Salli 抽）", en: "Lucky draw, round 2 (Salli draws)", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
     ["en", "Thank you, Tian! Last call for raffle tickets: sales close at {raffleClose}, so grab them from the Little Angels now."],
@@ -337,7 +348,7 @@ export const SEGMENTS = [
   { t: "20:50", e: "20:55", zh: "Eric 再次演唱", en: "Eric performs again", at: ["MC 台中，演唱时台侧", "Centre, then the side"], items: [
     ["en", "And Eric is back with one more: {eric2}. Please welcome Eric!"],
     ["zh", "接下来，Eric 再次登场，为我们带来《{eric2}》！掌声有请！"],
-    ["cue", "一首，约 3 分钟。Best Dress 的现金（100 / 50 / 20 澳元）和 2 支酒 8:45 前要交到 MC 手上（Monique 负责）；确认已拿到", "One song, about 3 minutes. The Best Dress cash ($100 / $50 / $20) and the 2 bottles of wine must reach the MCs by 8:45 (Monique is in charge); confirm you have them"],
+    ["cue", "一首（李克勤原唱），约 3 分钟。Best Dress 的现金（100 / 50 / 20 澳元）和 2 支酒 8:45 前要交到 MC 手上（Monique 负责）；确认已拿到", "One song (originally by Hacken Lee), about 3 minutes. The Best Dress cash ($100 / $50 / $20) and the 2 bottles of wine must reach the MCs by 8:45 (Monique is in charge); confirm you have them"],
   ] },
   { t: "20:55", e: "21:05", key: true, zh: "最佳服装奖 Best Dress（掌声评选）", en: "Best Dress Award (judged by applause)", at: ["两位 MC 台中", "Both MCs centre stage"], items: [
     ["crit", "规则：自认最靓的人起立，MC 选出排队，以掌声定名次。第 1、2、3 名现金 100 / 50 / 20 澳元，第 4、5 名各一支酒；三女两男；理事不参加", "Rules: guests who think they're best dressed stand, the MCs pick a line-up, and applause decides the order. 1st to 3rd get $100 / $50 / $20 cash, 4th and 5th a bottle of wine each; three women and two men; the committee is not eligible"],
@@ -451,7 +462,7 @@ export const NOTES = {
   check: [
     ["双人开场（三幕对话，约 4–5 分钟）：流程表 6:50–7:00 是空白，建议约 6:55 开始，直接接 7:00 的正式开场，之前由 Calico 垫乐。告诉 Monique；对话里说台词「已经审阅过」，也提到 Salli 的眼神，请 Salli、Mireille 和 Monique 先看过；Wade 太太那段玩笑要先问 Wade", "Two-man opener (three-act banter, about 4 to 5 minutes): the run sheet leaves 6:50 to 7:00 blank, so start at about 6:55 and run straight into the 7:00 opening, with Calico playing before it. Tell Monique. The banter says the lines were \"already reviewed\" and mentions Salli's glare, so have Salli, Mireille and Monique read it first; ask Wade about the joke on his wife"],
     ["开场仍只有 2 分钟（7:00–7:02），加了暖场后实际约 3 分钟。请统筹确认入场可顺延约 1 分钟，或暖场再缩短", "The opening is still 2 minutes (7:00–7:02), but with the warm-up it runs about 3. Ask the event lead whether the entrance can slip a minute, or shorten the warm-up"],
-    ["Tian 简介中英各约 30 秒，会把 Salli 和 Mireille 的致辞推迟约 1 分钟；时间紧就只念第一句。「全球华人新秀歌唱大赛」的官方英文名请核对", "Tian's introduction is about 30 seconds in each language and pushes Salli and Mireille's speech back about a minute; if time is short, read only the first sentence. Check the official English name of the Global Chinese singing competition"],
+    ["Tian 简介中英各约 30 秒，会把 Salli 和 Mireille 的致辞推迟约 1 分钟；时间紧就只念第一句", "Tian's introduction is about 30 seconds in each language and pushes Salli and Mireille's speech back about a minute; if time is short, read only the first sentence"],
     ["Tian《女神》：确认 Mireille 选定的是哪一句、在第几秒，带位员据此放行；伴奏和歌长要刚好走到全员上台", "Tian's 《女神》: confirm which line Mireille chose and when it comes, so the ushers can cue it; the track and its length must end just as everyone is on stage"],
     ["宣誓：流程只写「监誓人」，没写名字；稿子仍按 Gita 监誓、逐一念全体委员（9 位）。请确认是不是 Gita，以及誓词和披带由谁颁", "Oath: the run sheet says only \"oath officer\" with no name; the script still has Gita leading it and calling all 9 committee members. Confirm it is Gita and who presents the vows and sashes"],
     ["颁奖分工：流程写 Sheryl 颁 Melvin Jones 奖、Gita 颁长期服务奖，和你之前说的「Gita 颁尼泊尔奖」不同；稿子已按流程改。Melvin Jones 得奖者：奖牌名单有 7 位（流程表写 6 位，稿子按 7 位，已填入「待填」）。请确认 7 位都由 Sheryl 颁；读音：Guan Cheng Gong、Say Hue Tan、See Wai Seong；Xiao Pingguo 是不是昵称；DY 是缩写（念字母还是全名）；Felica 的拼法和理事名单的 Felicia Seah 不同；叫名顺序按名单。并提前告诉 Sheryl 和 Gita", "Awards: the run sheet has Sheryl presenting the Melvin Jones awards and Gita the Long Service Awards, which differs from Gita presenting the Nepal awards as you said earlier; the script now follows the run sheet. Melvin Jones recipients: the medals list has 7 names (the run sheet says 6; the script uses 7, filled in on the TBC tab). Confirm all 7 are presented by Sheryl; the pronunciations of Guan Cheng Gong, Say Hue Tan and See Wai Seong; whether Xiao Pingguo is a nickname; whether DY is initials (say the letters or a full name); that Felica is spelled differently from Felicia Seah on the committee list; and that names are called in list order. Tell Sheryl and Gita beforehand"],
@@ -464,7 +475,8 @@ export const NOTES = {
     ["3–4 段祝贺视频：确认文件、顺序、总长（约 2–3 分钟）和谁播放（AV 人选待定）；餐厅 PA 要在 5:45 彩排时测试", "Three or four congratulatory clips: confirm the files, order, total length (about 2 to 3 minutes) and who plays them (the AV person is still to be named); test the restaurant PA at the 5:45 rehearsal"],
     ["Victoria 是否用 PowerPoint 待定；超时可截", "Whether Victoria uses PowerPoint is still to be decided; her slot can be cut if it runs over"],
     ["流程里的 Samsam，稿子按 Samantha Wu 介绍；Gita 的头衔稿子写副区域总监、来年的区域总监，请确认", "The run sheet's Samsam is introduced as Samantha Wu in the script; Gita's title in the script is Vice District Governor and next year's District Governor, so confirm both"],
-    ["还缺的资料：Eric 两首歌名", "Still missing: Eric's two songs"],
+    ["Tian 英文歌：13 日歌单有两首（I Have Nothing、It's All Coming Back To Me Now），流程 8:35 只排一首、约 5 分钟；稿子原来写的 A Million Dreams 已删，先报 I Have Nothing。请问 Tian 唱哪首，还是两首都唱（要多留约 5 分钟）", "Tian's English song: her 13 Nov list has two (I Have Nothing, It's All Coming Back To Me Now), but the run sheet gives 8:35 one song of about 5 minutes. The old A Million Dreams is gone and the script announces I Have Nothing. Ask Tian which one, or whether she sings both, which needs about 5 more minutes"],
+    ["Eric 的简介：英文是我从中文翻的；《星梦传奇》没有官方英文名，英文版没提。8PM 和两首歌的写法请 Eric 或 Monique 核对。两首歌的歌名是中文，英文那句也直接念中文歌名", "Eric's introduction: the English is my translation of the Chinese; the contest 《星梦传奇》 has no official English name, so the English leaves it out. Check how Eric writes 8PM and the two song titles. The titles are in Chinese, and the English line reads them as they are"],
   ],
   link: ["串场三步：收尾上一环节 → 预告下一环节 → 邀请下一位上台", "Every link: wrap up the last segment → say what's next → invite the next person up"],
 };
