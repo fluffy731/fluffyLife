@@ -413,3 +413,12 @@ test("13 Nov: Eric's introduction and both songs are filled in, and Tian's Engli
   assert.match(JSON.stringify(NOTES.check), /I Have Nothing[\s\S]*It's All Coming Back To Me Now/);
   assert.doesNotMatch(JSON.stringify(NOTES.check), /Still missing: Eric's two songs|official English name of the Global Chinese/);
 });
+
+test("13 Nov: after the President and Vice President are welcomed, asking the other members to sit is an ad-lib cue", () => {
+  const items = SEGMENTS.find((s) => s.t === "19:06").items;
+  const i = items.findIndex((it) => it[0] === "zh" && /有请她慧狮子会会长/.test(it[1]));
+  assert.ok(i > 0, "the welcome line is in the 7:06 segment");
+  assert.deepEqual(items[i + 1], ["cue", "临场发挥：请其他会员坐下", "Ad-lib: ask the other members to sit down"]);
+  const spoken = items.filter((it) => ["en", "zh"].includes(it[0])).map((it) => it[1]).join(" ");
+  assert.doesNotMatch(spoken, /sit down|请.*坐下/, "the seating request is not a line to read");
+});
