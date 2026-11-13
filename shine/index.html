@@ -55,6 +55,12 @@
       <button type="button" data-who="W"><b class="b W">W</b>Wade</button>
     </div>
     <p class="legend"><span class="zh">选自己的名字：自己的台词放大，搭档的变小。黄色 = 待填，点一下去填。</span><span class="en">Pick your name: your lines show large, your partner's small. Yellow = TBC; tap it to fill in.</span></p>
+    <div class="cutbar">
+      <button type="button" id="editLines" aria-pressed="false">✂ 删行 · Delete lines</button>
+      <span id="cutN"></span>
+      <button type="button" id="restoreAll" hidden>全部恢复 · Restore all</button>
+      <p class="cuthint" id="cutHint" hidden></p>
+    </div>
     <nav class="toc" id="toc" aria-label="环节 Segments"></nav>
     <div id="segs"></div>
   </section>
