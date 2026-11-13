@@ -60,6 +60,11 @@
       <span id="cutN"></span>
       <button type="button" id="restoreAll" hidden>全部还原 · Reset all</button>
       <p class="cuthint" id="cutHint" hidden></p>
+      <div class="sync">
+        <button type="button" id="sendMaster">📤 发送主版本 · Send my version</button>
+        <button type="button" id="getMaster">📥 接收主版本 · Get master version</button>
+      </div>
+      <p class="cuthint" id="syncMsg" aria-live="polite" hidden></p>
     </div>
     <nav class="toc" id="toc" aria-label="环节 Segments"></nav>
     <div id="segs"></div>
@@ -75,8 +80,8 @@
     <div id="groups"></div>
     <section class="grp share">
       <h3>分享给搭档 <span>Share with your co-MC</span></h3>
-      <p class="hint">填写只存在这部手机。复制后发给搭档，对方导入即可。<br>Entries stay on this phone. Copy them, send to your co-MC, and they import.</p>
-      <button type="button" id="copy" class="primary wide">复制填写内容 · Copy entries</button>
+      <p class="hint">填写、改过的行和删掉的行都只存在这部手机。复制后发给搭档，对方应用后会替换他手机上的改动。<br>Entries, reworded lines and removed lines stay on this phone. Copy the master version and send it to your co-MC; applying it replaces the changes on their phone.</p>
+      <button type="button" id="copy" class="primary wide">复制主版本 · Copy master version</button>
       <textarea id="shareOut" rows="3" readonly hidden aria-label="分享内容 Share text"></textarea>
       <p class="msg" id="copyMsg" aria-live="polite"></p>
       <label class="field" for="pasteIn"><span class="lab"><span class="zh">粘贴搭档发来的内容</span><span class="en">Paste from your co-MC</span></span>

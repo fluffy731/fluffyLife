@@ -226,9 +226,10 @@ function renderNotes() {
     <section class="note-card"><h3>${bi("活动信息", "Event")}</h3><p>${esc(EVENT.title)} · ${esc(EVENT.en)}<br>${duo("2026 年 11 月 13 日（星期五）", "Friday 13 November 2026")}<br>${esc(EVENT.venue)}<br>${duo("着装：银色 / 香槟色 / 金色", "Dress: silver, champagne, gold")}</p></section>`;
 }
 
+const liveKeys = () => new Set(SEGS.flatMap((s) => s.items.map((it, i) => keyOf(s, it, i))));
 // The "Delete lines" bar above the script: edit mode on/off, how many lines are removed, and restore-all.
 function renderCutbar() {
-  const live = new Set(SEGS.flatMap((s) => s.items.map((it, i) => keyOf(s, it, i))));
+  const live = liveKeys();
   const n = Object.keys(S.cut).filter((k) => live.has(k)).length;
   const eb = $("#editLines");
   eb.setAttribute("aria-pressed", String(editing));
@@ -425,22 +426,30 @@ $("#groups").addEventListener("input", (e) => {
 });
 
 // ---------- Share with the co-MC ----------
-const CODE = "SHINE1.";
+// SHINE2 carries the whole master version: TBC entries, removed lines and reworded lines. SHINE1 (entries only) still imports.
+const CODE = "SHINE2.", CODE_RE = /SHINE([12])\.([A-Za-z0-9_-]+)/;
 function toCode() {
   const f = Object.fromEntries(Object.entries(S.f).filter(([k, v]) => META[k] && String(v).trim()));
-  const bytes = new TextEncoder().encode(JSON.stringify(f));
+  const live = liveKeys();
+  const cut = Object.keys(S.cut).filter((k) => live.has(k));
+  const ed = Object.fromEntries(Object.entries(S.ed).filter(([k]) => live.has(k)));
+  const bytes = new TextEncoder().encode(JSON.stringify({ v: 2, f, cut, ed }));
   let bin = ""; for (const b of bytes) bin += String.fromCharCode(b);
   return CODE + btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 function fromCode(text) {
-  const m = String(text).match(/SHINE1\.([A-Za-z0-9_-]+)/);
+  const m = String(text).match(CODE_RE);
   if (!m) return null;
   try {
-    let b = m[1].replace(/-/g, "+").replace(/_/g, "/"); while (b.length % 4) b += "=";
-    const f = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0))));
-    const out = {};
-    for (const [k, v] of Object.entries(f || {})) if (META[k] && typeof v === "string") out[k] = v.slice(0, 300);
-    return out;
+    let b = m[2].replace(/-/g, "+").replace(/_/g, "/"); while (b.length % 4) b += "=";
+    const j = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0)))) || {};
+    const master = m[1] === "2", src = master ? j.f : j;
+    const f = {};
+    for (const [k, v] of Object.entries(src || {})) if (META[k] && typeof v === "string") f[k] = v.slice(0, 1500);
+    const cut = master && Array.isArray(j.cut) ? j.cut.filter((k) => typeof k === "string" && k.length < 200).slice(0, 500) : [];
+    const ed = {};
+    if (master && j.ed) for (const [k, v] of Object.entries(j.ed)) if (typeof v === "string" && k.length < 200 && v.trim()) ed[k] = v.slice(0, 1500);
+    return { master, f, cut, ed };
   } catch { return null; }
 }
 const onPages = /github\.io$/.test(location.hostname);
@@ -450,17 +459,43 @@ $("#copy").addEventListener("click", () => {
   const done = (ok) => { $("#copyMsg").textContent = ok ? (onPages ? "已复制链接，发给搭档打开即可 · Link copied: send it to your co-MC" : "已复制，发给搭档粘贴到下方 · Copied: your co-MC pastes it below") : "请手动全选复制 · Select and copy the text above"; if (!ok) out.select(); };
   try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch { done(false); }
 });
+// One-tap sync from the script tab: the master phone sends its version (share sheet, else the clipboard); the other phone copies the message
+// and taps "Get master version" (or opens the link, or pastes it on the TBC tab). Applying replaces that phone's edits.
+const syncMsg = (t) => { const el = $("#syncMsg"); el.textContent = t; el.hidden = !t; };
+$("#sendMaster").addEventListener("click", async () => {
+  const code = toCode(), link = onPages ? `${location.origin}${location.pathname}#${code}` : code;
+  const note = "A Night to Shine: master script version. In the app, copy this message, then tap 接收主版本 / Get master version.";
+  let copied = false;
+  try { await navigator.clipboard.writeText(link); copied = true; } catch { /* the share sheet or the TBC tab still work */ }
+  try {
+    if (navigator.share) { await navigator.share(onPages ? { title: "A Night to Shine · 主版本", text: note, url: link } : { title: "A Night to Shine · 主版本", text: `${note}\n${link}` }); syncMsg(bi("已打开分享，也已复制链接", "Share sheet opened; the link is also copied")); return; }
+  } catch (e) { if (e && e.name === "AbortError") { syncMsg(copied ? bi("已取消分享，链接已复制，可直接粘贴发送", "Share cancelled; the link is copied, so you can paste it into a message") : ""); return; } }
+  if (copied) syncMsg(bi("已复制主版本链接：粘贴发给搭档", "Master version link copied: paste it to your co-MC"));
+  else { show("tbc"); $("#copy").click(); }
+});
+$("#getMaster").addEventListener("click", async () => {
+  try {
+    const p = fromCode(await navigator.clipboard.readText());
+    if (p) { syncMsg(""); offer(p); scrollTo(0, 0); return; }
+    syncMsg(bi("剪贴板里没有主版本：先把搭档发来的消息拷贝下来", "No master version on the clipboard: copy your co-MC's message first"));
+  } catch { syncMsg(bi("读不到剪贴板：到「待填」页最下面粘贴", "Can't read the clipboard: paste it at the bottom of the TBC tab")); }
+});
 let pending = null;
-function offer(f) {
-  pending = f;
-  const n = Object.keys(f).length;
-  $("#importText").textContent = n ? `收到搭档的 ${n} 项填写 · ${n} entries from your co-MC` : "内容为空 · Nothing to import";
+function offer(p) {
+  pending = p;
+  const nf = Object.keys(p.f).length, nc = p.cut.length, ne = Object.keys(p.ed).length, n = nf + nc + ne;
+  $("#importText").textContent = p.master
+    ? `搭档的主版本：${nf} 项填写，${ne} 行改过，${nc} 行删除。应用后会替换这部手机上的改动。 · Master version: ${nf} entries, ${ne} reworded and ${nc} removed lines. Applying replaces the changes on this phone.`
+    : n ? `收到搭档的 ${n} 项填写 · ${n} entries from your co-MC` : "内容为空 · Nothing to import";
   $("#importBanner").hidden = false;
-  $("#doImport").hidden = !n;
+  $("#doImport").hidden = !n && !p.master;
+  $("#doImport").textContent = p.master ? "应用主版本 Apply" : "导入 Import";
 }
 $("#doImport").addEventListener("click", () => {
-  if (pending) { Object.assign(S.f, pending); save(); buildForm(); renderScript(); }
-  $("#importBanner").hidden = true; pending = null; show("tbc");
+  const master = pending && pending.master;
+  if (pending && master) { S.f = { ...pending.f }; S.cut = Object.fromEntries(pending.cut.map((k) => [k, 1])); S.ed = { ...pending.ed }; editKey = null; save(); buildForm(); redrawScript(); }
+  else if (pending) { Object.assign(S.f, pending.f); save(); buildForm(); renderScript(); }
+  $("#importBanner").hidden = true; pending = null; show(master ? "script" : "tbc");
 });
 $("#skipImport").addEventListener("click", () => { $("#importBanner").hidden = true; pending = null; });
 $("#pasteGo").addEventListener("click", () => {
@@ -500,5 +535,5 @@ const n0 = tick();
 show(n0.cur ? "script" : S.tab || "script");
 if (n0.cur && S.tab === "script") requestAnimationFrame(() => goTo($(`#s${n0.cur.i}`)));
 setInterval(tick, 20000);
-try { const h = decodeURIComponent(location.hash); if (h.includes(CODE)) { const f = fromCode(h); if (f) offer(f); history.replaceState(null, "", location.pathname + location.search); } } catch { /* hash unavailable */ }
+try { const h = decodeURIComponent(location.hash); if (CODE_RE.test(h)) { const p = fromCode(h); if (p) offer(p); history.replaceState(null, "", location.pathname + location.search); } } catch { /* hash unavailable */ }
 try { if ("serviceWorker" in navigator && onPages) navigator.serviceWorker.register("../sw.js").catch(() => {}); } catch { /* not allowed here */ }
