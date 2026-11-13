@@ -53,7 +53,7 @@ test("six months on one basis: the price against the index, with dividends said 
 
 test("the glossary explains every term the page uses", () => {
   const terms = GLOSSARY.map((g) => g.term).join(" | ");
-  for (const t of ["Index fund", "Moving average", "RSI", "Volatility", "Dividend yield", "52-week range", "Ratings", "Scorecard", "Diversification"]) assert.match(terms, new RegExp(t), t);
+  for (const t of ["Index fund", "Moving average", "RSI", "Volatility", "Dividend yield", "52-week range", "Ratings", "Scorecard", "Diversification", "Sector", "Market map", "Breadth", "Trading hours"]) assert.match(terms, new RegExp(t), t);
   assert.ok(GLOSSARY.every((g) => g.text.length > 40));
 });
 
@@ -100,19 +100,21 @@ test("chart model: the range's prices, 50- and 200-day averages over the whole h
   const n = 300, d = Array.from({ length: n }, (_, i) => `D${String(i).padStart(3, "0")}`);
   const p = d.map((_, i) => 100 + i), b = d.map((_, i) => (i === 280 ? null : 1000 + 10 * i));
   const m = chartModel({ d, p, b }, 21);
-  assert.equal(m.d.length, 21);
-  assert.equal(m.d[0], "D279");
-  assert.deepEqual(m.p, p.slice(-21));
-  assert.equal(m.ma50[0], (p.slice(230, 280).reduce((a, x) => a + x, 0)) / 50);
+  assert.equal(m.d.length, 22, "21 sessions are 21 moves, from the close before the first");
+  assert.equal(m.d[0], "D278");
+  assert.deepEqual(m.p, p.slice(-22));
+  assert.ok(Math.abs(m.change - (p.at(-1) / p.at(-22) - 1)) < 1e-12, "the same span as the 1-month return beside it");
+  assert.equal(m.ma50[0], (p.slice(229, 279).reduce((a, x) => a + x, 0)) / 50);
   assert.equal(m.ma200.at(-1), (p.slice(100, 300).reduce((a, x) => a + x, 0)) / 200);
   assert.equal(m.b[0], m.p[0], "the index starts at the price, so the lines compare");
-  assert.equal(m.b[1], null);
+  assert.equal(m.b[2], null);
   assert.equal(m.lo, Math.min(...m.p, ...m.ma50, ...m.ma200, ...m.b.filter((x) => x != null)));
   const all = chartModel({ d, p, b }, Infinity);
   assert.equal(all.d.length, n);
   assert.equal(all.ma200[198], null, "too little history for a 200-day average yet");
   assert.ok(Math.abs(all.change - (p.at(-1) / p[0] - 1)) < 1e-12);
-  assert.deepEqual(RANGES.map((r) => r[0]), ["1M", "6M", "1Y", "2Y"]);
+  assert.deepEqual(RANGES.map((r) => r[0]), ["1W", "1M", "3M", "6M", "1Y", "2Y"]);
+  assert.deepEqual(RANGES.slice(0, 5).map((r) => r[1]), [5, 21, 63, 126, 252], "trading sessions in each range");
 });
 
 test("the offline cache lists every module the Stocks page imports", async () => {
