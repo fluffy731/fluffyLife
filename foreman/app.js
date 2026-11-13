@@ -19,9 +19,15 @@ import step15 from './step-15.js';
 import step16 from './step-16.js';
 import step17 from './step-17.js';
 import step18 from './step-18.js';
+import { HOUSE } from './site.js';
+import { titled } from './dwg.js';
+import { HUNT, huntPhases, huntFor } from './hunt.js';
+import { REFS, REF_KINDS, REFS_CHECKED } from './refs.js';
+import { PHOTOS, PHOTOS_CHECKED } from './photos.js';
+import { apiUrl, parse as parseCommons } from './commons.js';
 
 const BUILT = { 1: step1, 2: step2, 3: step3, 4: step4, 5: step5, 6: step6, 7: step7, 8: step8, 9: step9, 10: step10, 11: step11, 12: step12, 13: step13, 14: step14, 15: step15, 16: step16, 17: step17, 18: step18 };
-const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
+const TABS = [['3d', '3D model'], ['draw', 'Drawings'], ['real', 'Real world'], ['how', 'Step by step'], ['trades', 'Trades'], ['mat', 'Materials'], ['quote', 'Quotes'], ['insp', 'Inspections'], ['exam', 'Exam'], ['study', 'NCC and notes']];
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -38,6 +44,27 @@ function nccHtml(n) {
     <article class="card"><h3>Open the text and sources</h3><ul class="list"><li>${srcHtml('ncc25hp')}</li><li>${srcHtml('ncc25v2')}</li>${(m.also || []).map((k) => `<li>${srcHtml(k)}</li>`).join('')}</ul></article></div>
     ${m.note ? `<p class="mini" style="margin-top:8px"><b>Remember:</b> ${esc(m.note)}</p>` : ''}<p class="mini">Part numbers read from the NCC 2025 preview drafts on ${esc(NCC_CHECKED)}. No NCC text is copied here.</p>`;
 }
+const refCard = (r) => `<article class="card ref"><div class="row"><span class="chip">${esc(r.org)}</span>${flagHtml(r.flag)}</div><h3 style="margin-top:8px"><a href="${esc(r.url)}" target="_blank" rel="noopener noreferrer">${esc(r.title)}</a></h3>
+  <p class="mini" style="margin-top:6px"><b>Where to look:</b> ${esc(r.where)}</p><p class="sub" style="margin-top:6px">${esc(r.use)}</p>${r.dwg && S.tab !== 'draw' ? `<div class="actions"><button class="btn small" data-open-dwg="${esc(r.dwg)}" type="button">Compare with our drawing</button></div>` : ''}</article>`;
+const photoCache = {};
+async function loadPhotos(n) {
+  const list = PHOTOS[n] || []; if (!list.length) return;
+  const files = list.map((p) => p.file);
+  try {
+    if (!photoCache[n]) { const r = await fetch(apiUrl(files)); if (!r.ok) throw new Error(r.status); photoCache[n] = parseCommons(await r.json(), files); }
+  } catch (err) {
+    $$('#photoGrid .phimg .mini').forEach((e) => { e.textContent = 'Could not reach Wikimedia Commons. The photos need a connection.'; }); return;
+  }
+  if (S.step !== n || S.tab !== 'real') return;
+  const got = photoCache[n];
+  $$('#photoGrid .ph').forEach((f) => {
+    const p = list[+f.dataset.i], m = got[p.file];
+    if (!m) { f.hidden = true; return; }   // not found, or not freely licensed: leave it out
+    $('.phimg', f).innerHTML = `<a href="${esc(m.page)}" target="_blank" rel="noopener noreferrer"><img src="${esc(m.thumb)}" alt="${esc(p.caption)}" loading="lazy"></a>`;
+    $('.cred', f).innerHTML = `${esc(m.author)}, ${m.licenceUrl ? `<a href="${esc(m.licenceUrl)}" target="_blank" rel="noopener noreferrer">${esc(m.licence)}</a>` : esc(m.licence)}, via <a href="${esc(m.page)}" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>${p.where ? `. ${esc(p.where)}` : ''}`;
+  });
+  if (!$('#photoGrid .ph:not([hidden])')) $('#photoGrid').innerHTML = '<p class="sub">None of the chosen photos could be shown with a free licence.</p>';
+}
 const srcHtml = (id) => (SOURCES[id] ? `<a href="${esc(SOURCES[id][1])}" target="_blank" rel="noopener noreferrer">${esc(SOURCES[id][0])}</a>` : '');
 const touch = matchMedia('(pointer: coarse)').matches;
 
@@ -52,6 +79,7 @@ const S = {
   quality: saved.quality === 'standard' || saved.quality === 'high' ? saved.quality : undefined,
   tab: TABS.some((t) => t[0] === saved.tab) ? saved.tab : '3d', ticks: saved.ticks && typeof saved.ticks === 'object' ? saved.ticks : {},
   phase: 0, spot: null, detail: null, part: null, explode: 0, labels: true, mode: 'walk', want: 'walk', drawing: null, locked: false, sceneStep: null,
+  sec: null, hunt: null, huntMsg: '', huntShown: [], revealed: false, photo: null,
 };
 const persist = () => store.set('vbs:v1', { step: S.step, tab: S.tab, ticks: S.ticks, quality: S.quality });
 
@@ -77,7 +105,7 @@ $('#rail').addEventListener('click', (e) => { const b = e.target.closest('[data-
 
 /* ---------- step selection ---------- */
 function selectStep(n, tab) {
-  S.step = n; S.spot = null; S.detail = null; S.part = null; S.phase = 0;
+  S.step = n; S.spot = null; S.detail = null; S.part = null; S.phase = 0; S.sec = null; S.hunt = null; S.huntShown = []; S.photo = null;
   renderRail();
   if (n === 0) return renderMaster();
   const def = BUILT[n];
@@ -114,7 +142,7 @@ function showTab(tab) {
       if (S.sceneStep !== S.step) { st.setScene(def); S.sceneStep = S.step; st.setMode(S.want); st.setPhase(0); }
       st.setActive(true);
     }
-    renderPhasebar(); renderCaption(); renderVtools(); renderSide(); updateHelp();
+    renderPhasebar(); renderCaption(); renderVtools(); renderSide(); updateHelp(); renderXbar();
     if (st) setTimeout(() => showCoach(false), 400);
   } else {
     stage?.setActive(false);
@@ -136,9 +164,11 @@ const callbacks = {
   onQuality(q) { S.quality = q; persist(); renderVtools(); },
   onNear(h) { const p = $('#prompt'); if (h) { p.hidden = false; p.innerHTML = `<kbd>${touch ? 'Tap' : 'E'}</kbd>${esc(h.title)}`; } else p.hidden = true; },
   onMode(m) { S.mode = m; renderVtools(); updateHelp(); $('#prompt').hidden = true; },
-  onPhase(i) { S.phase = i; renderPhasebar(); renderCaption(); renderSide(); renderVtools(); },
-  onDetail(def) { S.detail = def; S.part = null; S.explode = 0; renderVtools(); renderSide(); renderCaption(); updateHelp(); },
-  onDetailClose() { S.detail = null; S.part = null; renderVtools(); renderSide(); renderCaption(); updateHelp(); },
+  onPhase(i) { S.phase = i; if (S.photo) stopPhoto(); if (S.hunt != null && S.hunt !== i) stopHunt(true); renderPhasebar(); renderCaption(); renderSide(); renderVtools(); renderXbar(); },
+  onHunt(d, found, total) { if (d) { S.huntShown.push(d); S.huntMsg = found === total ? `All ${total} found. Well spotted.` : `Found: ${d.title}.`; } else S.huntMsg = 'Nothing wrong there. Keep looking.'; renderXbar(); renderSide(); },
+  onHuntPin(d) { if (!S.huntShown.includes(d)) S.huntShown.push(d); renderSide(); },
+  onDetail(def) { S.detail = def; S.part = null; S.explode = 0; renderVtools(); renderSide(); renderCaption(); updateHelp(); renderXbar(); },
+  onDetailClose() { S.detail = null; S.part = null; renderVtools(); renderSide(); renderCaption(); updateHelp(); renderXbar(); },
   onPart(p) { S.part = p; updatePart(); },
   onLock(l) { S.locked = l; renderVtools(); },
   onEscape() { stage?.closeDetail(); },
@@ -182,6 +212,7 @@ if (window.ResizeObserver) new ResizeObserver(syncCaption).observe($('#vtools'))
 addEventListener('resize', syncCaption);
 $('#vtools').addEventListener('click', (e) => {
   const v = e.target.closest('[data-v]')?.dataset.v; if (!v) return;
+  if (S.photo && v !== 'help') stopPhoto();   // the photo is of one fixed view
   if (v === 'help') { showCoach(true); return; }
   if (!stage) return;
   if (v === 'walk' || v === 'orbit') { S.want = v; stage.setMode(v); }
@@ -192,6 +223,94 @@ $('#vtools').addEventListener('click', (e) => {
   if (v === 'next') stage.stepStop(1);
   if (v === 'quality') stage.setQuality(S.quality === 'high' ? 'standard' : 'high');
 });
+
+/* ---------- tools under the 3D view: section cut, find the defects, photo render ---------- */
+const SEC_RANGE = { z: [HOUSE.z0 - 0.4, HOUSE.z1 + 0.4], x: [HOUSE.x0 - 0.4, HOUSE.x1 + 0.4], y: [0.05, 3.9] };
+const SEC_START = { z: 2.5, x: 0.3, y: 1.2 };
+const secLabel = (s) => s.axis === 'y' ? `${s.at.toFixed(2)} m above the ground` : s.axis === 'x' ? `${(s.at - HOUSE.x0).toFixed(1)} m in from the west wall` : `${(HOUSE.z1 - s.at).toFixed(1)} m back from the front wall`;
+function applySection(view) { stage?.setSection(S.sec ? { ...S.sec, bounds: HOUSE } : null); if (view && S.sec) stage?.viewSection(); }
+
+function renderXbar() {
+  const x = $('#xbar'), def = BUILT[S.step]; if (!x) return;
+  if (!stage || !def || S.detail) { x.hidden = true; return; }
+  x.hidden = false;
+  const hp = huntPhases(S.step), nDef = (HUNT[S.step] || []).length;
+  let h = `<div class="xrow main"><button class="btn small ${S.sec ? 'on' : ''}" data-x="sec" type="button" title="Slice the house to see inside walls, floor and roof, hatched like a section drawing">Section cut</button>`
+    + `<button class="btn small ${S.hunt != null ? 'on' : ''}" data-x="hunt" type="button" ${nDef ? '' : 'disabled'} title="Spot the non-compliant work hidden in the 3D model">Find the defects${nDef ? ` (${nDef})` : ''}</button>`
+    + `<button class="btn small ${S.photo ? 'on' : ''}" data-x="photo" type="button" title="Path-traced, photo-quality still of this view. Needs a good graphics card; takes 10 to 60 seconds.">Photo render</button></div>`;
+  if (S.sec) {
+    const [lo, hi] = SEC_RANGE[S.sec.axis];
+    h += `<div class="xrow sec"><span class="seg" role="group" aria-label="Cut direction">${[['z', 'Across'], ['x', 'Along'], ['y', 'Plan']].map(([a, l]) => `<button class="btn small ${S.sec.axis === a ? 'on' : ''}" data-sa="${a}" type="button">${l}</button>`).join('')}</span>`
+      + `<input class="range" id="secRange" type="range" min="${lo.toFixed(2)}" max="${hi.toFixed(2)}" step="0.05" value="${S.sec.at}" aria-label="Where to cut"><span class="mini" id="secLbl">${esc(secLabel(S.sec))}</span>`
+      + `<button class="btn small" data-x="flip" type="button" title="Keep the other half">Flip</button><button class="btn small" data-x="view" type="button">Look at the cut</button></div>`;
+  }
+  if (S.hunt != null) {
+    const st = stage.hunt, n = st ? st.list.length : 0, f = st ? st.found.size : 0, next = hp.find((p) => p > S.hunt);
+    h += `<div class="xrow hunt"><b>Phase ${S.hunt + 1}: ${f} of ${n} found</b><span class="mini" aria-live="polite">${esc(S.huntMsg || 'Click or tap the spot where the work is wrong. Walk or orbit to look closer.')}</span>`
+      + `${f < n && !S.revealed ? '<button class="btn small" data-x="reveal" type="button">Show me</button>' : ''}${next != null ? `<button class="btn small" data-x="huntnext" type="button">Next phase with defects</button>` : ''}<button class="btn small" data-x="huntstop" type="button">Stop</button></div>`;
+  }
+  if (S.photo) h += `<div class="xrow photo"><b>${esc(S.photo.msg)}</b>${S.photo.done ? '<button class="btn small" data-x="photosave" type="button">Save PNG</button>' : ''}<button class="btn small" data-x="photostop" type="button">Close</button></div>`;
+  x.innerHTML = h;
+}
+
+async function startPhoto() {
+  if (!stage || S.photo) return;
+  S.photo = { msg: 'Loading the path tracer and preparing the scene...', done: false }; renderXbar();
+  try {
+    await stage.startPhoto((n, target, done) => {
+      if (!S.photo) return;
+      S.photo.msg = done ? `Done: ${n} samples. Save it, or close to carry on.` : `Rendering: ${n} of ${target} samples. Keep still; it sharpens as it goes.`;
+      S.photo.done = done || n >= 32; renderXbar();
+    });
+    if (S.photo && !S.photo.done) { S.photo.msg = 'Rendering the first samples...'; renderXbar(); }
+  } catch (err) {
+    console.warn('Photo render failed', err);
+    stage.stopPhoto(); S.photo = { msg: 'Photo render could not start on this device or browser.', done: false }; renderXbar();
+  }
+}
+function stopPhoto() { stage?.stopPhoto(); S.photo = null; renderXbar(); }
+function savePhoto() { stage?.savePhoto(); }
+
+function startHunt(p) {
+  const hp = huntPhases(S.step); if (!hp.length || !stage) return;
+  if (p == null) p = hp.includes(S.phase) ? S.phase : (hp.find((q) => q >= S.phase) ?? hp[0]);
+  S.hunt = null; if (S.phase !== p) stage.setPhase(p);
+  S.hunt = p; S.huntMsg = ''; S.huntShown = []; S.revealed = false; S.spot = null;
+  stage.setHunt(huntFor(S.step, p));
+  renderXbar(); renderSide(); updateHelp();
+}
+function stopHunt(silent) { S.hunt = null; S.huntShown = []; S.revealed = false; stage?.setHunt(null); if (!silent) { renderXbar(); renderSide(); updateHelp(); } }
+
+$('#xbar').addEventListener('click', (e) => {
+  const b = e.target.closest('button'); if (!b || !stage) return;
+  const v = b.dataset.x, axis = b.dataset.sa;
+  if (axis && S.sec) { S.sec = { axis, at: SEC_START[axis], flip: false }; applySection(true); }
+  if (v === 'sec') { S.sec = S.sec ? null : { axis: 'z', at: SEC_START.z, flip: false }; applySection(true); }
+  if (v === 'flip' && S.sec) { S.sec.flip = !S.sec.flip; applySection(true); }
+  if (v === 'view') stage.viewSection();
+  if (v === 'hunt') { if (S.hunt != null) stopHunt(); else startHunt(); return; }
+  if (v === 'reveal') { stage.huntReveal(); S.revealed = true; for (const d of stage.hunt?.list || []) if (!S.huntShown.includes(d)) S.huntShown.push(d); S.huntMsg = 'Orange pins mark the ones you missed.'; renderSide(); }
+  if (v === 'huntnext') { const n = huntPhases(S.step).find((p) => p > S.hunt); if (n != null) { startHunt(n); return; } }
+  if (v === 'huntstop') { stopHunt(); return; }
+  if (v === 'photo') { if (S.photo) stopPhoto(); else startPhoto(); return; }
+  if (v === 'photostop') { stopPhoto(); return; }
+  if (v === 'photosave') savePhoto();
+  renderXbar();
+});
+$('#xbar').addEventListener('input', (e) => {
+  if (e.target.id !== 'secRange' || !S.sec) return;
+  S.sec.at = +e.target.value; applySection(false);
+  const l = $('#secLbl'); if (l) l.textContent = secLabel(S.sec);
+});
+
+function huntCard() {
+  const st = stage.hunt, n = st ? st.list.length : 0;
+  const item = (d) => `<li class="f${d.flag}"><b>${esc(d.title)}</b><br>${md(d.explain)}<br><span class="mini"><b>Compliant:</b> ${md(d.fix)}</span><span>${flagHtml(d.flag)} ${d.src ? `<span class="src">${srcHtml(d.src)}</span>` : ''}</span></li>`;
+  return `<div class="card"><div class="row"><h3>Find the defects</h3><span class="chip">${st ? st.found.size : 0} of ${n}</span></div>
+    <p class="sub">This phase has ${n} piece${n === 1 ? '' : 's'} of non-compliant or poor work hidden in it. Look the way a supervisor would before the next trade covers it up, then click or tap the spot.</p>
+    ${S.revealed ? '' : `<details class="mini" style="margin-top:8px"><summary>Hints</summary><ul class="list">${(st?.list || []).filter((d) => !st.found.has(d.id)).map((d) => `<li>${esc(d.hint || 'Look closely at each element in this phase.')}</li>`).join('')}</ul></details>`}</div>
+    ${S.huntShown.length ? `<div class="card"><h4>${S.revealed ? 'All the defects' : 'Found so far'}</h4><ul class="learn">${S.huntShown.map(item).join('')}</ul></div>` : ''}`;
+}
 
 // First-time guide, reopened with the ? button.
 function showCoach(force) {
@@ -208,7 +327,7 @@ function showCoach(force) {
 
 function updateHelp() {
   const h = $('#help');
-  h.textContent = S.detail ? 'Drag to rotate. Scroll or pinch to zoom in close. Use Explode to take it apart. Tap a part or its label for the specification.'
+  h.textContent = S.hunt != null ? 'Find the defects: click or tap where the work is wrong. W A S D, the joystick, dragging and the small plan still move you around.' : S.detail ? 'Drag to rotate. Scroll or pinch to zoom in close. Use Explode to take it apart. Tap a part or its label for the specification.'
     : S.mode === 'walk' ? (touch ? 'Left joystick to walk. Drag to look. Tap the ground to walk there, or tap a numbered pin to go to it. The small plan jumps you anywhere.' : 'Click the ground or the small plan to walk there. W A S D or arrows also walk, drag looks around, Shift runs, E opens the nearest pin. The arrows step through the stops in order.')
       : 'Drag to rotate, scroll or pinch to zoom, right-drag or two fingers to pan. Double-click the ground or click the small plan to fly there. Click a numbered pin to read it.';
 }
@@ -224,6 +343,7 @@ function spotCard(h) {
 function renderSide() {
   const def = BUILT[S.step], side = $('#side'); if (!def || !stage) return;
   if (S.detail) return renderDetailSide(side);
+  if (S.hunt != null) { side.innerHTML = huntCard(); return; }
   const spots = stage.visibleHotspots();
   if (S.spot && !spots.includes(S.spot)) S.spot = null;
   side.innerHTML = `${S.spot ? spotCard(S.spot) : `<div class="card"><h3>Look around</h3><p class="sub">${esc(def.phases[S.phase].text)} Numbered pins mark things to learn. A dark pin with an orange dot opens a zoomable 3D detail.</p></div>`}
@@ -272,8 +392,20 @@ const renderers = {
     const cur = def.drawings.find((d) => d.id === S.drawing) || def.drawings[0]; S.drawing = cur.id;
     return `<h3 class="sec-title">Drawings</h3><p class="lead">Scroll or pinch to zoom, drag to pan. Callout numbers match the component labels in the 3D detail models.</p>
       <div class="dwgbar">${def.drawings.map((d) => `<button class="btn small ${d.id === cur.id ? 'on' : ''}" data-dwg="${d.id}" type="button">${esc(d.title)}</button>`).join('')}<span class="chip">${esc(cur.scale)}</span></div>
-      <div class="dview" id="dview">${cur.svg}<div class="dzoom"><button class="btn" data-z="in" type="button" aria-label="Zoom in">+</button><button class="btn" data-z="out" type="button" aria-label="Zoom out">&minus;</button><button class="btn" data-z="reset" type="button" aria-label="Reset zoom" style="font-size:13px">Fit</button></div></div>
-      <ul class="list" style="margin-top:12px">${cur.notes.map((n) => `<li>${md(n)}</li>`).join('')}</ul>`;
+      <div class="dview" id="dview">${titled(cur.svg, { no: `${def.n}.${def.drawings.indexOf(cur) + 1}`, title: cur.title, scale: cur.scale, stage: def.n })}<div class="dzoom"><button class="btn" data-z="in" type="button" aria-label="Zoom in">+</button><button class="btn" data-z="out" type="button" aria-label="Zoom out">&minus;</button><button class="btn" data-z="reset" type="button" aria-label="Reset zoom" style="font-size:13px">Fit</button></div></div>
+      <ul class="list" style="margin-top:12px">${cur.notes.map((n) => `<li>${md(n)}</li>`).join('')}</ul>
+      ${(() => { const r = (REFS[def.n] || []).filter((x) => x.dwg === cur.id); return r.length ? `<h3 class="sec-title" style="margin-top:20px">Official details to compare</h3><p class="lead">Open the source next to this drawing. They are linked, not copied, because they are copyright.</p><div class="grid">${r.map(refCard).join('')}</div>` : ''; })()}`;
+  },
+  real(def) {
+    const refs = REFS[def.n] || [], photos = PHOTOS[def.n] || [];
+    const groups = Object.keys(REF_KINDS).map((k) => [k, refs.filter((r) => r.kind === k)]).filter(([, l]) => l.length);
+    setTimeout(() => loadPhotos(def.n), 0);
+    return `<h3 class="sec-title">Reference details</h3><p class="lead">The official and manufacturer documents behind this step: what to open, and where to look in it. They are linked, not copied: the NCC's figures sit outside its Creative Commons licence, and regulator and manufacturer guides are copyright. Page and figure pointers marked Confirm were not opened during research.</p>
+      ${groups.map(([k, l]) => `<h4 style="margin:14px 0 8px">${esc(REF_KINDS[k])}</h4><div class="grid">${l.map(refCard).join('')}</div>`).join('') || '<p class="sub">None listed yet.</p>'}
+      <p class="mini" style="margin-top:8px">Found by web search on ${esc(REFS_CHECKED)}. Addresses change: if a link has moved, search the document title on the publisher's site.</p>
+      <h3 class="sec-title" style="margin-top:26px">On real sites</h3><p class="lead">Photos from Wikimedia Commons, shown with the author and licence Commons gives. Only freely licensed photos appear. Many are from overseas, so look for the principle, not the local detail.</p>
+      <div class="grid photos" id="photoGrid">${photos.map((p, i) => `<figure class="card ph" data-i="${i}"><div class="phimg"><span class="mini">Loading from Wikimedia Commons...</span></div><figcaption><p>${esc(p.caption)}</p><p class="mini cred"></p></figcaption></figure>`).join('') || '<p class="sub">No suitable free photo found for this step yet.</p>'}</div>
+      <p class="mini" style="margin-top:8px">Chosen ${esc(PHOTOS_CHECKED)}. Photos load straight from Wikimedia Commons, so they need a connection.</p>`;
   },
   how(def) {
     return `<h3 class="sec-title">Step by step</h3><p class="lead">Do these in order. Each has a flag and, where it was checked, a source.</p>${def.caution ? `<p class="notice">${esc(def.caution)}</p>` : ''}
@@ -316,6 +448,7 @@ const renderers = {
 };
 
 $('#pdyn').addEventListener('click', (e) => {
+  const odw = e.target.closest('[data-open-dwg]'); if (odw) { S.drawing = odw.dataset.openDwg; showTab('draw'); return; }
   const dwg = e.target.closest('[data-dwg]'), fc = e.target.closest('[data-fc]'), ex = e.target.closest('[data-ex]'), open = e.target.closest('[data-open-step]');
   if (dwg) { S.drawing = dwg.dataset.dwg; showTab('draw'); }
   if (open) selectStep(+open.dataset.openStep);

@@ -381,7 +381,45 @@ const drawings = [
     notes: ['The front wall as seen from the street, with the steel lintels, weepholes and sealed movement joints marked.', 'Movement joint positions follow the typical NCC spacing. The engineer and the soil class decide whether they are needed at all.', 'Open the 3D joint model to see the backing rod and the sealant.'] },
   { id: 'headsill', title: 'Head and sill', scale: 'Large scale, 640 px per metre', svg: headSill(),
     notes: ['The head and the sill at real size: lintel, flashing, weepholes, sill brick and wrap.', 'Flashings run at least 150 mm past the reveals each side. A lintel bears only 100 mm, so the flashing must be longer than the lintel and turned out at the ends.', 'The lintel sizes and steel grade come from the NCC tables and the engineer.'] },
+  { id: 'slabedge', title: 'Slab edge detail', scale: 'Large scale, about 1:5, typical', svg: slabEdge(),
+    notes: ['A close-up of where the veneer meets the slab: the parts a supervisor checks before the first course is covered. Callout numbers match the key.',
+      'The DPC runs through the full thickness of the veneer, is visible at the face and turns up behind the wall wrap, so water in the cavity is carried out through the weepholes above it.',
+      'Weepholes are open joints in the course just above the DPC at no more than 1.2 m centres, kept free of mortar droppings.',
+      'Where the slab edge is part of the termite management system it is left exposed for inspection. Check the exposure the system and AS 3660.1 require; do not render or pave over it.'] },
 ];
+
+// Large-scale detail at the slab edge: brick on the slab, DPC turned up behind the wrap, weephole, tie, bottom plate,
+// exposed slab edge and the edge beam below. Drawn at about 1 px per mm; all sizes are typical.
+function slabEdge() {
+  const body = [R(0, 0, 900, 790, 'd-bg')];
+  const open = (pts, cls) => `<path d="M${pts.map((q) => q.join(' ')).join(' L')}" class="${cls}" fill="none"/>`;
+  body.push(R(40, 430, 262, 210, 'd-soil'), L(40, 430, 300, 430, 'd-ground'));
+  body.push(P([[300, 360], [720, 360], [720, 430], [420, 430], [420, 612], [300, 612]], 'd-conc'));
+  body.push(R(420, 430, 300, 34, 'd-sand'), R(420, 464, 300, 176, 'd-soil'));
+  body.push(open([[300, 615], [417, 615], [417, 433], [720, 433]], 'd-memb'));
+  body.push(R(322, 388, 76, 200, 'd-line', 5));
+  for (const [x, y] of [[332, 398], [388, 398], [332, 578], [388, 578]]) body.push(`<circle cx="${x}" cy="${y}" r="5.5" class="d-steel"/>`);
+  body.push(L(404, 402, 720, 402, 'd-mesh'));
+  body.push(R(300, 60, 110, 300, 'd-brick'));
+  for (const y of [146, 232, 318]) body.push(L(300, y, 410, y, 'd-line'));
+  body.push(R(332, 318, 10, 42, 'd-box'));
+  body.push(open([[296, 360], [410, 360], [410, 353], [451, 353], [451, 296]], 'd-memb'));
+  body.push(L(352, 232, 470, 225, 'd-mesh'));
+  body.push(L(453, 60, 453, 358, 'd-wrap'));
+  body.push(R(456, 60, 89, 255, 'd-ins'));
+  body.push(R(456, 315, 89, 45, 'd-timber'), L(456, 315, 545, 360, 'd-line'), L(545, 315, 456, 360, 'd-line'));
+  body.push(R(545, 60, 10, 292, 'd-board'), R(555, 318, 12, 34, 'd-timber'), R(555, 352, 165, 8, 'd-board'));
+  body.push(dim(300, 50, 410, 50, '110', -1), dim(410, 50, 453, 50, 'cavity', -1), dim(456, 50, 545, 50, '90', -1), dim(268, 360, 268, 430, 'exposed', -1));
+  body.push(call(1, 355, 110, 210, 110), call(2, 431, 150, 640, 110), call(3, 410, 229, 640, 165), call(4, 453, 270, 640, 220), call(5, 500, 140, 640, 275),
+    call(6, 500, 337, 640, 328), call(7, 430, 353, 210, 330), call(8, 337, 335, 210, 270), call(9, 300, 395, 210, 400), call(10, 360, 500, 210, 520), call(11, 600, 433, 760, 470));
+  const key = ['Brick veneer, 110 mm', 'Cavity, clear and free-draining', 'Wall tie in a bed joint, sloping down to the brick', 'Wall wrap on the frame', 'Bulk insulation between studs (stud beyond)',
+    'Bottom plate on the slab (cut member)', 'DPC or flashing through the veneer, turned up behind the wrap', 'Weephole: open joint in the course above the DPC', 'Slab edge left exposed for termite inspection',
+    'Edge beam, reinforced, to the engineer', 'Vapour barrier on sand bedding'];
+  body.push(T(40, 26, 'Slab edge detail: brick veneer on a slab-on-ground', { cls: 'd-bold' }));
+  key.forEach((t, i) => body.push(T(i < 6 ? 40 : 470, 672 + (i % 6) * 17, `${i + 1}  ${t}`)));
+  body.push(T(40, 778, 'Typical, about 1:5. Our own drawing, made from the NCC Part 5.7 text and typical practice. The cavity, DPC and weephole rules are in the notes.', { cls: 'd-mute' }));
+  return svg(900, 790, body.join(''), 'Slab edge detail, brick veneer');
+}
 
 /* ---------- study content ---------- */
 const howto = [

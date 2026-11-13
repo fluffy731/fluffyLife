@@ -242,6 +242,39 @@ function roofPlan() {
   return svg(900, 720, body.join(''), 'Roof framing plan');
 }
 
+// Large-scale detail at the truss heel: how the roof meets the wall and how the truss is held down. About 1 px per mm, all sizes typical.
+function heelDetail() {
+  const body = [R(0, 0, 900, 820, 'd-bg')], t = Math.tan(22.5 * Math.PI / 180), depth = 90 / Math.cos(22.5 * Math.PI / 180);
+  const low = (x) => 330 - t * (x - 395);                 // underside of the top chord, passing over the heel at the wall frame
+  const open = (pts, cls) => `<path d="M${pts.map((q) => q.join(' ')).join(' L')}" class="${cls}" fill="none"/>`;
+  body.push(R(505, 230, 395, 190, 'd-ins'));               // ceiling insulation beyond the truss
+  body.push(R(395, 330, 505, 90, 'd-timber'));             // bottom chord
+  body.push(P([[100, low(100)], [900, low(900)], [900, low(900) - depth], [100, low(100) - depth]], 'd-timber'));   // top chord and tail
+  body.push(R(400, 300, 120, 100, 'd-collar'));            // nail plate at the heel
+  for (const x of [97, 160, 250, 340, 430, 520, 610, 700, 790]) body.push(R(x - 19 - 0, low(x) - depth - 26, 38, 26, 'd-timberx'));
+  body.push(open([[100, low(100) - depth - 2], [900, low(900) - depth - 2]], 'd-wrap'));            // sarking
+  body.push(open([[60, low(60) - depth - 30], [900, low(900) - depth - 30]], 'd-memb'));             // roof cover on the battens
+  body.push(R(75, low(100) - 6, 25, 190, 'd-timber'));     // fascia
+  body.push(open([[8, low(100) + 20], [8, low(100) + 120], [66, low(100) + 120], [74, low(100) + 10]], 'd-line'));   // gutter
+  body.push(R(100, 536, 140, 9, 'd-board'));               // eave lining
+  body.push(R(395, 420, 90, 45, 'd-timber'), R(395, 465, 90, 45, 'd-timber'), L(395, 420, 485, 465, 'd-line'), L(485, 420, 395, 465, 'd-line'), L(395, 465, 485, 510, 'd-line'), L(485, 465, 395, 510, 'd-line'));
+  body.push(R(395, 510, 90, 230, 'd-timber'), R(485, 430, 10, 310, 'd-board'), R(495, 420, 405, 10, 'd-board'), L(392, 420, 392, 740, 'd-wrap'));
+  body.push(R(240, 552, 110, 188, 'd-brick'));
+  for (const y of [638, 724]) body.push(L(240, y, 350, y, 'd-line'));
+  body.push(open([[388, 340], [380, 340], [380, 600], [392, 600]], 'd-strap'));   // tie-down strap, truss to plates and stud
+  body.push(open([[230, 748], [300, 734], [290, 752], [505, 736]], 'd-line'));   // break line
+  body.push(dim(240, 775, 350, 775, '110', -1), dim(395, 775, 485, 775, '90', -1), dim(560, 330, 560, 420, '90', 1), T(640, 120, '22.5 degree pitch', { cls: 'd-mute' }));
+  body.push(call(1, 700, low(700) - depth - 30, 760, 70), call(2, 560, low(560) - depth - 2, 640, 60), call(3, 300, low(300) - 45, 200, 150), call(4, 700, 375, 760, 470),
+    call(5, 460, 350, 600, 260), call(6, 380, 470, 300, 470), call(7, 440, 465, 600, 520), call(8, 440, 650, 600, 640), call(9, 40, low(100) + 90, 40, 420),
+    call(10, 170, 540, 170, 610), call(11, 295, 600, 200, 690), call(12, 760, 300, 840, 470));
+  body.push(T(40, 26, 'Truss heel detail: where the roof sits on the wall', { cls: 'd-bold' }));
+  ['Roof cover on battens', 'Sarking under the battens', 'Top chord and eave tail', 'Bottom chord on the plates', 'Nail plate at the heel', 'Tie-down strap or anchor',
+    'Double top plate (cut)', 'Stud below', 'Fascia and gutter', 'Eave lining on trimmers', 'Brick veneer, gap under lining', 'Ceiling insulation']
+    .forEach((x, i) => body.push(T(650, 568 + i * 17, `${i + 1}  ${x}`)));
+  body.push(T(40, 812, 'Typical, about 1:5. Our own drawing. Tie-down type, size and spacing come from the truss maker’s layout and AS 1684 for the wind class.', { cls: 'd-mute' }));
+  return svg(900, 820, body.join(''), 'Truss heel and tie-down detail');
+}
+
 const drawings = [
   { id: 'truss', title: 'Fink truss elevation', scale: 'Typical, not to scale', svg: trussElev(false),
     notes: ['1 Top chord. 2 Bottom chord. 3 Long web. 4 Short web. 5 Nail plate at the apex. 6 Heel and bearing on the top plate. 7 Eave overhang.', 'The truss pattern, member sizes and plate sizes come from the manufacturer\'s design for your job.', 'Open the 3D truss detail to take one apart and see how the plates hold the joints.'] },
@@ -249,6 +282,11 @@ const drawings = [
     notes: ['Each square is a brace that runs along the roof, passing every truss. The bracing layout shows which ones your roof needs.', 'Runners and battens brace the top chords. Ties and ceiling battens brace the bottom chords. Web bracing is only used where the layout asks for it.', 'The layout from the manufacturer overrides this drawing.'] },
   { id: 'roofplan', title: 'Roof framing plan', scale: 'Illustrative, 32 px per metre', svg: roofPlan(),
     notes: ['Trusses run across the house at 900 mm centres. The ridge line runs along it.', 'Dashed lines are diagonal braces in the top-chord plane and the ceiling plane. Other lines are runners and ties.', 'This is the layout in the 3D model. Your roof will be set out from the manufacturer\'s layout.'] },
+  { id: 'heel', title: 'Truss heel detail', scale: 'Large scale, about 1:5, typical', svg: heelDetail(),
+    notes: ['A close-up of the heel, where the truss bears on the wall frame and is held down against wind uplift. Callout numbers match the key.',
+      'The tie-down (strap, framing anchor or bolt) runs from the truss to the top plates and on into the stud or lower down, so uplift reaches the slab. Its type and spacing come from the truss maker\'s layout and AS 1684 for the site\'s wind class.',
+      'The brick veneer stops short of the eave lining, leaving a gap so the frame can shrink and the roof can move without bearing on the bricks.',
+      'Sarking runs under the battens and drains into the gutter. The heel height sets how much ceiling insulation fits at the edge.'] },
 ];
 
 const howto = [

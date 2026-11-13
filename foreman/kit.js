@@ -27,7 +27,7 @@ const GEN = {
   paving: { tile: [1.5, 1.5], size: [256, 256], bump: 0.9, draw(c, W, H) { const r = rng(43); c.fillStyle = '#cfd1d3'; c.fillRect(0, 0, W, H); blotches(c, W, H, r, 18, ['#b9bcbf', '#e0e2e4'], 20, 70, 0.28); specks(c, W, H, r, 2200, ['#b1b4b7', '#dcdee0'], 0.4, 1), c.fillStyle = '#8f9396'; c.fillRect(0, 0, W, 3); c.fillRect(0, 0, 3, H); } },
   asphalt: { tile: [2, 2], size: [256, 256], bump: 1, draw(c, W, H) { const r = rng(51); c.fillStyle = '#464b53'; c.fillRect(0, 0, W, H); blotches(c, W, H, r, 22, ['#3a3e45', '#555a62'], 25, 80, 0.3); specks(c, W, H, r, 6000, ['#5a6069', '#383c43', '#6c727b', '#4b5058'], 0.5, 1.4); } },
   brick: { tile: [0.96, 0.86], size: [512, 459], bump: 1.4, draw(c, W, H) { const r = rng(61), rows = 10, ch = H / rows, bw = W / 4, m = ch * 0.116; c.fillStyle = '#c8c2b6'; c.fillRect(0, 0, W, H); for (let j = 0; j < rows; j++) for (let i = -1; i < 5; i++) { const x = i * bw + (j % 2 ? bw / 2 : 0) + m / 2, y = j * ch + m / 2; c.fillStyle = pick(r, ['#b0583f', '#a24e37', '#b86a4d', '#9c4a35', '#bd6f52', '#a85a42']); c.fillRect(x, y, bw - m, ch - m); c.globalAlpha = 0.25; for (let k = 0; k < 26; k++) { c.fillStyle = r() < 0.5 ? '#6e3220' : '#d98d6c'; c.fillRect(x + r() * (bw - m), y + r() * (ch - m), 2, 2); } c.globalAlpha = 1; } } },
-  roofTile: { tile: [0.99, 1.02], size: [512, 520], bump: 1.6, draw(c, W, H) { const r = rng(71), rows = 3, rh = H / rows, tw = W / 3; c.fillStyle = '#6f757d'; c.fillRect(0, 0, W, H); for (let j = 0; j < rows; j++) for (let i = -1; i < 4; i++) { const x = i * tw + (j % 2 ? tw / 2 : 0), y = j * rh, g = c.createLinearGradient(0, y, 0, y + rh); g.addColorStop(0, '#b9bec4'); g.addColorStop(0.72, '#a2a8af'); g.addColorStop(1, '#4e535a'); c.fillStyle = g; c.fillRect(x + 3, y + 2, tw - 6, rh - 4); c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(x + tw * 0.46, y + 4, tw * 0.08, rh * 0.7); } specks(c, W, H, r, 1500, ['#8f959c', '#c8ccd1'], 0.5, 1, 0.5); } },
+  roofTile: { tile: [0.99, 1.02], size: [512, 520], bump: 1.6, draw(c, W, H) { const r = rng(71), rows = 3, rh = H / rows, tw = W / 3; c.fillStyle = '#6f757d'; c.fillRect(0, 0, W, H); for (let j = 0; j < rows; j++) for (let i = -1; i < 4; i++) { const x = i * tw + (j % 2 ? tw / 2 : 0), y = j * rh, g = c.createLinearGradient(0, y, 0, y + rh); g.addColorStop(0, '#b4b9bf'); g.addColorStop(0.8, '#a6acb3'); g.addColorStop(1, '#7a8087'); c.fillStyle = g; c.fillRect(x + 3, y + 2, tw - 6, rh - 4); c.fillStyle = 'rgba(255,255,255,.18)'; c.fillRect(x + tw * 0.46, y + 4, tw * 0.08, rh * 0.7); } specks(c, W, H, r, 1500, ['#8f959c', '#c8ccd1'], 0.5, 1, 0.5); } },
   metalRib: { tile: [0.76, 1], size: [256, 256], bump: 1.2, draw(c, W, H) { const n = 4, pw = W / n; for (let i = 0; i < n; i++) { const g = c.createLinearGradient(i * pw, 0, (i + 1) * pw, 0); g.addColorStop(0, '#9aa1a9'); g.addColorStop(0.1, '#eef1f4'); g.addColorStop(0.2, '#c3c9cf'); g.addColorStop(0.5, '#b4bbc2'); g.addColorStop(0.8, '#c9cfd5'); g.addColorStop(0.92, '#7f868e'); g.addColorStop(1, '#9aa1a9'); c.fillStyle = g; c.fillRect(i * pw, 0, pw, H); } } },
   timber: { tile: [0.9, 0.11], size: [512, 64], mode: 'long', bump: 0.7, draw(c, W, H) { const r = rng(81); c.fillStyle = '#d6ac6c'; c.fillRect(0, 0, W, H); blotches(c, W, H, r, 10, ['#c49858', '#e6c68e'], 18, 40, 0.35); for (let i = 0; i < 46; i++) { const y = r() * H; c.strokeStyle = pick(r, ['#a8792f', '#b98a43', '#8e6425']); c.globalAlpha = 0.2 + r() * 0.3; c.lineWidth = 0.6 + r() * 1.1; c.beginPath(); c.moveTo(0, y); for (let x = 0; x <= W; x += 32) c.lineTo(x, y + Math.sin(x * 0.02 + i) * 1.6); c.stroke(); } c.globalAlpha = 1; if (r() < 0.6) { const kx = r() * W, ky = H * (0.3 + r() * 0.4); c.fillStyle = '#7a531c'; c.globalAlpha = 0.55; c.beginPath(); c.ellipse(kx, ky, 9, 5, 0, 0, 6.2832); c.fill(); c.globalAlpha = 1; } } },
 };
@@ -41,10 +41,35 @@ export function getTex(name) {
   t.repeat.set(1 / g.tile[0], 1 / g.tile[1]);
   TEXC.set(name, t); return t;
 }
-export const mat = (color, { tex, bump, ...o } = {}) => {
+// Large soft patches (tens of metres) that break up the repeat of a tiled texture: drier and greener lawn, worn asphalt.
+let MACRO = null;
+function macroTex() {
+  if (MACRO) return MACRO;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 256; const c = cv.getContext('2d'), r = rng(97);
+  c.fillStyle = '#808080'; c.fillRect(0, 0, 256, 256);
+  blotches(c, 256, 256, r, 60, ['#ffffff', '#000000'], 18, 64, 0.32);
+  MACRO = new THREE.CanvasTexture(cv); MACRO.wrapS = MACRO.wrapT = THREE.RepeatWrapping;
+  return MACRO;
+}
+const MACRO_TINT = { grass: [1.1, 1.02, 0.72], asphalt: [1.06, 1.05, 1.03], soil: [1.08, 1.0, 0.9], concrete: [1.04, 1.03, 1.0] };
+function addMacro(m, tex, amp) {
+  const tint = MACRO_TINT[tex] || [1, 1, 1];
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.macroMap = { value: macroTex() };
+    sh.fragmentShader = sh.fragmentShader.replace('void main() {', 'uniform sampler2D macroMap;\nvoid main() {').replace('#include <map_fragment>',
+      `#include <map_fragment>
+      float mv = texture2D(macroMap, vMapUv * ${(0.06 * GEN[tex].tile[0] / 6).toFixed(4)}).r;
+      diffuseColor.rgb *= mix(1.0 - ${amp.toFixed(2)}, 1.0 + ${(amp * 0.6).toFixed(2)}, mv);
+      diffuseColor.rgb = mix(diffuseColor.rgb * vec3(${tint.map((v) => v.toFixed(2)).join(', ')}), diffuseColor.rgb, smoothstep(0.25, 0.6, mv));`);
+  };
+  m.customProgramCacheKey = () => `macro-${tex}-${amp}`;
+}
+
+export const mat = (color, { tex, bump, macro, ...o } = {}) => {
   const m = new THREE.MeshStandardMaterial({ color, roughness: 0.88, metalness: 0, ...o });
   const t = tex && getTex(tex);
-  if (t) { m.map = t; m.bumpMap = t; m.bumpScale = bump != null ? bump : GEN[tex].bump; m.userData.uv = GEN[tex].mode || 'world'; }
+  if (t) { m.map = t; m.bumpMap = t; m.bumpScale = bump != null ? bump : GEN[tex].bump; m.userData.uv = GEN[tex].mode || 'world'; m.userData.tex = tex; }
+  if (t && macro) addMacro(m, tex, macro);
   return m;
 };
 // Rewrite box UVs to metres per face so a textured box never stretches. 'long' puts u along each face's longer side (timber grain).
@@ -172,6 +197,23 @@ export function face(points, m, cast = true) {
   const mesh = new THREE.Mesh(g, m); mesh.castShadow = cast; mesh.receiveShadow = true; return mesh;
 }
 
+// Crushed rock or gravel: many small rounded stones, each a jittered low-poly ball with its own grey-brown tint.
+// One instanced mesh, seeded so the pile looks the same on every visit.
+export function stones(n, { x0, x1, z0, z1, y = 0, size = 0.045, seed = 5 } = {}) {
+  const r = rng(seed), geo = new THREE.IcosahedronGeometry(size, 1), p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) { const k = 0.8 + r() * 0.4; p.setXYZ(i, p.getX(i) * k, p.getY(i) * k * 0.68, p.getZ(i) * k); }
+  geo.computeVertexNormals();
+  const inst = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95 }), n);
+  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sc = new THREE.Vector3(), t = new THREE.Vector3(), col = new THREE.Color();
+  for (let i = 0; i < n; i++) {
+    e.set((r() - 0.5) * 0.7, r() * 6.28, (r() - 0.5) * 0.7); q.setFromEuler(e); sc.setScalar(0.6 + r() * 0.9);
+    t.set(x0 + r() * (x1 - x0), y + size * 0.3 + r() * size * 0.4, z0 + r() * (z1 - z0));
+    inst.setMatrixAt(i, m4.compose(t, q, sc)); inst.setColorAt(i, col.setHSL(0.07 + r() * 0.06, 0.04 + r() * 0.08, 0.36 + r() * 0.3));
+  }
+  inst.castShadow = true; inst.receiveShadow = true;
+  return inst;
+}
+
 export function disposeTree(obj) {
   obj.traverse((o) => {
     o.geometry?.dispose?.();
@@ -182,4 +224,4 @@ export function disposeTree(obj) {
   });
 }
 
-export const kit = { THREE, C, mat, getTex, boxUV, face, ghost, lineMat, box, cyl, rod, pipe, flat, rectWithHoles, extrudeProfile, outline, lineSet, textPlane, disposeTree };
+export const kit = { THREE, C, mat, getTex, boxUV, face, ghost, lineMat, box, cyl, rod, pipe, flat, rectWithHoles, extrudeProfile, outline, lineSet, textPlane, stones, disposeTree };

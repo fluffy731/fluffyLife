@@ -92,14 +92,7 @@ const details = {
       const sub = mk(); sub.add(box(3, 0.3, 4, mat(0xffffff, { tex: 'soil' }), 0, -0.15, 0));
       const geo = mk(); geo.add(box(3.04, 0.012, 4.04, mat(0xe6e9ec), 0, 0.006, 0));
       const rock = mk(); rock.add(box(3, 0.18, 4, mat(0xb3b2ad, { tex: 'concrete', bump: 1.6 }), 0, 0.1, 0));
-      const inst = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.1, 0), mat(0x85857f, { flatShading: true }), 260);
-      const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(), t = new THREE.Vector3();
-      for (let i = 0; i < 260; i++) {
-        e.set(i * 1.7, i * 2.3, i * 0.9); q.setFromEuler(e); s.setScalar(0.75 + ((i * 37) % 10) / 14);
-        t.set(((i * 53) % 100) / 100 * 2.9 - 1.45, 0.2, ((i * 71) % 100) / 100 * 3.9 - 1.95);
-        inst.setMatrixAt(i, m4.compose(t, q, s));
-      }
-      inst.castShadow = true; rock.add(inst);
+      rock.add(kit.stones(2600, { x0: -1.48, x1: 1.48, z0: -1.98, z1: 1.98, y: 0.19, size: 0.03, seed: 11 }));
       const kerb = mk();
       kerb.add(box(3.4, 0.14, 0.25, mat(C.kerb), 0, 0.07, 2.35));
       kerb.add(box(3, 0.035, 0.8, mat(C.steel), 0, 0.17, 2.28));
