@@ -200,9 +200,9 @@ export const SEGMENTS = [
     ["zh", "提醒大家：幸运抽奖只限购买了抽奖券的来宾参加。抽奖券 5 澳元一张，{raffleClose}前向小天使购买。共 10 份奖品，分两轮抽：8 点 15 分第一轮，8 点 42 分售票结束后第二轮。"],
     ["crit", "音乐开始前讲完所有介绍", "Finish every introduction before the music starts"],
     ["cue", "此时入场人员已在签到处排好队，等歌声响起", "The walk-in group is already lined up at check-in, waiting for the song"],
-    ["en", "And now, a special welcome. Why \"Goddess\"? Two reasons. First, singer Tian will sing Nǚshén, \"Goddess\". Second, She Rises is an all-female club, so every member is a goddess. Led by our President, then our Vice President, our committee and our charter members, here come the women of She Rises!"],
+    ["en", "And now, a special welcome. Why \"Goddess\"? Two reasons. First, singer Tian will sing Nǚshén, \"Goddess\". Second, She Rises is a women's growth club, so every member is a goddess. Led by our President, then our Vice President, our committee and our charter members, here come the women of She Rises!"],
     ["cue", "Nǚshén 读作 nyoo-shun", "Nǚshén sounds like \"nyoo-shun\""],
-    ["zh", "为什么叫「女神」？有两个原因。第一，歌手 Tian 将为大家演唱《女神》；第二，她慧狮子会是一个全女性会员的狮子会，每一位会员都是女神。由会长带领，然后是副会长、理事团队，最后是 charter members。请大家用最热烈的掌声欢迎她们！"],
+    ["zh", "为什么叫「女神」？有两个原因。第一，歌手 Tian 将为大家演唱《女神》；第二，她慧狮子会是一个女性成长的狮子会，每一位会员都是女神。由会长带领，然后是副会长、理事团队，最后是 charter members。请大家用最热烈的掌声欢迎她们！"],
     ["SW", "Please welcome Tian! 有请 Tian！"],
   ] },
   { t: "19:02", e: "19:06", key: true, zh: "女神入场 · Tian《女神》", en: "Goddess Entrance · Tian sings 《女神》", at: ["MC 台侧，不说话", "MCs at the side, silent"], items: [

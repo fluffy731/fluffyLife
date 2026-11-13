@@ -163,10 +163,12 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
   assert.match(seg("20:20"), /\{chequeBy\}/);
   assert.doesNotMatch(seg("20:20"), /In just one week|短短一个星期/, "Salli's card says two weeks and she covers it");
   assert.equal(LISTS.nepal.n, 7);
-  // Goddess has two reasons: Tian's song and an all-female club.
+  // Goddess has two reasons: Tian's song and a women's growth club (13 Nov: no longer "all-female").
   assert.match(seg("19:00"), /Two reasons/);
-  assert.match(seg("19:00"), /all-female club/);
-  assert.match(seg("19:00"), /全女性会员/);
+  assert.match(seg("19:00"), /women's growth club/);
+  assert.doesNotMatch(seg("19:00"), /all-female/i);
+  assert.match(seg("19:00"), /女性成长的狮子会/);
+  assert.doesNotMatch(seg("19:00"), /全女性/);
   // Best Dress is now judged by applause: no winner field, cash 100 / 50 / 20, two bottles of wine, three women and two men.
   assert.match(seg("20:55"), /judged by applause/);
   assert.match(seg("20:55"), /\$100 \/ \$50 \/ \$20/);
