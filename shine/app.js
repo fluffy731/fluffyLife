@@ -9,10 +9,12 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 
 let S = {};
 try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { S = {}; }
-S.f ||= {}; S.drawn ||= {}; S.who ||= "both"; S.done ||= {}; S.cut ||= {};
+S.f ||= {}; S.drawn ||= {}; S.who ||= "both"; S.done ||= {}; S.cut ||= {}; S.ed ||= {};
 // Delete-a-line (last-minute changes): S.cut holds the lines this phone has removed. A line is keyed by its segment, position and
 // first words, so if the script is updated and that line changes, it simply comes back. Edit mode is never saved, so a reload is safe.
-let editing = false;
+let editing = false, editKey = null;
+// S.ed holds lines this phone has reworded (same key as S.cut); the {placeholders} in the new text still fill in.
+const lineText = (k) => { for (const s of SEGS) for (let i = 0; i < s.items.length; i++) if (keyOf(s, s.items[i], i) === k) return String(s.items[i][1]); return ""; };
 const keyOf = (s, it, i) => `${s.t}|${i}|${String(it[1]).slice(0, 20)}`;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* private mode: keep working without saving */ } };
 
@@ -73,13 +75,22 @@ function lineHTML([tag, text, o = {}], k) {
   if (o.if && !val(o.if)) return "";
   const cut = !!S.cut[k];
   if (cut && !editing) return "";
+  const edited = S.ed[k] != null, shown = edited ? S.ed[k] : text;
   // Line tags are languages ("zh", "en") or "SW" (said together, shown as Chinese then English).
   // o.who ("S" or "W") overrides who speaks the line, e.g. Solomon in Chinese in the two-man opener.
   const who = tag === "SW" ? "SW" : o.who || SPEAKER[tag], l = tag === "en" ? "en" : "zh";
   const label = { S: NAME.S, W: NAME.W, SW: `${NAME.S} + ${NAME.W}` }[who];
-  const btn = editing ? `<button type="button" class="lbtn${cut ? " back" : ""}" data-cut="${esc(k)}" aria-label="${cut ? bi("恢复这一行", "Restore this line") : bi("删除这一行", "Delete this line")}">${cut ? "↩" : "✕"}</button>` : "";
-  return `<div class="ln${o.tpl ? " tpl" : ""}${cut ? " cut" : ""}${editing ? " edit" : ""}" data-s="${who}"><b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>` +
-    `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(text, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}</p>${btn}</div>`;
+  const badge = `<b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>`;
+  if (editing && editKey === k) {
+    return `<div class="ln edit editing" data-s="${who}">${badge}<div class="ebox"><textarea class="ledit" rows="${Math.max(3, Math.ceil(shown.length / 30))}" lang="${l === "en" ? "en" : "zh-Hans"}" aria-label="${bi("修改这一行", "Edit this line")}">${esc(shown)}</textarea>` +
+      (/\{\w+\}/.test(shown) ? `<p class="ehint">${bi("大括号里的内容会自动填入，请保留大括号", "Keep the {braces}: what is inside fills in automatically")}</p>` : "") +
+      `<div class="eact"><button type="button" class="primary" data-esave="${esc(k)}">${bi("保存", "Save")}</button><button type="button" data-ecancel="1">${bi("取消", "Cancel")}</button>` +
+      (edited ? `<button type="button" data-ereset="${esc(k)}">${bi("还原原文", "Restore original")}</button>` : "") + `</div></div></div>`;
+  }
+  const btn = !editing ? "" : `<span class="lacts">${cut ? "" : `<button type="button" class="lbtn ed" data-edit="${esc(k)}" aria-label="${bi("修改这一行", "Edit this line")}">✎</button>`}` +
+    `<button type="button" class="lbtn${cut ? " back" : ""}" data-cut="${esc(k)}" aria-label="${cut ? bi("恢复这一行", "Restore this line") : bi("删除这一行", "Delete this line")}">${cut ? "↩" : "✕"}</button></span>`;
+  return `<div class="ln${o.tpl ? " tpl" : ""}${cut ? " cut" : ""}${edited ? " edited" : ""}${editing ? " edit" : ""}" data-s="${who}">${badge}` +
+    `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(shown, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}${edited && editing ? `<small class="tpl-tag">${bi("已改", "edited")}</small>` : ""}</p>${btn}</div>`;
 }
 
 function listHTML(name, o = {}) {
@@ -217,16 +228,17 @@ function renderCutbar() {
   const n = Object.keys(S.cut).filter((k) => live.has(k)).length;
   const eb = $("#editLines");
   eb.setAttribute("aria-pressed", String(editing));
-  eb.textContent = (editing ? "✓ " : "✂ ") + (editing ? bi("完成", "Done") : bi("删行", "Delete lines"));
-  $("#cutN").textContent = n ? bi(`已删 ${n} 行`, `${n} removed`) : "";
-  $("#restoreAll").textContent = bi("全部恢复", "Restore all");
-  $("#restoreAll").hidden = !n;
+  eb.textContent = (editing ? "✓ " : "✎ ") + (editing ? bi("完成", "Done") : bi("改稿 / 删行", "Edit / delete lines"));
+  const m = Object.keys(S.ed).filter((k) => live.has(k)).length;
+  $("#cutN").textContent = [n ? bi(`已删 ${n} 行`, `${n} removed`) : "", m ? bi(`已改 ${m} 行`, `${m} edited`) : ""].filter(Boolean).join(" · ");
+  $("#restoreAll").textContent = bi("全部还原", "Reset all");
+  $("#restoreAll").hidden = !(n || m);
   $("#cutHint").hidden = !editing;
-  $("#cutHint").textContent = bi("点 ✕ 删掉这一行；灰色划线的是已删，点 ↩ 恢复。只影响这部手机。", "Tap ✕ to remove a line; struck-through lines are removed, tap ↩ to bring one back. This only changes this phone.");
+  $("#cutHint").textContent = bi("点 ✎ 修改这一行，点 ✕ 删掉；灰色划线的是已删，点 ↩ 恢复。只影响这部手机，搭档的手机不会变。", "Tap ✎ to reword a line or ✕ to remove it; struck-through lines are removed, tap ↩ to bring one back. This only changes this phone, not your partner's.");
 }
 function redrawScript() { const y = scrollY; renderScript(); renderCutbar(); scrollTo(0, y); }
-$("#editLines").addEventListener("click", () => { editing = !editing; redrawScript(); });
-$("#restoreAll").addEventListener("click", () => { S.cut = {}; save(); redrawScript(); });
+$("#editLines").addEventListener("click", () => { editing = !editing; editKey = null; redrawScript(); });
+$("#restoreAll").addEventListener("click", () => { S.cut = {}; S.ed = {}; editKey = null; save(); redrawScript(); });
 function renderAll() {
   document.body.dataset.who = S.who; document.body.dataset.lang = showLang();
   for (const b of $$("[data-who]")) b.setAttribute("aria-pressed", String(b.dataset.who === S.who));
@@ -362,6 +374,20 @@ document.addEventListener("click", (e) => {
       input.focus({ preventScroll: true });
       box.classList.remove("flash"); void box.offsetWidth; box.classList.add("flash");
     }
+    return;
+  }
+  const edBtn = e.target.closest("button[data-edit], button[data-esave], button[data-ecancel], button[data-ereset]");
+  if (edBtn) {
+    const d = edBtn.dataset;
+    if (d.edit != null) editKey = d.edit;
+    else if (d.esave != null) {
+      const ta = $(".ledit"), t = ta ? ta.value.replace(/\s*\n\s*/g, " ").trim() : "";
+      if (t && t !== lineText(d.esave).trim()) S.ed[d.esave] = t; else delete S.ed[d.esave];
+      editKey = null; save();
+    } else if (d.ereset != null) { delete S.ed[d.ereset]; editKey = null; save(); }
+    else editKey = null;
+    redrawScript();
+    const box = $(".ledit"); if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
     return;
   }
   const cutBtn = e.target.closest("button[data-cut]");
