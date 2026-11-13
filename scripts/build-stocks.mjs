@@ -181,9 +181,11 @@ export function buildFeed({ universe, markets, prices, benches, news = {}, fx = 
     const scored = calls.filter((c) => c.alpha != null).map((c) => c.d).sort();
     return [k, { ...scorecard(calls), from: scored[0] ?? null, to: scored.at(-1) ?? null }];
   }));
+  // Each index's level, its moves over the Market tab's periods (sessions back) and six months for a small chart.
   const summary = Object.fromEntries(Object.entries(markets).map(([k, m]) => {
-    const b = benches[k];
-    return [k, { label: m.label, benchName: m.benchName, asOf: b?.at(-1)?.d ?? null, r6m: b?.length > 126 ? r4(b.at(-1).c / b.at(-127).c - 1) : null }];
+    const b = benches[k], back = (n) => (b?.length > n ? r4(b.at(-1).c / b.at(-1 - n).c - 1) : null);
+    return [k, { label: m.label, benchName: m.benchName, asOf: b?.at(-1)?.d ?? null, close: b?.length ? r6(b.at(-1).c) : null,
+      r1d: back(1), r1m: back(21), r3m: back(63), r6m: back(126), r12m: back(252), spark: b?.length ? sparkline(b) : null }];
   }));
   return {
     version: FEED_VERSION, rules: RULES, builtAt, holdDays: HOLD_DAYS, every: REPLAY_EVERY,

@@ -2,7 +2,7 @@
 // averages worked out over the whole history so the lines are right from the range's first day, and its
 // index scaled to start at the price so the two compare at a glance. Pure; shared by the page and the tests.
 
-export const RANGES = [["1M", 21], ["6M", 126], ["1Y", 252], ["2Y", Infinity]];
+export const RANGES = [["1W", 5], ["1M", 21], ["3M", 63], ["6M", 126], ["1Y", 252], ["2Y", Infinity]];
 
 function movingAverage(p, n) {
   const out = new Array(p.length).fill(null);

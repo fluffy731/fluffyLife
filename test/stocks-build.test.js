@@ -83,6 +83,22 @@ test("the feed rates every fetched stock, lists the ones that failed, and scores
   assert.equal(feed.markets.US.asOf, bench.at(-1).d);
 });
 
+test("each market's index carries its level, its moves over the Market tab's periods and a small chart", () => {
+  const bench = sessions(300, (i) => 100 + i);   // up one point a session
+  const prices = { AAPL: { bars: sessions(300, () => 50), currency: "USD" } };
+  const feed = buildFeed({ universe: [{ t: "AAPL", n: "Apple", m: "US" }], markets: { US: MARKETS.US, HK: MARKETS.HK }, prices, benches: { US: bench }, builtAt: "2026-10-31T00:00:00Z" });
+  const us = feed.markets.US, last = 399;
+  assert.equal(us.close, last);
+  assert.equal(us.r1d, +(last / 398 - 1).toPrecision(4));
+  assert.equal(us.r1m, +(last / (last - 21) - 1).toPrecision(4));
+  assert.equal(us.r3m, +(last / (last - 63) - 1).toPrecision(4));
+  assert.equal(us.r6m, +(last / (last - 126) - 1).toPrecision(4));
+  assert.equal(us.r12m, +(last / (last - 252) - 1).toPrecision(4));
+  assert.ok(us.spark.length > 10 && us.spark.at(-1) === last, "the last close ends the small chart");
+  const hk = feed.markets.HK;
+  assert.deepEqual([hk.close, hk.r1d, hk.r12m, hk.spark], [null, null, null, null], "no index prices: no figures, not zeros");
+});
+
 test("a market whose index could not be fetched rates its stocks REVIEW rather than dropping them", () => {
   const prices = { AAPL: { bars: sessions(500, (i) => 100 + i), currency: "USD" } };
   const feed = buildFeed({ universe: [{ t: "AAPL", n: "Apple", m: "US" }], markets: { US: MARKETS.US }, prices, benches: {}, builtAt: "2026-10-31T00:00:00Z" });

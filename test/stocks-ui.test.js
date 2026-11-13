@@ -53,7 +53,7 @@ test("six months on one basis: the price against the index, with dividends said 
 
 test("the glossary explains every term the page uses", () => {
   const terms = GLOSSARY.map((g) => g.term).join(" | ");
-  for (const t of ["Index fund", "Moving average", "RSI", "Volatility", "Dividend yield", "52-week range", "Ratings", "Scorecard", "Diversification"]) assert.match(terms, new RegExp(t), t);
+  for (const t of ["Index fund", "Moving average", "RSI", "Volatility", "Dividend yield", "52-week range", "Ratings", "Scorecard", "Diversification", "Sector", "Market map", "Breadth", "Trading hours"]) assert.match(terms, new RegExp(t), t);
   assert.ok(GLOSSARY.every((g) => g.text.length > 40));
 });
 
@@ -112,7 +112,8 @@ test("chart model: the range's prices, 50- and 200-day averages over the whole h
   assert.equal(all.d.length, n);
   assert.equal(all.ma200[198], null, "too little history for a 200-day average yet");
   assert.ok(Math.abs(all.change - (p.at(-1) / p[0] - 1)) < 1e-12);
-  assert.deepEqual(RANGES.map((r) => r[0]), ["1M", "6M", "1Y", "2Y"]);
+  assert.deepEqual(RANGES.map((r) => r[0]), ["1W", "1M", "3M", "6M", "1Y", "2Y"]);
+  assert.deepEqual(RANGES.slice(0, 5).map((r) => r[1]), [5, 21, 63, 126, 252], "trading sessions in each range");
 });
 
 test("the offline cache lists every module the Stocks page imports", async () => {
