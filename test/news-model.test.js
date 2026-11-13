@@ -42,6 +42,13 @@ test("Korean word lookup strips particles and verb endings", () => {
   assert.equal(koLookup("없는말", rows), null);
 });
 
+test("Korean word lookup: of several rows for one word, the first (most trusted source) is shown", () => {
+  const rows = [["사과", "沙果", "n", "", "apple", "", ""], ["사과", "謝過", "n", "", "apology", "", ""], ["사과", "赦過", "n", "", "잘못을 용서함", "", ""],
+    ["사다", "", "v", "", "to buy", "", ""], ["사람", "", "n", "", "person", "", ""], ["사랑", "", "n", "", "love", "", ""], ["사랑", "", "n", "", "love (2)", "", ""]];
+  assert.equal(koLookup("사과를", rows)[4], "apple");
+  assert.equal(koLookup("사랑이", rows)[4], "love");
+});
+
 test("Australia tab: Victoria first, then Australia, then local-only; overseas stories out. Asia tab: about Asia", () => {
   const ids = { ...byId, cna: { lean: "C", region: "asia" } };
   const G = (srcs, geo, t) => ({ lang: "en", topics: [], geo, items: srcs.map((s) => ({ s, t })) });

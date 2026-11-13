@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE LexicalResource SYSTEM "https://krdict.korean.go.kr/dtd/DTD_LMF_REV_16.dtd">
+<LexicalResource dtdVersion="16">
+	<GlobalInformation>
+		<feat att="label" val="한국어기초사전 - 국립국어원 제공" />
+	</GlobalInformation>
+	<Lexicon>
+		<feat att="language" val="kor" />
+		<LexicalEntry att="id" val="72337">
+			<feat att="homonym_number" val="1" />
+			<feat att="lexicalUnit" val="단어" />
+			<feat att="partOfSpeech" val="접사" />
+			<Lemma>
+				<feat att="writtenForm" val="-가" />
+			</Lemma>
+			<feat att="origin" val="哥" />
+			<feat att="vocabularyLevel" val="중급" />
+			<feat att="annotation" val="‘성’을 나타내는 대다수 명사 뒤에 붙는다." />
+			<Sense att="id" val="1">
+				<feat att="definition" val="‘그 성을 가진 사람’의 뜻을 더하는 접미사." />
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="김가" />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="박가" />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="이가" />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="-ga" />
+					<feat att="definition" val="A suffix used to mean a person who has that family name." />
+				</Equivalent>
+			</Sense>
+		</LexicalEntry>
+		<LexicalEntry att="id" val="41644">
+			<feat att="homonym_number" val="0" />
+			<feat att="lexicalUnit" val="단어" />
+			<feat att="partOfSpeech" val="명사" />
+			<Lemma>
+				<feat att="writtenForm" val="눈치" />
+			</Lemma>
+			<WordForm>
+				<feat att="type" val="발음" />
+				<feat att="pronunciation" val="눈치" />
+			</WordForm>
+			<feat att="vocabularyLevel" val="중급" />
+			<feat att="semanticCategory" val="인간 > 감각" />
+			<feat att="subjectCategiory" val="인간관계" />
+			<Sense att="id" val="1">
+				<feat att="definition" val="상대가 말하지 않아도 그 사람의 마음이나 일의 상황을 이해하고 아는 능력." />
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="눈치가 보통이 아니다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="눈치가 없다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="눈치가 있다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="나는 눈치가 없는 편이라서 상대방의 기분이 안 좋은 줄 모르고 계속 이야기하고는 했다." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="tact; sense; wits" />
+					<feat att="definition" val="An ability to understand and know someone's mind or situation even though they have said nothing." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="2">
+				<feat att="definition" val="속마음이나 상황을 짐작하게 하는 태도나 표정." />
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="당황하는 눈치." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="모르는 눈치." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="불안해하는 눈치." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="어려워하는 눈치." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="sign; look; face" />
+					<feat att="definition" val="One's attitude or facial expression that lets others guess one's real intention or situation." />
+				</Equivalent>
+			</Sense>
+		</LexicalEntry>
+		<LexicalEntry att="id" val="41644">
+			<Lemma>
+				<feat att="writtenForm" val="눈치(가) 빠르다" />
+			</Lemma>
+			<feat att="lexicalUnit" val="관용구" />
+			<Sense att="id" val="1">
+				<feat att="syntacticPattern" val="1이 눈치(가) 빠르다" />
+				<feat att="definition" val="상대가 말하지 않아도 그 사람의 마음이나 일의 상황을 빨리 이해하고 알다." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="눈치가 빠르고 손끝이 날렵한 꽃님이는 일을 잘해 남의 집에서도 귀여움을 받았다." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="have quick wits" />
+					<feat att="definition" val="To understand and know someone's mind or situation even though they have said nothing." />
+				</Equivalent>
+			</Sense>
+				</LexicalEntry>
+		<LexicalEntry att="id" val="36678">
+			<feat att="homonym_number" val="0" />
+			<feat att="lexicalUnit" val="단어" />
+			<feat att="partOfSpeech" val="명사" />
+			<Lemma>
+				<feat att="writtenForm" val="버스" />
+			</Lemma>
+			<feat att="origin" val="bus" />
+			<feat att="vocabularyLevel" val="초급" />
+			<feat att="semanticCategory" val="사회 생활 > 교통 수단" />
+			<feat att="subjectCategiory" val="교통 이용하기" />
+			<Lemma>
+			<feat att="variant" val="버쓰, 뻐쓰" />
+			</Lemma>
+			<Sense att="id" val="1">
+				<feat att="definition" val="돈을 받고 정해진 길을 다니며 많은 사람을 실어 나르는 큰 자동차." />
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="대형 버스." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="전세 버스." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="통근 버스." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="버스 기사." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="bus" />
+					<feat att="definition" val="A large vehicle designed to carry passengers along a fixed route for a fare." />
+				</Equivalent>
+			</Sense>
+		</LexicalEntry>
+		<LexicalEntry att="id" val="66371">
+			<feat att="homonym_number" val="1" />
+			<feat att="lexicalUnit" val="단어" />
+			<feat att="partOfSpeech" val="명사" />
+			<Lemma>
+				<feat att="writtenForm" val="사과" />
+			</Lemma>
+			<feat att="origin" val="沙果/砂果" />
+			<WordForm>
+				<feat att="type" val="발음" />
+				<feat att="pronunciation" val="사과" />
+			</WordForm>
+			<feat att="vocabularyLevel" val="초급" />
+			<feat att="semanticCategory" val="식생활 > 과일" />
+			<feat att="subjectCategiory" val="음식 주문하기" />
+			<Sense att="id" val="1">
+				<feat att="definition" val="모양이 둥글고 붉으며 새콤하고 단맛이 나는 과일." />
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="빨간 사과." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="사과 껍질." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="사과를 따다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="사과를 먹다." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="apple" />
+					<feat att="definition" val="A round-shaped sweet and sour fruit with red skin. " />
+				</Equivalent>
+			</Sense>
+		</LexicalEntry>
+		<LexicalEntry att="id" val="15830">
+			<feat att="homonym_number" val="2" />
+			<feat att="lexicalUnit" val="단어" />
+			<feat att="partOfSpeech" val="명사" />
+			<Lemma>
+				<feat att="writtenForm" val="사과" />
+			</Lemma>
+			<feat att="origin" val="謝過" />
+			<WordForm>
+				<feat att="type" val="발음" />
+				<feat att="pronunciation" val="사ː과" />
+			</WordForm>
+			<RelatedForm>
+				<feat att="type" val="파생어" />
+				<feat att="id" val="62377" />
+				<feat att="writtenForm" val="사과하다" />
+			</RelatedForm>
+			<feat att="vocabularyLevel" val="중급" />
+			<feat att="semanticCategory" val="사회 생활 > 언어 행위" />
+			<feat att="subjectCategiory" val="인간관계" />
+			<Sense att="id" val="1">
+				<feat att="definition" val="자신의 잘못을 인정하며 용서해 달라고 빎." />
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="진심어린 사과." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="사과가 늦다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="사과를 드리다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="사과를 받다." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="apology" />
+					<feat att="definition" val="An act of admitting one's own mistakes and begging for forgiveness. " />
+				</Equivalent>
+			</Sense>
+		</LexicalEntry>
+		<LexicalEntry att="id" val="62888">
+			<feat att="homonym_number" val="2" />
+			<feat att="lexicalUnit" val="단어" />
+			<feat att="partOfSpeech" val="보조 동사" />
+			<Lemma>
+				<feat att="writtenForm" val="하다" />
+			</Lemma>
+			<WordForm>
+				<feat att="type" val="발음" />
+				<feat att="pronunciation" val="하다" />
+			</WordForm>
+			<WordForm>
+				<feat att="type" val="활용" />
+				<feat att="writtenForm" val="하는" />
+				<feat att="pronunciation" val="하는" />
+			</WordForm>
+			<WordForm>
+				<feat att="type" val="활용" />
+				<feat att="writtenForm" val="하여" />
+				<feat att="pronunciation" val="하여" />
+				<FormRepresentation>
+					<feat att="type" val="준말" />
+					<feat att="writtenForm" val="해" />
+					<feat att="pronunciation" val="해ː" />
+				</FormRepresentation>
+			</WordForm>
+			<WordForm>
+				<feat att="type" val="활용" />
+				<feat att="writtenForm" val="하니" />
+				<feat att="pronunciation" val="하니" />
+			</WordForm>
+			<WordForm>
+				<feat att="type" val="활용" />
+				<feat att="writtenForm" val="합니다" />
+				<feat att="pronunciation" val="함니다" />
+			</WordForm>
+			<feat att="vocabularyLevel" val="중급" />
+			<Sense att="id" val="1">
+				<feat att="annotation" val="동사나 형용사 뒤에서 '-게 하다'로 쓴다." />
+				<feat att="definition" val="앞말의 행동을 시키거나 앞말이 뜻하는 상태가 되도록 함을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="나는 동생에게 공부를 하게 했다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="이 약은 아픈 머리를 낫게 합니다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="슬픈 노래가 나의 마음을 아프게 한다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="여자 친구를 기쁘게 하려면 어떻게 할까?" />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that someone or something makes another do an action in the preceding word or falls into the state mentioned in the preceding word." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="7">
+				<feat att="annotation" val="동사나 형용사, '이다' 뒤에서 주로 '-었으면 하다'로 쓴다." />
+				<feat att="definition" val="앞말의 행동을 하거나 앞말의 상태가 되기를 바란다는 뜻을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="나는 내가 좀 더 멋졌으면 한다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="네가 꼭 시험에 합격했으면 해." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="결혼식에 사람이 많이 왔으면 해요." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="대화" />
+					<feat att="example" val="미안해. 이제 좀 나를 용서해 줬으면 해." />
+					<feat att="example" val="그래, 알았어." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate one's hope that another person will do an action or fall into the state in the preceding word." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="3">
+				<feat att="annotation" val="동사나 형용사 뒤에서 '-어야 하다'로 쓴다." />
+				<feat att="definition" val="어떤 행동이 필요하거나 그렇게 되기를 바란다는 뜻을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="방은 항상 깨끗해야 한다. " />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="먹고 살려면 일을 해야 한단다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="꼭 건강하고 행복하게 살아야 한다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="지각하지 않지 않으려면 일찍 일어나야 할 것이다." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that one thinks a certain action should be taken or hopes that it will happen in such a way." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="2">
+				<feat att="annotation" val="동사 뒤에서 '-려(고) 하다', '-고자 하다'로 쓴다." />
+				<feat att="definition" val="앞말의 행동을 시도하거나 의도함을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="우리 가족은 주말에 소풍을 가려고 한다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="여름에는 바다에 가고자 하는 사람들이 많다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="나는 지각하지 않으려 했지만 버스를 놓쳤다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="대화" />
+					<feat att="example" val="너 오늘도 늦게 일어났지?" />
+					<feat att="example" val="죄송합니다. 오늘은 정말 일찍 일어나려고 했어요." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that one is attempting or intends to do an action in the preceding statement." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="4">
+				<feat att="annotation" val="동사 뒤에서 '-어야 하다'로 쓴다." />
+				<feat att="definition" val="앞말의 행동을 할 수밖에 없다는 것을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="학교를 가려면 한 시간을 걸어야 했다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="몸이 아파서 나는 집에서 쉬어야 했지." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="대화" />
+					<feat att="example" val="너 치사하게 먼저 집에 갔지?" />
+					<feat att="example" val="미안해, 그때는 부모님이 빨리 오라고 해서 집에 가야 했어." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that one has no choice but to do an action in the preceding statement." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="6">
+				<feat att="annotation" val="동사 뒤에서 '-기도 하다'로 쓴다." />
+				<feat att="definition" val="앞말의 행동을 하는 일도 있다는 것을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="주말이면 우리는 산책을 가기도 해." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="힘든 일이 있으면 울기도 할 수 있는 거야." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="나는 가끔 친구에게 편지를 쓰기도 합니다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="대화" />
+					<feat att="example" val="넌 맨날 놀기만 하니?" />
+					<feat att="example" val="아냐. 공부도 하기도 해." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that one also does an action in the preceding word." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="8">
+				<feat att="annotation" val="동사나 '이다' 뒤에서 '-고 하다'로 쓴다." />
+				<feat att="definition" val="앞말의 사실이 뒷말의 이유나 근거가 됨을 나타내는 말. " />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="비도 오고 해서 집에 일찍 들어왔다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="이제 에어컨도 틀었고 하니 금방 시원해질 거야." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="비록 전공은 아니지만 관련 서적도 많이 읽고 하여 어느 정도 지식은 가지고 있다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="대화" />
+					<feat att="example" val="어젯밤에 늦게 잤어?" />
+					<feat att="example" val="잠도 안 오고 해서 책을 읽었어." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that the fact mentioned in the preceding statement is the reason or basis for the following statement." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="5">
+				<feat att="annotation" val="동사 뒤에서 '-고는 하다', '-곤 하다'로 쓴다." />
+				<feat att="definition" val="어떤 동작이 반복되거나 자주 나타남을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="이 지역은 자주 홍수가 나고는 한다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="나는 밀린 일이 있으면 밤을 새우곤 해." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="동생은 즐거운 일이 있을 때면 노래를 부르고는 했었다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="대화" />
+					<feat att="example" val="넌 심심할 때 뭐 하니?" />
+					<feat att="example" val="응, 극장에 가곤 해." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that a certain action is repeated or happens often." />
+				</Equivalent>
+			</Sense>
+			<Sense att="id" val="9">
+				<feat att="annotation" val="형용사 뒤에서 '-어하다'로 쓴다." />
+				<feat att="definition" val="앞말이 뜻하는 대상에 어떤 느낌을 가진다는 것을 나타내는 말." />
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="할아버지는 손주를 예뻐한다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="여자 친구와 헤어진 후로 형은 너무나 외로워했다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="문장" />
+					<feat att="example" val="선생님은 학생들이 너무 지겨워해서 수업 방식을 바꿔 보기로 하였다." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="대화" />
+					<feat att="example" val="그 선물을 주니 어땠어? " />
+					<feat att="example" val="아내가 아주 좋아했어." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="hada" />
+					<feat att="definition" val="An auxiliary verb used to indicate that one has a certain feeling toward the object mentioned in the preceding word." />
+				</Equivalent>
+			</Sense>
+		</LexicalEntry>
+		<LexicalEntry att="id" val="73276">
+			<feat att="homonym_number" val="0" />
+			<feat att="lexicalUnit" val="단어" />
+			<feat att="partOfSpeech" val="명사" />
+			<Lemma>
+				<feat att="writtenForm" val="학교" />
+			</Lemma>
+			<feat att="origin" val="學校" />
+			<WordForm>
+				<feat att="type" val="발음" />
+				<feat att="pronunciation" val="학꾜" />
+			</WordForm>
+			<feat att="vocabularyLevel" val="초급" />
+			<feat att="semanticCategory" val="교육 > 교육 기관" />
+			<feat att="subjectCategiory" val="학교생활" />
+			<Sense att="id" val="1">
+				<feat att="definition" val="일정한 목적, 교과 과정, 제도 등에 따라 학생을 교육하는 기관." />
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="학교 앞." />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="학교 운동장. " />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="학교 주변. " />
+				</SenseExample>
+				<SenseExample>
+					<feat att="type" val="구" />
+					<feat att="example" val="학교를 설립하다." />
+				</SenseExample>
+				<Equivalent>
+					<feat att="language" val="영어" />
+					<feat att="lemma" val="school" />
+					<feat att="definition" val="An institution that educates students according to a specific purpose, curriculum, system, etc." />
+				</Equivalent>
+			</Sense>
+		</LexicalEntry>
+	</Lexicon>
+</LexicalResource>
