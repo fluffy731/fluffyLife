@@ -211,7 +211,10 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .opt > .lab .tag { color: var(--muted); font-weight: 600; letter-spacing: 0; }
 input:not([type]), textarea { width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--raised); font-size: 16px; }
 textarea { resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
-.need > input, .lrow.need input:placeholder-shown { border-color: color-mix(in srgb, var(--tbc) 80%, var(--line)); }
+/* TBC fields: bigger type and boxes that grow to fit the text */
+.field textarea.fta { display: block; min-height: 58px; padding: 13px 14px; border-radius: 12px; font-family: inherit; font-size: 18px; line-height: 1.45; resize: none; overflow: hidden; }
+.lrow input { min-height: 52px; font-size: 17px; }
+.need > input, .need > textarea, .lrow.need input:placeholder-shown { border-color: color-mix(in srgb, var(--tbc) 80%, var(--line)); }
 .lform { padding: 8px 0 4px; }
 .lform > .lab { margin-bottom: 6px; }
 .lrow { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 6px; align-items: center; margin-bottom: 6px; padding-left: 2px; border-radius: 8px; }

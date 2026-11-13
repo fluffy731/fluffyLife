@@ -151,7 +151,7 @@ function fieldHTML(k) {
   const m = META[k];
   return `<label class="field" data-key="${k}" for="f-${k}">
     <span class="lab"><span class="zh">${esc(m.zh)}</span><span class="en">${esc(m.en)}</span><span class="tag"></span></span>
-    <input id="f-${k}" data-f="${k}" value="${esc(raw(k))}" placeholder="${esc(m.ex || "")}" autocomplete="off" autocapitalize="words" enterkeyhint="next">
+    <textarea id="f-${k}" class="fta" rows="${Math.max(1, Math.ceil(String(raw(k)).length / 30))}" data-f="${k}" placeholder="${esc(m.ex || "")}" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">${esc(raw(k))}</textarea>
   </label>`;
 }
 function listFormHTML(name) {
@@ -165,8 +165,12 @@ function buildForm() {
   $("#groups").innerHTML = GROUPS.map(([g, zh, en]) => `<section class="grp" data-group="${g}"><h3>${esc(zh)}${zh !== en ? ` <span>${esc(en)}</span>` : ""}</h3>` +
     FIELDS.filter((f) => f[3] === g).map((f) => fieldHTML(f[0])).join("") +
     Object.entries(LISTS).filter(([, L]) => L.group === g).map(([n]) => listFormHTML(n)).join("") + `</section>`).join("");
-  paintForm();
+  paintForm(); growAll();
 }
+// The TBC fields are auto-growing boxes, so a long bio is all visible and easy to edit. Hidden panels cannot be measured, so show() grows them again.
+const grow = (el) => { if (!el.offsetParent) return; el.style.height = "auto"; if (el.scrollHeight) el.style.height = `${el.scrollHeight + 2}px`; };
+const growAll = () => $$(".field textarea.fta").forEach(grow);
+addEventListener("resize", growAll);
 function paintForm() {
   for (const el of $$(".field[data-key]")) {
     const k = el.dataset.key, m = META[k], v = val(k);
@@ -259,6 +263,7 @@ function show(tab) {
   for (const b of $$("#tabs button")) b.setAttribute("aria-current", String(b.dataset.tab === tab));
   for (const p of PANELS) $("#" + p).hidden = p !== tab;
   S.tab = tab; save(); paintPager();
+  if (tab === "tbc") growAll();
 }
 $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button[data-tab]"); if (b) { show(b.dataset.tab); scrollTo(0, 0); } });
 
@@ -406,9 +411,15 @@ document.addEventListener("change", (e) => {
   if (t.id === "onlyBlank") $("#tbc").classList.toggle("only-blank", t.checked);
 });
 let rt = 0;
+$("#groups").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.classList.contains("fta")) { e.preventDefault(); e.target.blur(); } });
 $("#groups").addEventListener("input", (e) => {
   const k = e.target.dataset.f;
   if (!k) return;
+  if (e.target.classList.contains("fta")) {
+    const v = e.target.value.replace(/\s*\n+\s*/g, " ");
+    if (v !== e.target.value) e.target.value = v;
+    grow(e.target);
+  }
   S.f[k] = e.target.value; save(); paintForm();
   clearTimeout(rt); rt = setTimeout(renderScript, 250);
 });
