@@ -128,6 +128,22 @@ test("index overlay: each index as % change from the range's first shared day, i
   assert.deepEqual(o.lines[1].pct.map((x) => +x.toFixed(4)), [0, -0.2, 0.2]);
   assert.equal(+o.lo.toFixed(4), -0.2);
   assert.equal(+o.hi.toFixed(4), 0.21);
-  assert.deepEqual(overlay([us], 2).d, ["D3", "D4"], "the range counts the first index's sessions");
   assert.equal(overlay([{ key: "US", d: ["D1"], p: [null] }], Infinity), null, "nothing to draw");
+});
+
+test("index overlay: a range of n sessions is n moves, so it ends on the same figure as the cards", () => {
+  const us = { key: "US", d: ["D1", "D2", "D3", "D4", "D5"], p: [100, 101, 102, 103, 110] };
+  const o = overlay([us], 2);
+  assert.deepEqual(o.d, ["D3", "D4", "D5"], "two moves need three closes");
+  assert.equal(o.lines[0].pct.at(-1), 110 / 102 - 1);
+});
+
+test("index overlay: a market that has closed a session the first has not reached yet still shows it", () => {
+  // Hong Kong closes hours before New York: for most of the day its newest session is a date New York lacks.
+  const us = { key: "US", d: ["D1", "D2", "D3"], p: [100, 110, 121] };
+  const hk = { key: "HK", d: ["D1", "D2", "D3", "D4"], p: [50, 55, 60, 66] };
+  const o = overlay([us, hk], 2);
+  assert.deepEqual(o.d, ["D1", "D2", "D3", "D4"]);
+  assert.deepEqual(o.lines[1].level, [50, 55, 60, 66], "Hong Kong's own newest close is on the chart");
+  assert.deepEqual(o.lines[0].level, [100, 110, 121, 121], "New York holds its last close until it trades");
 });

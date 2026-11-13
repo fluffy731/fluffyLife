@@ -30,7 +30,7 @@ const icon = (k) => `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[k]}</sv
 const CHEVRON = { "-1": '<path d="M14.5 5.5L8 12l6.5 6.5"/>', 1: '<path d="M9.5 5.5L16 12l-6.5 6.5"/>' };
 const CHIPS = [["all", "All"], ["US", "US"], ["HK", "Hong Kong"], ["UK", "UK"]];
 const SORTS = [["score", "Rating"], ["r1d", "Day's move"], ["r6m", "6-month return"], ["vol", "Smallest swings"], ["name", "Name"]];
-const RATING_FILTERS = [["all", "All ratings"], ["Buy", "Buy"], ["Overweight", "Overweight"], ["Hold", "Hold"], ["Underweight", "Underweight"], ["Sell", "Sell"]];
+const RATING_FILTERS = [["all", "All ratings"], ["Buy", "Buy"], ["Overweight", "Overweight"], ["Hold", "Hold"], ["Underweight", "Underweight"], ["Sell", "Sell"], [REVIEW, "Review"]];
 const BULLISH = new Set(["Buy", "Overweight"]), BEARISH = new Set(["Underweight", "Sell"]);
 const PERIOD_WORDS = Object.fromEntries(PERIODS.map(([p, , w]) => [p, w]));
 // The index chart's span for each period: a single day is shown in the week around it.
@@ -237,7 +237,8 @@ function practiceHTML() {
 function allocationHTML(v) {
   if (!(v.total > 0)) return "";
   const parts = [...v.rows.map((r) => [byT(r.t)?.n || r.t, r.value]), ["Cash", v.cash]].filter(([, x]) => x > 0).sort((a, b) => b[1] - a[1]);
-  const top = v.rows.reduce((a, r) => Math.max(a, r.value), 0) / v.total;
+  // An index fund is already spread across its market, so only single stocks count toward "bunched".
+  const top = v.rows.filter((r) => byT(r.t)?.kind !== "fund").reduce((a, r) => Math.max(a, r.value), 0) / v.total;
   return `<div class="card"><h2>Where the money is</h2>${parts.map(([n, x]) => `<div class="meter-row"><span>${esc(n)}</span><span class="num">${Math.round((x / v.total) * 100)}%</span></div>
       <div class="meter${n === "Cash" ? " cash" : ""}"><i style="width:${((x / v.total) * 100).toFixed(1)}%"></i></div>`).join("")}
     ${top > 0.4 ? `<p class="muted">Over 40% sits in one stock: a bad patch there would weigh on the whole portfolio. Spreading across several, or an index fund, softens that.</p>` : ""}</div>`;
@@ -414,20 +415,20 @@ function drawIndexChart() {
   const m = { lo: Math.min(...all), hi: Math.max(...all), p: o.d };
   const level = (x) => x.toLocaleString("en-AU", { maximumFractionDigits: 0 });
   const fmt = (lo, hi) => (single ? `${level(lo)} – ${level(hi)}` : `${signed(lo, 0)} – ${signed(hi, 0)}`);
-  const summary = (i) => o.lines.map((l) => `<span class="ro"><i class="key ln-${l.key}"></i>${single ? `<b class="num">${level(l.level[i])}</b> ` : `${name(l.key)} `}<span class="num ${tone(l.pct[i])}">${signed(l.pct[i], 1)}</span></span>`).join("");
+  const summary = (i) => o.lines.map((l) => `<span class="ro"><i class="key ln-${esc(l.key)}"></i>${single ? `<b class="num">${level(l.level[i])}</b> ` : `${name(l.key)} `}<span class="num ${tone(l.pct[i])}">${signed(l.pct[i], 1)}</span></span>`).join("");
   const zero = !single && m.lo < 0 && m.hi > 0 ? `<line class="zero" x1="0" x2="${W}" y1="${yOf(0, m).toFixed(1)}" y2="${yOf(0, m).toFixed(1)}"/>` : "";
   box.innerHTML = `<div class="readout" id="ix-readout">${summary(o.d.length - 1)} <span class="muted">· ${dayY(o.d[0])} to ${dayY(o.d.at(-1))}</span></div>
     <div class="plot"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" id="ix-svg" role="img" aria-label="Index chart, ${SPAN_WORDS[period]}">
-      ${zero}${single ? `<polygon class="area" fill="url(#fill-${o.lines[0].key})" points="${area(vals(o.lines[0]), m)}"/>` : ""}
-      ${o.lines.map((l) => `<polyline class="ln ln-${l.key}" points="${path(vals(l), m)}"/>`).join("")}
+      ${zero}${single ? `<polygon class="area" fill="url(#fill-${esc(o.lines[0].key)})" points="${area(vals(o.lines[0]), m)}"/>` : ""}
+      ${o.lines.map((l) => `<polyline class="ln ln-${esc(l.key)}" points="${path(vals(l), m)}"/>`).join("")}
       <line id="ix-cursor" class="cursor" x1="0" x2="0" y1="0" y2="${H}" visibility="hidden"/></svg>
-      ${o.lines.map((l) => `<i class="dot-mark ln-${l.key}" data-dot="${l.key}" hidden></i>`).join("")}</div>
+      ${o.lines.map((l) => `<i class="dot-mark ln-${esc(l.key)}" data-dot="${esc(l.key)}" hidden></i>`).join("")}</div>
     <div class="axis num"><span>${dayY(o.d[0])}</span><span>${fmt(m.lo, m.hi)}</span><span>${dayY(o.d.at(-1))}</span></div>`;
   $("#ix-legend").innerHTML = single ? `<span class="muted">${name(o.lines[0].key)}, index points. Tap the chart to read a day.</span>`
-    : `${o.lines.map((l) => `<span class="k ln-${l.key}">${name(l.key)}</span>`).join("")}<span class="muted">change from ${dayY(o.d[0])}, %</span>`;
+    : `${o.lines.map((l) => `<span class="k ln-${esc(l.key)}">${name(l.key)}</span>`).join("")}<span class="muted">change from ${dayY(o.d[0])}, %</span>`;
   scrub($("#ix-svg"), m, (i) => {
     $("#ix-readout").innerHTML = `${dayY(o.d[i])} · ${summary(i)}`;
-    o.lines.forEach((l) => placeDot(box.querySelector(`[data-dot="${l.key}"]`), i, vals(l)[i], m));
+    o.lines.forEach((l, k) => placeDot(box.querySelectorAll("[data-dot]")[k], i, vals(l)[i], m));
   }, "ix-cursor");
 }
 

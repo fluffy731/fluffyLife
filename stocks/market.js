@@ -85,23 +85,25 @@ export function groups(stocks, by, p, companies, markets) {
 export const shortSymbol = (t) => t.replace(/\.(HK|L)$/, "").replace(/^0+(?=\d)/, "");
 
 // ---------- the index chart ----------
-// Indices over the last `sessions` of the first one's dates, each as % change from the first day all of them
-// have a close, with its level kept for the readout. A market shut for the day carries its last close over.
+// Indices over the last `sessions` moves of the first one (so n sessions back, as the cards' returns count),
+// each as % change from the first day all of them have a close, with its level kept for the readout. The days
+// come from every index, so Hong Kong's newest close shows before New York has traded that date; a market shut
+// for the day carries its last close over.
 // series: [{ key, d: dates, p: closes (null where none) }], e.g. an index fund's history file's d and b.
 export function overlay(series, sessions) {
-  const [base, ...rest] = series;
-  const from = Math.max(0, base.d.length - (Number.isFinite(sessions) ? sessions : base.d.length));
-  const at = rest.map(() => ({ j: -1, last: null }));
+  const [base] = series;
+  const start = base.d[Number.isFinite(sessions) ? Math.max(0, base.d.length - 1 - sessions) : 0];
+  const axis = [...new Set(series.flatMap((s) => s.d.filter((x) => x >= start)))].sort();
+  const at = series.map(() => ({ j: -1, last: null }));
   const d = [], levels = series.map(() => []);
-  for (let i = from; i < base.d.length; i++) {
-    const vals = [base.p[i]];
-    rest.forEach((s, k) => {
+  for (const day of axis) {
+    const vals = series.map((s, k) => {
       const c = at[k];
-      while (c.j + 1 < s.d.length && s.d[c.j + 1] <= base.d[i]) { c.j++; if (s.p[c.j] != null) c.last = s.p[c.j]; }
-      vals.push(c.last);
+      while (c.j + 1 < s.d.length && s.d[c.j + 1] <= day) { c.j++; if (s.p[c.j] != null) c.last = s.p[c.j]; }
+      return c.last;
     });
     if (vals.some((v) => v == null)) continue;
-    d.push(base.d[i]);
+    d.push(day);
     vals.forEach((v, k) => levels[k].push(v));
   }
   if (!d.length) return null;
