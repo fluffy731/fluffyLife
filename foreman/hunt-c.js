@@ -208,21 +208,22 @@ export default {
         const pnl = box(ln, 0.008, 1.2, mat(0xe8e0cc, { roughness: 0.92, emissive: 0x5a5242 }), 5.666, 2.556, 4.0); pnl.rotation.z = 0.6; g.add(pnl);
         return g;
       } },
-    { id: '16-guard-lifted', phase: 3, title: 'Gutter guard lifted, leaves in the gutter', pos: [-5.9, 2.7, 6.7], r: 1.2,
+    { id: '16-guard-lifted', phase: 3, title: 'Gutter guard loose, leaves in the gutter', pos: [-5.92, 2.65, 6.8], r: 1.2,
       hint: 'Look along the gutters from the ground.',
-      explain: 'A length of gutter guard on the west side was never fixed down and has lifted, and leaves have collected in the gutter. Leaf litter in a gutter is fuel right at the roof edge.',
+      explain: 'A length of gutter guard on the west side was never fixed down and now hangs over the edge, and leaves have collected in the open gutter. Leaf litter in a gutter is fuel right at the roof edge.',
       fix: 'Clear the gutter and fix the metal guard along its full length, then show the owner how to keep it clear.',
       flag: 'T', src: '', hide: ['guards'],
       build(kit) {
-        // the Step 16 guards rebuilt, with the west length between z 6.0 and 7.4 lifted
+        // the Step 16 guards rebuilt, with the west length between z 6.0 and 7.6 come loose
         const { THREE, mat, box } = kit, g = new THREE.Group(), mesh = mat(0x2e3238, { metalness: 0.5, roughness: 0.5 });
-        const X = 5.8775, Y = 2.85 + (5.35 - 5.8) * Math.tan(Math.PI / 8) + 0.05 - 0.125 + 0.07, Z0 = -5.655, Z1 = 11.655, a = 0.9;
-        g.add(box(0.115, 0.004, Z1 - Z0, mesh, X, Y, (Z0 + Z1) / 2), box(0.115, 0.004, 6.0 - Z0, mesh, -X, Y, (Z0 + 6.0) / 2), box(0.115, 0.004, Z1 - 7.4, mesh, -X, Y, (7.4 + Z1) / 2));
-        const flap = box(0.115, 0.004, 1.4, mesh, -X - 0.0575 + 0.0575 * Math.cos(a), Y + 0.0575 * Math.sin(a), 6.7); flap.rotation.z = a; g.add(flap);
+        const X = 5.8775, Y = 2.85 + (5.35 - 5.8) * Math.tan(Math.PI / 8) + 0.05 - 0.125 + 0.07, Z0 = -5.655, Z1 = 11.655, b = 1.25;
+        g.add(box(0.115, 0.004, Z1 - Z0, mesh, X, Y, (Z0 + Z1) / 2), box(0.115, 0.004, 6.0 - Z0, mesh, -X, Y, (Z0 + 6.0) / 2), box(0.115, 0.004, Z1 - 7.6, mesh, -X, Y, (7.6 + Z1) / 2));
+        // the loose length hangs down over the outside of the gutter
+        const flap = box(0.115, 0.004, 1.6, mesh, -X - 0.0575 - 0.0575 * Math.cos(b) - 0.004, Y - 0.0575 * Math.sin(b), 6.8); flap.rotation.z = b; g.add(flap);
         const cols = [0x8a6a3a, 0x6e5a2e, 0xa07a3c, 0x5c4a2a].map((c) => mat(c, { roughness: 1 }));
         let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
-        for (let i = 0; i < 90; i++) {
-          const l = box(0.05 + rnd() * 0.04, 0.012, 0.03 + rnd() * 0.03, cols[i % 4], -X + (rnd() - 0.5) * 0.1, Y - 0.02 + rnd() * 0.07, 6.0 + rnd() * 1.4);
+        for (let i = 0; i < 160; i++) {
+          const l = box(0.05 + rnd() * 0.05, 0.014, 0.03 + rnd() * 0.04, cols[i % 4], -X + (rnd() - 0.5) * 0.13, Y - 0.02 + rnd() * 0.11, 6.0 + rnd() * 1.6);
           l.rotation.set(rnd() * 1.2 - 0.6, rnd() * 3, rnd() * 1.2 - 0.6); g.add(l);
         }
         return g;

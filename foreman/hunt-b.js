@@ -101,7 +101,7 @@ export default {
       build(kit) {
         return grp(kit, kit.pipe([[-3.3, 0.72, 1.225], [-3.3, 0.168, 1.225], [-3.3, 0.168, 4.7], [-2.6, 0.168, 5.4], [-2.6, 0.62, 5.4]], 0.014, kit.mat(0xd8383a, { roughness: 0.45 })));
       } },
-    { id: '8-pressure-high', phase: 5, title: 'Static pressure over the limit', pos: [-2.0, 0.92, 7.13], r: 0.7,
+    { id: '8-pressure-high', phase: 5, title: 'Static pressure over the limit', pos: [-2.0, 1.1, 7.13], r: 0.7,
       hint: 'Read the gauge on the water riser during the pressure test.',
       explain: 'The gauge above the pressure-limiting valve reads 720 kPa static. Static pressure at any outlet must be no more than 500 kPa, so the valve is faulty, set wrong or bypassed.',
       fix: 'Fit or reset the pressure-limiting valve so the static pressure is 500 kPa or less at every outlet, record the reading and tell the owner.',

@@ -277,7 +277,7 @@ export default {
   /* ---------- Stage 4: roof framing ---------- */
   4: [
     { id: '4-under-load', phase: 1, title: 'Worker standing under the suspended truss', pos: [1.5, 1.0, 10.75], r: 1.2,
-      hint: 'Look at who is near the load on the crane hook.',
+      hint: 'Watch the crew while a truss is on the hook.',
       explain: 'A worker is standing on the slab directly under the truss hanging from the crane. If a sling or the truss fails, the load falls on them.',
       fix: 'Keep everyone out of the area under and around the load, and steady the truss with tag lines from outside the drop zone.',
       flag: 'T', src: '',
