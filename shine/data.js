@@ -219,6 +219,7 @@ export const SEGMENTS = [
     ["zh", "{tianBioZh}"],
     ["en", "Please welcome our President, Salli Hon, and Vice President, {vp}!"],
     ["zh", "现在，有请她慧狮子会会长 Salli Hon 和副会长 {vp} 上台！"],
+    ["cue", "临场发挥：请其他会员坐下", "Ad-lib: ask the other members to sit down"],
     ["cue", "两人一起致辞，合共最多 10 分钟，一人普通话、一人英语；MC 不翻译。7:15 场地上前菜，节目照常进行，MC 不报", "They speak together for 10 minutes at most, one in Mandarin, one in English. No MC translation. The venue serves the entrée at 7:15 while the programme goes on; do not announce it"],
     ["cue", "她们念完最后一句「Let's start the party now」并敲钟时，带全场掌声，接下一环节", "When they say the last line, \"Let's start the party now\", and ring the bell, lead the applause and go straight into the next segment"],
   ] },
