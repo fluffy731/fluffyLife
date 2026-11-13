@@ -135,7 +135,7 @@ test("10 Nov updates: prices, Calico, District leaders, videos, Salli, Best Dres
   assert.match(seg("20:55"), /Best Dress/);
   assert.match(seg("21:05"), /November birthday/);
   assert.match(seg("21:05"), /十一月生日/);
-  assert.match(seg("20:35"), /A Million Dreams/);
+  assert.match(seg("20:35"), /\{tianEn\}/, "Tian's English song comes from the TBC field");
   // The two-man opener fills 6:50 to 7:00 and runs straight into the 7:00 opening. 12 Nov: it is Solomon's three-act banter.
   assert.equal(at("18:50").e, "19:00");
   assert.match(seg("18:50"), /leaves 6:50 to 7:00 blank/, "the run sheet leaves 6:50 to 7:00 blank and the cue says so");
@@ -198,10 +198,11 @@ test("10 Nov documents: defaults come from the sponsor slide, name pins and Oper
 test("11 Nov: Tian's introduction is filled in, in simplified Chinese and in English", () => {
   const TRAD = /[來華導獲賽區軍國聲亞擔視廣躍樂體領現儀]/;
   assert.doesNotMatch(DEFAULTS.tianBioZh, TRAD, "the Chinese introduction must use simplified characters");
-  assert.match(DEFAULTS.tianBioZh, /墨尔本[\s\S]*《中国好声音》澳洲赛区亚军[\s\S]*广州电视台春节晚会/);
+  // 13 Nov: Tian's own English bio (Tian Tsui), with the Chinese translated from it.
+  assert.match(DEFAULTS.tianBioZh, /Tian Tsui[\s\S]*墨尔本[\s\S]*2007[\s\S]*冠军[\s\S]*2015[\s\S]*《中国好声音》澳洲赛区亚军[\s\S]*2017[\s\S]*广州电视台春节晚会/);
   assert.doesNotMatch(DEFAULTS.tianBioEn, /[㐀-鿿]/, "the English introduction has no Chinese");
-  assert.match(DEFAULTS.tianBioEn, /Melbourne[\s\S]*runner-up[\s\S]*The Voice of China[\s\S]*Guangzhou TV Spring Festival Gala/);
-  assert.doesNotMatch(DEFAULTS.tianBioEn, /\b(she|her|he|his)\b/i, "the bio does not say which pronoun Tian uses");
+  assert.match(DEFAULTS.tianBioEn, /^Tian Tsui is a Melbourne-based multilingual singer and performer, crowned 2007 TVB Global Chinese New Talent Singing Awards Melbourne Champion and 2015 The Voice of China Australia Runner-Up\. She was also a guest performer at Guangzhou Television's 2017 Spring Festival Gala\./);
+  assert.match(DEFAULTS.tianBioEn, /English, Cantonese and Mandarin/);
   // Read right after the song, in the 7:06 segment: English line, then Chinese line.
   const items = SEGMENTS.find((s) => s.t === "19:06").items.filter((it) => /tianBio/.test(it[1]));
   assert.deepEqual(items.map((it) => [it[0], it[1]]), [["en", "{tianBioEn}"], ["zh", "{tianBioZh}"]]);
@@ -388,4 +389,25 @@ test("13 Nov: the seven names on the Melvin Jones medals are filled in, in list 
   assert.match(spoken, /共 7 位得奖者/);
   assert.doesNotMatch(spoken, /\bsix\b|共 6 位/, "the spoken count matches the seven names");
   assert.match(JSON.stringify(NOTES.check), /Felica.*Felicia Seah/, "the open question flags the Felica spelling");
+});
+
+test("13 Nov: Eric's introduction and both songs are filled in, and Tian's English song comes from a field", () => {
+  const TRAD = /[來華導獲賽區軍國聲亞擔視廣躍樂體領現儀謝錄製評憶廳館會]/;
+  for (const k of ["ericBioZh", "eric1", "eric2"]) assert.doesNotMatch(DEFAULTS[k], TRAD, `${k} must use simplified characters`);
+  assert.match(DEFAULTS.ericBioZh, /谢昉益[\s\S]*8PM[\s\S]*TVB[\s\S]*广州广播电视台[\s\S]*评委[\s\S]*《星梦传奇》《中国好声音》/);
+  assert.doesNotMatch(DEFAULTS.ericBioEn, /[㐀-鿿]/, "the English introduction has no Chinese");
+  assert.match(DEFAULTS.ericBioEn, /Eric Tse[\s\S]*lead vocalist of the band 8PM[\s\S]*TVB[\s\S]*judged[\s\S]*The Voice of China Australia/);
+  assert.equal(DEFAULTS.eric1, "爱在记忆中找你");
+  assert.equal(DEFAULTS.eric2, "大会堂演奏厅");
+  assert.equal(DEFAULTS.tianEn, "I Have Nothing");
+  // The introduction is read before the song at 8:00, English line first.
+  const seg = SEGMENTS.find((s) => s.t === "20:00");
+  const spoken = seg.items.filter((it) => ["en", "zh"].includes(it[0])).map((it) => [it[0], it[1]]);
+  assert.deepEqual(spoken.slice(0, 2), [["en", "{ericBioEn}"], ["zh", "{ericBioZh}"]]);
+  assert.match(spoken[2][1], /\{eric1\}/);
+  assert.match(JSON.stringify(SEGMENTS.find((s) => s.t === "20:50").items), /\{eric2\}/);
+  // The old placeholder song is gone, and the two open questions are on the Notes tab.
+  assert.doesNotMatch(JSON.stringify(SEGMENTS), /A Million Dreams/);
+  assert.match(JSON.stringify(NOTES.check), /I Have Nothing[\s\S]*It's All Coming Back To Me Now/);
+  assert.doesNotMatch(JSON.stringify(NOTES.check), /Still missing: Eric's two songs|official English name of the Global Chinese/);
 });
