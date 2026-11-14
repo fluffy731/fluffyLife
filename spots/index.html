@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Spots</title>
+<!-- Unlisted: personal app, kept out of search engines and off the home page. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f4f1fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141418" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Spots">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="../icons/spots-180.png">
+<link rel="icon" href="../icons/spots.svg" type="image/svg+xml">
+<link rel="stylesheet" href="./spots.css">
+</head>
+<body>
+<header class="mast">
+  <div class="brand"><span class="mark" aria-hidden="true"></span><h1>Spots</h1></div>
+  <p class="clock" id="clock"></p>
+</header>
+
+<main class="main">
+  <section class="view" id="v-explore" aria-label="Explore"></section>
+  <section class="view" id="v-saved" aria-label="Saved" hidden></section>
+  <section class="view" id="v-passport" aria-label="Passport" hidden></section>
+  <section class="view" id="v-settings" aria-label="Settings" hidden></section>
+</main>
+
+<nav class="tabbar" aria-label="Sections">
+  <button type="button" class="tab" data-tab="explore" aria-current="page"><span class="ic" aria-hidden="true">✦</span>Explore</button>
+  <button type="button" class="tab" data-tab="saved"><span class="ic" aria-hidden="true">♥</span>Saved</button>
+  <button type="button" class="fab" id="fab" aria-label="Check in"><span>Check<br>in</span></button>
+  <button type="button" class="tab" data-tab="passport"><span class="ic" aria-hidden="true">◎</span>Passport</button>
+  <button type="button" class="tab" data-tab="settings" id="settings-btn"><span class="ic" aria-hidden="true">⚙</span>Settings</button>
+</nav>
+
+<dialog id="sheet" class="sheet" aria-label="Details"></dialog>
+<div class="slam" id="slam" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module" src="./spots.js"></script>
+</body>
+</html>
