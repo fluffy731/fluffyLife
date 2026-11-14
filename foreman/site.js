@@ -63,29 +63,60 @@ function neighbourHouse(kit, w, d, x, z, style) {
   return g;
 }
 
-// Canopy blob: jittered icosphere with a dark-to-light vertex gradient, so trees read as foliage and not as balls.
-function canopy(kit, r, seed) {
-  const { THREE } = kit, geo = new THREE.IcosahedronGeometry(r, 2), p = geo.attributes.position, col = [];
-  const lo = new THREE.Color(0x335c33), hi = new THREE.Color(0x7aa84f), c = new THREE.Color();
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i), y = p.getY(i), z = p.getZ(i), k = 1 + (hash(x, y, z, seed) - 0.5) * 0.3;
-    p.setXYZ(i, x * k, y * k * 0.92, z * k);
-    c.copy(lo).lerp(hi, Math.min(1, Math.max(0, (y / r + 1) / 2 + (hash(z, x, y, seed + 3) - 0.5) * 0.25)));
-    col.push(c.r, c.g, c.b);
+// Leaf card texture: narrow eucalypt-style leaves on a twig, on a transparent card. Drawn once and shared.
+let LEAF = null;
+function leafTex(THREE) {
+  if (LEAF) return LEAF;
+  const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  let a = 7; const r = () => { a = (a * 16807) % 2147483647; return a / 2147483647; };
+  x.strokeStyle = '#5a4630'; x.lineWidth = 2; x.beginPath(); x.moveTo(128, 250); x.quadraticCurveTo(120, 140, 132, 20); x.stroke();
+  for (let i = 0; i < 70; i++) {
+    const t = r(), px = 128 + (r() - 0.5) * 200 * (1 - Math.abs(t - 0.5)), py = 20 + t * 220, ang = (r() - 0.5) * 2.2, L = 26 + r() * 22;
+    x.save(); x.translate(px, py); x.rotate(ang);
+    x.fillStyle = ['#4d6b3a', '#5f7d45', '#6f8c4f', '#3f5a31', '#7d9858', '#58733f'][Math.floor(r() * 6)];
+    x.beginPath(); x.ellipse(0, 0, L / 2, L / 9, 0, 0, 6.2832); x.fill(); x.restore();
   }
-  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); geo.computeVertexNormals();
-  return geo;
+  LEAF = new THREE.CanvasTexture(c); LEAF.colorSpace = THREE.SRGBColorSpace; LEAF.anisotropy = 4;
+  return LEAF;
 }
 
+// Foliage cluster: leaf cards scattered through an ellipsoid. Normals point out from the cluster centre, so the
+// whole crown shades as one soft volume (light on top and sunny side, dark underneath) instead of as flat cards.
+function foliage(kit, cx, cy, cz, r, seed, n) {
+  const { THREE } = kit, pos = [], nor = [], uv = [], col = [], idx = [];
+  let a = (seed * 9301 + 49297) % 2147483647 || 1; const rnd = () => { a = (a * 16807) % 2147483647; return a / 2147483647; };
+  const v = new THREE.Vector3(), q = new THREE.Quaternion(), e = new THREE.Euler(), lo = new THREE.Color(0x3a5230), hi = new THREE.Color(0x9fb878), cc = new THREE.Color();
+  const corners = [[-0.5, -0.5], [0.5, -0.5], [0.5, 0.5], [-0.5, 0.5]];
+  for (let i = 0; i < n; i++) {
+    const u = rnd() * 2 - 1, th = rnd() * 6.2832, rr = r * Math.cbrt(0.35 + 0.65 * rnd()), sq = Math.sqrt(1 - u * u);
+    const px = cx + rr * sq * Math.cos(th), py = cy + rr * u * 0.8, pz = cz + rr * sq * Math.sin(th), sz = (0.7 + rnd() * 0.6) * Math.min(1, 0.45 + r * 0.4);
+    e.set(rnd() * 6.28, rnd() * 6.28, rnd() * 6.28); q.setFromEuler(e);
+    cc.copy(lo).lerp(hi, Math.min(1, Math.max(0, (py - cy) / r * 0.5 + 0.5 + (rr / r - 0.6) * 0.6 + (rnd() - 0.5) * 0.25)));
+    const base = pos.length / 3;
+    for (const [qx, qy] of corners) {
+      v.set(qx * sz, qy * sz, 0).applyQuaternion(q); pos.push(px + v.x, py + v.y, pz + v.z);
+      const nx = px + v.x - cx, ny = py + v.y - cy + r * 0.3, nz = pz + v.z - cz, l = Math.hypot(nx, ny, nz) || 1;
+      nor.push(nx / l, ny / l, nz / l); uv.push(qx + 0.5, qy + 0.5); col.push(cc.r, cc.g, cc.b);
+    }
+    idx.push(base, base + 1, base + 2, base, base + 2, base + 3);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx);
+  const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ map: leafTex(THREE), vertexColors: true, alphaTest: 0.45, side: THREE.DoubleSide, roughness: 0.85 }));
+  m.castShadow = true; m.receiveShadow = true; m.userData.noClip = true;
+  return m;
+}
+
+// A street tree: tapered trunk, limbs into each crown cluster, and leaf-card foliage.
 export function tree(kit, x, z, s = 1, seed = 1) {
-  const { THREE, C, mat, cyl } = kit;
-  const g = new THREE.Group();
-  g.add(cyl(0.2 * s, 2.4 * s, mat(C.trunk, { roughness: 1 }), x, 1.2 * s, z, 8, false, 0.12 * s));
-  const leaf = mat(0xffffff, { vertexColors: true, roughness: 1 });
-  [[0, 3.3, 0, 1.55], [0.85, 2.8, 0.4, 1.05], [-0.8, 2.9, -0.35, 1.15], [0.2, 3.9, -0.3, 0.9]].forEach(([dx, dy, dz, r], i) => {
-    const m = new THREE.Mesh(canopy(kit, r * s, seed * 7 + i), leaf);
-    m.position.set(x + dx * s, dy * s, z + dz * s); m.castShadow = true; m.receiveShadow = true;
-    g.add(m);
+  const { THREE, mat, rod } = kit;
+  const g = new THREE.Group(), bark = mat(0x8a7a66, { roughness: 1 });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.11 * s, 0.22 * s, 2.6 * s, 14), bark);
+  trunk.position.set(x, 1.3 * s, z); trunk.castShadow = true; trunk.receiveShadow = true; g.add(trunk);
+  [[0, 3.6, 0, 1.5], [0.95, 3.1, 0.4, 1.05], [-0.9, 3.2, -0.35, 1.15], [0.2, 4.4, -0.3, 1.0], [-0.3, 3.4, 0.8, 0.95]].forEach(([dx, dy, dz, r], i) => {
+    g.add(rod([x, 2.3 * s, z], [x + dx * s * 0.8, dy * s * 0.92, z + dz * s * 0.8], 0.06 * s, bark));
+    g.add(foliage(kit, x + dx * s, dy * s, z + dz * s, r * s, seed * 7 + i, Math.max(24, Math.round(170 * r * Math.min(1, s * 1.2)))));
   });
   return g;
 }
@@ -109,16 +140,16 @@ function powerLines(kit) {
 export function buildBase(kit, { pit = null } = {}) {
   const { THREE, C, mat, box, flat, rectWithHoles } = kit;
   const g = new THREE.Group();
-  g.name = 'base';
+  g.name = 'base'; g.userData.noClip = true;   // the section cut never slices the ground, street or neighbours
   const holes = pit ? [pit] : [];
-  g.add(rectWithHoles(-120, 120, -120, 120, holes, mat(0xffffff, { tex: 'grass' })));
-  g.add(rectWithHoles(BLOCK.x0, BLOCK.x1, BLOCK.z0, BLOCK.z1, holes, mat(0xe4f2d8, { tex: 'grass' }), 0.004));
-  g.add(flat(240, 7.5, mat(0xffffff, { tex: 'asphalt' }), 0, 0.004, 24.25));
-  g.add(box(240, 0.14, 0.22, mat(0xd2d4d6, { tex: 'concrete' }), 0, 0.07, 20.5));
-  g.add(flat(240, 2.35, mat(0xffffff, { tex: 'paving' }), 0, 0.003, 19.325));
+  g.add(rectWithHoles(-300, 300, -300, 300, holes, mat(0xf2f4ee, { tex: 'grass', macro: 0.28 })));   // runs out past the distant treeline ring (r = 190 m)
+  g.add(rectWithHoles(BLOCK.x0, BLOCK.x1, BLOCK.z0, BLOCK.z1, holes, mat(0xdce8cf, { tex: 'grass', macro: 0.18 }), 0.004));
+  g.add(flat(380, 7.5, mat(0xffffff, { tex: 'asphalt', macro: 0.12 }), 0, 0.004, 24.25));
+  g.add(box(380, 0.14, 0.22, mat(0xd2d4d6, { tex: 'concrete' }), 0, 0.07, 20.5));
+  g.add(flat(380, 2.35, mat(0xffffff, { tex: 'paving' }), 0, 0.003, 19.325));
   const paint = mat(0xefefe8, { roughness: 0.7 });
-  for (let x = -60; x <= 60; x += 6) g.add(flat(2.4, 0.15, paint, x, 0.006, 24.25));
-  g.add(flat(240, 0.12, paint, 0, 0.006, 21.1), flat(240, 0.12, paint, 0, 0.006, 27.4));
+  for (let x = -186; x <= 186; x += 6) g.add(flat(2.4, 0.15, paint, x, 0.006, 24.25));
+  g.add(flat(380, 0.12, paint, 0, 0.006, 21.1), flat(380, 0.12, paint, 0, 0.006, 27.4));
   const bm = mat(0xffffff);
   for (const [w, d, x, z] of [[15, 0.06, 0, BLOCK.z1], [15, 0.06, 0, BLOCK.z0], [0.06, 35, BLOCK.x0, 0], [0.06, 35, BLOCK.x1, 0]]) g.add(flat(w || 0.06, d, bm, x, 0.02, z));
   g.add(neighbourHouse(kit, 9.5, 12.5, -14.2, 7, 'brick'));
@@ -159,16 +190,7 @@ export function buildSiteWorks(kit) {
   }
 
   entry.add(box(3.2, 0.18, 6, mat(0xb3b2ad, { tex: 'concrete', bump: 1.6 }), 4.5, 0.09, 14.4));
-  const rock = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.1, 0), mat(0x85857f, { flatShading: true }), 220);
-  const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), s = new THREE.Vector3(), t = new THREE.Vector3();
-  for (let i = 0; i < 220; i++) {
-    e.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
-    q.setFromEuler(e); s.setScalar(0.7 + Math.random() * 0.9);
-    t.set(4.5 + (Math.random() - 0.5) * 3.0, 0.2, 14.4 + (Math.random() - 0.5) * 5.8);
-    rock.setMatrixAt(i, m4.compose(t, q, s));
-  }
-  rock.castShadow = true;
-  entry.add(rock);
+  entry.add(kit.stones(2600, { x0: 3.0, x1: 6.0, z0: 11.5, z1: 17.3, y: 0.18, size: 0.045, seed: 7 }));
 
   amenities.add(box(1, 2.2, 1, mat(0x3a7bd5), -5.4, 1.1, 14.6));
   amenities.add(box(0.5, 1.6, 0.04, mat(0x2a5ea8), -5.4, 1.0, 15.12));

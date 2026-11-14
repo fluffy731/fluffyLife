@@ -207,7 +207,7 @@ Five tabs:
 
 # Foreman (`/foreman/`, unlisted)
 
-A walkable 3D study aid for the Victorian domestic builder (unlimited) exam: 18 stages from permits to handover, each with a 3D walk, zoomable labelled detail models, drawings, steps, trades, materials, quotes, inspections and exam cards. Left off the home page, and its pages ask search engines not to index them. Unlisted is not private: the address still opens for anyone who has it. Every fact carries a Verified, Typical or Confirm flag with its source. The repo is public, so no course or quiz text is stored here. Details are in `foreman/README.md`; the engine is in `foreman/engine.js` and each stage is a `foreman/step-NN.js` file with its drawings and cards in `foreman/step-NN-study.js`.
+A walkable 3D study aid for the Victorian domestic builder (unlimited) exam: 18 stages from permits to handover, each with a 3D walk, zoomable labelled detail models, a section cut, a find-the-defects mode, a photo render, hatched drawings, official and manufacturer reference links, real-site photos from Wikimedia Commons, steps, trades, materials, quotes, inspections and exam cards. Left off the home page, and its pages ask search engines not to index them. Unlisted is not private: the address still opens for anyone who has it. Every fact carries a Verified, Typical or Confirm flag with its source. The repo is public, so no course or quiz text is stored here. Details are in `foreman/README.md`; the engine is in `foreman/engine.js` and each stage is a `foreman/step-NN.js` file with its drawings and cards in `foreman/step-NN-study.js`.
 
 # MC script (`/mc/`)
 

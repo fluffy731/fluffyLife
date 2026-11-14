@@ -10,14 +10,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
 <script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/" } }
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js", "three/webgpu": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.webgpu.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/", "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/", "three-mesh-bvh": "https://cdn.jsdelivr.net/npm/three-mesh-bvh@0.9.18/build/index.module.js", "three-gpu-pathtracer": "https://cdn.jsdelivr.net/npm/three-gpu-pathtracer@0.0.28/build/index.module.js" } }
 </script>
 <style>
 :root {
   --bg:#ffffff; --surface:#f3f6fa; --card:#ffffff; --ink:#14233a; --muted:#54657c; --line:#d9e1eb; --navy:#16325c; --steel:#4a6a8f;
   --accent:#d9480f; --accent-soft:#fff0e6; --bub:#16325c; --shadow:0 1px 2px rgba(20,35,58,.06), 0 6px 18px rgba(20,35,58,.06);
   --fv:#16683e; --fv-bg:#e4f4eb; --ft:#7a4f00; --ft-bg:#fff2d2; --fc:#a8231b; --fc-bg:#fde6e3;
-  --d-bg:#fbfcfe; --d-line:#2a3a52; --d-conc:#cfd3d8; --d-soil:#d2b48c; --d-sand:#efdca8; --d-steel:#3a4656; --d-dim:#6b7a90; --d-beam:#8b97a6; --d-slabfill:#e7ebf0; --d-timber:#e3bf86; --d-ply:#d9b27a; --d-brick:#c9705a; --d-board:#eceff2; --d-wrap:#8fb7d9;
+  --d-bg:#fbfcfe; --d-line:#2a3a52; --d-conc:#cfd3d8; --d-soil:#d2b48c; --d-sand:#efdca8; --d-steel:#3a4656; --d-dim:#6b7a90; --d-beam:#8b97a6; --d-slabfill:#e7ebf0; --d-timber:#e3bf86; --d-ply:#d9b27a; --d-brick:#c9705a; --d-board:#eceff2; --d-wrap:#8fb7d9; --d-hatch:rgba(31,43,58,.5);
   --d-lot:#eaf2e2; --d-road:#d9dde3; --d-house:#cfe0f5; --d-memb:#f28c28; --d-box:#f3f6fa;
 }
 @media (prefers-color-scheme: dark) {
@@ -25,7 +25,7 @@
     --bg:#0d1520; --surface:#131f2e; --card:#172435; --ink:#e7eef7; --muted:#9db0c7; --line:#27384e; --navy:#b9cdee; --steel:#8aa6c6;
     --accent:#ff8a3d; --accent-soft:#2b1d12; --bub:#2f5ea8; --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.35);
     --fv:#6fd39b; --fv-bg:#12301f; --ft:#f0c25a; --ft-bg:#33270a; --fc:#ff9a92; --fc-bg:#3a1613;
-    --d-bg:#101a27; --d-line:#b9c7da; --d-conc:#4b5666; --d-soil:#6b5640; --d-sand:#8a7a4e; --d-steel:#aab6c6; --d-dim:#8fa0b6; --d-beam:#6c7a8c; --d-slabfill:#223145; --d-timber:#8c6a3c; --d-ply:#7d6038; --d-brick:#8d4a3b; --d-board:#3a4656; --d-wrap:#4a6f8f;
+    --d-bg:#101a27; --d-line:#b9c7da; --d-conc:#4b5666; --d-soil:#6b5640; --d-sand:#8a7a4e; --d-steel:#aab6c6; --d-dim:#8fa0b6; --d-beam:#6c7a8c; --d-slabfill:#223145; --d-timber:#8c6a3c; --d-ply:#7d6038; --d-brick:#8d4a3b; --d-board:#3a4656; --d-wrap:#4a6f8f; --d-hatch:rgba(225,232,242,.42);
     --d-lot:#1f3527; --d-road:#2b3442; --d-house:#2d4a70; --d-box:#172435;
   }
 }
@@ -33,7 +33,7 @@
   --bg:#0d1520; --surface:#131f2e; --card:#172435; --ink:#e7eef7; --muted:#9db0c7; --line:#27384e; --navy:#b9cdee; --steel:#8aa6c6;
   --accent:#ff8a3d; --accent-soft:#2b1d12; --bub:#2f5ea8; --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 22px rgba(0,0,0,.35);
   --fv:#6fd39b; --fv-bg:#12301f; --ft:#f0c25a; --ft-bg:#33270a; --fc:#ff9a92; --fc-bg:#3a1613;
-  --d-bg:#101a27; --d-line:#b9c7da; --d-conc:#4b5666; --d-soil:#6b5640; --d-sand:#8a7a4e; --d-steel:#aab6c6; --d-dim:#8fa0b6; --d-beam:#6c7a8c; --d-slabfill:#223145; --d-timber:#8c6a3c; --d-ply:#7d6038; --d-brick:#8d4a3b; --d-board:#3a4656; --d-wrap:#4a6f8f;
+  --d-bg:#101a27; --d-line:#b9c7da; --d-conc:#4b5666; --d-soil:#6b5640; --d-sand:#8a7a4e; --d-steel:#aab6c6; --d-dim:#8fa0b6; --d-beam:#6c7a8c; --d-slabfill:#223145; --d-timber:#8c6a3c; --d-ply:#7d6038; --d-brick:#8d4a3b; --d-board:#3a4656; --d-wrap:#4a6f8f; --d-hatch:rgba(225,232,242,.42);
   --d-lot:#1f3527; --d-road:#2b3442; --d-house:#2d4a70; --d-box:#172435;
 }
 * { box-sizing: border-box; }
@@ -128,6 +128,23 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .nogl { inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; background: var(--surface); color: var(--ink); }
 .help { color: var(--muted); font-size: 13.5px; margin-top: 8px; }
 .phasebar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.xbar { margin-top: 10px; display: grid; gap: 8px; }
+.photos { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.photos .ph { margin: 0; padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.photos .ph[hidden] { display: none; }
+.photos .phimg { aspect-ratio: 4 / 3; background: var(--surface); display: grid; place-items: center; overflow: hidden; }
+.photos .phimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photos figcaption { padding: 10px 12px 12px; font-size: 14px; } .photos .cred { margin-top: 6px; }
+.ref h3 a { color: var(--navy); text-decoration: underline; text-underline-offset: 3px; }
+.xbar .xrow { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.xbar .xrow:not(.main) { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 8px 10px; }
+.xbar .xrow .mini { flex: 1 1 160px; }
+.xbar .seg { display: inline-flex; gap: 4px; }
+.xbar .range { flex: 1 1 180px; min-width: 140px; }
+.xbar b { color: var(--navy); font-size: 14px; }
+.btn[disabled] { opacity: .45; cursor: not-allowed; }
+.pin.hunt { background: #1d7a46; border-color: #fff; color: #fff; font-weight: 800; z-index: 4; }
+.pin.hunt.missed { background: #d9480f; }
 .phasebar .ph { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 7px 11px; font-weight: 700; font-size: 13.5px; text-align: left; color: var(--navy); }
 .phasebar .ph.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .phasebar .ph.past { background: var(--surface); }
@@ -197,7 +214,12 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .dwg .d-bub { fill: var(--bub); stroke: var(--d-bg); stroke-width: 2; }
 .dwg .d-num { fill: #fff; font: 800 12px 'Nunito', system-ui, sans-serif; }
 .dwg .d-arrowhead { fill: var(--d-line); }
-.dwg .d-conc { fill: var(--d-conc); stroke: var(--d-line); stroke-width: 1.6; }
+.dwg .d-conc { fill: var(--d-conc); stroke: var(--d-line); stroke-width: 2; }
+.dwg .hx { stroke: none; pointer-events: none; } .dwg .hx-brick { fill: url(#hp-brick); } .dwg .hx-conc { fill: url(#hp-conc); } .dwg .hx-earth { fill: url(#hp-earth); }
+.dwg .hx-sand { fill: url(#hp-sand); } .dwg .hx-ins { fill: url(#hp-ins); } .dwg .hx-grain { fill: url(#hp-grain); }
+.dwg .h-ln { stroke: var(--d-hatch); stroke-width: 0.9; } .dwg .h-dot { fill: var(--d-hatch); } .dwg .h-tri { fill: none; stroke: var(--d-hatch); stroke-width: 0.9; } .dwg .h-grain { fill: none; stroke: var(--d-hatch); stroke-width: 0.6; opacity: .6; }
+.dwg .tb-box { fill: none; stroke: var(--d-line); stroke-width: 1.4; } .dwg .tb-bub { fill: var(--bub); } .dwg .tb-no { fill: #fff; font: 800 13px 'Nunito', system-ui, sans-serif; }
+.dwg .tb-title { fill: var(--ink); font: 800 14px 'Nunito', system-ui, sans-serif; letter-spacing: .04em; } .dwg .tb-sub { fill: var(--muted); font: 600 11.5px 'Nunito', system-ui, sans-serif; }
 .dwg .d-soil { fill: var(--d-soil); stroke: none; }
 .dwg .d-sand { fill: var(--d-sand); stroke: none; }
 .dwg .d-memb { stroke: var(--d-memb); stroke-width: 4; stroke-linejoin: round; stroke-linecap: round; }
@@ -321,6 +343,7 @@ footer { margin-top: 28px; color: var(--muted); font-size: 13px; max-width: 90ch
               <button class="prompt" id="prompt" type="button" hidden></button>
               <div class="nogl" id="nogl" hidden><div><h3>The 3D view needs WebGL</h3><p class="sub">Your browser or device could not start it. Drawings, step-by-step, trades, materials, quotes, inspections and exam cards all still work.</p></div></div>
             </div>
+            <div class="xbar" id="xbar" hidden></div>
             <div class="phasebar" id="phasebar"></div>
             <p class="help" id="help"></p>
           </div>
