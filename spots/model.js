@@ -93,3 +93,96 @@ export function mapsUrl(p) {
   const q = encodeURIComponent([p.name, p.area].filter(Boolean).join(", "));
   return `https://www.google.com/maps/search/?api=1&query=${q}${p.id && !p.sample ? `&query_place_id=${encodeURIComponent(p.id)}` : ""}`;
 }
+
+// ---------- Opening hours ----------
+// hours = { periods: [{ open: { day, hour, minute }, close: { day, hour, minute } | null }] } as Google gives them,
+// day 0 = Sunday, in the place's local time. off = the place's UTC offset in minutes, or null for the phone's own.
+
+const WEEK = 7 * 1440;
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const pt = (p) => (p && Number.isFinite(p.day) ? p.day * 1440 + (p.hour || 0) * 60 + (p.minute || 0) : null);
+
+function minuteOfWeek(at, off) {
+  if (off == null) return at.getDay() * 1440 + at.getHours() * 60 + at.getMinutes();
+  const d = new Date(at.getTime() + off * 60000);
+  return d.getUTCDay() * 1440 + d.getUTCHours() * 60 + d.getUTCMinutes();
+}
+
+// [start, end) in minutes of the week; end may pass the week's end (a Saturday-night period). null end = always open.
+function spans(hours) {
+  const ps = hours && Array.isArray(hours.periods) ? hours.periods : [];
+  return ps.map((p) => {
+    const s = pt(p.open);
+    if (s == null) return null;
+    const c = pt(p.close);
+    if (c == null) return { s, e: null };
+    return { s, e: c <= s ? c + WEEK : c };
+  }).filter(Boolean);
+}
+
+const contains = (sp, t) => (sp.s <= t && t < sp.e) || (sp.s <= t + WEEK && t + WEEK < sp.e);
+
+// Minutes until it closes: 0 when closed, Infinity when it never closes, null when hours are unknown.
+export function minutesLeft(hours, at, off) {
+  const sp = spans(hours);
+  if (!sp.length) return null;
+  if (sp.some((x) => x.e === null)) return Infinity;
+  const t = minuteOfWeek(at, off);
+  let cur = sp.find((x) => contains(x, t));
+  if (!cur) return 0;
+  let left = (cur.s <= t && t < cur.e ? cur.e : cur.e - WEEK) - t;
+  // Back-to-back periods (closing at midnight, reopening at midnight) count as one stretch.
+  for (let i = 0; i < 7; i++) {
+    const end = (t + left) % WEEK;
+    const next = sp.find((x) => x.s === end);
+    if (!next) break;
+    left += next.e - next.s;
+    if (left >= WEEK) return Infinity;
+  }
+  return left;
+}
+
+export function isOpenAt(hours, at, off) {
+  const m = minutesLeft(hours, at, off);
+  return m == null ? null : m > 0;
+}
+
+export function nextOpen(hours, at, off) {
+  const sp = spans(hours);
+  if (!sp.length) return null;
+  const t = minuteOfWeek(at, off);
+  const d = Math.min(...sp.map((x) => ((x.s - t) % WEEK + WEEK) % WEEK || WEEK));
+  const base = new Date(at.getTime()); base.setSeconds(0, 0);
+  return new Date(base.getTime() + d * 60000);
+}
+
+function clock(minOfDay) {
+  const m = ((minOfDay % 1440) + 1440) % 1440;
+  if (m === 0) return "midnight";
+  const h = Math.floor(m / 60), mm = m % 60, h12 = h % 12 || 12, ap = h < 12 ? "am" : "pm";
+  return mm ? `${h12}:${String(mm).padStart(2, "0")} ${ap}` : `${h12} ${ap}`;
+}
+
+export function hoursLabel(hours, at, off) {
+  const left = minutesLeft(hours, at, off);
+  if (left == null) return "Hours unknown";
+  if (left === Infinity) return "Open 24 hours";
+  const t = minuteOfWeek(at, off);
+  if (left > 0) return `Open till ${clock(t + left)}`;
+  const sp = spans(hours);
+  const d = Math.min(...sp.map((x) => ((x.s - t) % WEEK + WEEK) % WEEK || WEEK));
+  const when = (t + d) % WEEK, sameDay = Math.floor(when / 1440) === Math.floor(t / 1440) && d < 1440;
+  return `Closed · opens ${sameDay ? "" : DAYS[Math.floor(when / 1440)] + " "}${clock(when)}`;
+}
+
+// One day's hours, for the place sheet: "11:30 am – 2:30 pm, 5:30 pm – 10 pm".
+export function dayHours(hours, day) {
+  const ps = hours && Array.isArray(hours.periods) ? hours.periods : null;
+  if (!ps || !ps.length) return "";
+  if (ps.some((p) => p.open && !p.close)) return "Open 24 hours";
+  const today = ps.filter((p) => p.open && p.open.day === day)
+    .sort((a, b) => pt(a.open) - pt(b.open));
+  if (!today.length) return "Closed";
+  if (today.length === 1 && pt(today[0].open) % 1440 === 0 && (pt(today[0].close) - pt(today[0].open) + WEEK) % WEEK === 1440) return "Open 24 hours";
+  return today.map((p) => `${clock(pt(p.open))} – ${clock(pt(p.close))}`).join(", ");
+}
