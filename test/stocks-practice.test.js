@@ -153,7 +153,7 @@ test("valuation in pence, without a rate, and without a benchmark", () => {
 
 test("comparing over a range uses the range's first day as the start", () => {
   const a = { d: ["D1", "D2", "D3"], p: [100, 200, 300] };
-  const m = compareModel(a, a, 2);
+  const m = compareModel(a, a, 1);   // one session: one move, from the close before it
   assert.deepEqual(m.d, ["D2", "D3"]);
   assert.deepEqual(m.a, [0, 0.5]);
 });

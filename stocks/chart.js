@@ -2,7 +2,7 @@
 // averages worked out over the whole history so the lines are right from the range's first day, and its
 // index scaled to start at the price so the two compare at a glance. Pure; shared by the page and the tests.
 
-export const RANGES = [["1M", 21], ["6M", 126], ["1Y", 252], ["2Y", Infinity]];
+export const RANGES = [["1W", 5], ["1M", 21], ["3M", 63], ["6M", 126], ["1Y", 252], ["2Y", Infinity]];
 
 function movingAverage(p, n) {
   const out = new Array(p.length).fill(null);
@@ -18,7 +18,7 @@ function movingAverage(p, n) {
 // Two stocks over the same range as % change from the first day both have a price. Markets keep different
 // holidays, so the second stock's last price carries over days it did not trade.
 export function compareModel(h1, h2, sessions) {
-  const from = Math.max(0, h1.p.length - (Number.isFinite(sessions) ? sessions : h1.p.length));
+  const from = Number.isFinite(sessions) ? Math.max(0, h1.p.length - 1 - sessions) : 0;
   const d = [], a = [], b = [];
   let j = -1, a0 = null, b0 = null;
   for (let i = from; i < h1.d.length; i++) {
@@ -31,9 +31,10 @@ export function compareModel(h1, h2, sessions) {
   return { d, a, b, lo: Math.min(...a, ...b), hi: Math.max(...a, ...b) };
 }
 
-// h: { d: dates, p: prices, b: index closes or null }; sessions: how many trading days to show.
+// h: { d: dates, p: prices, b: index closes or null }; sessions: how many trading days of moves to show, so a
+// 21-session month starts at the close before it and ends on the same figure as the 1-month return.
 export function chartModel(h, sessions) {
-  const from = Math.max(0, h.p.length - (Number.isFinite(sessions) ? sessions : h.p.length));
+  const from = Number.isFinite(sessions) ? Math.max(0, h.p.length - 1 - sessions) : 0;
   const cut = (xs) => xs.slice(from);
   const p = cut(h.p), raw = cut(h.b || h.p.map(() => null));
   const base = raw.findIndex((x) => x != null);

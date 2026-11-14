@@ -9,7 +9,7 @@ const FILES = [
   "./icons/icon.svg", "./icons/icon-180.png", "./icons/icon-512.png",
   "./lib/fsrs.js", "./lib/vendor/ts-fsrs.js", "./lib/track.js", "./lib/hour.js", "./lib/store.js", "./lib/validate.js", "./lib/pron.js", "./lib/hangul.js", "./lib/jyutping.js", "./lib/audio.js", "./lib/bridge.js", "./lib/validate-yue.js", "./lib/mix.js", "./lib/quiz.js", "./lib/interleave.js", "./lib/mongol.js", "./lib/validate-mn.js", "./lib/validate-en.js",
   "./news/", "./news/index.html", "./news/news.js", "./news/news.css", "./news/model.js", "./news/manifest.json", "./icons/news.svg", "./icons/news-180.png", "./icons/news-512.png",
-  "./stocks/", "./stocks/index.html", "./stocks/stocks.js", "./stocks/stocks.css", "./stocks/model.js", "./stocks/explain.js", "./stocks/ideas.js", "./stocks/watch.js", "./stocks/chart.js", "./stocks/companies.js", "./stocks/practice.js", "./stocks/manifest.json", "./icons/stocks.svg", "./icons/stocks-180.png", "./icons/stocks-512.png",
+  "./stocks/", "./stocks/index.html", "./stocks/stocks.js", "./stocks/stocks.css", "./stocks/model.js", "./stocks/explain.js", "./stocks/ideas.js", "./stocks/watch.js", "./stocks/chart.js", "./stocks/companies.js", "./stocks/practice.js", "./stocks/market.js", "./stocks/manifest.json", "./icons/stocks.svg", "./icons/stocks-180.png", "./icons/stocks-512.png",
   "./quiz-view.js", "./quiz/ko.js", "./quiz/yue.js",
   "./songs/model.js", "./songs/lrclib.js", "./songs/claude.js", "./songs/db.js", "./songs/view.js",
   "./packs/ko.js", "./packs/dict-ko.js", "./packs/dict-yue.js", "./packs/dict-en.js", "./cards/ko.js", "./ui/en.js", "./lib/dict.js",
@@ -17,7 +17,8 @@ const FILES = [
   "./packs/mn.js", "./cards/mn.js", "./ui/zh.js", "./quiz/mn.js",
   "./packs/en.js", "./cards/en.js", "./ui/ko-en.js", "./quiz/en.js",
   "./mc/", "./mc/index.html", "./mc/mc.js", "./mc/mc.css", "./icons/mc.svg", "./icons/mc-180.png",
-  "./shine/", "./shine/index.html", "./shine/app.js", "./shine/data.js", "./shine/shine.css", "./icons/shine.svg", "./icons/shine-180.png",
+  "./shine/", "./shine/index.html", "./shine/app.js", "./shine/data.js", "./shine/shine.css", "./shine/manifest.json", "./icons/shine.svg", "./icons/shine-180.png", "./icons/shine-192.png", "./icons/shine-512.png",
+  "./spots/", "./spots/index.html", "./spots/spots.js", "./spots/explore.js", "./spots/stampbook.js", "./spots/model.js", "./spots/places.js", "./spots/samples.js", "./spots/regions.js", "./spots/db.js", "./spots/ui.js", "./spots/spots.css", "./spots/manifest.json", "./icons/spots.svg", "./icons/spots-180.png", "./icons/spots-512.png",
   "./travel/", "./travel/index.html", "./travel/travel.js", "./travel/model.js", "./travel/items.js", "./travel/plan.html", "./travel/plan.js", "./travel/plan-model.js", "./travel/travel.css", "./travel/manifest.json", "./icons/travel.svg", "./icons/travel-180.png", "./icons/travel-512.png",
   "./builder/", "./builder/index.html", "./builder/builder.js", "./builder/model.js", "./builder/data.js", "./builder/builder.css", "./builder/manifest.json", "./icons/builder.svg", "./icons/builder-180.png", "./icons/builder-512.png",
   "./english/", "./english/index.html", "./english/manifest.json", "./icons/en.svg", "./icons/en-180.png", "./icons/en-512.png",
@@ -43,7 +44,7 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : path.includes("/stocks") ? "./stocks/index.html" : path.includes("/mc/") ? "./mc/index.html" : path.includes("/shine/") ? "./shine/index.html" : path.includes("/builder/") ? "./builder/index.html" : path.includes("/travel/plan") ? "./travel/plan.html" : path.includes("/travel/") ? "./travel/index.html" : "./korean/index.html");
+const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : path.includes("/stocks") ? "./stocks/index.html" : path.includes("/mc/") ? "./mc/index.html" : path.includes("/shine/") ? "./shine/index.html" : path.includes("/builder/") ? "./builder/index.html" : path.includes("/spots/") ? "./spots/index.html" : path.includes("/travel/plan") ? "./travel/plan.html" : path.includes("/travel/") ? "./travel/index.html" : "./korean/index.html");
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
