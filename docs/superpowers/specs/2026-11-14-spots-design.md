@@ -1,158 +1,175 @@
-# 打卡 Spots: design
+# Spots: design
 
-Written 14 November 2026. Status: plan approved in outline ("all good go 好似一個打卡點咁"); the calls below marked *my call* are open to change.
+Written 14 November 2026, revised the same day after the owner's review of the first plan and mockup. Calls marked *my call* are open to change.
 
 ## Intent
 
-A home-screen app for daily 玩樂好去處: new restaurants, sights and what's on in Melbourne, where every place is a **打卡點** you collect. The same app carries on overseas as a travel log. It should feel fun, interactive and colourful, not like the calm study apps.
+A home-screen app for finding somewhere to go in Melbourne, today, tonight or tomorrow, where every place you visit becomes a stamp you collect (the 打卡 idea). Later it carries on overseas as a travel log.
 
-The owner asked for it directly. Why it matters, in their words so far: something new to do every day, and a record that feels like collecting check-ins.
+The owner's own scenarios, which drive the design:
+
+1. **A random day, not much time.** "I want to go somewhere now, but I only have a couple of hours." Limit by time or distance.
+2. **Planning tomorrow as a full day.** Recommend further places, a proper day out.
+3. **Late night.** Anything still open, even if it's further away, because the night drive is smooth.
+
+Plus: a budget for each place (price range), real photos, a Google Maps link, and a summary of reviews.
+
+## Changes from the first plan (owner, 14 November)
+
+- **English only.** No Cantonese labels. The app is called **Spots**.
+- **Budget:** every place shows its price level ($ to $$$$) and, when Google has it, a range per person ("A$20–40"). Searches filter by budget.
+- **Real photos, Google Maps link, review summary, opening hours:** from Google Places, called from the phone with the owner's own key (below).
+- **Three modes** on the main screen: **Now**, **Late night**, **Tomorrow**.
+- **Night colours rebuilt.** The day look stays. Night drops the violet and the glow: charcoal "asphalt" with the same bright poster colours as the day.
 
 ## Goals
 
-- **Something new every day with no effort.** A short daily shortlist appears without the owner typing anything.
-- **One-tap 打卡.** Arriving somewhere and stamping it takes seconds, with an optional photo, rating and note.
-- **A collection that fills up.** Stamps by suburb in Melbourne, by city and country overseas, plus themed collections.
-- **One home for travel.** Overseas, the plan, the check-ins and the memories live in the same place.
+- Answer "where can I go right now, in the time I have, for my budget?" in two taps.
+- Late at night, show what is open, and reach further because the roads are clear.
+- Tomorrow, build a whole day: breakfast, a morning sight, lunch, an afternoon activity, dinner, in a sensible order, in town or on a day trip.
+- Every result shows a real photo, price, rating with a review summary, opening hours and how far it is, with a one-tap Google Maps link.
+- One-tap check-in that leaves a stamp, so a collection builds up.
 
 ## Non-goals
 
-- Reviews for other people, a social feed, followers or likes.
-- Bookings, opening hours or menus (the app links out to the venue or a map instead).
-- Accounts, sync between phones, or a server.
+- Reviews written for other people, a social feed, bookings.
+- Accounts, a server, or sync between phones.
+- Live traffic. Drive times are estimates (below).
 
-## Anti-goals (would make it a failure even if it works)
+## Anti-goals
 
-- An endless feed to scroll. The daily view is a small, finished set.
-- Getting around paywalls. Only free-to-read sources, as in Briefing.
-- Anything personal in the public repo: no spots, check-ins, photos or locations are ever committed.
+- Anything personal in the public repo: no saved places, check-ins, photos, locations or API keys are ever committed.
+- Storing Google's content beyond what Google allows (below).
 - A corporate or sterile look.
 
-## Constraints (from the repo as it stands)
+## Constraints
 
-- Static files on GitHub Pages, no build step, vanilla ES modules, offline through `sw.js`. Same as every other app here.
-- **The repo is public.** Personal data lives on the phone only, as in Travel. The only thing published is the public feed of new places.
-- Each home-screen app keeps its own storage, separate from Safari's and from the other apps (README). [Likely]
-- iPhone can clear a website's storage. Home-screen apps are safer, but a photo log still needs backup built in from day one.
-- iOS Safari has no vibration API, so the stamp effect has to come from animation (and sound, if wanted), not haptics.
-- GitHub Actions minutes are free while the repo is public. The feed build adds a few seconds to the existing hourly deploy run and starts no new runs.
+- Static files on GitHub Pages, vanilla ES modules, no build step, offline shell through `sw.js` (which only caches the site's own files, so Google's responses are never cached).
+- **The repo is public.** The Google key lives only on the phone.
+- Each home-screen app keeps its own storage, separate from Safari's. [Likely]
+- iPhone can clear a website's storage, so backup is built in.
+- GitHub Actions minutes are free while the repo is public.
 
-## Approaches considered
+## Where the data comes from
 
-| | Approach | Trade-off |
+### Google Places, from the phone
+
+- The app loads the **Maps JavaScript API** (Places library) with a key the owner pastes into Settings once. The key is stored in that phone's storage and never committed.
+- **Key setup** (in the app's Settings and the README): Google Cloud project with billing turned on, enable *Maps JavaScript API* and *Places API (New)*, create a key restricted to the website `https://fluffy731.github.io/*` and to those two APIs, and set a daily quota cap on Places so a misused key can only exhaust the day's quota, not run up a bill.
+- **Cost:** since March 2025 Google gives a free monthly allowance per service: 10,000 calls for Essentials, 5,000 for Pro, 1,000 for Enterprise. Searches that ask for rating, price, opening hours or review summary bill as Enterprise, and each photo shown is one photo call. A few searches a day stays inside the free allowance. [Likely: the per-service figures for Text Search Enterprise and Photos are from the pricing table, which this session could not open.] To keep inside it, the app asks Google only when you tap Find, loads at most 8 photos per search lazily, and fetches the review summary only when you open a place.
+- **What a search asks for:** id, name, location, address, primary type, rating, rating count, price level, price range, regular opening hours, UTC offset, photos and Google Maps link. Opening a place also asks for the review summary and up to five reviews.
+- **Review summary:** Google's AI summary where it offers one, shown with Google's own disclosure line. Google's documentation listed it for the US, UK, India and Japan; whether Australia has it is unconfirmed [Guessing]. Where it's missing: the rating, the count and the two most helpful review excerpts with their authors, plus "All reviews on Google".
+- **Attribution:** "Google Maps" is shown on every screen with Google content, and photo authors are credited, as Google's terms require.
+- **Storage rules:** a saved place keeps Google's place id indefinitely, its name and position for up to 30 days (refreshed when opened), and the owner's own notes, ratings and photos. Photos, ratings, hours and reviews are fetched live when shown. Nothing from Google goes into the repo.
+
+### Without a key
+
+- The Google Maps link still works: it's a plain Maps URL (`https://www.google.com/maps/search/?api=1&query=…&query_place_id=…`), free and with no key.
+- **Sample mode:** Settings → "Try with sample places" fills the app with clearly labelled sample places, so the owner can try every screen before setting up a key. The tests use the same samples.
+
+## The three modes
+
+All three share a **budget** control (up to $, $$, $$$ or $$$$, or any) and **what** chips (Eat, Drink, Coffee, Sights, Activities, Dessert).
+
+### Now (short on time)
+
+- **Time I have:** 1 h, 2 h, 3 h, half day. **Getting there:** drive or walk.
+- Each kind has a typical visit length (eat 60 min, drink 60, coffee 30, sights 60, activities 90, dessert 30). The longest drive each way is (time I have − visit length) ÷ 2, converted to a distance with the travel model below. Example: 2 hours for dinner leaves 30 min each way.
+- Only places open now that stay open for at least the visit are shown, nearest-and-best first.
+
+### Late night
+
+- Default from 9 pm to 4 am. **Night drive:** up to 15, 30 or 45 min.
+- Shows places open now that stay open at least another hour, sorted by how late they close, then by rating. Each card says "Open till 2:30 am".
+- Night roads are faster in the travel model, so 30 minutes reaches about twice as far as at 5 pm.
+
+### Tomorrow (full day)
+
+- **Where:** Around town, a day-trip region, or Surprise me (a region you haven't been to lately). Regions (*my call*, with centre points in `spots/regions.js`): Yarra Valley, Dandenong Ranges, Mornington Peninsula, Phillip Island, Daylesford and Hepburn, Great Ocean Road (Torquay to Lorne), Bellarine and Queenscliff, Macedon Ranges, Ballarat, Werribee.
+- **Start time** (default 9 am) and **pace** (relaxed: 4 stops; full: 5 stops).
+- Slots: breakfast or coffee, morning sight or activity, lunch, afternoon sight or activity, dinner (full pace). One Google search per slot within about 15 km of the region's centre, filtered by budget and by being **open at that slot's time tomorrow**.
+- The plan builder picks one place per slot by rating, review count and the extra driving it adds, avoiding repeats, and shows the drive to the first stop and between stops. Swap any stop for the next best. Save the whole day.
+
+### The travel model (`spots/model.js`, tested)
+
+Straight-line distance × 1.3 for roads, plus 5 minutes to park. Speeds:
+
+| When | City part (first 15 km) | Beyond 15 km |
 |---|---|---|
-| A | New app `/spots/` with its own simple trip log; Travel stays as it is | Quickest. But each home-screen app keeps its own storage, so the log can never see Travel's plans. Two apps and two backups for one trip. |
-| **B** | **New app `/spots/` that, in Phase 3, takes over Travel's planner and packing by reusing `travel/plan-model.js` and `travel/model.js`** | One app for before, during and after a trip: a plan's Eat and Do items become 想去 pins, and the check-ins land on that trip. One backup. More work in Phase 3, and Travel has to be migrated before it retires. |
-| C | Grow `/travel/` into the 打卡 app | Bends a calm teal checklist into a playful app. The Melbourne side has nothing to do with packing, and changing Travel's address would break its home-screen icon. |
+| Peak (7–9:30 am, 4–6:30 pm weekdays) | 22 km/h | 70 km/h |
+| Daytime | 30 km/h | 85 km/h |
+| Night (9 pm–6 am) | 50 km/h | 95 km/h |
+| Walking | 4.5 km/h (road factor 1.25, no parking) | |
 
-**Picked: B** (*my call*, since the owner handed over the how). Travel keeps working until Phase 3 is done and its trips are moved across with Travel's own backup file; after that, `/travel/` forwards to `/spots/#trips`.
+Times are shown as "about 25 min". The same model, run backwards, gives the search radius for a time limit (up to Google's 50 km limit on a search radius).
 
 ## What the owner sees
 
-### The thing everything is built on: a Spot
-
-A Spot is a place: name, kind, area (suburb or city), country, map position if known, links, where it came from (a feed or "me"), and its state:
-
-- **New:** in today's feed, not saved yet. Feed items are not Spots until saved, so the feed stays disposable.
-- **想去 (want to go):** saved.
-- **去咗 (been):** has at least one 打卡: date, rating (one to five), note, a small photo, who with, and the trip if it was overseas.
-
-Kinds, each with its own colour and stamp shape: **食 Eat · 飲 Drink · 睇 See · 玩 Do · 節目 Event**.
-
-### Tabs (bottom bar)
-
 ```
 ┌──────────────────────────────────────┐
-│  今日 Today                    ☀ 24° │
-│  ┌────────────────────────────────┐  │
-│  │   🍜  NEW · Fitzroy            │  │
-│  │   [ feed photo / colour tile ] │  │
-│  │   Hand-pulled noodle bar ...   │  │
-│  │   ← 下次          想去! →     │  │
-│  └────────────────────────────────┘  │
-│   ● ○ ○   食 · 玩 · 驚喜             │
-│  This weekend ▸ [Night market][Expo] │
+│ Spots                     ⚙          │
+│ Where to?                            │
+│ [ Now ] [ Late night ] [ Tomorrow ]  │
+│ Time I have  1h [2h] 3h  Half day    │
+│ Budget  $  $$ [$$$] $$$$  Any        │
+│ What   [Eat] Drink  Coffee  Sights   │
+│ [        Find places        ]        │
+│ ┌──────────────────────────────────┐ │
+│ │ [ real photo ]           $$  ★4.6│ │
+│ │ Noodle bar · Fitzroy             │ │
+│ │ Open till 11 pm · 14 min · 6 km  │ │
+│ │ "Generous bowls, fast service…"  │ │
+│ │ [Save] [Google Maps] [Check in]  │ │
+│ └──────────────────────────────────┘ │
 ├──────────────────────────────────────┤
-│ 今日   地圖   ( 打卡 )   護照   旅程 │
+│ Explore  Saved  (Check in)  Passport │
 └──────────────────────────────────────┘
 ```
 
-1. **今日 Today.** The Daily 3: three swipeable cards, one to eat (食), one to do (玩) and one wildcard (驚喜). They come from the feed's last 14 days and from your 想去 list (the oldest not yet visited, nearest first when location is allowed). The date picks them, so they stay the same all day, as the Korean app's word of the hour does; **再抽** draws again. Swipe right for 想去, left for 下次, tap for details. Under the cards: a "This weekend" strip of events and **See all new** (the full feed, filtered by kind and area).
-2. **地圖 Map.** Pins coloured by kind: filled for 去咗, outlined for 想去, glowing for New. Filter chips, a Near me button, and a List toggle that also works offline.
-3. **打卡 (centre button).** "I'm here": shows the nearest 想去 spots by location, or makes a new spot. Add a photo, rating and note, then hold the button: a ring fills and the stamp slams down with an ink splash.
-4. **護照 Passport.** Every stamp, page by page: Melbourne by suburb, overseas by country and city. Melbourne's suburb map fills in as you go, and so does a world map. Collections ("Laneway coffee 3/10", "Every cuisine on Victoria St"), month counts, and a year in review.
-5. **旅程 Trips** (Phase 3). Travel's planner and packing list, moved here. During a trip, 打卡 files stamps under that trip. Afterwards there's a trip recap card (route, top eats, photo strip) to share as an image.
+- **Explore:** the three modes and results. A place opens into a sheet with a bigger photo, the review summary, today's and tomorrow's hours, price range, the Google Maps link and Save / Check in.
+- **Saved:** places you want to go, nearest first, with the budget filter.
+- **Check in** (centre button): pick a saved or nearby place, rating, note, your own photo (from the camera roll, kept as a small copy), then hold the button for the stamp.
+- **Passport:** stamps by suburb, stats, collections, backup.
+- **Settings** (gear): Google key and setup steps with a Test button, sample mode, home position fallback (Melbourne CBD when location is off), theme, backup and restore.
 
-### Adding places by hand
+## Look and feel ("Neon laneway", revised)
 
-Paste a Google Maps, Instagram or 小紅書 link with a name, or type one in. Links are kept and open in their own app. No scraping of those sites.
-
-## The daily feed (Phase 2)
-
-- `scripts/build-spots.mjs` with its source list in `scripts/spots-sources.mjs`, modelled on `build-news.mjs`. It runs in the deploy job and refetches only when `spots/feed.json` is over 20 hours old. The last good feed is restored from the Actions cache first, as Stocks does, so a failed fetch leaves yesterday's places up.
-- **Sources** (free-to-read RSS, each to be checked with `--probe` from Actions, since this session's network blocks them): Broadsheet Melbourne, Concrete Playground Melbourne, Time Out Melbourne, The Urban List Melbourne, City of Melbourne What's On, Visit Melbourne events. Paywalled food guides are left out. [Likely: feed addresses unconfirmed]
-- **Each item** keeps a headline, a short excerpt, its link, source and date, and the feed's own image if it supplies one (shown with the source, linking back). Without an image the card uses a colour tile with the kind's emoji.
-- **Kind and area** come from keywords and a bundled list of Melbourne suburbs with their centre points, so a New pin sits on its suburb, not its exact door. "Open in Maps" searches the venue's name.
-- Items stay for 30 days, and the same venue seen in two sources becomes one item.
-- **Optional, Phase 4:** with the `ANTHROPIC_API_KEY` secret already used by Stocks, Claude Haiku writes one line in 廣東話 and one in English for each Daily 3 pick, from the article's own text only, labelled as an AI blurb. Well under a cent a day. Without the secret nothing changes.
-
-## Data on the phone
-
-- Spots and check-ins in `localStorage` under `spots.v1`. Photos as small JPEGs (about 600 px, around 60 KB each) in IndexedDB. Full-size photos stay in the Photos app; the app keeps only its thumbnail.
-- **Backup:** one JSON file, thumbnails included, through the share sheet to Files or iCloud Drive. Restore merges by id rather than replacing. Passport shows "Last backup N days ago" and nudges after 30 days.
-- **Location:** asked for only when you tap Near me or 打卡. Positions never leave the phone. Overseas, the city name comes from the position via OpenStreetMap's Nominatim, one request per 打卡, or is typed.
-
-## Look and feel ("Neon laneway")
-
-Melbourne laneway street art meets Hong Kong neon signs. A deliberate break from the language apps' calm look (`PRODUCT.md` covers those apps only). The full direction goes in `docs/design/spots.md`.
-
-| Token | Light | Dark | Use |
+| Token | Day | Night (asphalt) | Use |
 |---|---|---|---|
-| Wall / Night | `#F4F1FA` pale lilac wall | `#140B2E` night violet | page |
-| Ink | `#1B1035` aubergine | `#F6F0FF` | text |
-| 食 Eat | `#FF6B35` tangerine | `#FF8A5C` | kind |
-| 飲 Drink | `#FF3D7F` hot pink | `#FF6B9E` | kind |
-| 睇 See | `#2E6BFF` electric blue | `#6F98FF` | kind |
-| 玩 Do | `#7BC300` lime | `#A6E635` | kind |
-| 節目 Event | `#8B5CF6` violet | `#B194FF` | kind |
-| Stamp | `#E63946` 印章 vermilion | `#FF5A66` | stamps |
-| Gold | `#FFC93C` | `#FFD86B` | collection complete |
+| Page | `#F4F1FA` pale lilac wall | `#141418` charcoal | background |
+| Card | `#FFFFFF` | `#1F1F26` | surfaces |
+| Ink | `#1B1035` | `#F3F1F6` | text |
+| Eat | `#FF6B35` tangerine | same | kind |
+| Drink | `#FF3D7F` hot pink | same | kind |
+| Sights | `#2E6BFF` electric blue | `#4C82FF` | kind |
+| Activities | `#7BC300` lime | same | kind |
+| Coffee / Dessert | `#8B5CF6` violet | `#9D74FF` | kind |
+| Stamp | `#E63946` vermilion | `#FF4D5A` | stamps |
+| Gold | `#FFC93C` | same | prices, stars, complete |
 
-Colour exact values get checked for contrast in the build; text on lime and gold is always dark ink.
+- By day: paste-up posters with 2 px ink outlines and hard offset shadows. At night: the same posters on asphalt, outlines in a soft grey, black offset shadows, no glow and no violet tint.
+- Type: system sans for text, heavier weights for headings; numbers in tabular figures. No web fonts needed offline.
+- Moves: the stamp slams down with an ink splash; result cards slide in; everything has a still version under Reduce Motion.
 
-- **Type:** Pretendard ExtraBold (already shipped and cached) for headlines and numbers; PingFang HK for Chinese. Big chunky labels and sticker-like chips.
-- **Moves:** cards tilt as they're dragged, with a 想去 / 下次 colour wash; the stamp lands at a random slight angle with an ink splash and a small shake; a suburb lights up on the map with a pop; Passport pages turn. Everything has a still version under Reduce Motion.
-- **Language:** labels in Traditional Chinese with Cantonese wording (想去, 去咗, 打卡, 搵嘢食) and small English beneath. Feed text stays in its own language.
-- Light and dark themes, both first-class. By day, paste-up posters on a pale lilac wall, with hard ink sticker shadows. After dark, neon signs glowing on night violet.
-- A clickable mockup of this direction (Today deck, Map, hold-to-打卡 stamp, Passport, Trips) was published as a private artifact with this plan.
+## Phases (revised)
 
-## Phases
-
-| Phase | Delivers | Works without |
-|---|---|---|
-| **1. Stamp it** | App shell and tabs, add a spot by hand or link, 想去 list, 打卡 with photo, rating and note, stamp animation, Passport grid by suburb, backup and restore, offline, tests | the feed and the map |
-| **2. Daily** | `build-spots.mjs`, `spots/feed.json`, Today's Daily 3 swipe deck, See all new, Map with Leaflet and OpenStreetMap tiles | — |
-| **3. Overseas** | Trips tab taking over Travel's planner and packing, migration from Travel's backup, trip 打卡, country and city stamps, world map, trip recap image; `/travel/` forwards | — |
-| **4. Delight** | Suburb map fill-in, collections, year in review, Haiku 廣東話 blurbs, weather-aware picks (Open-Meteo, free, no key: rain means indoor picks), a daily Shortcuts nudge as the Korean app has | — |
-
-Phase 1 is useful alone: the owner can start stamping places straight away while the feed is built.
+| Phase | Delivers |
+|---|---|
+| **1. Find and stamp** (this build) | The three modes, budget, results with photo, price, rating, review summary, hours, drive time and Maps link; place sheet; Saved; Check in with stamp; Passport; Settings with key setup, sample mode, backup and restore; offline shell; tests |
+| **2. New places and map** | The once-a-day feed of new openings from free Melbourne food and what's-on sites (`scripts/build-spots.mjs`), matched to Google places on the phone; a map of saved, visited and new places |
+| **3. Overseas** | Trips tab taking over Travel's planner and packing list (migrated from Travel's backup), stamps by city and country, trip recap image |
+| **4. Extras** | Suburbs lighting up, collections, year in review, rain-aware picks (Open-Meteo), a daily Shortcuts nudge |
 
 ## How it fits the repo
 
-- Folder `/spots/` with `index.html`, `spots.js`, `spots.css`, `model.js`, `manifest.json`, and icons `icons/spots.svg`, `-180.png` and `-512.png`. Add every file to `FILES` in `sw.js`, and give it a README section.
-- Unlisted at first, like Travel and Stocks: left off `index.html`, with pages asking search engines not to index them (*my call*).
-- **Libraries:** Leaflet, vendored into `lib/vendor/` like `ts-fsrs.js`. OpenStreetMap tiles with attribution, no bulk pre-downloading (their usage policy). Suburb shapes from Vicmap (CC BY 4.0) and countries from Natural Earth (public domain), simplified to keep each file small.
-- **Tests:** `node --test test/spots*.test.js` for the model (cleaning spots, 打卡, Daily 3 picking by date, collections, merging backups) and the feed builder against fixture feeds. `scripts/spots-check.mjs` runs the app in Playwright against a fixture feed, as `news-check.mjs` does.
-- **Branch:** the README gives each project its own branch, so the build would use a `spots` branch, merged into `mainFluffy` one phase at a time.
-- **Minutes:** each push runs `test`, billed as 1 minute; each merge also runs `deploy`, billed as 1–2. The feed adds seconds to the hourly run. All free while the repo is public.
+- Folder `/spots/`: `index.html`, `spots.css`, `spots.js` (screens), `model.js` (pure logic), `places.js` (the Google adapter, which turns Google's objects into plain ones), `samples.js` (sample places), `regions.js`, `db.js` (photos in IndexedDB), `manifest.json`; icons `icons/spots.svg`, `-180.png`, `-512.png`. All listed in `FILES` in `sw.js`.
+- Unlisted, like Travel and Stocks: not on `index.html`, `noindex` on the page (*my call*).
+- Tests: `test/spots-model.test.js` (travel model, radius, opening hours across midnight, price mapping and filters, ranking, Now/Late/Tomorrow selection, day plan, storage cleaning, backup merge, stamps) and `test/spots-places.test.js` (the adapter against Google-shaped fixtures). `scripts/spots-check.mjs` drives the app in Playwright in sample mode.
+- The Google adapter is the one part that can't be checked here without a key. Settings → Test connection reports which fields came back, so the first live run shows at once if anything needs adjusting.
 
 ## Risks
 
-- **A source has no feed, or changes it.** Mitigation: the probe, several sources, and Phase 1 working without any feed. [Likely]
-- **Photos lost when the phone clears storage.** Mitigation: thumbnails only (the originals stay in Photos), and the backup nudge.
-- **Map tiles need a signal.** The List view and Passport work offline; the map says so when tiles can't load.
-- **Copyright.** Headline, short excerpt and link only, as Briefing does; images only when the feed itself offers them.
-
-## Left to the builder
-
-The exact feed addresses after probing, the suburb list's source and simplification, stamp shapes, final contrast-checked colour values, the sound (if any), and the name: "打卡 Spots" is a working title.
+- **Field names in the live Google library differ from the documentation used here.** The adapter reads every field defensively and the Test button reports what came back. [Likely to need one small fix on first live run]
+- **Review summaries may not cover Australia.** The fallback shows the rating and two review excerpts.
+- **Cost if the key is misused.** The key is restricted to the site and the two APIs, kept off the repo, and has a daily quota cap.
+- **Drive-time estimates are rough.** Labelled "about", with the Google Maps link for the real route.
