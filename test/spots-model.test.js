@@ -5,6 +5,8 @@ import {
   priceLevelOf, priceSymbols, priceRangeLabel, fitsBudget, mapsUrl,
   minutesLeft, isOpenAt, nextOpen, hoursLabel, dayHours,
   score, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, slotTimes, buildDayPlan, tomorrow,
+  KEY, blank, load, save, areaFromAddress, savePlace, unsave, isSaved, staleSaved, addStamp, passportStats,
+  backupJSON, mergeBackup, noteRegion,
 } from "../spots/model.js";
 import { REGIONS, surpriseRegion } from "../spots/regions.js";
 
@@ -313,4 +315,109 @@ test("surpriseRegion skips recent regions", () => {
   const recent = REGIONS.slice(1).map((r) => r.id);
   assert.equal(surpriseRegion(recent, () => 0.99).id, REGIONS[0].id);
   assert.ok(REGIONS.includes(surpriseRegion(REGIONS.map((r) => r.id), () => 0)), "all recent: still picks one");
+});
+
+// ---------- Task 4: storage, stamps and backup ----------
+
+const fakeLS = (init = {}) => { const m = { ...init }; return { getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); }, m }; };
+const gPlace = place("ChIJ1", { name: "Noodle Bar", area: "Fitzroy", kind: "eat", photo: { url: "https://x" }, summary: { text: "Great" }, rating: 4.6 });
+
+test("load survives junk and missing storage", () => {
+  assert.deepEqual(load(fakeLS()), blank());
+  assert.deepEqual(load(fakeLS({ [KEY]: "{not json" })), blank());
+  assert.deepEqual(load({ getItem() { throw new Error("blocked"); } }), blank());
+  const s = load(fakeLS({ [KEY]: JSON.stringify({ saved: [{ id: 1 }, { id: "a", name: "A", lat: 1, lng: 2 }], stamps: "x", settings: { theme: "neon", key: 5, sample: true } }) }));
+  assert.deepEqual(s.saved.map((x) => x.id), ["a"]);
+  assert.deepEqual(s.stamps, []);
+  assert.equal(s.settings.theme, "auto");
+  assert.equal(s.settings.key, "");
+  assert.equal(s.settings.sample, true);
+});
+
+test("save then load round-trips", () => {
+  const ls = fakeLS();
+  const s = savePlace(blank(), gPlace, new Date(2026, 10, 14));
+  save(ls, s);
+  assert.deepEqual(load(ls).saved, s.saved);
+  assert.doesNotThrow(() => save({ setItem() { throw new Error("full"); } }, s));
+});
+
+test("savePlace keeps only the allowed fields", () => {
+  const s = savePlace(blank(), gPlace, new Date(2026, 10, 14, 10));
+  assert.deepEqual(Object.keys(s.saved[0]).sort(), ["area", "fetchedAt", "id", "kind", "lat", "lng", "name", "savedAt"]);
+  assert.equal(isSaved(s, "ChIJ1"), true);
+  assert.equal(savePlace(s, gPlace, new Date()).saved.length, 1, "saving twice keeps one");
+  assert.equal(isSaved(unsave(s, "ChIJ1"), "ChIJ1"), false);
+  assert.equal(savePlace(blank(), { ...gPlace, sample: true }, new Date()).saved[0].sample, true);
+});
+
+test("areaFromAddress reads Fitzroy and falls back", () => {
+  assert.equal(areaFromAddress("123 Smith St, Fitzroy VIC 3065, Australia"), "Fitzroy");
+  assert.equal(areaFromAddress("Shop 2/10 Elgin St, Carlton North VIC 3054, Australia"), "Carlton North");
+  assert.equal(areaFromAddress("1 Chome-1-2 Oshiage, Sumida City, Tokyo 131-0045, Japan"), "Tokyo 131-0045");
+  assert.equal(areaFromAddress(""), "");
+  assert.equal(areaFromAddress(null), "");
+});
+
+test("staleSaved finds entries older than 30 days", () => {
+  let s = savePlace(blank(), gPlace, new Date(2026, 9, 1));
+  s = savePlace(s, { ...gPlace, id: "fresh" }, new Date(2026, 10, 10));
+  s = savePlace(s, { ...gPlace, id: "sample1", sample: true }, new Date(2026, 8, 1));
+  assert.deepEqual(staleSaved(s, new Date(2026, 10, 14)), ["ChIJ1"]);
+});
+
+test("addStamp records today's date and the area", () => {
+  const { state, stamp } = addStamp(blank(), { place: gPlace, rating: 5, note: "Spicy", photoId: "p1", date: new Date(2026, 10, 14, 21) });
+  assert.equal(stamp.date, "2026-11-14");
+  assert.equal(stamp.area, "Fitzroy");
+  assert.equal(stamp.placeId, "ChIJ1");
+  assert.equal(stamp.rating, 5);
+  assert.equal(state.stamps[0], stamp);
+  const second = addStamp(state, { place: { name: "Somewhere", area: "" }, rating: 9, date: new Date(2026, 10, 15) });
+  assert.equal(second.state.stamps[0].name, "Somewhere");
+  assert.equal(second.state.stamps[0].rating, 5, "rating is clamped to 1–5");
+  assert.equal(second.state.stamps.length, 2);
+});
+
+test("passportStats counts distinct places and suburbs", () => {
+  let s = blank();
+  for (const [id, area] of [["a", "Fitzroy"], ["a", "Fitzroy"], ["b", "Carlton"], ["c", ""]]) s = addStamp(s, { place: { id, name: id, area }, rating: 4, date: new Date() }).state;
+  assert.deepEqual(passportStats(s), { stamps: 4, places: 3, suburbs: 2 });
+});
+
+test("noteRegion keeps the last three regions, newest first", () => {
+  let s = blank();
+  for (const id of ["a", "b", "c", "a", "d"]) s = noteRegion(s, id);
+  assert.deepEqual(s.recentRegions, ["d", "a", "c"]);
+});
+
+test("backup leaves out settings and the key", () => {
+  const s = { ...addStamp(savePlace(blank(), gPlace, new Date()), { place: gPlace, rating: 4, photoId: "p1", date: new Date() }).state, settings: { ...blank().settings, key: "AIzaSECRET" } };
+  const txt = backupJSON(s, { p1: "data:image/jpeg;base64,AAA" }, new Date(2026, 10, 14));
+  assert.ok(!txt.includes("AIzaSECRET"));
+  const o = JSON.parse(txt);
+  assert.equal(o.app, "spots");
+  assert.equal(o.v, 1);
+  assert.equal(o.photos.p1, "data:image/jpeg;base64,AAA");
+  assert.equal(o.settings, undefined);
+});
+
+test("mergeBackup on a phone with stamps adds new ones, keeps existing, no duplicates", () => {
+  const a = addStamp(blank(), { place: { id: "x", name: "Mine", area: "CBD" }, rating: 4, date: new Date(2026, 10, 1) });
+  const b = addStamp(a.state, { place: { id: "y", name: "Backed up", area: "Carlton" }, rating: 5, photoId: "ph", date: new Date(2026, 10, 2) });
+  const txt = backupJSON(savePlace(b.state, gPlace, new Date()), { ph: "data:image/jpeg;base64,BBB" }, new Date());
+  const phone = addStamp(a.state, { place: { id: "z", name: "Only on phone", area: "" }, rating: 3, date: new Date(2026, 10, 3) }).state;
+  const { state, photos, added } = mergeBackup(phone, txt);
+  assert.deepEqual(state.stamps.map((s) => s.name).sort(), ["Backed up", "Mine", "Only on phone"]);
+  assert.equal(state.saved.length, 1);
+  assert.equal(added, 2);
+  assert.deepEqual(photos, { ph: "data:image/jpeg;base64,BBB" });
+  assert.equal(mergeBackup(state, txt).added, 0, "restoring twice adds nothing");
+  assert.deepEqual(state.stamps.map((s) => s.date), [...state.stamps.map((s) => s.date)].sort().reverse(), "newest first");
+});
+
+test("mergeBackup rejects other files", () => {
+  assert.throws(() => mergeBackup(blank(), "{}"), /Not a Spots backup/);
+  assert.throws(() => mergeBackup(blank(), "not json"), /Not a Spots backup/);
+  assert.throws(() => mergeBackup(blank(), JSON.stringify({ trips: [] })), /Not a Spots backup/);
 });

@@ -267,3 +267,104 @@ export function buildDayPlan(slots, candidatesBySlotId, { start, day, startTime 
     return { slot: s, at, place, travel: place ? place.travel : null, alternatives: ok.slice(1, 3) };
   });
 }
+
+// ---------- Storage, stamps and backup ----------
+
+export const KEY = "spots.v1";
+const THEMES = ["auto", "light", "dark"];
+const str = (v) => (typeof v === "string" ? v.trim() : "");
+const num = (v) => (Number.isFinite(v) ? v : null);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+export const blank = () => ({ saved: [], stamps: [], settings: { key: "", sample: false, theme: "auto", lastBackup: null }, recentRegions: [] });
+
+function cleanSaved(x) {
+  if (!x || typeof x !== "object" || !str(x.id) || !str(x.name)) return null;
+  return { id: str(x.id), name: str(x.name), kind: kindOf(x.kind).id, area: str(x.area), lat: num(x.lat), lng: num(x.lng),
+    savedAt: str(x.savedAt), fetchedAt: str(x.fetchedAt), ...(x.sample === true ? { sample: true } : {}) };
+}
+function cleanStamp(x) {
+  if (!x || typeof x !== "object" || !str(x.id) || !str(x.name) || !/^\d{4}-\d{2}-\d{2}$/.test(x.date || "")) return null;
+  const r = Number.isFinite(x.rating) ? Math.min(5, Math.max(1, Math.round(x.rating))) : null;
+  return { id: str(x.id), placeId: str(x.placeId), name: str(x.name), area: str(x.area), kind: kindOf(x.kind).id, date: x.date,
+    rating: r, note: str(x.note), photoId: str(x.photoId) || null };
+}
+const list = (v, f) => (Array.isArray(v) ? v.map(f).filter(Boolean) : []);
+const byNewest = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
+
+function clean(raw) {
+  const s = blank(), set = raw && typeof raw.settings === "object" && raw.settings ? raw.settings : {};
+  if (!raw || typeof raw !== "object") return s;
+  return {
+    saved: list(raw.saved, cleanSaved),
+    stamps: list(raw.stamps, cleanStamp),
+    settings: { key: str(set.key), sample: set.sample === true, theme: THEMES.includes(set.theme) ? set.theme : "auto", lastBackup: str(set.lastBackup) || null },
+    recentRegions: Array.isArray(raw.recentRegions) ? raw.recentRegions.filter((x) => typeof x === "string").slice(0, 3) : [],
+  };
+}
+
+export function load(ls) {
+  try { return clean(JSON.parse(ls.getItem(KEY) || "null")); } catch { return blank(); }
+}
+export function save(ls, state) {
+  try { ls.setItem(KEY, JSON.stringify(state)); } catch { /* storage full or blocked: the app keeps working from memory */ }
+}
+
+// "123 Smith St, Fitzroy VIC 3065, Australia" -> "Fitzroy"; elsewhere, the second-last part of the address.
+export function areaFromAddress(address) {
+  const a = str(address);
+  if (!a) return "";
+  const au = a.match(/,\s*([^,]+?)\s+(VIC|NSW|QLD|SA|WA|TAS|NT|ACT)\s+\d{4}/);
+  if (au) return au[1].trim();
+  const parts = a.split(",").map((x) => x.trim()).filter(Boolean);
+  return parts.length >= 2 ? parts[parts.length - 2] : "";
+}
+
+// Only the place id, name, kind, area and position are kept (Google allows ids indefinitely and the rest
+// for 30 days; staleSaved lists what to refresh). Photos, ratings and hours are fetched live.
+export function savePlace(state, p, now = new Date()) {
+  const t = now.toISOString();
+  const entry = cleanSaved({ id: p.id, name: p.name, kind: p.kind, area: p.area, lat: p.lat, lng: p.lng, savedAt: t, fetchedAt: t, sample: p.sample });
+  if (!entry) return state;
+  const old = state.saved.find((x) => x.id === entry.id);
+  return { ...state, saved: [old ? { ...entry, savedAt: old.savedAt } : entry, ...state.saved.filter((x) => x.id !== entry.id)] };
+}
+export const unsave = (state, id) => ({ ...state, saved: state.saved.filter((x) => x.id !== id) });
+export const isSaved = (state, id) => state.saved.some((x) => x.id === id);
+export const staleSaved = (state, now = new Date()) =>
+  state.saved.filter((x) => !x.sample && (!x.fetchedAt || now - new Date(x.fetchedAt) > 30 * 864e5)).map((x) => x.id);
+
+export function addStamp(state, { place, rating, note, photoId, date = new Date() }) {
+  const stamp = cleanStamp({ id: uid(), placeId: place.id || "", name: place.name, area: place.area, kind: place.kind,
+    date: isoDay(date), rating, note, photoId });
+  if (!stamp) return { state, stamp: null };
+  return { state: { ...state, stamps: [stamp, ...state.stamps] }, stamp };
+}
+
+export function passportStats(state) {
+  const st = state.stamps;
+  return { stamps: st.length, places: new Set(st.map((s) => s.placeId || s.name)).size, suburbs: new Set(st.map((s) => s.area).filter(Boolean)).size };
+}
+
+export const noteRegion = (state, id) => ({ ...state, recentRegions: [id, ...state.recentRegions.filter((x) => x !== id)].slice(0, 3) });
+
+// The backup carries places, stamps and stamp photos, never settings (so never the Google key).
+export function backupJSON(state, photos, now = new Date()) {
+  return JSON.stringify({ app: "spots", v: 1, savedAt: now.toISOString(), saved: state.saved, stamps: state.stamps, recentRegions: state.recentRegions, photos: photos || {} });
+}
+
+export function mergeBackup(state, text) {
+  let o;
+  try { o = JSON.parse(text); } catch { throw new Error("Not a Spots backup"); }
+  if (!o || o.app !== "spots" || !Array.isArray(o.saved) || !Array.isArray(o.stamps)) throw new Error("Not a Spots backup");
+  const haveSaved = new Set(state.saved.map((x) => x.id)), haveStamps = new Set(state.stamps.map((x) => x.id));
+  const newSaved = list(o.saved, cleanSaved).filter((x) => !haveSaved.has(x.id));
+  const newStamps = list(o.stamps, cleanStamp).filter((x) => !haveStamps.has(x.id));
+  const photos = {};
+  for (const s of newStamps) if (s.photoId && o.photos && typeof o.photos[s.photoId] === "string") photos[s.photoId] = o.photos[s.photoId];
+  return {
+    state: { ...state, saved: [...state.saved, ...newSaved], stamps: [...state.stamps, ...newStamps].sort(byNewest) },
+    photos, added: newSaved.length + newStamps.length,
+  };
+}
