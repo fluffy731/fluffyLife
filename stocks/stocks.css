@@ -8,6 +8,8 @@
   --num: ui-monospace, "SF Mono", Menlo, monospace;
   /* One colour per market's index, the same wherever it appears. */
   --line-US: #2f6db8; --line-HK: #c9822b; --line-UK: #8a4fbf;
+  /* The world chart: the US and two picks. Three slots are as many as stay apart in every pairing, for every reader. */
+  --slot-0: #2a78d6; --slot-1: #eb6834; --slot-2: #1baf7a;
   /* The market map: falls in red, rises in green, a grey middle for "little changed". */
   --hn4: #a42d1c; --hn3: #cf563d; --hn2: #e8957f; --hn1: #f5cfc4; --h0: #e4e8ee; --hp1: #c6e6d4; --hp2: #86c9a4; --hp3: #2f9668; --hp4: #10683f;
   --h-ink-strong: #ffffff; --h-ink-p4: #ffffff;
@@ -19,6 +21,7 @@
     --accent: #7fb2e5; --accent-ink: #0f141b; --Buy: #3fbf86; --Overweight: #7cc9a0; --Hold: #8f99a5; --Underweight: #e59a7a; --Sell: #ef6a55; --REVIEW: #e0a748;
     --up: #3fbf86; --down: #ef6a55; --pill-ink: #0f141b; color-scheme: dark;
     --line-US: #4f92de; --line-HK: #c47d2b; --line-UK: #a073dc;
+    --slot-0: #3987e5; --slot-1: #d95926; --slot-2: #199e70;
     --hn4: #d2412b; --hn3: #9c3727; --hn2: #6c3026; --hn1: #43292a; --h0: #262f3b; --hp1: #1e3d33; --hp2: #1f5c44; --hp3: #23825a; --hp4: #2fae76;
     --h-ink-strong: #ffffff; --h-ink-p4: #0f141b; }
 }
@@ -207,6 +210,7 @@ th { font-size: 12px; color: var(--muted); font-weight: 600; border-top: 0; }
 .legend .ln-HK, .key.ln-HK, .ln.ln-HK, .dot-mark.ln-HK { --c: var(--line-HK); }
 .legend .ln-UK, .key.ln-UK, .ln.ln-UK, .dot-mark.ln-UK { --c: var(--line-UK); }
 .chart polyline.ln { stroke: var(--c); stroke-width: 2; }
+.sl-0 { --c: var(--slot-0); } .sl-1 { --c: var(--slot-1); } .sl-2 { --c: var(--slot-2); }
 .range52 { margin-bottom: 10px; }
 .range52 .bar { position: relative; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--down), var(--Hold), var(--up)); margin: 6px 0 3px; opacity: .85; }
 .range52 .bar i { position: absolute; top: -4px; width: 4px; height: 14px; margin-left: -2px; border-radius: 2px; background: var(--ink); }
@@ -347,3 +351,34 @@ h2.section { font-size: 18px; margin: 18px 0 4px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before { animation: none !important; transition: none !important; }
 }
+
+/* ---------- World markets ---------- */
+.picks { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 6px -14px 0; padding: 2px 14px 4px; }
+.picks::-webkit-scrollbar { display: none; }
+.picks button { flex: 0 0 auto; border: 1px solid var(--rule); background: var(--card); border-radius: 999px; padding: 5px 11px; font-size: 13px; white-space: nowrap; }
+.picks button.on { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); font-weight: 650; }
+.picks button.on::before { content: ""; display: inline-block; width: 10px; height: 3px; border-radius: 2px; background: var(--c); margin-right: 6px; vertical-align: middle; }
+.plot-row { display: flex; align-items: stretch; }
+.plot-row .plot { flex: 1 1 auto; min-width: 0; }
+.ends { position: relative; flex: 0 0 76px; }
+.end-label { position: absolute; left: 6px; right: 0; transform: translateY(-50%); font-size: 11px; font-weight: 650; line-height: 1.2; color: var(--ink);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.end-label::before { content: ""; display: inline-block; width: 8px; height: 3px; border-radius: 2px; background: var(--c); margin-right: 4px; vertical-align: middle; }
+
+.world { margin-top: 4px; }
+.world-row { display: grid; grid-template-columns: minmax(0, 1fr) 76px 4.6em; align-items: center; gap: 10px; width: 100%; text-align: left;
+  border: 0; border-top: 1px solid var(--rule); background: none; padding: 8px 4px 8px 0; font-size: 14px; position: relative; }
+.world-row:first-child { border-top: 0; }
+button.world-row:active { background: var(--soft); }
+.world-row.on::after { content: ""; position: absolute; left: -14px; top: 6px; bottom: 6px; width: 3px; border-radius: 0 3px 3px 0; background: var(--c); }
+.world-row.us { background: color-mix(in srgb, var(--slot-0) 6%, transparent); border-radius: 8px; padding-left: 6px; margin: 0 -6px; width: calc(100% + 12px); }
+.world-row.us + .world-row { border-top: 0; }
+.w-name { display: flex; flex-direction: column; min-width: 0; }
+.w-top { display: flex; align-items: center; min-width: 0; }
+.w-top b { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-name .muted { font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.w-mini svg { width: 76px; height: 28px; display: block; }
+.w-mini polyline { fill: none; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.w-mini .idx { stroke: var(--accent); }
+.w-mini .vs-us { stroke: var(--muted); stroke-width: 1.1; stroke-dasharray: 3 2; opacity: .7; }
+.w-ret { text-align: right; font-weight: 650; }

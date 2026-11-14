@@ -1,13 +1,13 @@
 // Stocks: renders stocks/feed.json and each stock's stocks/history/<file> (built on GitHub Actions by
 // scripts/build-stocks.mjs). The watchlist lives in this phone's storage only.
-import { pct, REVIEW, MIN_BARS, historyFile } from "./model.js";
+import { pct, REVIEW, MIN_BARS, historyFile, indexFile } from "./model.js";
 import { plainEnglish, GLOSSARY, audOf } from "./explain.js";
 import { ideas } from "./ideas.js";
 import { toggle, sinceWatching, ratingChanges, markSeen, backupText, readBackup } from "./watch.js";
 import { chartModel, compareModel, RANGES } from "./chart.js";
 import { newPractice, buy, sell, valuation, monthlyPlan, readPractice, START_CASH, FEE } from "./practice.js";
 import { COMPANIES } from "./companies.js";
-import { PERIODS, HEAT_SCALE, HOURS, periodReturn, heat, pool, breadth, movers, sectors, ratingMix, groups, marketClock, shortSymbol, overlay } from "./market.js";
+import { PERIODS, HEAT_SCALE, HOURS, periodReturn, heat, pool, breadth, movers, sectors, ratingMix, groups, marketClock, shortSymbol, overlay, worldRank } from "./market.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -79,7 +79,7 @@ async function load(fresh = false) {
     const r = await fetch("./feed.json", { cache: fresh ? "no-cache" : "default" });
     if (!r.ok) throw new Error(r.status);
     feed = await r.json();
-    indexHist = null;
+    indexHist = {};
   } catch {
     if (!feed) $("#main").innerHTML = `<div class="empty">Prices aren't available yet. They are collected with each hourly update — try again shortly.</div>`;
     return;
@@ -314,10 +314,88 @@ function indexCardsHTML() {
   }).join("")}</div>`;
 }
 
+// ---------- the world's markets ----------
+// The world list from the feed; a feed from before it existed offers the three markets with stocks instead.
+const worldList = () => (feed.world?.length ? feed.world
+  : Object.entries(feed.markets).map(([key, m]) => ({ ...m, key, name: m.benchName, place: m.label, short: m.label })));
+const worldInfo = (k) => worldList().find((w) => w.key === k) || { key: k, name: k, place: k, short: k };
+
+// The world chart: the S&P 500 always, and up to two markets the reader picks. Each pick keeps its colour
+// (slot 1 or 2) while it stays picked; three lines is as many as stay distinguishable for every reader.
+const PICK_MAX = 2;
+let worldPicks = readPicks();
+function readPicks() {
+  try {
+    const x = JSON.parse(store.get("stocks.worldPicks"));
+    if (Array.isArray(x)) return x.filter((p) => typeof p?.key === "string" && p.key !== "US" && (p.slot === 1 || p.slot === 2)).slice(0, PICK_MAX);
+  } catch { /* none saved */ }
+  return [{ key: "EU", slot: 1 }, { key: "JP", slot: 2 }];   // the two largest markets after the US
+}
+function togglePick(k) {
+  if (k === "US") return;
+  if (worldPicks.some((p) => p.key === k)) worldPicks = worldPicks.filter((p) => p.key !== k);
+  else {
+    const kept = worldPicks.length < PICK_MAX ? worldPicks : worldPicks.slice(1);   // full: the oldest pick gives way
+    const slot = [1, 2].find((n) => !kept.some((p) => p.slot === n));
+    worldPicks = [...kept, { key: k, slot }];
+  }
+  store.set("stocks.worldPicks", JSON.stringify(worldPicks));
+}
+const slotOf = (k) => (k === "US" ? 0 : worldPicks.find((p) => p.key === k)?.slot);
+
 function indexChartHTML() {
-  const title = market === "all" ? "The three markets" : esc(feed.markets[market]?.benchName || "Index");
-  return `<div class="card chart-card"><div class="chart-head"><h2>${title}</h2><span class="muted">${SPAN_WORDS[period]}</span></div>
+  if (market !== "all") {
+    return `<div class="card chart-card"><div class="chart-head"><h2>${esc(feed.markets[market]?.benchName || "Index")}</h2><span class="muted">${SPAN_WORDS[period]}</span></div>
+      <div class="chart" id="ix-chart"><p class="muted">Loading the index history…</p></div><div class="legend" id="ix-legend"></div></div>`;
+  }
+  const chips = worldList().filter((w) => w.key !== "US").map((w) => {
+    const slot = slotOf(w.key);
+    return `<button data-pick="${esc(w.key)}" class="${slot ? `on sl-${slot}` : ""}" aria-pressed="${Boolean(slot)}" title="${esc(w.name)}">${esc(w.short || w.place)}</button>`;
+  }).join("");
+  return `<div class="card chart-card"><div class="chart-head"><h2>World markets vs the US</h2><span class="muted">${SPAN_WORDS[period]}</span></div>
+    <p class="muted">Pick up to two markets to set beside the S&P 500.</p>
+    <div class="picks" role="group" aria-label="Markets beside the US">${chips}</div>
     <div class="chart" id="ix-chart"><p class="muted">Loading the index history…</p></div><div class="legend" id="ix-legend"></div></div>`;
+}
+
+// Every index, best over the period first, each with a small chart of it against the S&P 500.
+function worldHTML() {
+  const level = (x) => (x == null ? "" : ` · ${x.toLocaleString("en-AU", { maximumFractionDigits: 0 })}`);
+  const rows = worldRank(worldList(), period).map((w) => {
+    const x = periodReturn(w, period), slot = slotOf(w.key), us = w.key === "US";
+    const inner = `<span class="w-name"><span class="w-top"><span data-clockdot="${esc(w.key)}">${clockDotHTML(w.key)}</span><b>${esc(w.name)}</b></span>
+        <span class="muted">${esc(w.place)}<span class="num">${level(w.close)}</span></span></span>
+      <span class="w-mini" data-mini="${esc(w.key)}" aria-hidden="true"></span>
+      <span class="w-ret num ${tone(x)}">${signed(x, 1)}</span>`;
+    return us ? `<div class="world-row us">${inner}</div>`
+      : `<button class="world-row${slot ? ` on sl-${slot}` : ""}" data-pick="${esc(w.key)}" aria-pressed="${Boolean(slot)}" aria-label="${esc(w.name)}, ${esc(w.place)}: ${signed(x, 1)} ${PERIOD_WORDS[period]}. ${slot ? "On the chart; tap to remove" : "Tap to add to the chart"}">${inner}</button>`;
+  }).join("");
+  return `<div class="card"><h2>Around the world <span class="muted">${PERIOD_WORDS[period]}</span></h2>
+    <p class="muted">Each market's main index, best first. Its small chart covers ${SPAN_WORDS[period]}, with the S&P 500 dashed behind it. Each moves in its own currency. Tap one to put it on the chart.</p>
+    <div class="world">${rows}</div></div>`;
+}
+
+function clockDotHTML(k) {
+  if (!HOURS[k]) return "";
+  const c = marketClock(k, new Date());
+  return `<i class="dot${c.open ? " on" : ""}" title="${c.open ? "Open now" : "Closed now"} (usual hours)"></i>`;
+}
+
+// Small charts: each index against the S&P 500 over the period, once the histories are in.
+function drawMinis() {
+  const boxes = document.querySelectorAll("[data-mini]");
+  if (!boxes.length) return;
+  const keys = worldList().map((w) => w.key);
+  if (!loadIndices(keys, drawMinis)) return;
+  boxes.forEach((el) => {
+    const k = el.dataset.mini, h = indexHist[k];
+    if (!h) { el.innerHTML = ""; return; }
+    const o = overlay(k === "US" || !indexHist.US ? [h] : [h, indexHist.US], SPAN[period]);
+    if (!o || o.d.length < 2) { el.innerHTML = ""; return; }
+    const m = { lo: o.lo, hi: o.hi, p: o.d };
+    const line = (xs) => xs.map((v, i) => `${((i / (xs.length - 1)) * 100).toFixed(1)},${(28 - ((v - m.lo) / (m.hi - m.lo || 1)) * 26).toFixed(1)}`).join(" ");
+    el.innerHTML = `<svg viewBox="0 0 100 30" preserveAspectRatio="none">${o.lines[1] ? `<polyline class="vs-us" points="${line(o.lines[1].pct)}"/>` : ""}<polyline class="idx" points="${line(o.lines[0].pct)}"/></svg>`;
+  });
 }
 
 function breadthHTML(xs) {
@@ -383,49 +461,60 @@ function fxHTML() {
 
 function marketHTML() {
   const xs = pool(feed.stocks, market);
-  return `${periodsHTML()}${indexCardsHTML()}${indexChartHTML()}${market === "all" ? noteCard() : ""}${breadthHTML(xs)}${mapHTML(xs)}${moversHTML(xs)}${sectorsHTML(xs)}${mixHTML()}${fxHTML()}
+  return `${periodsHTML()}${indexCardsHTML()}${indexChartHTML()}${market === "all" ? `${worldHTML()}${noteCard()}` : ""}${breadthHTML(xs)}${mapHTML(xs)}${moversHTML(xs)}${sectorsHTML(xs)}${mixHTML()}${fxHTML()}
     <p class="muted">Closing prices, refreshed through the day after each market closes, so a market shown as open is still on its last close here. Opening hours are the usual weekday sessions; public holidays aren't counted.</p>`;
 }
 
-// The index chart: each market's index from its index fund's history file (the "b" line), loaded once.
-let indexHist = null, indexLoading = null;
-function loadIndexHist() {
-  indexLoading ||= Promise.all(Object.keys(feed.markets).map(async (k) => {
-    const fund = feed.stocks.find((s) => s.kind === "fund" && s.m === k);
-    if (!fund) return [k, null];
-    try {
-      const r = await fetch(`./history/${historyFile(fund.t)}`, { cache: "default" });
-      if (!r.ok) throw new Error(r.status);
-      const h = await r.json();
-      return [k, h.b?.some((x) => x != null) ? { key: k, d: h.d, p: h.b } : null];
-    } catch { return [k, null]; }
-  })).then((pairs) => { indexHist = Object.fromEntries(pairs); indexLoading = null; drawIndexChart(); });
+// Index histories, one small file each (stocks/history/index-<key>.json), loaded when first needed: { key, d, p },
+// or null when there is none. A market with stocks falls back on its index fund's file, whose "b" is the index.
+let indexHist = {}, indexWait = {};
+async function fetchIndex(k) {
+  const get = async (file) => { const r = await fetch(`./history/${file}`, { cache: "default" }); if (!r.ok) throw new Error(r.status); return r.json(); };
+  try { const h = await get(indexFile(k)); if (h.p?.length) return { key: k, d: h.d, p: h.p }; } catch { /* try the fund */ }
+  const fund = feed.stocks.find((s) => s.kind === "fund" && s.m === k);
+  if (fund) try { const h = await get(historyFile(fund.t)); if (h.b?.some((x) => x != null)) return { key: k, d: h.d, p: h.b }; } catch { /* none */ }
+  return null;
+}
+// True when every key is in; otherwise fetches the missing ones and calls `then` when they arrive.
+function loadIndices(keys, then) {
+  const need = keys.filter((k) => !(k in indexHist));
+  if (!need.length) return true;
+  Promise.all(need.map((k) => (indexWait[k] ||= fetchIndex(k).then((h) => { indexHist[k] = h; delete indexWait[k]; })))).then(then);
+  return false;
 }
 
 function drawIndexChart() {
   const box = $("#ix-chart");
   if (!box) return;
-  if (!indexHist) return loadIndexHist();
-  const keys = (market === "all" ? Object.keys(feed.markets) : [market]).filter((k) => indexHist[k]);
+  const world = market === "all";
+  const wanted = world ? ["US", ...worldPicks.map((p) => p.key)] : [market];
+  if (!loadIndices(wanted, drawIndexChart)) return;
+  const keys = wanted.filter((k) => indexHist[k]);
   const o = keys.length ? overlay(keys.map((k) => indexHist[k]), SPAN[period]) : null;
   if (!o || o.d.length < 2) { box.innerHTML = `<p class="muted">The index history isn't available right now${navigator.onLine ? "" : " (offline)"}.</p>`; $("#ix-legend").innerHTML = ""; return; }
-  const single = o.lines.length === 1, name = (k) => esc(feed.markets[k].benchName);
+  const single = o.lines.length === 1 && !world, name = (k) => esc(worldInfo(k).name);
+  const cls = (k) => (world ? `sl-${slotOf(k)}` : `ln-${esc(k)}`);
   const vals = (l) => (single ? l.level : l.pct);
   const all = o.lines.flatMap(vals);
   const m = { lo: Math.min(...all), hi: Math.max(...all), p: o.d };
   const level = (x) => x.toLocaleString("en-AU", { maximumFractionDigits: 0 });
   const fmt = (lo, hi) => (single ? `${level(lo)} – ${level(hi)}` : `${signed(lo, 0)} – ${signed(hi, 0)}`);
-  const summary = (i) => o.lines.map((l) => `<span class="ro"><i class="key ln-${esc(l.key)}"></i>${single ? `<b class="num">${level(l.level[i])}</b> ` : `${name(l.key)} `}<span class="num ${tone(l.pct[i])}">${signed(l.pct[i], 1)}</span></span>`).join("");
+  const summary = (i) => o.lines.map((l) => `<span class="ro"><i class="key ${cls(l.key)}"></i>${single ? `<b class="num">${level(l.level[i])}</b> ` : `${esc(worldInfo(l.key).short || l.key)} `}<span class="num ${tone(l.pct[i])}">${signed(l.pct[i], 1)}</span></span>`).join("");
+  // Each line named at its end, nudged apart where they finish close together.
+  const ends = single ? [] : o.lines.map((l) => ({ l, y: (yOf(vals(l).at(-1), m) / H) * 100 })).sort((a, b) => a.y - b.y);
+  ends.forEach((e, i) => { if (i && e.y - ends[i - 1].y < 13) e.y = ends[i - 1].y + 13; });
+  const endsHTML = ends.length ? `<div class="ends" aria-hidden="true">${ends.map((e) => `<span class="end-label ${cls(e.l.key)}" style="top:${Math.min(e.y, 100).toFixed(1)}%">${esc(worldInfo(e.l.key).short || e.l.key)}</span>`).join("")}</div>` : "";
   const zero = !single && m.lo < 0 && m.hi > 0 ? `<line class="zero" x1="0" x2="${W}" y1="${yOf(0, m).toFixed(1)}" y2="${yOf(0, m).toFixed(1)}"/>` : "";
   box.innerHTML = `<div class="readout" id="ix-readout">${summary(o.d.length - 1)} <span class="muted">· ${dayY(o.d[0])} to ${dayY(o.d.at(-1))}</span></div>
-    <div class="plot"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" id="ix-svg" role="img" aria-label="Index chart, ${SPAN_WORDS[period]}">
+    <div class="plot-row"><div class="plot"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" id="ix-svg" role="img" aria-label="Index chart, ${SPAN_WORDS[period]}">
       ${zero}${single ? `<polygon class="area" fill="url(#fill-${esc(o.lines[0].key)})" points="${area(vals(o.lines[0]), m)}"/>` : ""}
-      ${o.lines.map((l) => `<polyline class="ln ln-${esc(l.key)}" points="${path(vals(l), m)}"/>`).join("")}
+      ${o.lines.map((l) => `<polyline class="ln ${cls(l.key)}" points="${path(vals(l), m)}"/>`).join("")}
       <line id="ix-cursor" class="cursor" x1="0" x2="0" y1="0" y2="${H}" visibility="hidden"/></svg>
-      ${o.lines.map((l) => `<i class="dot-mark ln-${esc(l.key)}" data-dot="${esc(l.key)}" hidden></i>`).join("")}</div>
+      ${o.lines.map((l) => `<i class="dot-mark ${cls(l.key)}" data-dot hidden></i>`).join("")}</div>${endsHTML}</div>
     <div class="axis num"><span>${dayY(o.d[0])}</span><span>${fmt(m.lo, m.hi)}</span><span>${dayY(o.d.at(-1))}</span></div>`;
+  const missing = wanted.filter((k) => !indexHist[k]).map((k) => esc(worldInfo(k).name));
   $("#ix-legend").innerHTML = single ? `<span class="muted">${name(o.lines[0].key)}, index points. Tap the chart to read a day.</span>`
-    : `${o.lines.map((l) => `<span class="k ln-${esc(l.key)}">${name(l.key)}</span>`).join("")}<span class="muted">change from ${dayY(o.d[0])}, %</span>`;
+    : `${o.lines.map((l) => `<span class="k ${cls(l.key)}">${name(l.key)}</span>`).join("")}<span class="muted">change from ${dayY(o.d[0])}, %, each in its own currency${missing.length ? `. No history for ${missing.join(", ")} right now` : ""}</span>`;
   scrub($("#ix-svg"), m, (i) => {
     $("#ix-readout").innerHTML = `${dayY(o.d[i])} · ${summary(i)}`;
     o.lines.forEach((l, k) => placeDot(box.querySelectorAll("[data-dot]")[k], i, vals(l)[i], m));
@@ -442,11 +531,15 @@ function render() {
   $("#dateline").textContent = `Closes to ${asOf} · updated ${ago(Date.parse(feed.builtAt))} ago`;
   const view = { market: marketHTML, watchlist: watchlistHTML, ideas: ideasHTML, ratings: ratingsHTML, practice: practiceHTML, learn: learnHTML }[tab] || marketHTML;
   $("#main").innerHTML = view();
-  if (tab === "market") drawIndexChart();
+  if (tab === "market") { drawIndexChart(); drawMinis(); }
 }
 
 // The market clocks tick on their own; nothing else on the page needs redrawing for them.
-setInterval(() => { if (document.visibilityState === "visible") document.querySelectorAll("[data-clock]").forEach((el) => { el.innerHTML = clockHTML(el.dataset.clock); }); }, 30e3);
+setInterval(() => {
+  if (document.visibilityState !== "visible") return;
+  document.querySelectorAll("[data-clock]").forEach((el) => { el.innerHTML = clockHTML(el.dataset.clock); });
+  document.querySelectorAll("[data-clockdot]").forEach((el) => { el.innerHTML = clockDotHTML(el.dataset.clockdot); });
+}, 30e3);
 
 function sheet(html, bar = "") {
   const d = $("#sheet");
@@ -754,7 +847,7 @@ function restore() {
 }
 
 document.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-star],[data-tab],[data-market],[data-range],[data-open],[data-close],[data-buy],[data-sell],[data-period],[data-index],[data-mapby],[data-sector],[data-rating],[data-rfilter],[data-step],#refresh,#about,#method,#backup,#restore,#practice-start,#practice-reset");
+  const el = e.target.closest("[data-star],[data-tab],[data-market],[data-range],[data-open],[data-close],[data-buy],[data-sell],[data-period],[data-index],[data-mapby],[data-sector],[data-rating],[data-rfilter],[data-step],[data-pick],#refresh,#about,#method,#backup,#restore,#practice-start,#practice-reset");
   if (!el || el.disabled) return;
   if (el.dataset.star) { e.stopPropagation(); return star(el.dataset.star); }
   if (el.dataset.tab) { tab = el.dataset.tab; store.set("stocks.tab", tab); window.scrollTo(0, 0); return render(); }
@@ -770,6 +863,7 @@ document.addEventListener("click", (e) => {
   }
   if (el.dataset.rfilter) { ratingFilter = el.dataset.rfilter; return keepScroll(render); }
   if (el.dataset.step) return step(Number(el.dataset.step));
+  if (el.dataset.pick) { togglePick(el.dataset.pick); return keepScroll(render); }
   if (el.dataset.range) { range = el.dataset.range; $("#sheet").querySelectorAll("[data-range]").forEach((b) => { b.classList.toggle("on", b.dataset.range === range); b.setAttribute("aria-pressed", b.dataset.range === range); }); return drawChart(byT(openStock)); }
   if (el.dataset.open) { if (el.closest("#main")) openList = listAround(el); else if (!openList.includes(el.dataset.open)) openList = []; return caseFile(el.dataset.open); }
   if (el.dataset.close !== undefined) { openStock = null; return $("#sheet").close(); }

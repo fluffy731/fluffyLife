@@ -7,8 +7,8 @@
 //   node scripts/build-stocks.mjs --force   rebuild now
 import { readFileSync, writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { createHash } from "node:crypto";
-import { MARKETS, UNIVERSE, ALSO_CALLED } from "../stocks/universe.js";
-import { analyse, replay, scorecard, sparkline, closeAsOf, historyFile, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
+import { MARKETS, UNIVERSE, ALSO_CALLED, INDICES } from "../stocks/universe.js";
+import { analyse, replay, scorecard, sparkline, closeAsOf, historyFile, indexFile, pct, REVIEW, HOLD_DAYS, REPLAY_EVERY } from "../stocks/model.js";
 import { isOpinion, parseFeed } from "./build-news.mjs";
 
 export const FEED_VERSION = 1;
@@ -55,6 +55,12 @@ export function parseChart(json) {
 export function historyFor(bars, bench) {
   const r6 = (x) => +x.toPrecision(6);
   return { d: bars.map((b) => b.d), p: bars.map((b) => r6(b.p ?? b.c)), b: bars.map((b) => { const c = closeAsOf(bench, b.d); return c == null ? null : r6(c); }) };
+}
+
+// An index's chart file for the Market tab: its dates and closes. Indices pay no dividends, so the close is the price.
+export { indexFile };
+export function indexHistory(bars) {
+  return { d: bars.map((b) => b.d), p: bars.map((b) => +b.c.toPrecision(6)) };
 }
 
 // Today's bar is the live price until the session closes, and for a while after: Hong Kong's closing auction
@@ -166,8 +172,17 @@ export function fxRates(barsByCurrency) {
   return Object.fromEntries(Object.entries(barsByCurrency).filter(([, bars]) => bars?.length).map(([cur, bars]) => [cur, r6(bars.at(-1).c)]));
 }
 
-// `news` maps a symbol to its headlines, or to null when its news could not be fetched.
-export function buildFeed({ universe, markets, prices, benches, news = {}, fx = null, builtAt }) {
+// An index's level, its moves over the Market tab's periods (sessions back) and six months for a small chart;
+// every figure null when its prices could not be fetched.
+function indexSummary(b) {
+  const back = (n) => (b?.length > n ? r4(b.at(-1).c / b.at(-1 - n).c - 1) : null);
+  return { asOf: b?.at(-1)?.d ?? null, close: b?.length ? r6(b.at(-1).c) : null,
+    r1d: back(1), r1m: back(21), r3m: back(63), r6m: back(126), r12m: back(252), spark: b?.length ? sparkline(b) : null };
+}
+
+// `news` maps a symbol to its headlines, or to null when its news could not be fetched. `indices` is the world
+// view's list (INDICES) and `indexBars` each one's daily bars by key.
+export function buildFeed({ universe, markets, prices, benches, news = {}, fx = null, indices = [], indexBars = {}, builtAt }) {
   const stocks = [], failed = [], callsBy = { all: [] };
   for (const s of universe) {
     if (!prices[s.t]?.bars?.length) { failed.push(s.t); continue; }
@@ -181,15 +196,11 @@ export function buildFeed({ universe, markets, prices, benches, news = {}, fx = 
     const scored = calls.filter((c) => c.alpha != null).map((c) => c.d).sort();
     return [k, { ...scorecard(calls), from: scored[0] ?? null, to: scored.at(-1) ?? null }];
   }));
-  // Each index's level, its moves over the Market tab's periods (sessions back) and six months for a small chart.
-  const summary = Object.fromEntries(Object.entries(markets).map(([k, m]) => {
-    const b = benches[k], back = (n) => (b?.length > n ? r4(b.at(-1).c / b.at(-1 - n).c - 1) : null);
-    return [k, { label: m.label, benchName: m.benchName, asOf: b?.at(-1)?.d ?? null, close: b?.length ? r6(b.at(-1).c) : null,
-      r1d: back(1), r1m: back(21), r3m: back(63), r6m: back(126), r12m: back(252), spark: b?.length ? sparkline(b) : null }];
-  }));
+  const summary = Object.fromEntries(Object.entries(markets).map(([k, m]) => [k, { label: m.label, benchName: m.benchName, ...indexSummary(benches[k]) }]));
+  const world = indices.map(({ key, name, place, short }) => ({ key, name, place, short, ...indexSummary(indexBars[key]) }));
   return {
     version: FEED_VERSION, rules: RULES, builtAt, holdDays: HOLD_DAYS, every: REPLAY_EVERY,
-    markets: summary, stocks: stocks.sort(order), failed, scorecard: card, fx,
+    markets: summary, world, stocks: stocks.sort(order), failed, scorecard: card, fx,
     noteKey: benches.US?.at(-1)?.d ?? null, note: null,
   };
 }
@@ -303,23 +314,26 @@ export async function build({ force = false } = {}) {
   const previous = previousFeed();
   if (!force && previous?.rules === RULES && Date.now() - Date.parse(previous.builtAt) < FRESH_FOR) return { kept: previous.builtAt };
   const nowSec = Math.floor(Date.now() / 1000);
-  const symbols = [...Object.values(MARKETS).map((m) => m.bench), ...Object.values(FX_PAIRS), ...UNIVERSE.map((s) => s.t)];
+  const symbols = [...new Set([...Object.values(MARKETS).map((m) => m.bench), ...INDICES.map((i) => i.sym), ...Object.values(FX_PAIRS), ...UNIVERSE.map((s) => s.t)])];
   const got = Object.fromEntries(await pool(symbols, 4, async (s) => [s, await fetchBars(s, nowSec)]));
   const benches = Object.fromEntries(Object.entries(MARKETS).filter(([, m]) => got[m.bench].bars).map(([k, m]) => [k, got[m.bench].bars]));
   const prices = Object.fromEntries(UNIVERSE.filter((s) => got[s.t].bars).map((s) => [s.t, got[s.t]]));
+  const indexBars = Object.fromEntries(INDICES.filter((i) => got[i.sym].bars?.length).map((i) => [i.key, got[i.sym].bars]));
   const news = Object.fromEntries(await pool(UNIVERSE.filter((s) => prices[s.t] && s.kind !== "fund"), 4, async (s) => [s.t, await fetchNews(s, Date.now())]));
   const fx = fxRates(Object.fromEntries(Object.entries(FX_PAIRS).map(([cur, pair]) => [cur, got[pair].bars])));
-  const feed = buildFeed({ universe: UNIVERSE, markets: MARKETS, prices, benches, news, fx: Object.keys(fx).length ? fx : null, builtAt: new Date().toISOString() });
+  const feed = buildFeed({ universe: UNIVERSE, markets: MARKETS, prices, benches, news, fx: Object.keys(fx).length ? fx : null, indices: INDICES, indexBars, builtAt: new Date().toISOString() });
   if (!feed.stocks.length) throw new Error(`no stock prices fetched (${got[UNIVERSE[0].t].error}); the previous feed is kept`);
   feed.note = await writeNote(feed, previous?.note);
   // Each stock's two years for its chart, one small file each, loaded only when the stock is opened.
   rmSync(HISTORY, { recursive: true, force: true });
   mkdirSync(HISTORY, { recursive: true });
   for (const s of UNIVERSE.filter((x) => prices[x.t])) writeFileSync(`${HISTORY}/${historyFile(s.t)}`, JSON.stringify(historyFor(prices[s.t].bars, benches[s.m] || [])));
+  // And each index's, for the Market tab's world chart.
+  for (const [key, bars] of Object.entries(indexBars)) writeFileSync(`${HISTORY}/${indexFile(key)}`, JSON.stringify(indexHistory(bars)));
   writeFileSync(OUT, JSON.stringify(feed));
   return {
     stocks: feed.stocks.length, failed: Object.entries(got).filter(([, v]) => v.error).map(([s, v]) => `${s} (${v.error})`),
-    indices: Object.keys(benches), fx: feed.fx, scored: feed.scorecard.all.scored, spread: feed.scorecard.all.spread, note: feed.note ? feed.note.key : "none",
+    indices: Object.keys(benches), world: Object.keys(indexBars), fx: feed.fx, scored: feed.scorecard.all.scored, spread: feed.scorecard.all.spread, note: feed.note ? feed.note.key : "none",
     news: (({ stocks }) => ({ withHeadlines: stocks.filter((s) => s.news?.length).length, none: stocks.filter((s) => s.news && !s.news.length).length, notFetched: stocks.filter((s) => !s.news).length }))({ stocks: feed.stocks.filter((s) => s.kind !== "fund") }),
   };
 }

@@ -75,7 +75,7 @@ export function groups(stocks, by, p, companies, markets) {
   }
   const out = [...by_].filter(([, items]) => items.length).map(([key, items]) => {
     const xs = items.map((s) => periodReturn(s, p)).filter((x) => x != null);
-    items.sort((a, b) => (periodReturn(b, p) ?? -Infinity) - (periodReturn(a, p) ?? -Infinity));
+    items.sort(byMove(p));
     return { key, label: by === "sector" ? key : markets[key]?.label || key, items, avg: mean(xs) };
   });
   return by === "sector" ? out.sort((a, b) => b.items.length - a.items.length || a.label.localeCompare(b.label)) : out;
@@ -83,6 +83,10 @@ export function groups(stocks, by, p, companies, markets) {
 
 // "0700.HK" → "700", "AZN.L" → "AZN": short enough for a map tile.
 export const shortSymbol = (t) => t.replace(/\.(HK|L)$/, "").replace(/^0+(?=\d)/, "");
+
+// The world's indices ranked by their move over the period, those with no figure last.
+const byMove = (p) => (a, b) => (periodReturn(b, p) ?? -Infinity) - (periodReturn(a, p) ?? -Infinity) || 0;   // two with no figure: a tie, not NaN
+export const worldRank = (world, p) => [...world].sort(byMove(p));
 
 // ---------- the index chart ----------
 // Indices over the last `sessions` moves of the first one (so n sessions back, as the cards' returns count),
@@ -118,6 +122,14 @@ export const HOURS = {
   US: { zone: "America/New_York", sessions: [[570, 960]] },                 // 09:30–16:00
   HK: { zone: "Asia/Hong_Kong", sessions: [[570, 720], [780, 960]] },      // 09:30–12:00, 13:00–16:00
   UK: { zone: "Europe/London", sessions: [[480, 990]] },                   // 08:00–16:30
+  EU: { zone: "Europe/Berlin", sessions: [[540, 1050]] },                  // 09:00–17:30 (Xetra, Euronext)
+  JP: { zone: "Asia/Tokyo", sessions: [[540, 690], [750, 930]] },          // 09:00–11:30, 12:30–15:30
+  CN: { zone: "Asia/Shanghai", sessions: [[570, 690], [780, 900]] },       // 09:30–11:30, 13:00–15:00
+  IN: { zone: "Asia/Kolkata", sessions: [[555, 930]] },                    // 09:15–15:30
+  CA: { zone: "America/Toronto", sessions: [[570, 960]] },                 // 09:30–16:00
+  TW: { zone: "Asia/Taipei", sessions: [[540, 810]] },                     // 09:00–13:30
+  KR: { zone: "Asia/Seoul", sessions: [[540, 930]] },                      // 09:00–15:30
+  AU: { zone: "Australia/Sydney", sessions: [[600, 960]] },                // 10:00–16:00
 };
 const WEEKDAY = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
 const formatters = {};

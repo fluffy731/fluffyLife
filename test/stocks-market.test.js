@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { PERIODS, periodReturn, heat, pool, breadth, movers, sectors, ratingMix, groups, marketClock, shortSymbol, overlay } from "../stocks/market.js";
+import { PERIODS, periodReturn, heat, pool, breadth, movers, sectors, ratingMix, groups, marketClock, shortSymbol, overlay, HOURS, worldRank } from "../stocks/market.js";
+import { INDICES } from "../stocks/universe.js";
 
 const s = (t, m, over = {}) => ({ t, n: t, m, kind: "stock", rating: "Hold", r1d: 0, r1m: 0, r3m: 0, r6m: 0, r12m: 0, close: 100, facts: { sma200: 90 }, ...over });
 const COMPANIES = { A: ["Technology"], B: ["Technology"], C: ["Energy"], D: ["Financials"], F: ["Index fund"] };
@@ -146,4 +147,32 @@ test("index overlay: a market that has closed a session the first has not reache
   assert.deepEqual(o.d, ["D1", "D2", "D3", "D4"]);
   assert.deepEqual(o.lines[1].level, [50, 55, 60, 66], "Hong Kong's own newest close is on the chart");
   assert.deepEqual(o.lines[0].level, [100, 110, 121, 121], "New York holds its last close until it trades");
+});
+
+test("every world index has its exchange's hours", () => {
+  for (const i of INDICES) assert.ok(HOURS[i.key], `no hours for ${i.key}`);
+});
+
+test("market clock: Tokyo breaks for lunch from 11:30 to 12:30", () => {
+  const c = marketClock("JP", at("2026-11-12T02:45:00Z"));   // 11:45 in Tokyo (UTC+9)
+  assert.equal(c.open, false);
+  assert.equal(c.at.toISOString(), "2026-11-12T03:30:00.000Z");
+});
+
+test("market clock: Sydney in daylight saving opens at 10:00 local, 23:00 UTC the day before", () => {
+  const c = marketClock("AU", at("2026-11-12T22:00:00Z"));   // 09:00 Friday in Sydney (UTC+11)
+  assert.equal(c.open, false);
+  assert.equal(c.minutes, 60);
+  assert.equal(c.at.toISOString(), "2026-11-12T23:00:00.000Z");
+});
+
+test("market clock: Mumbai opens at 09:15", () => {
+  const c = marketClock("IN", at("2026-11-12T03:40:00Z"));   // 09:10 in India (UTC+5:30)
+  assert.equal(c.open, false);
+  assert.equal(c.minutes, 5);
+});
+
+test("world ranking: best move over the period first, indices with no figure last", () => {
+  const w = [{ key: "US", r1m: 0.01 }, { key: "JP", r1m: 0.05 }, { key: "AU", r1m: null }, { key: "CN", r1m: -0.02 }];
+  assert.deepEqual(worldRank(w, "1M").map((x) => x.key), ["JP", "US", "CN", "AU"]);
 });

@@ -1,8 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parseChart, completedBars, buildFeed, noteFor, parseNews, newsFromRss, mergeNews, aboutCompany, historyFor, fxRates, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
+import { parseChart, completedBars, buildFeed, noteFor, parseNews, newsFromRss, mergeNews, aboutCompany, historyFor, indexHistory, indexFile, fxRates, NOTE_MODEL, FEED_VERSION, SETTLE_SEC, NEWS_MAX } from "../scripts/build-stocks.mjs";
 import { historyFile } from "../stocks/model.js";
-import { MARKETS, UNIVERSE } from "../stocks/universe.js";
+import { MARKETS, UNIVERSE, INDICES } from "../stocks/universe.js";
 
 // A Yahoo chart response in the v8 shape: sessions open 09:30 New York (13:30 UTC in summer).
 const open = (iso) => Date.parse(`${iso}T13:30:00Z`) / 1000;
@@ -97,6 +97,34 @@ test("each market's index carries its level, its moves over the Market tab's per
   assert.ok(us.spark.length > 10 && us.spark.at(-1) === last, "the last close ends the small chart");
   const hk = feed.markets.HK;
   assert.deepEqual([hk.close, hk.r1d, hk.r12m, hk.spark], [null, null, null, null], "no index prices: no figures, not zeros");
+});
+
+test("the world list: the US first, the three markets with stocks under the same index as their cards, keys unique", () => {
+  assert.equal(INDICES[0].key, "US");
+  for (const [k, m] of Object.entries(MARKETS)) assert.equal(INDICES.find((i) => i.key === k)?.sym, m.bench, k);
+  assert.equal(new Set(INDICES.map((i) => i.key)).size, INDICES.length);
+  assert.ok(INDICES.length >= 10 && INDICES.every((i) => i.name && i.place && i.sym && i.short && i.short.length <= 10), "a short name fits a chart label");
+});
+
+test("the feed's world view lists every index in order with its level and moves; one not fetched keeps its place with no figures", () => {
+  const indices = [{ key: "US", name: "S&P 500", place: "United States", sym: "^GSPC" }, { key: "JP", name: "Nikkei 225", place: "Japan", sym: "^N225" }, { key: "AU", name: "S&P/ASX 200", place: "Australia", sym: "^AXJO" }];
+  const prices = { AAPL: { bars: sessions(300, () => 50), currency: "USD" } };
+  const jp = sessions(300, (i) => 200 + i);
+  const feed = buildFeed({ universe: [{ t: "AAPL", n: "Apple", m: "US" }], markets: { US: MARKETS.US }, prices, benches: { US: sessions(300, () => 100) }, indices, indexBars: { US: sessions(300, () => 100), JP: jp }, builtAt: "2026-10-31T00:00:00Z" });
+  assert.deepEqual(feed.world.map((w) => w.key), ["US", "JP", "AU"]);
+  const j = feed.world[1];
+  assert.deepEqual([j.name, j.place, j.asOf, j.close], ["Nikkei 225", "Japan", jp.at(-1).d, 499]);
+  assert.equal(j.r1d, +(499 / 498 - 1).toPrecision(4));
+  assert.equal(j.r12m, +(499 / (499 - 252) - 1).toPrecision(4));
+  assert.ok(j.spark.length > 10);
+  assert.deepEqual([feed.world[2].close, feed.world[2].r1d, feed.world[2].spark], [null, null, null]);
+  assert.deepEqual(buildFeed({ universe: [], markets: {}, prices: {}, benches: {}, builtAt: "x" }).world, [], "no indices given: an empty list");
+});
+
+test("an index's chart file is its dates and closes, under a name the page can work out", () => {
+  const bars = sessions(3, (i) => 1000 + i);
+  assert.deepEqual(indexHistory(bars), { d: bars.map((b) => b.d), p: [1000, 1001, 1002] });
+  assert.equal(indexFile("JP"), "index-JP.json");
 });
 
 test("a market whose index could not be fetched rates its stocks REVIEW rather than dropping them", () => {
