@@ -1,5 +1,5 @@
 // Spots: boot, shared app state, tabs, settings and the choice of data source.
-import { load, save, staleSaved, CBD } from "./model.js";
+import { load, save, staleSaved, CBD, KINDS } from "./model.js";
 import { sampleProvider } from "./samples.js";
 import { loadGoogle, googleProvider, testConnection, loadedKey } from "./places.js";
 import { renderExplore } from "./explore.js";
@@ -9,12 +9,39 @@ import { $, esc, toast, closeSheet } from "./ui.js";
 const FIELD_NAMES = { photo: "Photos", price: "Price level", priceRange: "Price range", rating: "Ratings", hours: "Opening hours",
   mapsUrl: "Google Maps link", summary: "Review summary (Google may not offer it in Australia yet)", reviews: "Review excerpts" };
 
+// Search choices (time, budget, kinds…) are remembered on this phone. The mode follows the clock:
+// from 9 pm to 4 am Spots opens on Late night.
+const UI_KEY = "spots.ui";
+function loadUi() {
+  const h = new Date().getHours();
+  const ui = { mode: h >= 21 || h < 4 ? "late" : "now", minutes: 120, travel: "drive", kinds: new Set(["eat"]), price: null, late: 30,
+    lateKinds: new Set(["eat", "drink", "dessert"]), where: "town", start: "09:00", pace: "relaxed", savedKind: "all" };
+  try {
+    const o = JSON.parse(localStorage.getItem(UI_KEY) || "{}");
+    if ([60, 120, 180, 240].includes(o.minutes)) ui.minutes = o.minutes;
+    if (["drive", "walk"].includes(o.travel)) ui.travel = o.travel;
+    if ([null, 1, 2, 3, 4].includes(o.price)) ui.price = o.price;
+    if ([15, 30, 45].includes(o.late)) ui.late = o.late;
+    if (typeof o.where === "string") ui.where = o.where;
+    if (["08:00", "09:00", "10:00"].includes(o.start)) ui.start = o.start;
+    if (["relaxed", "full"].includes(o.pace)) ui.pace = o.pace;
+    const kinds = (a) => (Array.isArray(a) && a.length && a.every((k) => KINDS.some((x) => x.id === k)) ? new Set(a) : null);
+    ui.kinds = kinds(o.kinds) || ui.kinds; ui.lateKinds = kinds(o.lateKinds) || ui.lateKinds;
+  } catch { /* first run or storage blocked: defaults */ }
+  return ui;
+}
+
 const app = {
   state: load(localStorage),
-  ui: { mode: "now", minutes: 120, travel: "drive", kinds: new Set(["eat"]), price: null, late: 30,
-    lateKinds: new Set(["eat", "drink", "dessert"]), where: "town", start: "09:00", pace: "relaxed", savedKind: "all" },
+  ui: loadUi(),
   pos: null, places: new Map(), lastResult: null, freshStamp: null, tab: "explore",
   persist() { save(localStorage, this.state); },
+  saveUi() {
+    const u = this.ui;
+    try { localStorage.setItem(UI_KEY, JSON.stringify({ minutes: u.minutes, travel: u.travel, price: u.price, late: u.late, where: u.where,
+      start: u.start, pace: u.pace, kinds: [...u.kinds], lateKinds: [...u.lateKinds] })); } catch { /* storage blocked */ }
+  },
+  refreshSaved() { if (this.tab === "saved") renderSaved(this); },
 
   async getProvider() {
     const s = this.state.settings;
@@ -114,7 +141,7 @@ function renderSettings(app) {
     </div>
     <div class="card set">
       <h3>Location</h3>
-      <p>Spots asks for your location when you tap Find. When location is off, it uses Melbourne CBD. Check in suggests your saved places and the places you just found.</p>
+      <p>Spots asks for your location when you tap Find or Check in. When location is off, it uses Melbourne CBD. Check in lists your saved places and the places you just found, nearest first, and only picks one for you when you're within about 300 m of it.</p>
     </div>
     <p class="hint">Everything you save stays on this phone. Place details, photos and reviews come from Google Maps.</p>`;
 }
@@ -181,6 +208,12 @@ async function refreshStale() {
 
 applyTheme();
 tickClock(); setInterval(tickClock, 30e3);
+// Coming back to the app (it may have sat in the background for hours): fix the clock and flag old results.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  tickClock();
+  if (app.tab === "explore" && app.onResume) app.onResume();
+});
 app.show("explore");
 setTimeout(refreshStale, 3000);
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js").catch(() => {});

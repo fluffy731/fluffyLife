@@ -461,3 +461,69 @@ test("swapStop never puts a place in two stops", () => {
   plan = swapStop(plan, 1, CBD);
   assert.equal(plan[1].place.id, "A", "swapping again cycles back");
 });
+
+// ---------- Improvements (fresh-eyes review) ----------
+import { planDay, dayBookends, saveDayPlan, activeDay, clearDay, checkinCandidates } from "../spots/model.js";
+
+test("planDay: after midnight 'tomorrow' means later today", () => {
+  const late = planDay(new Date(2026, 10, 22, 0, 30)); // Sunday 12:30 am
+  assert.equal(late.day.getTime(), new Date(2026, 10, 22).getTime());
+  assert.equal(late.label, "Later today");
+  const eve = planDay(new Date(2026, 10, 21, 20, 0));
+  assert.equal(eve.day.getTime(), new Date(2026, 10, 22).getTime());
+  assert.equal(eve.label, "Tomorrow");
+});
+
+test("buildDayPlan keeps up to six alternatives so Swap doesn't run out after two", () => {
+  const day = tomorrow(wed(20));
+  const many = Array.from({ length: 9 }, (_, i) => place(`p${i}`, { km: 1 + i, hours: everyDay(7, 0, 15, 0, false) }));
+  const plan = buildDayPlan(DAY_SLOTS.relaxed, { breakfast: many, morning: [], lunch: [], afternoon: [] }, { start: CBD, day, priceMax: null });
+  assert.equal(plan[0].alternatives.length, 6);
+});
+
+test("dayBookends: when to leave home and when you'll be back", () => {
+  const day = tomorrow(wed(20));
+  const far = { lat: -38.45, lng: 145.24 }; // Phillip Island-ish
+  const cands = { breakfast: [place("b", { ...far, hours: everyDay(7, 0, 15, 0, false) })], morning: [], lunch: [], afternoon: [place("a", { lat: -38.46, lng: 145.25, hours: everyDay(9, 0, 18, 0, false) })] };
+  const plan = buildDayPlan(DAY_SLOTS.relaxed, cands, { start: CBD, day, priceMax: null });
+  const b = dayBookends(plan, CBD);
+  assert.equal(b.leaveAt.getTime(), plan[0].at.getTime() - plan[0].travel * 60000);
+  const last = plan[3];
+  assert.equal(b.homeAt.getTime(), last.at.getTime() + (last.slot.visit + b.homeTravel) * 60000);
+  assert.ok(b.homeTravel > 60, "a long drive home from the island");
+  assert.equal(dayBookends(plan.map((s) => ({ ...s, place: null, travel: null })), CBD), null, "no stops, no bookends");
+});
+
+test("saveDayPlan keeps the day (times and places) until it's over", () => {
+  const day = tomorrow(wed(20));
+  const cands = { breakfast: [place("b", { name: "Cafe B", area: "Carlton", hours: everyDay(7, 0, 15, 0, false) })], morning: [], lunch: [place("l", { name: "Bistro L" })], afternoon: [] };
+  const plan = buildDayPlan(DAY_SLOTS.relaxed, cands, { start: CBD, day, priceMax: null });
+  let s = saveDayPlan(blank(), plan, { day, label: "Tomorrow", region: "Yarra Valley" });
+  assert.equal(s.day.date, "2026-11-19");
+  assert.equal(s.day.region, "Yarra Valley");
+  assert.deepEqual(s.day.stops.map((x) => [x.time, x.name, x.slot]), [["09:00", "Cafe B", "Breakfast"], ["12:30", "Bistro L", "Lunch"]]);
+  assert.ok(isSaved(s, "b") && isSaved(s, "l"), "its places are saved too");
+  const ls = fakeLS(); save(ls, s);
+  assert.deepEqual(load(ls).day, s.day, "survives closing the app");
+  assert.ok(activeDay(s, new Date(2026, 10, 19, 22, 0)), "still shown on the evening of the day");
+  assert.equal(activeDay(s, new Date(2026, 10, 20, 0, 5)), null, "gone the morning after");
+  assert.equal(clearDay(s).day, null);
+  assert.equal(load(fakeLS({ [KEY]: JSON.stringify({ day: { date: "nope", stops: 3 } }) })).day, null, "junk is dropped");
+});
+
+test("checkinCandidates: nearest first, preselect only within 300 m", () => {
+  const here = { lat: -37.8, lng: 144.97 };
+  const saved = [{ id: "far", name: "Geelong bistro", lat: -38.15, lng: 144.36, kind: "eat" }, { id: "near", name: "Corner cafe", lat: -37.8012, lng: 144.97, kind: "coffee" }];
+  const found = [{ id: "mid", name: "Bar", lat: -37.81, lng: 144.97, kind: "drink" }, { id: "near", name: "dupe", lat: -37.8012, lng: 144.97 }];
+  const r = checkinCandidates({ pre: null, saved, found, pos: here });
+  assert.deepEqual(r.list.map((p) => p.id), ["near", "mid", "far"]);
+  assert.equal(r.preselect, "near");
+  assert.ok(r.list[0].dist < 0.3);
+  const away = checkinCandidates({ pre: null, saved, found: [], pos: { lat: -37.9, lng: 145.1 } });
+  assert.equal(away.preselect, null, "nothing within 300 m: nothing picked for you");
+  const noPos = checkinCandidates({ pre: null, saved, found, pos: null });
+  assert.equal(noPos.preselect, null);
+  const chosen = checkinCandidates({ pre: saved[0], saved, found, pos: here });
+  assert.equal(chosen.preselect, "far", "a place you tapped Check in on stays chosen");
+  assert.equal(chosen.list[0].id, "far");
+});

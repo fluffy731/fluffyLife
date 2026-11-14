@@ -262,6 +262,23 @@ export const DAY_SLOTS = { relaxed: BASE, full: [...BASE, slot("dinner", "Dinner
 
 export const tomorrow = (now) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
+// Before 4 am (where Late night ends), "tomorrow" means later today.
+export function planDay(now) {
+  if (now.getHours() < 4) return { day: new Date(now.getFullYear(), now.getMonth(), now.getDate()), label: "Later today" };
+  return { day: tomorrow(now), label: "Tomorrow" };
+}
+
+// When to leave home for the first stop, and when you'd be back after the last.
+export function dayBookends(plan, from) {
+  const stops = plan.filter((s) => s.place);
+  if (!stops.length) return null;
+  const first = stops[0], last = stops[stops.length - 1];
+  const leaveAt = new Date(first.at.getTime() - first.travel * 60000);
+  const homeStart = new Date(last.at.getTime() + last.slot.visit * 60000);
+  const homeTravel = travelMinutes(haversineKm(last.place, from), { mode: "drive", at: homeStart });
+  return { leaveAt, homeTravel, homeAt: new Date(homeStart.getTime() + homeTravel * 60000) };
+}
+
 const hhmm = (s) => { const [h, m] = String(s).split(":").map(Number); return (h || 0) * 60 + (m || 0); };
 export function slotTimes(slots, startHHMM, day) {
   const shift = hhmm(startHHMM || "09:00") - hhmm("09:00");
@@ -281,7 +298,7 @@ export function buildDayPlan(slots, candidatesBySlotId, { start, day, startTime 
       .sort((a, b) => (score(b) - 0.03 * b.travel) - (score(a) - 0.03 * a.travel));
     const place = ok[0] || null;
     if (place) { used.add(place.id); here = place; }
-    return { slot: s, at, place, travel: place ? place.travel : null, alternatives: ok.slice(1, 3) };
+    return { slot: s, at, place, travel: place ? place.travel : null, alternatives: ok.slice(1, 7) };
   });
 }
 
@@ -294,7 +311,19 @@ const num = (v) => (Number.isFinite(v) ? v : null);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-export const blank = () => ({ saved: [], stamps: [], settings: { key: "", sample: false, theme: "auto", lastBackup: null }, recentRegions: [] });
+export const blank = () => ({ saved: [], stamps: [], settings: { key: "", sample: false, theme: "auto", lastBackup: null }, recentRegions: [], day: null });
+
+// A saved day plan: its date, and each stop's time with the same few fields a saved place keeps.
+function cleanDay(d) {
+  if (!d || typeof d !== "object" || !/^\d{4}-\d{2}-\d{2}$/.test(d.date || "") || !Array.isArray(d.stops)) return null;
+  const stops = d.stops.map((x) => {
+    const base = cleanSaved({ ...x, savedAt: "", fetchedAt: "" });
+    if (!base || !/^([01]\d|2[0-3]):[0-5]\d$/.test(x.time || "")) return null;
+    const { savedAt, fetchedAt, ...keep } = base;
+    return { ...keep, time: x.time, slot: str(x.slot) };
+  }).filter(Boolean);
+  return stops.length ? { date: d.date, label: str(d.label) || "Tomorrow", region: str(d.region) || null, stops } : null;
+}
 
 function cleanSaved(x) {
   if (!x || typeof x !== "object" || !str(x.id) || !str(x.name)) return null;
@@ -318,6 +347,7 @@ function clean(raw) {
     stamps: list(raw.stamps, cleanStamp),
     settings: { key: str(set.key), sample: set.sample === true, theme: THEMES.includes(set.theme) ? set.theme : "auto", lastBackup: str(set.lastBackup) || null },
     recentRegions: Array.isArray(raw.recentRegions) ? raw.recentRegions.filter((x) => typeof x === "string").slice(0, 3) : [],
+    day: cleanDay(raw.day),
   };
 }
 
@@ -401,4 +431,32 @@ export function swapStop(plan, i, start) {
   const after = out.slice(i + 1).find((x) => x.place);
   if (after) { after.place = annotate(after.place, s.place, { mode: "drive", at: after.at }); after.travel = after.place.travel; }
   return out;
+}
+
+// ---------- Saved day, check-in candidates ----------
+
+const hm = (d) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+
+export function saveDayPlan(state, plan, { day, label = "Tomorrow", region = null }, now = new Date()) {
+  let st = state;
+  const stops = plan.filter((s) => s.place).map((s) => {
+    st = savePlace(st, s.place, now);
+    return { id: s.place.id, name: s.place.name, kind: s.place.kind, area: s.place.area, lat: s.place.lat, lng: s.place.lng,
+      time: hm(s.at), slot: s.slot.label, ...(s.place.sample ? { sample: true } : {}) };
+  });
+  return { ...st, day: cleanDay({ date: isoDay(day), label, region, stops }) };
+}
+export const activeDay = (state, now = new Date()) => (state.day && state.day.date >= isoDay(now) ? state.day : null);
+export const clearDay = (state) => ({ ...state, day: null });
+
+// Where you might be checking in: the place you tapped, then saved and just-found places, nearest first.
+// Only something within 300 m is picked for you; otherwise you choose.
+export function checkinCandidates({ pre, saved, found, pos }) {
+  const seen = new Set(), out = [];
+  for (const p of [...saved, ...found]) if (p && p.id && !seen.has(p.id) && (!pre || p.id !== pre.id)) { seen.add(p.id); out.push(p); }
+  const withDist = (p) => ({ ...p, dist: pos && Number.isFinite(p.lat) && Number.isFinite(p.lng) ? haversineKm(pos, p) : null });
+  const rest = out.map(withDist).sort((a, b) => (a.dist ?? Infinity) - (b.dist ?? Infinity));
+  const list = [...(pre ? [withDist(pre)] : []), ...rest].slice(0, 8);
+  const preselect = pre ? pre.id : list[0] && list[0].dist != null && list[0].dist < 0.3 ? list[0].id : null;
+  return { list, preselect };
 }

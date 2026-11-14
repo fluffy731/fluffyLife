@@ -2,7 +2,7 @@
 import {
   KINDS, kindOf, reachKm, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, buildDayPlan, tomorrow,
   travelMinutes, haversineKm, fmtMinutes, hoursLabel, minutesLeft, dayHours, priceSymbols, priceRangeLabel, mapsUrl,
-  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop,
+  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop, planDay, dayBookends, saveDayPlan, activeDay, clearDay,
 } from "./model.js";
 import { REGIONS, surpriseRegion } from "./regions.js";
 import { $, EMOJI, esc, fmtCount, toast, openSheet, sheetBar } from "./ui.js";
@@ -23,7 +23,7 @@ const EMPTY = {
 
 const chip = (attr, val, label, on) => `<button class="chip" type="button" ${attr}="${esc(val)}" aria-pressed="${on}">${label}</button>`;
 const kindChips = (set) => `<div class="chips kinds">${KINDS.map((k) => `<button class="chip" type="button" data-kind="${k.id}" aria-pressed="${set.has(k.id)}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>`;
-const budget = (u) => `<p class="label">Budget</p><div class="chips">${PRICES.map(([v, l]) => chip("data-price", v, l, String(u.price ?? "any") === v)).join("")}</div>`;
+const budget = (u) => `<p class="label">Budget (up to)</p><div class="chips">${PRICES.map(([v, l]) => chip("data-price", v, l, String(u.price ?? "any") === v)).join("")}</div>`;
 
 function controls(u) {
   if (u.mode === "now") return `
@@ -44,7 +44,7 @@ function controls(u) {
     <p class="label">Where</p>
     <div class="chips scroll">${chip("data-where", "town", "Around town", u.where === "town")}${chip("data-where", "surprise", "🎲 Surprise me", u.where === "surprise")}${REGIONS.map((r) => chip("data-where", r.id, esc(r.name), u.where === r.id)).join("")}</div>
     <p class="hint">${region ? esc(region.blurb) : u.where === "surprise" ? "A day-trip region you haven't been to lately." : "Places within about 10 km of you."}</p>
-    <p class="label">Start</p><div class="chips">${[["08:00", "8 am"], ["09:00", "9 am"], ["10:00", "10 am"]].map(([v, l]) => chip("data-start", v, l, u.start === v)).join("")}</div>
+    <p class="label">First stop</p><div class="chips">${[["08:00", "8 am"], ["09:00", "9 am"], ["10:00", "10 am"]].map(([v, l]) => chip("data-start", v, l, u.start === v)).join("")}</div>
     <p class="label">Pace</p><div class="chips">${chip("data-pace", "relaxed", "Relaxed · 4 stops", u.pace === "relaxed")}${chip("data-pace", "full", "Full day · 5 stops", u.pace === "full")}</div>
     ${budget(u)}`;
 }
@@ -57,6 +57,7 @@ export function renderExplore(app) {
   const v = $("#v-explore");
   v.innerHTML = `
     <h2 class="title">Where to?</h2>
+    ${yourDay(app)}
     ${ready ? "" : `<div class="card setup">
       <h3>Connect Google for real places</h3>
       <p>Photos, prices, reviews and opening hours come from Google Places with your own key; Google's free monthly allowance covers a few searches a day. Or look around with sample places first.</p>
@@ -70,10 +71,35 @@ export function renderExplore(app) {
     </div>
     <div class="results" id="results"></div>`;
   if (!v.dataset.bound) { v.addEventListener("click", (e) => onClick(app, e)); v.dataset.bound = "1"; }
+  app.onResume = () => renderResults(app);
   renderResults(app);
 }
 
+const clock = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return new Date(2000, 0, 1, h, m).toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" }); };
+const timeOf = (d) => d.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
+
+// A saved day plan stays at the top of Explore until the day is over.
+function yourDay(app) {
+  const d = activeDay(app.state);
+  if (!d) return "";
+  const now = new Date(), today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const [y, m, dd] = d.date.split("-").map(Number);
+  const when = `${d.date === today ? "Today" : "Tomorrow"} · ${new Date(y, m - 1, dd).toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" })}`;
+  return `<div class="card your-day">
+    <div class="yd-head"><div><p class="eyebrow">Your day</p><h3>${esc(when)}</h3>${d.region ? `<p class="hint">${esc(d.region)}</p>` : ""}</div>
+      <button class="btn" type="button" id="clear-day">Clear</button></div>
+    ${d.stops.map((x) => `<div class="day-stop" data-kind="${kindOf(x.kind).id}">
+      <span class="t">${esc(clock(x.time))}<small>${esc(x.slot)}</small></span>
+      <span class="badge" aria-hidden="true">${EMOJI[kindOf(x.kind).id]}</span>
+      <span class="n"><b>${esc(x.name)}</b><small>${esc(x.area || kindOf(x.kind).label)}</small></span>
+      <a class="icon-btn" href="${esc(mapsUrl(x))}" target="_blank" rel="noopener" aria-label="${esc(x.name)} in Google Maps">↗</a>
+      <button class="icon-btn" type="button" data-daycheck="${esc(x.id)}" aria-label="Check in at ${esc(x.name)}">◎</button>
+    </div>`).join("")}
+  </div>`;
+}
+
 function refreshControls(app) {
+  app.saveUi();
   $("#controls").innerHTML = controls(app.ui);
   document.querySelectorAll("#v-explore .mode").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === app.ui.mode)));
   $("#find").textContent = findLabel(app.ui);
@@ -83,6 +109,9 @@ async function onClick(app, e) {
   const t = e.target, u = app.ui, d = (sel) => t.closest(sel);
   if (d("#setup-google")) return app.show("settings");
   if (d("#setup-sample")) { app.state.settings.sample = true; app.persist(); return renderExplore(app); }
+  if (d("#clear-day")) { app.state = clearDay(app.state); app.persist(); toast("Day cleared"); return renderExplore(app); }
+  if (d("[data-daycheck]")) { const id = d("[data-daycheck]").dataset.daycheck; return app.checkIn(activeDay(app.state).stops.find((x) => x.id === id)); }
+  if (d("#refresh")) return find(app);
   if (d("[data-mode]")) { u.mode = d("[data-mode]").dataset.mode; return refreshControls(app); }
   if (d("[data-min]")) { u.minutes = +d("[data-min]").dataset.min; return refreshControls(app); }
   if (d("[data-travel]")) { u.travel = d("[data-travel]").dataset.travel; return refreshControls(app); }
@@ -118,9 +147,11 @@ async function find(app) {
     const now = new Date();
     const r = u.mode === "now" ? await findNow(provider, pos, now, u) : u.mode === "late" ? await findLate(provider, pos, now, u) : await findTomorrow(app, provider, pos, now, u);
     r.source = provider.label;
+    r.searchedAt = Date.now();
     app.lastResult = r;
     for (const p of r.places || r.plan.flatMap((s) => [s.place, ...s.alternatives]).filter(Boolean)) app.places.set(p.id, p);
     renderResults(app);
+    window.scrollTo({ top: Math.max(0, res.getBoundingClientRect().top + window.scrollY - 12) });
   } catch (err) {
     res.innerHTML = `<div class="error"><b>Couldn't search.</b> ${esc(err.message || err)}</div>`;
   } finally {
@@ -149,17 +180,17 @@ async function findLate(provider, pos, now, u) {
 }
 
 async function findTomorrow(app, provider, pos, now, u) {
-  const day = tomorrow(now);
+  const { day, label } = planDay(now);
   let region = null;
   if (u.where === "surprise") region = surpriseRegion(app.state.recentRegions);
   else if (u.where !== "town") region = REGIONS.find((r) => r.id === u.where) || null;
   if (region) { app.state = noteRegion(app.state, region.id); app.persist(); }
   const center = region ? { lat: region.lat, lng: region.lng } : pos;
   const slots = DAY_SLOTS[u.pace];
-  const lists = await Promise.all(slots.map((s) => provider.search({ query: region ? `${s.query} ${region.name}` : s.query, kind: s.kinds[0],
+  const lists = await Promise.all(slots.map((s) => provider.search({ query: region ? `${s.query} ${region.name}` : s.query, kind: s.kinds[0], kinds: s.kinds,
     center, radiusKm: region ? 15 : 10, openNow: false, priceMax: u.price, max: 10 })));
   const plan = buildDayPlan(slots, Object.fromEntries(slots.map((s, i) => [s.id, lists[i]])), { start: pos, day, startTime: u.start, priceMax: u.price });
-  return { type: "day", region, day, plan, from: pos };
+  return { type: "day", region, day, label, plan, from: pos };
 }
 
 // ---------- Showing results ----------
@@ -205,25 +236,29 @@ function renderResults(app) {
   if (!res || !r) return;
   const attrib = `<p class="attrib">${esc(r.source)}</p>`;
   if (r.type === "list") {
-    res.innerHTML = `<div class="res-head"><h3>${esc(r.head)}</h3><span>${esc(r.sub)}</span></div>`
+    const old = r.searchedAt && Date.now() - r.searchedAt > 15 * 60e3;
+    res.innerHTML = (old ? `<div class="stale">Results from ${esc(timeOf(new Date(r.searchedAt)))}<button class="btn" type="button" id="refresh">Refresh</button></div>` : "")
+      + `<div class="res-head"><h3>${esc(r.head)}</h3><span>${esc(r.sub)}</span></div>`
       + (r.places.length ? r.places.map((p, i) => card(app, p, i, r.at, r.travel)).join("") : `<div class="empty">${EMPTY[r.mode === "late" ? "late" : r.why || "none"]}</div>`) + attrib;
     return;
   }
   const dayName = r.day.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" });
   const first = r.plan.find((s) => s.place);
+  const ends = dayBookends(r.plan, r.from);
   const away = r.region ? fmtMinutes(travelMinutes(haversineKm(r.from, r.region), { at: r.plan[0].at })) : "";
-  let html = `<div class="card region"><p class="eyebrow">Tomorrow · ${esc(dayName)}</p><h3>${esc(r.region ? r.region.name : "Around town")}</h3>
+  let html = `<div class="card region"><p class="eyebrow">${esc(r.label || "Tomorrow")} · ${esc(dayName)}</p><h3>${esc(r.region ? r.region.name : "Around town")}</h3>
     <p>${esc(r.region ? r.region.blurb : "Places within about 10 km of you.")}</p>${r.region ? `<p>${away} from you</p>` : ""}</div><div class="stop-wrap">`;
   r.plan.forEach((s, i) => {
     if (i > 0) html += `<div class="leg">${s.place && s.travel != null ? `${fmtMinutes(s.travel)} drive` : ""}</div>`;
-    else html += `<div class="leg">${first && s.place ? `${fmtMinutes(s.travel)} drive from you` : ""}</div>`;
+    else html += `<div class="leg">${first && s.place && ends ? `Leave home about ${esc(timeOf(ends.leaveAt))} · ${fmtMinutes(s.travel).replace(/^about /, "")} drive` : ""}</div>`;
     const time = s.at.toLocaleTimeString("en-AU", { hour: "numeric", minute: "2-digit" });
     html += `<div class="stop"><div class="time">${esc(time)}<small>${esc(s.slot.label)}</small></div><div>`
       + (s.place ? card(app, s.place, i, s.at, "drive") + (s.alternatives.length ? `<div class="acts"><button class="btn" type="button" data-swap="${i}">⇄ Swap for another</button></div>` : "")
         : `<div class="slot-empty">Nothing open at this time nearby. Try another start time or budget.</div>`)
       + `</div></div>`;
   });
-  html += `</div><div class="day-acts"><button class="btn hot" type="button" id="save-day">♥ Save the whole day</button></div>${attrib}`;
+  if (ends) html += `<div class="leg">${fmtMinutes(ends.homeTravel)} home · back about ${esc(timeOf(ends.homeAt))}</div>`;
+  html += `</div><div class="day-acts"><button class="btn hot" type="button" id="save-day">${r.daySaved ? "✓ Day saved" : "♥ Save the whole day"}</button></div>${attrib}`;
   res.innerHTML = html;
 }
 
@@ -235,10 +270,11 @@ function swap(app, i) {
 }
 
 function saveDay(app) {
-  const places = app.lastResult.plan.map((s) => s.place).filter(Boolean);
-  for (const p of places) app.state = savePlace(app.state, p);
+  const r = app.lastResult;
+  app.state = saveDayPlan(app.state, r.plan, { day: r.day, label: r.label, region: r.region ? r.region.name : null });
   app.persist();
-  toast(`Saved ${places.length} places`);
+  r.daySaved = true;
+  toast(`Day saved: ${r.plan.filter((s) => s.place).length} stops`);
   renderResults(app);
 }
 
@@ -252,6 +288,7 @@ function toggleSave(app, id) {
   document.querySelectorAll(`[data-act="save"][data-id="${CSS.escape(id)}"]`).forEach((b) => {
     b.textContent = was ? "♡ Save" : "♥ Saved"; b.classList.toggle("hot", !was);
   });
+  app.refreshSaved();
 }
 
 // ---------- Place sheet ----------

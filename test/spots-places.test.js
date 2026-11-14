@@ -201,3 +201,10 @@ test("testConnection loads a photo and reports fields Google refused", async () 
   assert.ok(!failR.fields.includes("photo"));
   assert.match(failR.notes.join(" "), /photo/i);
 });
+
+test("toPlace keeps a place's own kind when it's one the search allows", () => {
+  assert.equal(toPlace({ ...gp(), primaryType: "bowling_alley" }, "sights", ["sights", "activities"]).kind, "activities");
+  assert.equal(toPlace({ ...gp(), primaryType: "museum" }, "sights", ["sights", "activities"]).kind, "sights");
+  assert.equal(toPlace({ ...gp(), primaryType: "restaurant" }, "coffee", ["coffee", "eat"]).kind, "eat");
+  assert.equal(toPlace({ ...gp(), primaryType: "bar" }, "eat", ["eat"]).kind, "eat", "outside the allowed kinds: the search's kind");
+});

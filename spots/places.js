@@ -42,12 +42,15 @@ function hoursOf(h) {
   return { periods: ps.map((p) => ({ open: pt(p.open), close: pt(p.close) })).filter((p) => p.open) };
 }
 
-export function toPlace(gp, kind) {
+// kind: the kind searched for; allowed: kinds the search covers (a day-plan slot), so a bowling alley found
+// under "things to do" stays Activities rather than becoming Sights.
+export function toPlace(gp, kind, allowed) {
   const loc = gp.location || {};
   const s = gp.reviewSummary;
   const address = gp.formattedAddress || "";
   return {
-    id: gp.id, name: text(gp.displayName) || "Unnamed place", kind: kind ? kindOf(kind).id : kindFromType(gp.primaryType),
+    id: gp.id, name: text(gp.displayName) || "Unnamed place",
+    kind: !kind ? kindFromType(gp.primaryType) : allowed && allowed.includes(kindFromType(gp.primaryType)) ? kindFromType(gp.primaryType) : kindOf(kind).id,
     type: gp.primaryType || "", address, area: areaFromAddress(address),
     lat: numOr(val(loc.lat)), lng: numOr(val(loc.lng)),
     rating: numOr(gp.rating), ratingCount: numOr(gp.userRatingCount),
@@ -82,7 +85,7 @@ export function googleProvider(lib) {
   return {
     label: "Google Maps",
     dropped: () => [...dropped],
-    async search({ query, kind, center, radiusKm, openNow, priceMax, max = 12 }) {
+    async search({ query, kind, kinds, center, radiusKm, openNow, priceMax, max = 12 }) {
       const base = { textQuery: query, locationBias: { center: { lat: center.lat, lng: center.lng }, radius: Math.round(Math.min(50, Math.max(0.5, radiusKm)) * 1000) },
         maxResultCount: Math.min(20, max), language: "en-AU", region: "au" };
       if (openNow) base.isOpenNow = true;
@@ -90,7 +93,7 @@ export function googleProvider(lib) {
         base.priceLevels = PRICE_NAMES.slice(1, priceMax + 1).map((n) => (lib.PriceLevel && lib.PriceLevel[n]) || n);
       }
       const { places } = await withRetry(SEARCH_FIELDS, (fields) => lib.Place.searchByText({ ...base, fields }));
-      return (places || []).map((g) => toPlace(g, kind));
+      return (places || []).map((g) => toPlace(g, kind, kinds));
     },
     async details(p) {
       if (p.sample) return p;

@@ -1,5 +1,5 @@
 // Saved places, checking in (the stamp), the Passport, and backup and restore.
-import { KINDS, kindOf, haversineKm, travelMinutes, fmtMinutes, mapsUrl, unsave, addStamp, passportStats, backupJSON, mergeBackup } from "./model.js";
+import { KINDS, kindOf, haversineKm, travelMinutes, fmtMinutes, mapsUrl, unsave, addStamp, passportStats, backupJSON, mergeBackup, checkinCandidates } from "./model.js";
 import { putPhoto, getPhoto, delPhoto, thumb, photosAsDataURLs, dataURLToBlob } from "./db.js";
 import { $, EMOJI, esc, toast, openSheet, closeSheet, sheetBar } from "./ui.js";
 import { openPlace } from "./explore.js";
@@ -38,6 +38,8 @@ export function renderSaved(app) {
   if (!v.dataset.bound) {
     v.addEventListener("click", (e) => {
       const t = e.target, get = (a) => app.state.saved.find((s) => s.id === t.closest(`[${a}]`).getAttribute(a));
+      const row = t.closest("[data-sdel],[data-scheck],[data-sopen]");
+      if (row && !get(row.hasAttribute("data-sdel") ? "data-sdel" : row.hasAttribute("data-scheck") ? "data-scheck" : "data-sopen")) return renderSaved(app);
       if (t.closest("[data-skind]")) { app.ui.savedKind = t.closest("[data-skind]").dataset.skind; return renderSaved(app); }
       if (t.closest("[data-sdel]")) { const s = get("data-sdel"); app.state = unsave(app.state, s.id); app.persist(); toast(`Removed ${s.name}`); return renderSaved(app); }
       if (t.closest("[data-scheck]")) return openCheckIn(app, get("data-scheck"));
@@ -49,18 +51,19 @@ export function renderSaved(app) {
 
 // ---------- Check in ----------
 
+const distText = (km) => (km == null ? "" : km < 1 ? ` · ${Math.max(10, Math.round((km * 1000) / 10) * 10)} m away` : ` · ${km.toFixed(1)} km away`);
+const candHTML = (list, sel) => list.map((p) => `<button class="cand" type="button" data-cand="${esc(p.id)}" data-kind="${kindOf(p.kind).id}" aria-pressed="${p.id === sel}"><span class="badge" aria-hidden="true">${EMOJI[kindOf(p.kind).id]}</span><span>${esc(p.name)}<small>${esc(p.area || kindOf(p.kind).label)}${distText(p.dist)}</small></span></button>`).join("")
+  + `<button class="cand" type="button" data-cand="other" aria-pressed="${sel === "other"}"><span class="badge" aria-hidden="true" style="background:var(--soft)">✎</span><span>Somewhere else<small>Type the name</small></span></button>`;
+
 export function openCheckIn(app, pre) {
-  const seen = new Set(), cands = [];
   const r = app.lastResult, found = r ? (r.places || r.plan.map((s) => s.place)).filter(Boolean) : [];
-  for (const p of [pre, ...byDistance(app, app.state.saved), ...byDistance(app, found)]) if (p && p.id && !seen.has(p.id) && cands.length < 8) { seen.add(p.id); cands.push(p); }
-  const st = { sel: cands[0] ? cands[0].id : "other", rating: 4, kind: "eat", file: null };
+  const pick = (pos) => checkinCandidates({ pre, saved: app.state.saved, found, pos });
+  let { list: cands, preselect } = pick(app.pos);
+  const st = { sel: preselect || (cands.length ? null : "other"), rating: 4, kind: "eat", file: null, touched: false };
   const d = openSheet(`${sheetBar}
     <h2>Check in</h2>
-    <p class="hint">Where are you? Saved places first, then places you just found.</p>
-    <div class="cands" id="cands">
-      ${cands.map((p) => `<button class="cand" type="button" data-cand="${esc(p.id)}" data-kind="${kindOf(p.kind).id}" aria-pressed="${p.id === st.sel}"><span class="badge" aria-hidden="true">${EMOJI[kindOf(p.kind).id]}</span><span>${esc(p.name)}<small>${esc(p.area || kindOf(p.kind).label)}</small></span></button>`).join("")}
-      <button class="cand" type="button" data-cand="other" aria-pressed="${st.sel === "other"}"><span class="badge" aria-hidden="true" style="background:var(--soft)">✎</span><span>Somewhere else<small>Type the name</small></span></button>
-    </div>
+    <p class="hint" id="where-hint">${app.pos ? "Nearest first." : "Finding where you are…"}</p>
+    <div class="cands" id="cands">${candHTML(cands, st.sel)}</div>
     <div id="other"${st.sel === "other" ? "" : " hidden"}>
       <div class="other"><input id="other-name" type="text" placeholder="Place name" aria-label="Place name"><input id="other-area" type="text" placeholder="Suburb or city" aria-label="Suburb or city"></div>
       <div class="chips" style="margin-top:8px">${KINDS.map((k) => `<button class="chip" type="button" data-okind="${k.id}" data-kind="${k.id}" aria-pressed="${k.id === st.kind}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>
@@ -77,13 +80,21 @@ export function openCheckIn(app, pre) {
       </button>
       <span class="hold-cap">Hold until the ring closes</span>
     </div>`);
-
+  // Where are you? Re-sort by distance once the phone answers, and pick a place only if you're at it.
+  app.locate().then((pos) => {
+    if (!d.open || !$("#cands")) return;
+    ({ list: cands, preselect } = pick(pos));
+    if (!st.touched) st.sel = preselect || (cands.length ? null : "other");
+    $("#cands").innerHTML = candHTML(cands, st.sel);
+    $("#other").hidden = st.sel !== "other";
+    $("#where-hint").textContent = pos.fallback ? "Location is off, so these aren't sorted by distance." : preselect && !pre ? "You're here, it seems. Nearest first." : "Nearest first. Pick where you are.";
+  });
   const stars = () => { $("#stars").innerHTML = [1, 2, 3, 4, 5].map((n) => `<button class="star${n <= st.rating ? " on" : ""}" type="button" data-star="${n}" aria-label="${n} star${n > 1 ? "s" : ""}">★</button>`).join(""); };
   stars();
   const panel = d.querySelector(".in");
   panel.addEventListener("click", (e) => {
     const c = e.target.closest("[data-cand]"), s = e.target.closest("[data-star]"), k = e.target.closest("[data-okind]");
-    if (c) { st.sel = c.dataset.cand; panel.querySelectorAll("[data-cand]").forEach((b) => b.setAttribute("aria-pressed", String(b === c))); $("#other").hidden = st.sel !== "other"; }
+    if (c) { st.sel = c.dataset.cand; st.touched = true; panel.querySelectorAll("[data-cand]").forEach((b) => b.setAttribute("aria-pressed", String(b === c))); $("#other").hidden = st.sel !== "other"; }
     if (s) { st.rating = +s.dataset.star; stars(); }
     if (k) { st.kind = k.dataset.okind; panel.querySelectorAll("[data-okind]").forEach((b) => b.setAttribute("aria-pressed", String(b === k))); }
   });
@@ -97,7 +108,7 @@ export function openCheckIn(app, pre) {
   const hold = $("#hold"), ring = $("#ring"), C = 2 * Math.PI * 64;
   ring.style.strokeDasharray = C; ring.style.strokeDashoffset = C;
   let holding = false, t0 = 0, raf = 0, busy = false;
-  const go = () => { if (busy) return; busy = true; stamp(app, cands, st).finally(() => { busy = false; }); };
+  const go = () => { if (busy) return; busy = true; stamp(app, () => cands, st).finally(() => { busy = false; }); };
   const tick = () => {
     if (!holding) return;
     const p = Math.min(1, (performance.now() - t0) / 800);
@@ -113,8 +124,10 @@ export function openCheckIn(app, pre) {
   hold.addEventListener("click", (e) => { if (e.detail === 0) go(); });
 }
 
-async function stamp(app, cands, st) {
+async function stamp(app, getCands, st) {
+  const cands = getCands();
   let place;
+  if (!st.sel) { toast("Pick where you are first"); $("#ring").style.strokeDashoffset = 2 * Math.PI * 64; return; }
   if (st.sel === "other") {
     const name = $("#other-name").value.trim();
     if (!name) { toast("Type the place name first"); $("#ring").style.strokeDashoffset = 2 * Math.PI * 64; $("#other-name").focus(); return; }

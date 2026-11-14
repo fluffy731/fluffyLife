@@ -142,6 +142,19 @@ h2.title { margin: 8px 0 14px; font: 800 30px/1.1 var(--round); letter-spacing: 
 .leg { margin: 6px 0 6px 76px; padding-left: 12px; border-left: 3px dotted var(--line); font-size: 13px; color: var(--muted); min-height: 26px; display: flex; align-items: center; }
 .day-acts { display: flex; gap: 10px; margin-top: 14px; }
 
+.your-day { padding: 14px 14px 6px; margin-bottom: 16px; border-color: var(--line); background: var(--card); }
+.yd-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.yd-head h3 { margin: 2px 0 0; font: 800 19px/1.2 var(--round); }
+.yd-head .hint { margin-top: 2px; }
+.day-stop { display: grid; grid-template-columns: 62px 36px minmax(0, 1fr) auto auto; gap: 8px; align-items: center; padding: 8px 0; border-top: 2px dotted var(--hair); }
+.day-stop .t { font: 800 13px/1.15 var(--round); }
+.day-stop .t small { display: block; font: 600 11px var(--sans); color: var(--muted); }
+.day-stop .badge { width: 34px; height: 34px; font-size: 17px; }
+.day-stop .n b { display: block; font: 800 15px/1.2 var(--round); overflow-wrap: anywhere; }
+.day-stop .n small { color: var(--muted); font-size: 12px; }
+.stale { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--gold); color: var(--on-gold); font: 700 14px var(--sans); border: 2px solid var(--line); }
+.stale .btn { min-height: 34px; padding: 5px 12px; font-size: 13px; }
+
 /* ---------- Saved ---------- */
 .saved-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 14px; margin-bottom: 10px; }
 .badge { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--k); color: var(--on-k); border: 2px solid var(--line); font-size: 20px; }

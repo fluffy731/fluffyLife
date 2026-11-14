@@ -44,6 +44,11 @@ for (let i = 0; i < n; i++) {
 }
 ok(`Now/Eat/2 h gives results with hours, rating and drive time (${n})`, allGood);
 ok("results credit their source", (await page.textContent("#v-explore")).includes("Sample data"));
+ok("budget says it means this or cheaper", (await page.textContent("#v-explore")).includes("Budget (up to)"));
+await page.clock.setFixedTime(new Date(2026, 10, 18, 13, 25));
+await page.evaluate(() => document.dispatchEvent(new Event("visibilitychange")));
+ok("coming back after 25 min flags the results as old, with Refresh", (await page.textContent("#results")).includes("Results from 1:00 pm") && (await page.locator("#refresh").count()) === 1);
+await page.clock.setFixedTime(WED_1PM);
 
 // 3. Place sheet
 await cards.first().locator(".open-place").click();
@@ -68,6 +73,14 @@ await cards.first().locator('[data-act="save"]').click();
 await page.click('[data-tab="saved"]');
 ok("Saved lists the saved place", (await page.locator(".saved-row").count()) === 1);
 ok("Saved credits where place names came from", (await page.textContent("#v-saved")).includes("Sample data"));
+await page.locator(".saved-row .open-place").first().click();
+await page.waitForSelector('#sheet[open] [data-act="save"]');
+await page.click('#sheet [data-act="save"]');
+await page.click("#sheet [data-close]");
+ok("removing a place from its sheet takes it off Saved straight away", (await page.locator(".saved-row").count()) === 0);
+await page.click('[data-tab="explore"]');
+await cards.first().locator('[data-act="save"]').click();
+await page.click('[data-tab="saved"]');
 
 // 5. Tomorrow
 await page.click('[data-tab="explore"]');
@@ -76,6 +89,16 @@ await page.click("#find");
 await page.waitForSelector(".stop", { timeout: 10000 });
 ok("Tomorrow (relaxed) gives four stops", (await page.locator(".stop").count()) === 4);
 ok("Tomorrow shows drive times between stops", (await page.locator(".leg").count()) >= 3);
+ok("Tomorrow says when to leave home and when you'll be back", /Leave home about/.test(await page.textContent("#results")) && /back about/.test(await page.textContent("#results")));
+ok("Find scrolls down to the results", (await page.evaluate(() => window.scrollY)) > 200);
+await page.click("#save-day");
+ok("Save the whole day confirms it", (await page.textContent("#save-day")).includes("Day saved"));
+await page.reload();
+await page.waitForSelector("#find");
+ok("the saved day is still there after reopening, with its four stops", (await page.locator(".your-day .day-stop").count()) === 4);
+await page.click("#mode-tomorrow");
+await page.click("#find");
+await page.waitForSelector(".stop", { timeout: 10000 });
 
 // 6. Check in by keyboard
 await page.click("#fab");
@@ -95,7 +118,7 @@ ok("check-in adds a stamp to Passport", (await page.locator("#v-passport .stamp"
 // 7. Settings: quota advice, backup fallback, theme
 await page.click("#settings-btn");
 const setText = await page.textContent("#v-settings");
-ok("quota advice keeps inside the free allowance (30 a day, not 300)", setText.includes("30 a day") && !setText.includes("300"));
+ok("quota advice keeps inside the free allowance (30 a day, not 300)", setText.includes("30 a day") && !/300 (requests|a day)/.test(setText));
 await page.evaluate(() => { navigator.canShare = () => true; navigator.share = () => Promise.reject(Object.assign(new Error("no gesture"), { name: "NotAllowedError" })); });
 await page.click("#backup-btn");
 await page.waitForSelector("#sheet[open] #backup-again", { timeout: 5000 }).catch(() => {});
@@ -138,6 +161,35 @@ await page.waitForFunction(() => document.querySelector("#where-note")?.textCont
 ok("location refused falls back to the CBD and says so", true);
 await page.waitForSelector(".result", { timeout: 10000 });
 await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/spots-now.png` : "/tmp/spots-now.png" });
+
+// 10b. Choices are remembered; at night Spots opens on Late night
+page = await newPage({ sample: true });
+await page.click('[data-min="180"]');
+await page.click('[data-price="2"]');
+await page.reload();
+await page.waitForSelector("#find");
+ok("time and budget are remembered after reopening", (await page.locator('[data-min="180"][aria-pressed="true"]').count()) === 1 && (await page.locator('[data-price="2"][aria-pressed="true"]').count()) === 1);
+page = await newPage({ at: new Date(2026, 10, 18, 23, 0), sample: true });
+ok("at 11 pm Spots opens on Late night", (await page.locator('#mode-late[aria-pressed="true"]').count()) === 1);
+
+// 10c. Check in only picks a place for you when you're at it
+const savedHere = (lat, lng) => () => localStorage.setItem("spots.v1", JSON.stringify({ settings: { sample: true }, saved: [{ id: "cbd-spot", name: "CBD spot", kind: "eat", area: "CBD", lat: -37.8136, lng: 144.9631, savedAt: "", fetchedAt: "" }] }));
+for (const [label, geo, expectPicked] of [["far away (Ballarat)", { latitude: -37.56, longitude: 143.85 }, false], ["at the place", { latitude: -37.8136, longitude: 144.9632 }, true]]) {
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block", permissions: ["geolocation"], geolocation: geo });
+  const pg = await ctx.newPage(); pg.on("pageerror", (e) => errs.push(e.message));
+  await pg.clock.setFixedTime(WED_1PM);
+  await pg.addInitScript(savedHere());
+  await pg.goto(base, { waitUntil: "load" });
+  await pg.click("#fab");
+  await pg.waitForFunction(() => /km|m away/.test(document.querySelector("#sheet .cand")?.textContent || ""), null, { timeout: 10000 }).catch(() => {});
+  const picked = (await pg.locator('#sheet .cand[data-cand="cbd-spot"][aria-pressed="true"]').count()) === 1;
+  ok(`check in ${label}: ${expectPicked ? "picks the place" : "picks nothing for you"} and shows the distance`, picked === expectPicked && /km|m away/.test(await pg.textContent("#sheet .cand")));
+  if (!expectPicked) {
+    await pg.focus("#hold"); await pg.keyboard.press("Enter"); await pg.waitForTimeout(300);
+    ok("holding with nothing picked asks where you are", (await pg.textContent("#toast")).includes("Pick where you are"));
+  }
+  await ctx.close();
+}
 
 // 11. The Google path, with a stand-in for the Maps JavaScript API
 const FAKE_MAPS = (cb) => `
