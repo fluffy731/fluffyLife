@@ -178,6 +178,18 @@ Two tabs: **Plan** and **Packing**.
 - **Packing** is the checklist. Edit the list in `travel/items.js`. Each section has `always` items, plus `long` items that only show in Long trip mode. Tag an item `["text", "overseas domestic"]` to limit it to those trip types (Overseas, Domestic, Road trip). Ticks, and items added on the phone, stay in that browser.
 - **Code:** planner logic is in `travel/plan-model.js` and packing logic in `travel/model.js`, both tested in `test/`.
 
+# Spots (`/spots/`, unlisted)
+
+Where to go in Melbourne now, tonight or tomorrow, and a passport of everywhere you've checked in. Left off the home page and out of the table above, and its pages ask search engines not to index them. Unlisted is not private: the address still opens for anyone who has it.
+
+- **Three modes** (Explore). **Now**: the time you have (1 h to half a day), drive or walk; it shows places open now that stay open for the visit, within a drive that leaves time for it. **Late night**: places open at least another hour, within a 15, 30 or 45 min night drive (night roads are faster, so it reaches further); tapped before 9 pm it plans for tonight from 10 pm. **Tomorrow**: a 4- or 5-stop day (breakfast, morning, lunch, afternoon, dinner) around town or in one of ten day-trip regions, each stop open at its time, with drive times between stops, **Swap** and **Save the whole day**. All three share a budget ($ to $$$$) and kinds (Eat, Drink, Coffee, Sights, Activities, Dessert).
+- **Each place** shows a real photo, price level and range per person, rating, opening hours, drive time and a Google Maps link. Opening it shows Google's review summary where Google offers one (otherwise two review excerpts), and today's and tomorrow's hours.
+- **Saved, Check in, Passport.** Save keeps only the place id, name, kind, suburb and position, refreshed after 30 days as Google's terms allow. **Check in** (hold the red button) adds a stamp with a rating, note and your own photo, kept as a 600 px copy. Passport counts stamps, places and suburbs.
+- **Google key.** Photos, prices, reviews and hours come from Google Places through the Maps JavaScript API, with the owner's own key pasted into Settings. The key stays on the phone: never in the repo, never in a backup. Settings has the setup steps: a Google Cloud project with billing on, Maps JavaScript API and Places API (New) enabled, a key restricted to `https://fluffy731.github.io/*` and those two APIs, and a daily quota cap. Google's free monthly allowance per service covers a few searches a day. **Test** lists which fields came back. Without a key, **Sample places** fills every screen with made-up places.
+- **Drive times** are estimates: straight-line distance × 1.3 for roads, plus 5 min to park, at peak, daytime or night speeds (`spots/model.js`). The Google Maps link gives the real route.
+- **Back up** (Settings) saves saved places, stamps and photos as one JSON file; **Restore** merges a backup in without duplicates.
+- **Code:** logic in `spots/model.js` (tested in `test/spots-model.test.js`); the Google adapter `spots/places.js` and sample places `spots/samples.js` (`test/spots-places.test.js`); regions in `spots/regions.js`. Browser check: `node scripts/spots-check.mjs`. Design: `docs/superpowers/specs/2026-11-14-spots-design.md`.
+
 # Builder (`/builder/`, unlisted)
 
 A tracker for Solomon's Victorian Domestic Builder (Unlimited) registration with the Building and Plumbing Commission (BPC). Left off the home page, and its pages ask search engines not to index them. Unlisted is not private: the address still opens for anyone who has it. The repo is public, so it holds only the generic requirements; everything typed in (addresses, referee names, registration numbers) stays in that browser. Back it up with Export backup.
@@ -243,6 +255,7 @@ node scripts/korean-check.mjs              # Korean app behaviour (search IME, d
 node scripts/yue-check.mjs                 # Cantonese app: progress isolation, speech fallback, offline
 node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
 node scripts/news-check.mjs                # Briefing news app against a fixture feed
+node scripts/spots-check.mjs               # Spots app in sample mode (modes, place sheet, check-in, night theme)
 node scripts/songs-check.mjs               # Korean Songs tab with LRCLIB and the Claude API faked (invented lyrics only)
 ```
 The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.
