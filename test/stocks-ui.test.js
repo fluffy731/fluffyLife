@@ -53,7 +53,7 @@ test("six months on one basis: the price against the index, with dividends said 
 
 test("the glossary explains every term the page uses", () => {
   const terms = GLOSSARY.map((g) => g.term).join(" | ");
-  for (const t of ["Index fund", "Moving average", "RSI", "Volatility", "Dividend yield", "52-week range", "Ratings", "Scorecard", "Diversification", "Sector", "Market map", "Breadth", "Trading hours"]) assert.match(terms, new RegExp(t), t);
+  for (const t of ["Index fund", "Moving average", "RSI", "Volatility", "Dividend yield", "52-week range", "Ratings", "Scorecard", "Diversification", "Sector", "Market map", "Breadth", "Trading hours", "World markets"]) assert.match(terms, new RegExp(t), t);
   assert.ok(GLOSSARY.every((g) => g.text.length > 40));
 });
 

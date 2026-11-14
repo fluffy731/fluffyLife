@@ -206,6 +206,8 @@ export function scorecard(calls) {
 
 // Where a stock's two-year history is published (stocks/history/<file>), for the page to load on demand.
 export const historyFile = (t) => `${t.replace(/[^A-Za-z0-9-]/g, "_")}.json`;
+// And each world index's (by its key in INDICES), for the Market tab's world chart.
+export const indexFile = (key) => `index-${key.replace(/[^A-Za-z0-9-]/g, "_")}.json`;
 
 // The last `span` closes thinned to at most `points`, first and last kept, for a small chart.
 export function sparkline(bars, span = HALF, points = 60) {

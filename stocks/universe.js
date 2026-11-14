@@ -11,6 +11,23 @@ export const MARKETS = {
   UK: { label: "UK", bench: "^FTSE", benchName: "FTSE 100" },
 };
 
+// The Market tab's world view: each large market's main index, by Yahoo symbol, the US first and then roughly
+// by the size of the market. US, HK and UK are the indices above (same keys); the rest are shown, not rated.
+// Each moves in its own currency.
+export const INDICES = [
+  { key: "US", short: "US", name: "S&P 500", place: "United States", sym: "^GSPC" },
+  { key: "EU", short: "Europe", name: "Euro Stoxx 50", place: "Eurozone", sym: "^STOXX50E" },
+  { key: "JP", short: "Japan", name: "Nikkei 225", place: "Japan", sym: "^N225" },
+  { key: "CN", short: "China", name: "Shanghai Composite", place: "China", sym: "000001.SS" },
+  { key: "HK", short: "Hong Kong", name: "Hang Seng", place: "Hong Kong", sym: "^HSI" },
+  { key: "UK", short: "UK", name: "FTSE 100", place: "United Kingdom", sym: "^FTSE" },
+  { key: "IN", short: "India", name: "Nifty 50", place: "India", sym: "^NSEI" },
+  { key: "CA", short: "Canada", name: "S&P/TSX", place: "Canada", sym: "^GSPTSE" },
+  { key: "TW", short: "Taiwan", name: "Taiex", place: "Taiwan", sym: "^TWII" },
+  { key: "KR", short: "Korea", name: "KOSPI", place: "South Korea", sym: "^KS11" },
+  { key: "AU", short: "Australia", name: "S&P/ASX 200", place: "Australia", sym: "^AXJO" },
+];
+
 // Other names headlines use for a company, where its display name alone would miss them. A headline must
 // name the company (or a symbol of three letters or more) to be shown with it.
 export const ALSO_CALLED = {
