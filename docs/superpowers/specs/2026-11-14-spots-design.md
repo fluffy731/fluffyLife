@@ -55,7 +55,8 @@ Plus: a budget for each place (price range), real photos, a Google Maps link, an
 ### Google Places, from the phone
 
 - The app loads the **Maps JavaScript API** (Places library) with a key the owner pastes into Settings once. The key is stored in that phone's storage and never committed.
-- **Key setup** (in the app's Settings and the README): Google Cloud project with billing turned on, enable *Maps JavaScript API* and *Places API (New)*, create a key restricted to the website `https://fluffy731.github.io/*` and to those two APIs, and set a daily quota cap on Places so a misused key can only exhaust the day's quota, not run up a bill.
+- **Key setup** (in the app's Settings and the README): Google Cloud project with billing turned on, enable *Maps JavaScript API* and *Places API (New)*, create a key restricted to the website `https://fluffy731.github.io/*` and to those two APIs, and set each Places daily quota to about 30, which keeps even a misused key inside the free monthly allowance.
+- **Fields Google may refuse:** `priceRange` and `reviewSummary` are newer. If a request with them fails, it's retried without them and they're left out from then on; Settings → Test lists any field Google refused and checks that a photo actually loads.
 - **Cost:** since March 2025 Google gives a free monthly allowance per service: 10,000 calls for Essentials, 5,000 for Pro, 1,000 for Enterprise. Searches that ask for rating, price, opening hours or review summary bill as Enterprise, and each photo shown is one photo call. A few searches a day stays inside the free allowance. [Likely: the per-service figures for Text Search Enterprise and Photos are from the pricing table, which this session could not open.] To keep inside it, the app asks Google only when you tap Find, loads at most 8 photos per search lazily, and fetches the review summary only when you open a place.
 - **What a search asks for:** id, name, location, address, primary type, rating, rating count, price level, price range, regular opening hours, UTC offset, photos and Google Maps link. Opening a place also asks for the review summary and up to five reviews.
 - **Review summary:** Google's AI summary where it offers one, shown with Google's own disclosure line. Google's documentation listed it for the US, UK, India and Japan; whether Australia has it is unconfirmed [Guessing]. Where it's missing: the rating, the count and the two most helpful review excerpts with their authors, plus "All reviews on Google".
@@ -74,7 +75,8 @@ All three share a **budget** control (up to $, $$, $$$ or $$$$, or any) and **wh
 ### Now (short on time)
 
 - **Time I have:** 1 h, 2 h, 3 h, half day. **Getting there:** drive or walk.
-- Each kind has a typical visit length (eat 60 min, drink 60, coffee 30, sights 60, activities 90, dessert 30). The longest drive each way is (time I have − visit length) ÷ 2, converted to a distance with the travel model below. Example: 2 hours for dinner leaves 30 min each way.
+- Each kind has a typical visit length (eat 60 min, drink 60, coffee 30, sights 60, activities 90, dessert 30), never more than half the time you have, so 1 hour for food means a quick 30-minute bite. The longest drive each way is (time I have − visit length) ÷ 2, converted to a distance with the travel model below. Example: 2 hours for dinner leaves 30 min each way; 1 hour leaves 15.
+- When nothing fits, the app says why: everything's closed (try Late night or Tomorrow), nothing fits the budget, or nothing open is close enough (try more time, or drive).
 - Only places open now that stay open for at least the visit are shown, nearest-and-best first.
 
 ### Late night
@@ -128,7 +130,7 @@ Times are shown as "about 25 min". The same model, run backwards, gives the sear
 
 - **Explore:** the three modes and results. A place opens into a sheet with a bigger photo, the review summary, today's and tomorrow's hours, price range, the Google Maps link and Save / Check in.
 - **Saved:** places you want to go, nearest first, with the budget filter.
-- **Check in** (centre button): pick a saved or nearby place, rating, note, your own photo (from the camera roll, kept as a small copy), then hold the button for the stamp.
+- **Check in** (centre button): pick a saved place or one you just found (nearest first), or type one; rating, note, your own photo (from the camera roll, kept as a small copy), then hold the button for the stamp.
 - **Passport:** stamps by suburb, stats, collections, backup.
 - **Settings** (gear): Google key and setup steps with a Test button, sample mode, home position fallback (Melbourne CBD when location is off), theme, backup and restore.
 
