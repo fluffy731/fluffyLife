@@ -4,7 +4,9 @@ import {
   CBD, KINDS, kindOf, haversineKm, speedBand, travelMinutes, reachKm, fmtMinutes,
   priceLevelOf, priceSymbols, priceRangeLabel, fitsBudget, mapsUrl,
   minutesLeft, isOpenAt, nextOpen, hoursLabel, dayHours,
+  score, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, slotTimes, buildDayPlan, tomorrow,
 } from "../spots/model.js";
+import { REGIONS, surpriseRegion } from "../spots/regions.js";
 
 // 18 November 2026 is a Wednesday.
 const wed = (h, m = 0) => new Date(2026, 10, 18, h, m);
@@ -181,4 +183,134 @@ test("dayHours joins split lunch and dinner periods", () => {
 test("dayHours: a day open midnight to midnight reads Open 24 hours", () => {
   const h = { periods: [{ open: { day: 5, hour: 0, minute: 0 }, close: { day: 6, hour: 0, minute: 0 } }] };
   assert.equal(dayHours(h, 5), "Open 24 hours");
+});
+
+// ---------- Task 3: choosing places ----------
+
+const north = (km) => ({ lat: CBD.lat + km / 111.2, lng: CBD.lng });
+const place = (id, o = {}) => ({ id, name: id, kind: "eat", ...north(o.km ?? 1), rating: 4.5, ratingCount: 200, price: 2,
+  hours: everyDay(11, 0, 23, 0, false), off: null, ...o });
+
+test("pickNow: 2 hours for Eat allows 30 min each way and drops a place 40 min away", () => {
+  assert.equal(driveBudget(120, 60), 30);
+  assert.equal(driveBudget(60, 60), 5, "never below 5 minutes");
+  const out = pickNow([place("near", { km: 3 }), place("far", { km: 20 })], { from: CBD, at: wed(13), minutes: 120, mode: "drive", priceMax: null, kind: "eat" });
+  assert.deepEqual(out.map((p) => p.id), ["near"]);
+  assert.equal(out[0].travel, 13);
+  assert.ok(Math.abs(out[0].km - 3) < 0.1);
+});
+
+test("pickNow: drops a place closing in 45 min", () => {
+  const closing = place("closing", { hours: everyDay(11, 0, 13, 45, false) });
+  const open = place("open", { hours: everyDay(11, 0, 15, 0, false) });
+  const out = pickNow([closing, open], { from: CBD, at: wed(13), minutes: 120, mode: "drive", priceMax: null, kind: "eat" });
+  assert.deepEqual(out.map((p) => p.id), ["open"]);
+});
+
+test("pickNow: drops places with unknown hours", () => {
+  const out = pickNow([place("unknown", { hours: null })], { from: CBD, at: wed(13), minutes: 120, mode: "drive", priceMax: null, kind: "eat" });
+  assert.equal(out.length, 0);
+});
+
+test("pickNow: respects budget but keeps unknown price", () => {
+  const out = pickNow([place("dear", { price: 3 }), place("cheap", { price: 1 }), place("unpriced", { price: null })],
+    { from: CBD, at: wed(13), minutes: 120, mode: "drive", priceMax: 2, kind: "eat" });
+  assert.deepEqual(out.map((p) => p.id).sort(), ["cheap", "unpriced"]);
+});
+
+test("pickNow: better-rated places come first, duplicates removed", () => {
+  const a = place("a", { rating: 4.0 }), b = place("b", { rating: 4.8 });
+  const out = pickNow([a, b, a], { from: CBD, at: wed(13), minutes: 120, mode: "drive", priceMax: null, kind: "eat" });
+  assert.deepEqual(out.map((p) => p.id), ["b", "a"]);
+});
+
+test("score: Bayesian rating, unknown rating counts as 3.5", () => {
+  assert.equal(score({ rating: 4.0, ratingCount: 50 }), 4.0);
+  assert.ok(score({ rating: 5, ratingCount: 2 }) < score({ rating: 4.6, ratingCount: 900 }), "two 5-star reviews don't beat 900 at 4.6");
+  assert.equal(score({ rating: null, ratingCount: 0 }), 3.5);
+});
+
+test("pickLate: in the afternoon starts tonight at 22:00 and labels tonight", () => {
+  const s = lateStart(wed(15));
+  assert.equal(s.tonight, true);
+  assert.equal(s.at.getTime(), wed(22).getTime());
+  assert.deepEqual(lateStart(wed(23, 30)), { at: wed(23, 30), tonight: false });
+  const twoAm = new Date(2026, 10, 19, 2, 0);
+  assert.deepEqual(lateStart(twoAm), { at: twoAm, tonight: false });
+});
+
+test("pickLate: sorts the 3 am closer before the midnight closer and needs an hour left", () => {
+  const midnight = place("midnight", { hours: everyDay(17, 0, 0, 0, true) });
+  const three = place("three", { hours: everyDay(17, 0, 3, 0, true), rating: 4.0 });
+  const soon = place("soon", { hours: everyDay(17, 0, 22, 30, false) });
+  const out = pickLate([midnight, three, soon], { from: CBD, at: wed(22), maxMinutes: 30, priceMax: null });
+  assert.deepEqual(out.map((p) => p.id), ["three", "midnight"]);
+});
+
+test("pickLate: reaches further than the same minutes by day", () => {
+  const far = place("far", { km: 20, hours: everyDay(17, 0, 3, 0, true) });
+  assert.equal(pickLate([far], { from: CBD, at: wed(23), maxMinutes: 30, priceMax: null }).length, 1);
+  assert.equal(pickNow([far], { from: CBD, at: wed(17), minutes: 120, mode: "drive", priceMax: null, kind: "eat" }).length, 0);
+});
+
+test("slotTimes shifts the day by the start time", () => {
+  const day = tomorrow(wed(20));
+  assert.equal(day.getTime(), new Date(2026, 10, 19).getTime());
+  const t = slotTimes(DAY_SLOTS.relaxed, "10:00", day);
+  assert.deepEqual(t.map((d) => d.getHours() * 60 + d.getMinutes()), [600, 690, 810, 930]);
+  assert.equal(DAY_SLOTS.relaxed.length, 4);
+  assert.equal(DAY_SLOTS.full.length, 5);
+  assert.equal(DAY_SLOTS.full.at(-1).id, "dinner");
+});
+
+test("buildDayPlan: four relaxed stops, no repeats, each open at its time", () => {
+  const day = tomorrow(wed(20));
+  const shared = place("shared", { km: 2, rating: 4.9, ratingCount: 999, hours: everyDay(7, 0, 22, 0, false) });
+  const cands = {
+    breakfast: [shared, place("cafe", { km: 2, hours: everyDay(7, 0, 15, 0, false) })],
+    morning: [shared, place("gallery", { km: 3, hours: everyDay(10, 0, 17, 0, false) })],
+    lunch: [place("bistro", { km: 3 })],
+    afternoon: [place("park", { km: 4, hours: everyDay(0, 0, 0, 0, true) })],
+  };
+  const plan = buildDayPlan(DAY_SLOTS.relaxed, cands, { start: CBD, day, startTime: "09:00", priceMax: null });
+  assert.deepEqual(plan.map((s) => s.place && s.place.id), ["shared", "gallery", "bistro", "park"]);
+  for (const s of plan) assert.ok(minutesLeft(s.place.hours, s.at, null) >= s.slot.visit, s.slot.id);
+  assert.ok(plan[0].travel > 0);
+});
+
+test("buildDayPlan: a slot with no open candidate gives place null, not a closed place", () => {
+  const day = tomorrow(wed(20));
+  const cands = { breakfast: [place("dinnerOnly", { hours: everyDay(17, 0, 22, 0, false) })], morning: [], lunch: [], afternoon: [] };
+  const plan = buildDayPlan(DAY_SLOTS.relaxed, cands, { start: CBD, day, priceMax: null });
+  assert.equal(plan[0].place, null);
+  assert.equal(plan[0].travel, null);
+});
+
+test("buildDayPlan: prefers the nearer of two equal-score places and offers alternatives", () => {
+  const day = tomorrow(wed(20));
+  const cands = { breakfast: [place("near", { km: 1, hours: everyDay(7, 0, 15, 0, false) }), place("far", { km: 25, hours: everyDay(7, 0, 15, 0, false) })], morning: [], lunch: [], afternoon: [] };
+  const plan = buildDayPlan(DAY_SLOTS.relaxed, cands, { start: CBD, day, priceMax: null });
+  assert.equal(plan[0].place.id, "near");
+  assert.deepEqual(plan[0].alternatives.map((p) => p.id), ["far"]);
+});
+
+test("buildDayPlan respects the budget", () => {
+  const day = tomorrow(wed(20));
+  const cands = { breakfast: [place("dear", { price: 4, hours: everyDay(7, 0, 15, 0, false) })], morning: [], lunch: [], afternoon: [] };
+  assert.equal(buildDayPlan(DAY_SLOTS.relaxed, cands, { start: CBD, day, priceMax: 2 })[0].place, null);
+});
+
+test("REGIONS have ten entries with lat/lng inside Victoria", () => {
+  assert.equal(REGIONS.length, 10);
+  assert.equal(new Set(REGIONS.map((r) => r.id)).size, 10);
+  for (const r of REGIONS) {
+    assert.ok(r.lat < -34 && r.lat > -39.2 && r.lng > 140.9 && r.lng < 150, r.id);
+    assert.ok(r.name && r.blurb, r.id);
+  }
+});
+
+test("surpriseRegion skips recent regions", () => {
+  const recent = REGIONS.slice(1).map((r) => r.id);
+  assert.equal(surpriseRegion(recent, () => 0.99).id, REGIONS[0].id);
+  assert.ok(REGIONS.includes(surpriseRegion(REGIONS.map((r) => r.id), () => 0)), "all recent: still picks one");
 });

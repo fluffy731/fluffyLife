@@ -186,3 +186,84 @@ export function dayHours(hours, day) {
   if (today.length === 1 && pt(today[0].open) % 1440 === 0 && (pt(today[0].close) - pt(today[0].open) + WEEK) % WEEK === 1440) return "Open 24 hours";
   return today.map((p) => `${clock(pt(p.open))} – ${clock(pt(p.close))}`).join(", ");
 }
+
+// ---------- Choosing places ----------
+// Place: { id, name, kind, type, address, area, lat, lng, rating, ratingCount, price, priceRange, hours, off,
+//          photo: { url, author, authorUrl } | null, mapsUrl, summary: { text, disclosure } | null, reviews: [], sample? }
+
+// Bayesian rating: a few perfect reviews don't beat hundreds of good ones. Unknown rating counts as 3.5.
+export function score(p) {
+  if (!Number.isFinite(p.rating)) return 3.5;
+  const n = Number.isFinite(p.ratingCount) ? p.ratingCount : 0;
+  return (p.rating * n + 4.0 * 50) / (n + 50);
+}
+
+// Longest one-way trip when you have `total` minutes and stay `visit` minutes.
+export const driveBudget = (total, visit) => Math.max(5, Math.floor((total - visit) / 2));
+
+const annotate = (p, from, opts) => {
+  const km = haversineKm(from, p);
+  return { ...p, km: Math.round(km * 10) / 10, travel: travelMinutes(km, opts) };
+};
+const uniq = (list) => { const seen = new Set(); return list.filter((p) => !seen.has(p.id) && seen.add(p.id)); };
+
+export function pickNow(places, { from, at, minutes, mode = "drive", priceMax = null, kind = "eat" }) {
+  return uniq(places).map((p) => annotate(p, from, { mode, at })).filter((p) => {
+    const visit = kindOf(p.kind || kind).visit, left = minutesLeft(p.hours, at, p.off);
+    return left != null && fitsBudget(p, priceMax) && p.travel <= driveBudget(minutes, visit) && left >= visit + p.travel;
+  }).sort((a, b) => (score(b) - 0.02 * b.travel) - (score(a) - 0.02 * a.travel)).slice(0, 12);
+}
+
+// Late night runs from 9 pm to 4 am; earlier in the day it looks ahead to tonight at 10 pm.
+export function lateStart(now) {
+  const h = now.getHours();
+  if (h >= 21 || h < 4) return { at: now, tonight: false };
+  const at = new Date(now); at.setHours(22, 0, 0, 0);
+  return { at, tonight: true };
+}
+
+// Open at `at` with at least an hour left, within the night drive. Latest closers first; anything open
+// past 4 am counts the same, so 24-hour places don't crowd out better ones.
+export function pickLate(places, { from, at, maxMinutes, priceMax = null }) {
+  const lateness = (p) => Math.min(minutesLeft(p.hours, at, p.off), 360);
+  return uniq(places).map((p) => annotate(p, from, { mode: "drive", at })).filter((p) => {
+    const left = minutesLeft(p.hours, at, p.off);
+    return left != null && left >= 60 && fitsBudget(p, priceMax) && p.travel <= maxMinutes;
+  }).sort((a, b) => lateness(b) - lateness(a) || score(b) - score(a)).slice(0, 12);
+}
+
+// ---------- Tomorrow: a day plan ----------
+
+const slot = (id, label, time, kinds, query, visit) => ({ id, label, time, kinds, query, visit });
+const BASE = [
+  slot("breakfast", "Breakfast", "09:00", ["coffee", "eat"], "breakfast cafe", 45),
+  slot("morning", "Morning", "10:30", ["sights", "activities"], "things to do", 90),
+  slot("lunch", "Lunch", "12:30", ["eat"], "lunch", 60),
+  slot("afternoon", "Afternoon", "14:30", ["sights", "activities"], "attractions", 90),
+];
+export const DAY_SLOTS = { relaxed: BASE, full: [...BASE, slot("dinner", "Dinner", "18:30", ["eat"], "dinner restaurant", 75)] };
+
+export const tomorrow = (now) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
+const hhmm = (s) => { const [h, m] = String(s).split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+export function slotTimes(slots, startHHMM, day) {
+  const shift = hhmm(startHHMM || "09:00") - hhmm("09:00");
+  return slots.map((s) => new Date(day.getFullYear(), day.getMonth(), day.getDate(), 0, hhmm(s.time) + shift));
+}
+
+// One place per slot: open long enough at that time, within budget, not used already, best by score
+// minus the extra driving it adds from the previous stop.
+export function buildDayPlan(slots, candidatesBySlotId, { start, day, startTime = "09:00", priceMax = null }) {
+  const times = slotTimes(slots, startTime, day), used = new Set();
+  let here = start;
+  return slots.map((s, i) => {
+    const at = times[i];
+    const ok = uniq(candidatesBySlotId[s.id] || []).filter((p) => !used.has(p.id) && fitsBudget(p, priceMax)
+      && (minutesLeft(p.hours, at, p.off) ?? 0) >= s.visit)
+      .map((p) => annotate(p, here, { mode: "drive", at }))
+      .sort((a, b) => (score(b) - 0.03 * b.travel) - (score(a) - 0.03 * a.travel));
+    const place = ok[0] || null;
+    if (place) { used.add(place.id); here = place; }
+    return { slot: s, at, place, travel: place ? place.travel : null, alternatives: ok.slice(1, 3) };
+  });
+}
