@@ -36,7 +36,7 @@ export const ui = {
   confirmWipe: "Erase all progress on this device? Custom words are kept.",
   confirmImport: "Replace the progress AND custom words on this device with the backup?",
   noSpeech: "This browser has no speech voices.", noVoice: "No matching voice is installed.",
-  dictAdded: (u) => `Added to ${u}.`, dictTitle: "Dictionary", dictLoading: "Loading the dictionary…", dictError: "Dictionary not available — open Browse once while online.", dictNone: "No dictionary entries.", dictAdd: "Add to study", dictSource: "Dictionary: Wiktionary via kaikki.org, CC BY-SA 4.0.",
+  dictAdded: (u) => `Added to ${u}.`, dictTitle: "Dictionary", dictLoading: "Loading the dictionary…", dictError: "Dictionary not available — open Browse once while online.", dictNone: "No dictionary entries.", dictAdd: "Add to study", dictSource: "Dictionary: Wiktionary via kaikki.org (CC BY-SA 4.0); 한국어기초사전 and 표준국어대사전, National Institute of Korean Language (CC BY-SA 2.0 KR); Kengdic (MPL 2.0).",
   speechCheck: "Speech check", speechCheckBtn: "Test speech and show details",
   quizPractice: "Practice quiz", quizPracticeHint: "10 questions from words you've seen, weakest first. No pass mark.",
   quizNeedSeen: "Learn at least 4 items first.", quizUnits: "Unit tests", quizNotReady: (n) => `${n} left to learn`,

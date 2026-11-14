@@ -69,7 +69,12 @@ export function koLookup(word, rows) {
   if (!rows?.length) return null;
   for (const c of koCandidates(word)) {
     let lo = 0, hi = rows.length - 1; // rows are sorted by word (code point order)
-    while (lo <= hi) { const mid = (lo + hi) >> 1, k = rows[mid][0]; if (k === c) return rows[mid]; if (k < c) lo = mid + 1; else hi = mid - 1; }
+    while (lo <= hi) {
+      let mid = (lo + hi) >> 1; const k = rows[mid][0];
+      // A word can have several rows (one per source or hanja); the first is the most trusted.
+      if (k === c) { while (mid > 0 && rows[mid - 1][0] === c) mid--; return rows[mid]; }
+      if (k < c) lo = mid + 1; else hi = mid - 1;
+    }
   }
   return null;
 }
