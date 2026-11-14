@@ -118,11 +118,11 @@ test("googleProvider.details fetches the review fields and keeps travel annotati
 
 test("testConnection reports which fields came back, or the error", async () => {
   const { lib } = fakeLib();
-  const r = await testConnection(googleProvider(lib));
+  const r = await testConnection(googleProvider(lib), { loadImage: async () => true });
   assert.equal(r.ok, true);
   for (const f of ["photo", "price", "priceRange", "rating", "hours", "mapsUrl", "summary", "reviews"]) assert.ok(r.fields.includes(f), f);
   const bad = await testConnection({ search: async () => { throw new Error("REQUEST_DENIED"); }, details: async (p) => p });
-  assert.deepEqual(bad, { ok: false, fields: [], error: "REQUEST_DENIED" });
+  assert.deepEqual(bad, { ok: false, fields: [], notes: [], error: "REQUEST_DENIED" });
 });
 
 test("sampleProvider is deterministic and labelled Sample", async () => {
@@ -155,4 +155,49 @@ test("sample hours include a place open past midnight and a 24-hour place", asyn
   assert.ok(eats.some((p) => { const m = minutesLeft(p.hours, sat130, p.off); return m > 0 && m !== Infinity; }), "open past midnight");
   assert.ok(eats.some((p) => minutesLeft(p.hours, sat130, p.off) === Infinity), "24 hours");
   assert.ok(eats.some((p) => p.price == null), "some without a price");
+});
+
+// ---------- Final review fixes ----------
+import { photoBlock } from "../spots/explore.js";
+
+test("photos send the site's origin as referrer (keys are restricted to the website) and fall back to the tile", () => {
+  const html = photoBlock({ id: "x", name: "N", kind: "eat", photo: { url: "https://places.googleapis.com/v1/x/media?key=K", author: "Ann", authorUrl: "https://a" } }, 0, false);
+  assert.ok(html.includes("<img"));
+  assert.ok(!html.includes("no-referrer"));
+  assert.ok(html.includes("onerror"));
+  assert.ok(html.includes('class="emo"'), "the tile sits underneath, ready if the photo fails");
+});
+
+test("search sends Google only lat and lng as the centre", async () => {
+  const { lib, calls } = fakeLib();
+  await googleProvider(lib).search({ query: "bar", kind: "drink", center: { lat: -37.8, lng: 144.9, fallback: true, t: 1 }, radiusKm: 3 });
+  assert.deepEqual(Object.keys(calls[0].search.locationBias.center).sort(), ["lat", "lng"]);
+});
+
+test("a field Google rejects is dropped and remembered, not fatal", async () => {
+  const { lib, calls } = fakeLib();
+  const orig = lib.Place.searchByText;
+  lib.Place.searchByText = async (req) => { if (req.fields.includes("priceRange")) throw new Error("Unknown field: priceRange"); return orig(req); };
+  const proto = lib.Place.prototype.fetchFields;
+  lib.Place.prototype.fetchFields = async function ({ fields }) { if (fields.includes("reviewSummary")) throw new Error("Unknown field: reviewSummary"); return proto.call(this, { fields }); };
+  const g = googleProvider(lib);
+  const out = await g.search({ query: "x", kind: "eat", center: CBD, radiusKm: 2 });
+  assert.equal(out.length, 1);
+  await g.search({ query: "y", kind: "eat", center: CBD, radiusKm: 2 });
+  assert.ok(!calls.at(-1).search.fields.includes("priceRange"), "remembered: not asked again");
+  const d = await g.details({ id: "ChIJ123", kind: "eat" });
+  assert.equal(d.reviews.length, 1, "reviews still come back");
+  assert.deepEqual(g.dropped().sort(), ["priceRange", "reviewSummary"]);
+  const bad = googleProvider({ Place: { searchByText: async () => { throw new Error("REQUEST_DENIED"); } } });
+  await assert.rejects(bad.search({ query: "x", kind: "eat", center: CBD, radiusKm: 2 }), /REQUEST_DENIED/);
+});
+
+test("testConnection loads a photo and reports fields Google refused", async () => {
+  const { lib } = fakeLib();
+  const g = googleProvider(lib);
+  const okR = await testConnection(g, { loadImage: async () => true });
+  assert.ok(okR.fields.includes("photo"));
+  const failR = await testConnection(g, { loadImage: async () => { throw new Error("403"); } });
+  assert.ok(!failR.fields.includes("photo"));
+  assert.match(failR.notes.join(" "), /photo/i);
 });

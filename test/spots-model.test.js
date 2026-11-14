@@ -421,3 +421,43 @@ test("mergeBackup rejects other files", () => {
   assert.throws(() => mergeBackup(blank(), "not json"), /Not a Spots backup/);
   assert.throws(() => mergeBackup(blank(), JSON.stringify({ trips: [] })), /Not a Spots backup/);
 });
+
+// ---------- Final review fixes ----------
+import { visitFor, whyEmpty, swapStop } from "../spots/model.js";
+
+test("visitFor shortens the visit when time is short, so 1 h still finds a quick bite", () => {
+  assert.equal(visitFor("eat", 120), 60);
+  assert.equal(visitFor("eat", 60), 30);
+  assert.equal(visitFor("activities", 60), 30);
+  assert.equal(visitFor("coffee", 60), 30);
+  const near = place("near", { km: 2 });
+  assert.equal(pickNow([near], { from: CBD, at: wed(13), minutes: 60, mode: "drive", priceMax: null, kind: "eat" }).length, 1);
+});
+
+test("whyEmpty names the limit to loosen", () => {
+  const closed = place("closed", { hours: everyDay(17, 0, 22, 0, false) });
+  const far = place("far", { km: 30 });
+  const dear = place("dear", { price: 4 });
+  const o = { from: CBD, at: wed(13), minutes: 120, mode: "drive", priceMax: 2, kind: "eat" };
+  assert.equal(whyEmpty([], o), "none");
+  assert.equal(whyEmpty([closed], o), "closed");
+  assert.equal(whyEmpty([closed, far], o), "far");
+  assert.equal(whyEmpty([dear], o), "budget");
+});
+
+test("swapStop never puts a place in two stops", () => {
+  const day = tomorrow(wed(20));
+  const a = place("A", { km: 2, rating: 4.9, ratingCount: 900, hours: everyDay(9, 0, 18, 0, false) });
+  const b = place("B", { km: 3, rating: 4.8, ratingCount: 900, hours: everyDay(9, 0, 18, 0, false) });
+  const c = place("C", { km: 4, rating: 4.0, ratingCount: 50, hours: everyDay(9, 0, 18, 0, false) });
+  const cands = { breakfast: [], morning: [a, b, c], lunch: [], afternoon: [a, b, c] };
+  let plan = buildDayPlan(DAY_SLOTS.relaxed, cands, { start: CBD, day, priceMax: null });
+  assert.deepEqual([plan[1].place.id, plan[3].place.id], ["A", "B"]);
+  plan = swapStop(plan, 1, CBD);
+  assert.equal(plan[1].place.id, "C", "B is already the afternoon stop, so morning swaps to C");
+  assert.notEqual(plan[1].place.id, plan[3].place.id);
+  assert.ok(plan[1].travel > 0);
+  assert.equal(plan[3].travel, travelMinutes(haversineKm(plan[1].place, plan[3].place), { at: plan[3].at }), "next stop's drive is from the new place");
+  plan = swapStop(plan, 1, CBD);
+  assert.equal(plan[1].place.id, "A", "swapping again cycles back");
+});

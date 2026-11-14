@@ -207,11 +207,28 @@ const annotate = (p, from, opts) => {
 };
 const uniq = (list) => { const seen = new Set(); return list.filter((p) => !seen.has(p.id) && seen.add(p.id)); };
 
+// A visit never takes more than half the time you have: an hour for dinner becomes a quick bite.
+export const visitFor = (kind, total) => Math.min(kindOf(kind).visit, Math.floor(total / 2));
+
+const nowChecks = (p, { at, minutes, priceMax, kind }) => {
+  const visit = visitFor(p.kind || kind, minutes), left = minutesLeft(p.hours, at, p.off);
+  return { open: left != null && left > 0, budget: fitsBudget(p, priceMax), near: p.travel <= driveBudget(minutes, visit), long: left != null && left >= visit + p.travel };
+};
+
 export function pickNow(places, { from, at, minutes, mode = "drive", priceMax = null, kind = "eat" }) {
   return uniq(places).map((p) => annotate(p, from, { mode, at })).filter((p) => {
-    const visit = kindOf(p.kind || kind).visit, left = minutesLeft(p.hours, at, p.off);
-    return left != null && fitsBudget(p, priceMax) && p.travel <= driveBudget(minutes, visit) && left >= visit + p.travel;
+    const c = nowChecks(p, { at, minutes, priceMax, kind });
+    return c.open && c.budget && c.near && c.long;
   }).sort((a, b) => (score(b) - 0.02 * b.travel) - (score(a) - 0.02 * a.travel)).slice(0, 12);
+}
+
+// Why pickNow came back empty, so the app can say which limit to loosen.
+export function whyEmpty(places, { from, at, minutes, mode = "drive", priceMax = null, kind = "eat" }) {
+  if (!places.length) return "none";
+  const cs = uniq(places).map((p) => nowChecks(annotate(p, from, { mode, at }), { at, minutes, priceMax, kind }));
+  if (!cs.some((c) => c.open)) return "closed";
+  if (!cs.some((c) => c.open && c.budget)) return "budget";
+  return "far";
 }
 
 // Late night runs from 9 pm to 4 am; earlier in the day it looks ahead to tonight at 10 pm.
@@ -367,4 +384,21 @@ export function mergeBackup(state, text) {
     state: { ...state, saved: [...state.saved, ...newSaved], stamps: [...state.stamps, ...newStamps].sort(byNewest) },
     photos, added: newSaved.length + newStamps.length,
   };
+}
+
+// Swap one stop for its next alternative that no other stop uses, then fix the drive to it and from it.
+export function swapStop(plan, i, start) {
+  const out = plan.map((s) => ({ ...s, alternatives: [...s.alternatives] })), s = out[i];
+  if (!s.place) return out;
+  const used = new Set(out.filter((x, j) => j !== i && x.place).map((x) => x.place.id));
+  const k = s.alternatives.findIndex((p) => !used.has(p.id));
+  if (k < 0) return out;
+  const [next] = s.alternatives.splice(k, 1);
+  s.alternatives.push(s.place);
+  const prev = out.slice(0, i).reverse().find((x) => x.place);
+  s.place = annotate(next, prev ? prev.place : start, { mode: "drive", at: s.at });
+  s.travel = s.place.travel;
+  const after = out.slice(i + 1).find((x) => x.place);
+  if (after) { after.place = annotate(after.place, s.place, { mode: "drive", at: after.at }); after.travel = after.place.travel; }
+  return out;
 }

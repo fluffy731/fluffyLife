@@ -1,7 +1,7 @@
 // Spots: boot, shared app state, tabs, settings and the choice of data source.
 import { load, save, staleSaved, CBD } from "./model.js";
 import { sampleProvider } from "./samples.js";
-import { loadGoogle, googleProvider, testConnection } from "./places.js";
+import { loadGoogle, googleProvider, testConnection, loadedKey } from "./places.js";
 import { renderExplore } from "./explore.js";
 import { renderSaved, renderPassport, openCheckIn, backupNow, restoreFrom } from "./stampbook.js";
 import { $, esc, toast, closeSheet } from "./ui.js";
@@ -89,7 +89,7 @@ function renderSettings(app) {
           <li>Turn on billing for the project. Google gives a free allowance for each service every month; a few searches a day stays inside it.</li>
           <li>In <b>APIs &amp; Services → Library</b>, enable <b>Maps JavaScript API</b> and <b>Places API (New)</b>.</li>
           <li>In <b>Credentials</b>, create an API key. Under <i>Application restrictions</i> choose <i>Websites</i> and add <code>https://fluffy731.github.io/*</code>. Under <i>API restrictions</i> choose those two APIs.</li>
-          <li>In <b>Places API (New) → Quotas</b>, set a daily limit (for example 300 requests a day), so a misused key can only use up one day's quota.</li>
+          <li>In <b>Places API (New) → Quotas</b>, set each daily limit to about 30 a day. That keeps even a misused key inside Google's free monthly allowance (about 1,000 photo and detail calls a month).</li>
           <li>Copy the key, paste it above, tap <b>Save key</b>, then <b>Test</b>.</li>
         </ol>
       </details>
@@ -114,7 +114,7 @@ function renderSettings(app) {
     </div>
     <div class="card set">
       <h3>Location</h3>
-      <p>Spots asks for your location when you tap Find or Check in. When location is off, it uses Melbourne CBD.</p>
+      <p>Spots asks for your location when you tap Find. When location is off, it uses Melbourne CBD. Check in suggests your saved places and the places you just found.</p>
     </div>
     <p class="hint">Everything you save stays on this phone. Place details, photos and reviews come from Google Maps.</p>`;
 }
@@ -133,20 +133,19 @@ document.addEventListener("click", async (e) => {
   if (themeBtn) { s.theme = themeBtn.dataset.themeSet; app.persist(); applyTheme(); return renderSettings(app); }
   if (t.closest("#key-save")) {
     const key = $("#key-in").value.trim();
-    const hadGoogle = !!app._google;
     s.key = key; if (key) s.sample = false; app.persist();
     toast(key ? "Key saved" : "Key removed");
-    if (hadGoogle) return location.reload(); // the Maps script is tied to the key it loaded with
+    if (loadedKey() && loadedKey() !== key) return location.reload(); // the Maps script stays tied to the key it loaded with
     return renderSettings(app);
   }
-  if (t.closest("#key-clear")) { s.key = ""; app.persist(); toast("Key removed"); return app._google ? location.reload() : renderSettings(app); }
+  if (t.closest("#key-clear")) { s.key = ""; app.persist(); toast("Key removed"); return loadedKey() ? location.reload() : renderSettings(app); }
   if (t.closest("#key-test")) {
     const out = $("#test-out");
     out.textContent = "Testing…";
     try {
       const r = await testConnection(googleProvider(await loadGoogle(s.key)));
       out.innerHTML = r.ok
-        ? `<p><b>Connected.</b> ${r.error ? esc(r.error) : "What came back:"}</p><ul>${Object.entries(FIELD_NAMES).map(([k, v]) => `<li>${r.fields.includes(k) ? "✓" : "✗"} ${v}</li>`).join("")}</ul>`
+        ? `<p><b>Connected.</b> ${r.error ? esc(r.error) : "What came back:"}</p><ul>${Object.entries(FIELD_NAMES).map(([k, v]) => `<li>${r.fields.includes(k) ? "✓" : "✗"} ${v}</li>`).join("")}</ul>${r.notes.map((n) => `<p>${esc(n)}</p>`).join("")}`
         : `<p><b>Didn't connect.</b> ${esc(r.error)}</p>`;
     } catch (err) { out.innerHTML = `<p><b>Didn't connect.</b> ${esc(err.message)}</p>`; }
     return;

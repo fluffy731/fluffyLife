@@ -33,7 +33,8 @@ export function renderSaved(app) {
           <button class="icon-btn" type="button" data-sdel="${esc(s.id)}" aria-label="Remove ${esc(s.name)}">✕</button>
         </div></div>`).join("")
       : `<div class="empty">Nothing saved yet. Tap Save on any place in Explore.</div>`}
-    ${app.pos ? "" : list.length ? `<p class="hint">Find something in Explore to sort these by distance.</p>` : ""}`;
+    ${app.pos ? "" : list.length ? `<p class="hint">Find something in Explore to sort these by distance.</p>` : ""}
+    ${list.length ? `<p class="attrib">${list.every((x) => x.sample) ? "Sample data" : "Place names from Google Maps"}</p>` : ""}`;
   if (!v.dataset.bound) {
     v.addEventListener("click", (e) => {
       const t = e.target, get = (a) => app.state.saved.find((s) => s.id === t.closest(`[${a}]`).getAttribute(a));
@@ -50,11 +51,12 @@ export function renderSaved(app) {
 
 export function openCheckIn(app, pre) {
   const seen = new Set(), cands = [];
-  for (const p of [pre, ...byDistance(app, app.state.saved)]) if (p && p.id && !seen.has(p.id) && cands.length < 6) { seen.add(p.id); cands.push(p); }
+  const r = app.lastResult, found = r ? (r.places || r.plan.map((s) => s.place)).filter(Boolean) : [];
+  for (const p of [pre, ...byDistance(app, app.state.saved), ...byDistance(app, found)]) if (p && p.id && !seen.has(p.id) && cands.length < 8) { seen.add(p.id); cands.push(p); }
   const st = { sel: cands[0] ? cands[0].id : "other", rating: 4, kind: "eat", file: null };
   const d = openSheet(`${sheetBar}
     <h2>Check in</h2>
-    <p class="hint">Where are you?</p>
+    <p class="hint">Where are you? Saved places first, then places you just found.</p>
     <div class="cands" id="cands">
       ${cands.map((p) => `<button class="cand" type="button" data-cand="${esc(p.id)}" data-kind="${kindOf(p.kind).id}" aria-pressed="${p.id === st.sel}"><span class="badge" aria-hidden="true">${EMOJI[kindOf(p.kind).id]}</span><span>${esc(p.name)}<small>${esc(p.area || kindOf(p.kind).label)}</small></span></button>`).join("")}
       <button class="cand" type="button" data-cand="other" aria-pressed="${st.sel === "other"}"><span class="badge" aria-hidden="true" style="background:var(--soft)">✎</span><span>Somewhere else<small>Type the name</small></span></button>
@@ -196,25 +198,42 @@ async function openStamp(app, s) {
 
 // ---------- Backup and restore ----------
 
+function shareOrDownload(file) {
+  if (navigator.canShare && navigator.canShare({ files: [file] })) return navigator.share({ files: [file], title: "Spots backup" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10e3);
+  return Promise.resolve();
+}
+
 export async function backupNow(app) {
   const ids = app.state.stamps.map((s) => s.photoId).filter(Boolean);
-  const photos = await photosAsDataURLs(ids).catch(() => ({}));
+  let photos = {}, photosLost = false;
+  try { photos = await photosAsDataURLs(ids); } catch { photosLost = ids.length > 0; }
   const now = new Date();
-  const name = `spots-backup-${now.toISOString().slice(0, 10)}.json`;
-  const file = new File([backupJSON(app.state, photos, now)], name, { type: "application/json" });
-  try {
-    if (navigator.canShare && navigator.canShare({ files: [file] })) await navigator.share({ files: [file], title: "Spots backup" });
-    else {
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 10e3);
-    }
-  } catch (e) {
+  const file = new File([backupJSON(app.state, photos, now)], `spots-backup-${now.toISOString().slice(0, 10)}.json`, { type: "application/json" });
+  const done = () => {
+    app.state.settings.lastBackup = now.toISOString(); app.persist();
+    toast(photosLost ? "Backup saved, but the photos couldn't be included" : "Backup saved");
+  };
+  try { await shareOrDownload(file); done(); }
+  catch (e) {
     if (e && e.name === "AbortError") return; // closed the share sheet: no backup made
-    toast("Couldn't save the backup"); return;
+    // iPhone only opens the share sheet straight after a tap; reading the photos took too long. Ask for one more tap.
+    const url = URL.createObjectURL(file);
+    openSheet(`${sheetBar}<h2>Your backup is ready</h2>
+      <p class="hint">iPhone needs one more tap to open the share sheet. Choose Save to Files, then iCloud Drive.</p>
+      <div class="acts"><button class="btn primary" type="button" id="backup-again">Save backup file</button>
+      <a class="btn" href="${url}" download="${esc(file.name)}">Download instead</a></div>`);
+    await new Promise((resolve) => {
+      $("#backup-again").addEventListener("click", async () => {
+        try { await navigator.share({ files: [file], title: "Spots backup" }); closeSheet(); done(); }
+        catch (err) { if (!err || err.name !== "AbortError") toast("Couldn't open the share sheet. Try Download instead."); }
+        resolve();
+      });
+      $("#sheet").addEventListener("close", resolve, { once: true });
+    });
   }
-  app.state.settings.lastBackup = now.toISOString(); app.persist();
-  toast("Backup saved");
 }
 
 export async function restoreFrom(app, file) {

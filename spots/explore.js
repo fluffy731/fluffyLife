@@ -2,7 +2,7 @@
 import {
   KINDS, kindOf, reachKm, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, buildDayPlan, tomorrow,
   travelMinutes, haversineKm, fmtMinutes, hoursLabel, minutesLeft, dayHours, priceSymbols, priceRangeLabel, mapsUrl,
-  savePlace, unsave, isSaved, noteRegion,
+  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop,
 } from "./model.js";
 import { REGIONS, surpriseRegion } from "./regions.js";
 import { $, EMOJI, esc, fmtCount, toast, openSheet, sheetBar } from "./ui.js";
@@ -12,8 +12,14 @@ const PRICES = [["any", "Any"], ["1", "$"], ["2", "$$"], ["3", "$$$"], ["4", "$$
 const LATE_QUERY = { eat: "late night food", drink: "late night bar", coffee: "late night cafe", dessert: "late night dessert",
   sights: "night lookout", activities: "late night entertainment" };
 const MAX_PHOTOS = 8;
-const EMPTY = { now: "Nothing open within these limits. Try more time, a bigger budget or another kind.",
-  late: "Nothing open late within these limits. Try a longer night drive, a bigger budget or another kind." };
+const EMPTY = {
+  none: "Nothing came back for this search. Try another kind.",
+  closed: "Everything we found is closed now. Try Late night, or plan Tomorrow.",
+  budget: "Nothing open fits that budget. Try a bigger budget.",
+  far: "Nothing open close enough for the time you have. Try more time.",
+  farWalk: "Nothing open close enough on foot. Try more time, or Drive.",
+  late: "Nothing open late within these limits. Try a longer night drive, a bigger budget or another kind.",
+};
 
 const chip = (attr, val, label, on) => `<button class="chip" type="button" ${attr}="${esc(val)}" aria-pressed="${on}">${label}</button>`;
 const kindChips = (set) => `<div class="chips kinds">${KINDS.map((k) => `<button class="chip" type="button" data-kind="${k.id}" aria-pressed="${set.has(k.id)}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>`;
@@ -53,7 +59,7 @@ export function renderExplore(app) {
     <h2 class="title">Where to?</h2>
     ${ready ? "" : `<div class="card setup">
       <h3>Connect Google for real places</h3>
-      <p>Photos, prices, reviews and opening hours come from Google Places with your own free key. Or look around with sample places first.</p>
+      <p>Photos, prices, reviews and opening hours come from Google Places with your own key; Google's free monthly allowance covers a few searches a day. Or look around with sample places first.</p>
       <div class="row"><button class="btn primary" type="button" id="setup-google">Set up Google</button><button class="btn" type="button" id="setup-sample">Try with sample places</button></div>
     </div>`}
     <div${ready ? "" : " hidden"}>
@@ -124,11 +130,13 @@ async function find(app) {
 
 async function findNow(provider, pos, now, u) {
   const kinds = [...u.kinds].map(kindOf);
-  const radius = Math.max(1, reachKm(driveBudget(u.minutes, Math.min(...kinds.map((k) => k.visit))), { mode: u.travel, at: now }));
+  const radius = Math.max(1, reachKm(driveBudget(u.minutes, Math.min(...kinds.map((k) => visitFor(k.id, u.minutes)))), { mode: u.travel, at: now }));
   const lists = await Promise.all(kinds.map((k) => provider.search({ query: k.query, kind: k.id, center: pos, radiusKm: radius, openNow: true, priceMax: u.price, max: 12 })));
-  const places = pickNow(lists.flat(), { from: pos, at: now, minutes: u.minutes, mode: u.travel, priceMax: u.price });
+  const opts = { from: pos, at: now, minutes: u.minutes, mode: u.travel, priceMax: u.price };
+  const places = pickNow(lists.flat(), opts);
+  const why = places.length ? null : whyEmpty(lists.flat(), opts);
   const t = MINUTES.find(([m]) => m === u.minutes)[1];
-  return { type: "list", mode: "now", at: now, travel: u.travel, places, head: `Open now · ${t} to spare`, sub: `${places.length} found` };
+  return { type: "list", mode: "now", at: now, travel: u.travel, places, why: why === "far" && u.travel === "walk" ? "farWalk" : why, head: `Open now · ${t} to spare`, sub: `${places.length} found` };
 }
 
 async function findLate(provider, pos, now, u) {
@@ -156,14 +164,17 @@ async function findTomorrow(app, provider, pos, now, u) {
 
 // ---------- Showing results ----------
 
-function photoBlock(p, i, big) {
+// The kind tile is always there; a photo covers it and removes itself if it fails, uncovering the tile.
+// No referrerpolicy: the browser sends the site's origin, which is what a website-restricted key checks.
+export function photoBlock(p, i, big) {
   const k = kindOf(p.kind);
   const tag = p.sample ? `<span class="tag">Sample</span>` : "";
+  const tile = `<span class="kind">${k.label}</span><span class="emo" aria-hidden="true">${EMOJI[k.id]}</span>`;
   if (p.photo && p.photo.url && (big || i < MAX_PHOTOS)) {
     const credit = p.photo.author ? `<a class="credit" href="${esc(p.photo.authorUrl || mapsUrl(p))}" target="_blank" rel="noopener">Photo: ${esc(p.photo.author)}</a>` : "";
-    return `<div class="pic" data-kind="${k.id}">${tag}<img src="${esc(p.photo.url)}" alt="" loading="lazy" referrerpolicy="no-referrer">${credit}</div>`;
+    return `<div class="pic" data-kind="${k.id}">${tile}<img src="${esc(p.photo.url)}" alt="" loading="lazy" onerror="var c=this.parentNode.querySelector('.credit');if(c)c.remove();this.remove()">${credit}${tag}</div>`;
   }
-  return `<div class="pic" data-kind="${k.id}">${tag}<span class="kind">${k.label}</span><span class="emo" aria-hidden="true">${EMOJI[k.id]}</span></div>`;
+  return `<div class="pic" data-kind="${k.id}">${tag}${tile}</div>`;
 }
 
 const ratingText = (p) => (p.rating != null ? `<b>★ ${p.rating.toFixed(1)}</b> (${fmtCount(p.ratingCount)})` : "★ No rating yet");
@@ -195,7 +206,7 @@ function renderResults(app) {
   const attrib = `<p class="attrib">${esc(r.source)}</p>`;
   if (r.type === "list") {
     res.innerHTML = `<div class="res-head"><h3>${esc(r.head)}</h3><span>${esc(r.sub)}</span></div>`
-      + (r.places.length ? r.places.map((p, i) => card(app, p, i, r.at, r.travel)).join("") : `<div class="empty">${EMPTY[r.mode]}</div>`) + attrib;
+      + (r.places.length ? r.places.map((p, i) => card(app, p, i, r.at, r.travel)).join("") : `<div class="empty">${EMPTY[r.mode === "late" ? "late" : r.why || "none"]}</div>`) + attrib;
     return;
   }
   const dayName = r.day.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" });
@@ -217,17 +228,9 @@ function renderResults(app) {
 }
 
 function swap(app, i) {
-  const plan = app.lastResult.plan, s = plan[i];
-  if (!s.alternatives.length) return;
-  const next = s.alternatives.shift();
-  s.alternatives.push(s.place);
-  const prev = plan.slice(0, i).reverse().find((x) => x.place);
-  const from = prev ? prev.place : app.lastResult.from;
-  s.place = { ...next, travel: travelMinutes(haversineKm(from, next), { at: s.at }), km: Math.round(haversineKm(from, next) * 10) / 10 };
-  s.travel = s.place.travel;
-  const after = plan.slice(i + 1).find((x) => x.place);
-  if (after) { const km = haversineKm(s.place, after.place); after.travel = after.place.travel = travelMinutes(km, { at: after.at }); after.place.km = Math.round(km * 10) / 10; }
-  app.places.set(s.place.id, s.place);
+  const r = app.lastResult;
+  r.plan = swapStop(r.plan, i, r.from);
+  for (const s of r.plan) if (s.place) app.places.set(s.place.id, s.place);
   renderResults(app);
 }
 
