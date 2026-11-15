@@ -12,7 +12,8 @@ export function sylHTML(jp, esc) {
     .replace(/ ([^\s<]+)(?=\s|$)/g, (m, tok) => (ATTACH.test(tok) ? tok : m));
 }
 
-function bridgeHTML(zh, jp, { esc, t }, loan = false) {
+// Also used by the Songs tab (songs/yue.js) under each word of a lyric line.
+export function bridgeHTML(zh, jp, { esc, t }, loan = false) {
   if (loan) return `<div class="bridge"><span class="badge-cant">${esc(t.loanword)}</span></div>`;
   const rows = bridge(zh, jp, HANJA_KO);
   if (!rows) return "";

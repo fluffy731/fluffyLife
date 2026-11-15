@@ -22,11 +22,11 @@ A personal vocabulary and grammar trainer per language: learn a unit's new words
 
 ## Positioning
 
-The Korean app opens every Sino-Korean word through the Chinese character a Chinese reader already knows: 경제 is 經濟, with Traditional Chinese beside the English. The Cantonese app does the reverse for a Korean speaker, pairing each character with its Korean hanja reading (學校 학·교 ↔ 혹·하우) and spelling every sound in 한글 coloured by tone. The Korean app also teaches from the owner's own K-songs (♪ Songs).
+The Korean app opens every Sino-Korean word through the Chinese character a Chinese reader already knows: 경제 is 經濟, with Traditional Chinese beside the English. The Cantonese app does the reverse for a Korean speaker, pairing each character with its Korean hanja reading (學校 학·교 ↔ 혹·하우) and spelling every sound in 한글 coloured by tone. Both apps also teach from songs the learner already listens to (♪ Songs): K-songs in the Korean app, and Cantopop in the Cantonese app, where every lyric line leads with its tone-coloured 한글 sound.
 
 ## Operating Context
 
-- Tabs: Home (word of the hour, current unit), Learn, Review (Again / Hard / Good / Easy), Quiz (practice and unit tests), Browse (search plus an offline dictionary), Settings, and ♪ Songs (Korean only).
+- Tabs: Home (word of the hour, current unit), Learn, Review (Again / Hard / Good / Easy), Quiz (practice and unit tests), Browse (search plus an offline dictionary), Settings, and ♪ Songs (Korean and Cantonese).
 - A Shortcuts automation opens the app every hour; Home shows a word of the hour chosen by the clock.
 - Offline once installed; no server, no account. Progress lives in the phone's localStorage, songs in IndexedDB; Export/Import moves them as one JSON file.
 

@@ -371,6 +371,7 @@ details.tip[open] summary::after { transform: rotate(180deg); }
 .song-line.plain { padding: 4px 14px; border: 0; background: none; }
 .song-gap { height: 10px; }
 .song-point { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--hair); }
+.more > .song-point:first-child { margin-top: 0; padding-top: 0; border-top: 0; }   /* .more already draws the rule */
 .song-point .btn { display: block; margin-top: 8px; }
 .song-chip { display: inline-block; padding: 3px 10px; border: 1.5px solid var(--hair-strong); border-radius: 999px; font-size: 13px; font-weight: 600; }
 .in-reviews { display: block; margin-top: 8px; color: var(--route-ink); font-weight: 700; }
