@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   iso, addDays, clock, dayType, partOf, isOnDay, startOn, rank, stillOn, onToday, nextList, whenLabel, dateRange,
-  ideasFor, momentLine, kindForCat, catOf,
+  ideasFor, momentLine, kindForCat, catOf, weatherState, weatherNow, skyIcon, daylightLeft,
 } from "../spots/today.js";
 
 // 15 November 2026 is a Sunday; 18th Wednesday; 20th Friday; 21st Saturday.
@@ -132,9 +132,9 @@ test("kindForCat and catOf", () => {
 
 const ids = (list) => list.map((i) => i.id);
 
-test("ideas: Sunday morning is brunch, the markets on today, and out and about", () => {
+test("ideas: a dry Sunday morning is brunch, the markets on today, and a trail", () => {
   const list = ideasFor(at(15, 10), FEED);
-  assert.deepEqual(ids(list), ["brunch", "ev:market", "outAbout"]);
+  assert.deepEqual(ids(list), ["brunch", "ev:market", "trail"]);
   assert.equal(list[1].label, "Markets on today");
   assert.equal(list[1].count, 2);
   assert.deepEqual(list[0].preset, { mode: "now", kinds: ["coffee", "eat"], minutes: 120 });
@@ -144,11 +144,13 @@ test("ideas: rain swaps out and about for a gallery and something fun indoors", 
   assert.deepEqual(ids(ideasFor(at(15, 15), wet(FEED, "2026-11-15", 92))), ["museum", "fun", "dessert"]);
 });
 
-test("ideas: a hot afternoon puts gelato first", () => {
+test("ideas: a hot, calm afternoon puts the beach first, then gelato", () => {
   const list = ideasFor(at(18, 15), wet(FEED, "2026-11-18", 5, 34));
-  assert.equal(list[0].id, "dessert");
-  assert.equal(list[0].label, "Gelato weather");
-  assert.match(list[0].sub, /34°/);
+  assert.deepEqual(ids(list).slice(0, 2), ["beach", "dessert"]);
+  assert.equal(list[1].label, "Gelato weather");
+  assert.match(list[1].sub, /34°/);
+  const windy = { ...FEED, weather: [{ date: "2026-11-18", rain: 5, max: 34, wind: 50 }] };
+  assert.equal(ideasFor(at(18, 15), windy)[0].id, "dessert", "too windy for the beach: gelato first");
 });
 
 test("ideas: a weekday lunch, with the free-things idea only when there are some", () => {
@@ -223,4 +225,74 @@ test("a market or festival with a start time stays on all day: the time is when 
   assert.equal(whenLabel(polish, "2026-11-15"), "From 11 am");
   assert.equal(whenLabel(nightMkt, "2026-11-15", { withDay: true }), "Sun from 5:30 pm");
   assert.equal(ideasFor(at(15, 12, 30), feed).find((i) => i.id === "ev:market").count, 2);
+});
+
+// ---------- weather ----------
+
+test("weatherState: good is dry, sunny or cloudy, 14° or warmer and not too windy; wet is rain likely", () => {
+  assert.equal(weatherState({ rain: 10, code: 2, max: 21, wind: 20 }).state, "good");
+  assert.equal(weatherState({ rain: 10, code: 3, max: 18 }).state, "good", "overcast but dry is fine");
+  assert.equal(weatherState({ rain: 60, code: 3, max: 18 }).state, "wet");
+  assert.equal(weatherState({ rain: 20, code: 61, max: 18 }).state, "wet", "raining now, whatever the chance says");
+  assert.equal(weatherState({ rain: 40, code: 3, max: 18 }).state, "mixed");
+  assert.equal(weatherState({ rain: 10, code: 1, max: 11 }).state, "mixed", "too cold");
+  assert.equal(weatherState({ rain: 10, code: 1, max: 20, wind: 50 }).state, "mixed", "too windy");
+  assert.equal(weatherState({ rain: 10, code: 45, max: 20 }).state, "mixed", "fog");
+  assert.equal(weatherState(null).state, null);
+  assert.ok(weatherState({ rain: 5, code: 0, max: 26, wind: 20 }).beachy);
+  assert.ok(!weatherState({ rain: 5, code: 0, max: 22, wind: 20 }).beachy, "not warm enough for the beach");
+  assert.deepEqual([skyIcon(0), skyIcon(2), skyIcon(3), skyIcon(61), skyIcon(95), skyIcon(null, 70)], ["☀️", "⛅", "☁️", "🌧", "⛈", "🌧"]);
+});
+
+// A wet morning that clears after midday, as Open-Meteo's hourly forecast gives it.
+const hours = (day, list) => list.map(([h, rain, code, temp]) => ({ t: `${day}T${String(h).padStart(2, "0")}:00`, rain, code, temp }));
+const CLEARING = { ...FEED, weather: [{ date: "2026-11-15", rain: 90, max: 21, code: 61, wind: 20, sunset: "20:13" }, ...FEED.weather.slice(1)],
+  hourly: hours("2026-11-15", [[9, 90, 61, 14], [10, 80, 61, 15], [11, 60, 80, 16], [12, 20, 3, 18], [13, 10, 2, 19], [14, 5, 2, 20], [15, 5, 1, 21], [16, 5, 1, 21],
+    [17, 5, 1, 20], [18, 5, 1, 19], [19, 5, 0, 18], [20, 10, 0, 16], [21, 10, 0, 15]]) };
+
+test("weatherNow reads the next three hours, so a wet morning that clears counts as good after midday", () => {
+  assert.equal(weatherNow(CLEARING, at(15, 9, 30)).state, "wet");
+  const noon = weatherNow(CLEARING, at(15, 12, 10));
+  assert.equal(noon.state, "good");
+  assert.deepEqual([noon.rain, noon.code, noon.max, noon.sunset], [20, 3, 21, "20:13"], "worst of 12–2 pm; the day's top and sunset");
+  assert.equal(daylightLeft(noon, at(15, 18, 13)), 120);
+  assert.equal(weatherNow(FEED, at(15, 10)).state, "good", "no hours: the day's figures");
+});
+
+test("ideas follow the next few hours: indoors in the rain, a park walk once it clears", () => {
+  const morning = ideasFor(at(15, 9, 30), CLEARING);
+  assert.ok(!ids(morning).some((id) => ["trail", "nature", "beach", "outAbout"].includes(id)), ids(morning).join());
+  assert.ok(ids(morning).includes("museum"));
+  assert.match(morning.find((i) => i.id === "museum").sub, /Rain likely/);
+  const afternoon = ideasFor(at(15, 14), CLEARING);
+  assert.equal(afternoon[0].id, "nature");
+  assert.match(afternoon[0].sub, /dry/);
+  assert.deepEqual(afternoon[0].preset, { mode: "now", kinds: ["nature"], minutes: 180 });
+});
+
+test("ideas: a good evening offers a sunset walk while there's daylight, none after dark", () => {
+  const evening = ideasFor(at(15, 18, 30), CLEARING);
+  assert.equal(evening[1].id, "sunset");
+  assert.equal(evening[1].sub, "Sunset 8:13 pm · a park or the beach");
+  assert.ok(!ids(ideasFor(at(15, 20, 0), CLEARING)).includes("sunset"), "13 minutes before sunset is too late");
+});
+
+test("ideas: a good weekday afternoon swaps the gallery for a park; a mixed day keeps out and about", () => {
+  const good = { ...FEED, weather: [{ date: "2026-11-18", rain: 10, max: 20, code: 2 }] };
+  assert.deepEqual(ids(ideasFor(at(18, 15), good)), ["coffee", "dessert", "nature"]);
+  const mixed = { ...FEED, weather: [{ date: "2026-11-15", rain: 40, max: 18, code: 3 }] };
+  assert.deepEqual(ids(ideasFor(at(15, 15), mixed)), ["outAbout", "dessert", "ev:festival"]);
+});
+
+test("rank: on a good day outdoor events come first among equals", () => {
+  const a = ev({ title: "Indoor Fair", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"] });
+  const b = ev({ title: "Park Fair", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], outdoor: true });
+  assert.deepEqual(rank([a, b], "2026-11-15").map((e) => e.title), ["Indoor Fair", "Park Fair"]);
+  assert.deepEqual(rank([a, b], "2026-11-15", { good: true }).map((e) => e.title), ["Park Fair", "Indoor Fair"]);
+});
+
+test("momentLine uses the next three hours when the feed has them, and says when it's windy", () => {
+  assert.equal(momentLine(at(15, 9, 30), CLEARING), "Sunday morning · 🌧 90% rain next 3 h · 21°");
+  assert.equal(momentLine(at(15, 14), CLEARING), "Sunday afternoon · ⛅ 5% rain next 3 h · 21°");
+  assert.equal(momentLine(at(18, 12), { ...FEED, weather: [{ date: "2026-11-18", rain: 10, max: 20, code: 1, wind: 52 }] }), "Wednesday lunchtime · 🌤 10% rain · 20° · windy");
 });

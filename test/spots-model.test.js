@@ -7,6 +7,7 @@ import {
   score, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, slotTimes, buildDayPlan, tomorrow,
   KEY, blank, load, save, areaFromAddress, savePlace, unsave, isSaved, staleSaved, addStamp, passportStats,
   backupJSON, mergeBackup, noteRegion, saveEvent, unsaveEvent, isEventSaved, upcomingEvents, NEAR, nearRange, rangeKm, pickNear,
+  openLeft, queriesOf, daySlots,
 } from "../spots/model.js";
 import { REGIONS, surpriseRegion } from "../spots/regions.js";
 
@@ -65,7 +66,7 @@ test("haversineKm: CBD to St Kilda is about 5.6 km", () => {
 });
 
 test("kinds carry a visit length, a search query and whether Google prices them", () => {
-  assert.deepEqual(KINDS.map((k) => k.id), ["eat", "drink", "coffee", "sights", "activities", "dessert"]);
+  assert.deepEqual(KINDS.map((k) => k.id), ["eat", "drink", "coffee", "sights", "activities", "dessert", "nature", "beach"]);
   assert.equal(kindOf("eat").visit, 60);
   assert.equal(kindOf("activities").visit, 90);
   assert.equal(kindOf("sights").priced, false);
@@ -542,4 +543,27 @@ test("saveEvent from the weekend list saves it for the weekend, not today", () =
   assert.equal(saveEvent(blank(), circus, "2026-11-18", "2026-11-21").events[0].day, "2026-11-21");
   assert.equal(saveEvent(blank(), { ...circus, days: ["2026-11-18", "2026-11-22"] }, "2026-11-18", "2026-11-21").events[0].day, "2026-11-22", "the first listed day from Saturday");
   assert.equal(saveEvent(blank(), circus, "2026-11-18").events[0].day, "2026-11-18", "from Today's list: today");
+});
+
+// ---------- Outdoors ----------
+
+test("Nature and Beach: several searches, no hours means open, never offered late at night", () => {
+  assert.deepEqual(queriesOf("nature"), ["park", "walking trail"]);
+  assert.deepEqual(queriesOf("eat"), ["restaurant"]);
+  const park = { id: "p", name: "Park", kind: "nature", lat: CBD.lat + 0.01, lng: CBD.lng, hours: null, rating: 4.7, ratingCount: 900 };
+  const cafe = { ...park, id: "c", kind: "coffee" };
+  assert.equal(openLeft(park, wed(13)), 24 * 60);
+  assert.equal(openLeft(cafe, wed(13)), null, "a café with no hours is still unknown");
+  assert.deepEqual(pickNow([park, cafe], { from: CBD, at: wed(13), minutes: 180 }).map((p) => p.id), ["p"]);
+  assert.ok(kindOf("nature").day && kindOf("beach").day && !kindOf("eat").day);
+});
+
+test("daySlots: a good day puts the afternoon outdoors (the beach when warm and calm), a wet day keeps it indoors", () => {
+  const ids = (slots) => slots.map((s) => `${s.id}:${s.kinds[0]}`);
+  assert.deepEqual(ids(daySlots("relaxed", null)), ids(DAY_SLOTS.relaxed));
+  assert.deepEqual(ids(daySlots("relaxed", "good")), ["breakfast:coffee", "morning:sights", "lunch:eat", "afternoon:nature"]);
+  assert.equal(daySlots("full", "good", { beachy: true })[3].kinds[0], "beach");
+  assert.equal(daySlots("full", "good").length, 5, "dinner stays");
+  assert.deepEqual(ids(daySlots("relaxed", "wet")), ["breakfast:coffee", "morning:sights", "lunch:eat", "afternoon:activities"]);
+  assert.equal(daySlots("relaxed", "wet")[1].query, "museum gallery");
 });

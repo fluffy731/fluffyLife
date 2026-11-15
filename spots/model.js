@@ -12,7 +12,12 @@ export const KINDS = [
   { id: "sights", label: "Sights", visit: 60, query: "tourist attraction", priced: false },
   { id: "activities", label: "Activities", visit: 90, query: "things to do", priced: false },
   { id: "dessert", label: "Dessert", visit: 30, query: "dessert", priced: true },
+  // Outdoors, for good weather. Several searches each; parks and beaches often list no hours, and count as open.
+  // day: not offered at night (Late night leaves them out).
+  { id: "nature", label: "Nature", visit: 90, query: "park", queries: ["park", "walking trail"], priced: false, alwaysOpen: true, day: true },
+  { id: "beach", label: "Beach", visit: 120, query: "beach", queries: ["beach"], priced: false, alwaysOpen: true, day: true },
 ];
+export const queriesOf = (k) => kindOf(k).queries || [kindOf(k).query];
 export const kindOf = (id) => KINDS.find((k) => k.id === id) || KINDS[0];
 
 const rad = (d) => (d * Math.PI) / 180;
@@ -191,6 +196,9 @@ export function dayHours(hours, day) {
 // Place: { id, name, kind, type, address, area, lat, lng, rating, ratingCount, price, priceRange, hours, off,
 //          photo: { url, author, authorUrl } | null, mapsUrl, summary: { text, disclosure } | null, reviews: [], sample? }
 
+// Minutes it stays open from `at`; a park or beach with no listed hours counts as open all day.
+export const openLeft = (p, at) => minutesLeft(p.hours, at, p.off) ?? (!p.hours && kindOf(p.kind).alwaysOpen ? 24 * 60 : null);
+
 // Bayesian rating: a few perfect reviews don't beat hundreds of good ones. Unknown rating counts as 3.5.
 export function score(p) {
   if (!Number.isFinite(p.rating)) return 3.5;
@@ -211,7 +219,7 @@ const uniq = (list) => { const seen = new Set(); return list.filter((p) => !seen
 export const visitFor = (kind, total) => Math.min(kindOf(kind).visit, Math.floor(total / 2));
 
 const nowChecks = (p, { at, minutes, priceMax, kind }) => {
-  const visit = visitFor(p.kind || kind, minutes), left = minutesLeft(p.hours, at, p.off);
+  const visit = visitFor(p.kind || kind, minutes), left = openLeft(p, at);
   return { open: left != null && left > 0, budget: fitsBudget(p, priceMax), near: p.travel <= driveBudget(minutes, visit), long: left != null && left >= visit + p.travel };
 };
 
@@ -293,6 +301,18 @@ const BASE = [
 ];
 export const DAY_SLOTS = { relaxed: BASE, full: [...BASE, slot("dinner", "Dinner", "18:30", ["eat"], "dinner restaurant", 75)] };
 
+// Tomorrow's slots for its weather (see today.js weatherState): a good day puts the afternoon outdoors (the beach on
+// a warm, calm day), a wet day keeps the morning and afternoon indoors.
+export function daySlots(pace, state = null, { beachy = false } = {}) {
+  const base = DAY_SLOTS[pace] || DAY_SLOTS.relaxed;
+  if (state === "good") return base.map((s) => (s.id === "afternoon"
+    ? (beachy ? slot("afternoon", "Afternoon at the beach", "14:30", ["beach"], "beach", 120) : slot("afternoon", "Afternoon outdoors", "14:30", ["nature"], "park walking trail", 90))
+    : s));
+  if (state === "wet") return base.map((s) => (s.id === "morning" ? slot("morning", "Morning indoors", "10:30", ["sights"], "museum gallery", 90)
+    : s.id === "afternoon" ? slot("afternoon", "Afternoon indoors", "14:30", ["activities"], "indoor activities", 90) : s));
+  return base;
+}
+
 export const tomorrow = (now) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
 const hhmm = (s) => { const [h, m] = String(s).split(":").map(Number); return (h || 0) * 60 + (m || 0); };
@@ -309,7 +329,7 @@ export function buildDayPlan(slots, candidatesBySlotId, { start, day, startTime 
   return slots.map((s, i) => {
     const at = times[i];
     const ok = uniq(candidatesBySlotId[s.id] || []).filter((p) => !used.has(p.id) && fitsBudget(p, priceMax)
-      && (minutesLeft(p.hours, at, p.off) ?? 0) >= s.visit)
+      && (openLeft(p, at) ?? 0) >= s.visit)
       .map((p) => annotate(p, here, { mode: "drive", at }))
       .sort((a, b) => (score(b) - 0.03 * b.travel) - (score(a) - 0.03 * a.travel));
     const place = ok[0] || null;

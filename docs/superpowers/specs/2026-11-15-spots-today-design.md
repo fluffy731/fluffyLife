@@ -140,6 +140,17 @@ The owner, the same day: "say if I'm going to a place then the app can suggest p
 - **How it searches.** Where you're going is found with one small Text Search (id, name, location, address; skipped for a saved place, which has a position). Then one Text Search per kind around it (up to 20 results, Google's `minRating` filter in half-star steps; if Google ever refuses that field, the search runs without it and Spots filters by rating itself). `pickNear` in `model.js` keeps places inside the walk (by distance) or the drive (by estimated minutes), at or above the rating and review count, within budget, sorted by rating then review count, six per kind, and counts how many more would show with a third of the reviews so the empty state can suggest it.
 - **Cost.** One tap is 1 + one per kind searches (4 by default), billed like any Find.
 
+## Weather-aware ideas (added 15 November)
+
+The owner: "if good cloudy/sunny day then can suggest some nature spots, like walks in parks trails and beach etc, otherwise suggest something more indoor or at restaurants or cafe etc".
+
+- **Forecast.** The feed carries Open-Meteo's daily rain chance, top temperature, WMO weather code, top wind and sunset for 7 days, and the hourly rain chance, code and temperature for the next 48 hours. Ideas use the next three hours (`weatherNow`), falling back to the day's figures.
+- **States** (`weatherState`): **good** = under 30% rain, sunny or cloudy (codes 0–3), 14° or warmer, wind under 45 km/h; **wet** = 50% rain or more, or raining now; **mixed** = anything between (showery, foggy, cold or windy); **beachy** = good, 24° or more, wind under 35 km/h; **hot** = 30° or more.
+- **New kinds.** Nature (Google searches "park" and "walking trail") and Beach ("beach"), daytime only (left out of Late night). Parks and beaches often list no hours, so with none they count as open ("No set hours"), and Spots skips Google's open-now filter for them.
+- **Ideas.** Good: out and about becomes a trail or bushwalk on weekend mornings, the beach when beachy, otherwise a walk in a park; a gallery becomes a park; evenings add a sunset walk with 30 minutes to 3 hours of daylight left; walk and beach ideas need 90 minutes of daylight. Wet: out and about becomes a gallery and something fun indoors, nothing outdoors. Hot and beachy: the beach first, then gelato. Mixed: as before.
+- **Events.** A good day puts outdoor events first among equals; rain puts them last.
+- **Tomorrow** uses tomorrow's daily forecast: good puts the afternoon outdoors (the beach when beachy), wet makes the morning and afternoon indoor, and the plan's card says so.
+
 ## Saved events
 
 - **Save** on an event keeps `{ id, title, url, venue, address, area, cat, day, to, time }` on the phone (our own copy of public listing data, not Google's), where `day` is the first day it's listed for from the day of the list it was saved from (Today: today; This weekend: Saturday; Tomorrow: tomorrow), else that day or its start.

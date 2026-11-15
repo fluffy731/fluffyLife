@@ -254,10 +254,21 @@ export function mergeRoundups(now, prev, today) {
 }
 
 // ---------- weather and holidays ----------
+// Daily: rain chance, top temperature, WMO weather code, top wind (km/h) and sunset ("20:21"). Melbourne time.
+const at = (arr, i) => (Array.isArray(arr) && arr[i] != null ? arr[i] : null);
+const round = (x) => (x == null ? null : Math.round(x));
 export function weatherFrom(j) {
   const d = j && j.daily;
   if (!d || !Array.isArray(d.time)) return [];
-  return d.time.map((date, i) => ({ date, rain: d.precipitation_probability_max?.[i] ?? null, max: d.temperature_2m_max?.[i] == null ? null : Math.round(d.temperature_2m_max[i]) }));
+  return d.time.map((date, i) => ({ date, rain: at(d.precipitation_probability_max, i), max: round(at(d.temperature_2m_max, i)),
+    code: at(d.weather_code, i), wind: round(at(d.wind_speed_10m_max, i)), sunset: typeof at(d.sunset, i) === "string" ? d.sunset[i].slice(11, 16) : null }));
+}
+// Hourly for the next two days from `from` ("2026-11-15T13:00"): rain chance, weather code and temperature.
+export function hourlyFrom(j, from) {
+  const h = j && j.hourly;
+  if (!h || !Array.isArray(h.time)) return [];
+  const start = Math.max(0, h.time.findIndex((t) => t >= from));
+  return h.time.slice(start, start + 48).map((t, k) => ({ t, rain: at(h.precipitation_probability, start + k), code: at(h.weather_code, start + k), temp: round(at(h.temperature_2m, start + k)) }));
 }
 export function holidaysFrom(lists) {
   return lists.flat().filter((h) => h && h.date && (h.global || (h.counties || []).includes("AU-VIC")))
@@ -379,20 +390,22 @@ export async function build({ now = new Date(), out = OUT, raw: rawPath = RAW } 
   // Weather and holidays
   const year = +today.slice(0, 4);
   const [wx, h1, h2] = await Promise.all([
-    get("https://api.open-meteo.com/v1/forecast?latitude=-37.81&longitude=144.96&daily=precipitation_probability_max,temperature_2m_max&timezone=Australia%2FMelbourne&forecast_days=7", {}, 30000),
+    get("https://api.open-meteo.com/v1/forecast?latitude=-37.81&longitude=144.96&daily=precipitation_probability_max,temperature_2m_max,weather_code,wind_speed_10m_max,sunset&hourly=precipitation_probability,weather_code,temperature_2m&timezone=Australia%2FMelbourne&forecast_days=7", {}, 30000),
     get(`https://date.nager.at/api/v3/PublicHolidays/${year}/AU`), get(`https://date.nager.at/api/v3/PublicHolidays/${year + 1}/AU`),
   ]);
   const json = (r) => { try { return r.text ? JSON.parse(r.text) : null; } catch { return null; } };
   let weather = weatherFrom(json(wx));
+  const hourStart = `${today}T${String(melb(now).hour).padStart(2, "0")}:00`;
+  let hourly = hourlyFrom(json(wx), hourStart);
   note("weather", weather.length > 0, weather.length, wx.error);
-  if (!weather.length && prev) weather = (prev.weather || []).filter((d) => d.date >= today);
+  if (!weather.length && prev) { weather = (prev.weather || []).filter((d) => d.date >= today); hourly = (prev.hourly || []).filter((x) => x.t >= hourStart); }
   let holidays = holidaysFrom([json(h1) || [], json(h2) || []]);
   note("holidays", holidays.length > 0, holidays.length, h1.error);
   if (!holidays.length && prev) holidays = prev.holidays || [];
   holidays = holidays.filter((x) => x.date >= addDays(today, -1));
 
   const feed = {
-    built: now.toISOString(), today, fetched, sources, weather, holidays,
+    built: now.toISOString(), today, fetched, sources, weather, hourly, holidays,
     events: events.sort((a, b) => (a.from < b.from ? -1 : a.from > b.from ? 1 : 0)),
     fresh: mergeFresh(fresh, prev && prev.fresh, today),
     roundups: mergeRoundups(roundups, prev && prev.roundups, today),

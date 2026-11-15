@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import {
   melb, addDays, weekendOf, parseWhatsOn, pagesOf, splitLocation, womEvent, parseEventfinda, longDate, mergeEvents,
-  articlesFrom, roundupsFrom, mergeFresh, mergeRoundups, isOpening, isRoundup, freshKind, catOf, weatherFrom, holidaysFrom, sameKey,
+  articlesFrom, roundupsFrom, mergeFresh, mergeRoundups, isOpening, isRoundup, freshKind, catOf, weatherFrom, hourlyFrom, holidaysFrom, sameKey,
 } from "../scripts/build-spots.mjs";
 
 const fx = (n) => readFileSync(new URL(`./fixtures/spots/${n}`, import.meta.url), "utf8");
@@ -195,7 +195,11 @@ test("mergeFresh keeps 21 days, newest first, each item once", () => {
 
 test("weatherFrom and holidaysFrom", () => {
   const w = weatherFrom(JSON.parse(fx("open-meteo.json")));
-  assert.deepEqual(w[0], { date: "2026-11-15", rain: 92, max: 17 });
+  assert.deepEqual(w[0], { date: "2026-11-15", rain: 92, max: 17, code: 61, wind: 24, sunset: "20:13" });
+  const hr = hourlyFrom(JSON.parse(fx("open-meteo.json")), "2026-11-15T13:00");
+  assert.equal(hr.length, 48, "two days of hours from now");
+  assert.deepEqual(hr[0], { t: "2026-11-15T13:00", rain: 20, code: 2, temp: 17 });
+  assert.deepEqual(hourlyFrom(null, "x"), []);
   assert.equal(w.length, 7);
   assert.deepEqual(weatherFrom(null), []);
   const h = holidaysFrom([JSON.parse(fx("nager.json"))]);
