@@ -1,4 +1,4 @@
-/* Metro line: the look of the Korean, Cantonese and English apps (direction: docs/design/language-apps.md,
+/* Metro line: the look of the Korean, Cantonese and English apps, and Films (direction: docs/design/language-apps.md,
    system: DESIGN.md). The study track is a metro line and every card is a station sign. Each app owns one line
    colour, set by <html data-line>. The Mongolian app keeps style.css. */
 
@@ -37,6 +37,8 @@
 /* MTR Tsuen Wan red (Cantonese) and Seoul Line 1 blue (English). */
 :root[data-line="yue"] { --route: #e2231a; --route-strong: #c41c14; --route-soft: #f8d0cd; --route-ink: #9b1410; --route-sign: #ff3b30; }
 :root[data-line="en"] { --route: #0052a4; --route-strong: #0052a4; --route-soft: #cbd9ee; --route-ink: #003f80; --route-sign: #3d8ff0; }
+/* Seoul Line 5 purple (Films). */
+:root[data-line="film"] { --route: #996cac; --route-strong: #7b4f92; --route-soft: #e6dcef; --route-ink: #5a3670; --route-sign: #c39be0; }
 
 /* Night: the ground goes to signboard charcoal and the line brightens so it reads in the dark. */
 @media (prefers-color-scheme: dark) {
@@ -55,6 +57,7 @@
   }
   :root[data-line="yue"]:not([data-theme="light"]) { --route: #ff5a4f; --route-strong: #ff5a4f; --route-soft: #4d1d1a; --route-ink: #ffb0a8; --on-route: #1a0403; }
   :root[data-line="en"]:not([data-theme="light"]) { --route: #4d8fe8; --route-strong: #4d8fe8; --route-soft: #1b3354; --route-ink: #a9c8f5; --on-route: #050f1f; }
+  :root[data-line="film"]:not([data-theme="light"]) { --route: #b98fd6; --route-strong: #b98fd6; --route-soft: #3a2a47; --route-ink: #dcc6ec; --on-route: #170a1f; }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
@@ -71,6 +74,7 @@
 }
 :root[data-theme="dark"][data-line="yue"] { --route: #ff5a4f; --route-strong: #ff5a4f; --route-soft: #4d1d1a; --route-ink: #ffb0a8; --on-route: #1a0403; }
 :root[data-theme="dark"][data-line="en"] { --route: #4d8fe8; --route-strong: #4d8fe8; --route-soft: #1b3354; --route-ink: #a9c8f5; --on-route: #050f1f; }
+:root[data-theme="dark"][data-line="film"] { --route: #b98fd6; --route-strong: #b98fd6; --route-soft: #3a2a47; --route-ink: #dcc6ec; --on-route: #170a1f; }
 
 /* ---------- base ---------- */
 * { box-sizing: border-box; }

@@ -1,0 +1,11 @@
+/* Films: only what films need on top of ../metro.css (the Metro line system, DESIGN.md): poster rows and the
+   grid, the era line, and the film sign's layout. Tokens, shell, chips, buttons, lists and sheets come from metro.css. */
+
+.empty { color: var(--muted); padding: 24px 4px; line-height: 1.5; }
+
+/* toast (Back up, Restore) */
+.toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); z-index: 60; max-width: calc(100% - 32px);
+  padding: 10px 16px; border-radius: 999px; background: var(--sign); color: var(--sign-ink); font-size: 14px; font-weight: 600;
+  box-shadow: var(--shadow-pop); opacity: 0; transform: translate(-50%, 8px); transition: opacity 180ms, transform 220ms var(--ease); pointer-events: none; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
