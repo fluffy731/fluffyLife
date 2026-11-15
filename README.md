@@ -13,6 +13,7 @@ All things life, and whatever comes up next: language trainers, a no-opinion new
 | Briefing · 뉴스 | [`/news/`](https://fluffy731.github.io/fluffyLife/news/) | Hourly news from free-to-read outlets, opinion removed |
 | MC 主持稿 | [`/mc/`](https://fluffy731.github.io/fluffyLife/mc/) | MC script for the 25 October 粤商酒会 / 《粤唱粤强》 final |
 | A Night to Shine MC | [`/shine/`](https://fluffy731.github.io/fluffyLife/shine/) | Two-MC script (Solomon English, Wade 普通话, for now) for She Rises' 13 November black-tie Christmas night |
+| 影 Films | [`/films/`](https://fluffy731.github.io/fluffyLife/films/) | Good Hong Kong, Chinese, Korean and English-language films to watch, by place, era and genre |
 
 The bare address forwards to `/korean/`, so home-screen icons saved from it before the other apps existed keep working.
 
@@ -247,6 +248,20 @@ Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scor
 - **Moving between stocks:** a stock opened from a list, card or the map has ‹ › buttons (and a sideways swipe, or the arrow keys) to step to the next one in that list without closing it.
 - **Checks:** `node --test test/stocks*.test.js`; `node scripts/build-stocks.mjs --force` builds the feed and the chart histories locally. Each deploy leaves a "Stocks feed" notice on its run with the build summary.
 
+# Films (`/films/`)
+
+Something good to watch in a free evening: Hong Kong, Chinese, Korean and English-language films by place, era and genre, with a watchlist. It is on the Metro line look of the study apps (`DESIGN.md`) as its fourth line, Seoul Line 5 purple, with 影 on the roundel.
+
+- **Browse** (the first tab). Choose a place (All, Hong Kong 香港, Chinese 華語, Korean 한국, English), ride the era line (Classics, then each decade to the 2020s; tap a station again for all eras; Hong Kong's 1980s and 1990s are the Golden age interchange), and pick a genre (TMDB's genres plus Martial arts, from TMDB's keywords; a genre shows once it has 4 films). Rows: **Best rated**, **Most popular**, **Crowd-pleasers** (popular films rated below their shelf's middle), **Popular right now** (this week on TMDB, with no era chosen), then the biggest genres. **All** opens a row as a grid with a sort switch. **Surprise me** picks one good film you haven't seen from the shelf; **Another** draws again. The choices are remembered.
+- **Why each list is ranked within its place.** TMDB's users lean towards English-language films, so one ranking across everything would bury Hong Kong and Chinese films. Best rated weighs a film's average by how many rated it (a 9.0 from 15 votes doesn't beat an 8.4 from 20,000), against its own place's average; Most popular is how many people rated it; under All the places take turns. Mainland audiences mostly rate on Douban, which has no free data, so each Chinese or Hong Kong film links to a Douban search.
+- **A film's sheet** opens on a station sign: poster, the title in its own script with the English title, year, place (Mainland or Taiwan for Chinese films), runtime, genres, rating and how many rated it, its rank in its place, director, cast and plot. **Want to watch**, **Seen it**, the trailer on YouTube, the TMDB page, and **More like this** (same director, lead actors, or place, genre and decade).
+- **Search** (title in English or the original script, director or actor; case and accents don't matter) covers the catalogue. **Watchlist** lists Want to watch and Seen, newest first, and keeps each film's details, so it still shows a film after it leaves the weekly list. **Settings** (under More): theme, Hide films I've seen, **Back up** and **Restore** (one JSON file, merged without duplicates; iPhone can clear a website's storage), when the catalogue was built, and TMDB's notice.
+- **How it works.** With the hourly deploy, `scripts/build-films.mjs` rebuilds `films/feed.json` once a week, or at once when its rules change, and otherwise restores the last one and stops in seconds. For each place and decade it asks TMDB's discover service for up to 100 films by rating (at least 20 votes, 300 for English) and 100 by number of ratings (at least 10), plus 20 popular right now per place, then each film's details (cached up to 30 days in `~/.films-cache`, never published). A Hong Kong and Mainland co-production is on both shelves; an English-language US–China film is English only. A build that comes back with fewer than half the films keeps the last feed. The log shows counts, field coverage and one sample film, never plots or the key.
+- **One-time setup.** Make a free account at themoviedb.org, request an API key for personal, non-commercial use (Settings → API), and add it as the repository secret `TMDB_API_KEY` (Settings → Secrets and variables → Actions). The short API key and the long read access token both work. Without it the build skips and the app says the list arrives once the key is added.
+- **TMDB's terms.** Free for non-commercial use with credit: Settings shows "This product uses the TMDB API but is not endorsed or certified by TMDB". TMDB's logo shows beside it once its official file is saved as `films/tmdb.svg` (download it from TMDB's logos and attribution page and commit it; the build never fetches it). Data is rebuilt weekly with this week's ratings and popularity, details are kept at most 30 days, a feed no build has refreshed in 150 days is removed, only TMDB's API is called, and no TMDB content goes to an AI model.
+- **Checks:** `node --test test/films*.test.js`; `node scripts/films-check.mjs` (the app against a feed built from the TMDB-shaped samples in `test/fixtures/films/`, whose plots are our own); `node scripts/build-films.mjs --probe` builds into the cache folder and prints the summary.
+- **Code:** places, eras, rankings, Surprise me, More like this and search in `films/model.js` (`test/films-model.test.js`), shared with the build; the build in `scripts/build-films.mjs` (`test/films-build.test.js`); the phone's watchlist and backup in `films/store.js` (`test/films-store.test.js`); the screens in `films/films.js` and `films/films.css` on `metro.css`. Design: `docs/superpowers/specs/2026-11-15-films-design.md`.
+
 # Development
 
 No build step. Serve the folder with any static server to try it locally.
@@ -260,6 +275,7 @@ node scripts/yue-check.mjs                 # Cantonese app: progress isolation, 
 node scripts/update-check.mjs              # a new deploy reaches an installed app on the next open
 node scripts/news-check.mjs                # Briefing news app against a fixture feed
 node scripts/spots-check.mjs               # Spots app in sample mode (modes, place sheet, check-in, night theme)
+node scripts/films-check.mjs               # Films app against a feed built from the TMDB-shaped samples
 node scripts/songs-check.mjs               # Korean Songs tab with LRCLIB and the Claude API faked (invented lyrics only)
 ```
 The three scripts need Playwright; set `PLAYWRIGHT_MODULE` to its `index.mjs` if it is not importable as `playwright`.

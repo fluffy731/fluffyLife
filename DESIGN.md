@@ -1,6 +1,6 @@
 ---
 name: Metro line
-description: The Korean, Cantonese and English study apps. The study track is a metro line and every card is a station sign; each app owns one line colour.
+description: The Korean, Cantonese and English study apps, and Films. The study track is a metro line and every card is a station sign; each app owns one line colour.
 colors:
   ground: "#f1f3f2"
   surface: "#ffffff"
@@ -31,6 +31,10 @@ colors:
   line-1-blue: "#0052a4"
   line-1-blue-soft: "#cbd9ee"
   line-1-blue-ink: "#003f80"
+  line-5-purple: "#996cac"
+  line-5-purple-strong: "#7b4f92"
+  line-5-purple-soft: "#e6dcef"
+  line-5-purple-ink: "#5a3670"
   ground-night: "#0d1013"
   surface-night: "#171b20"
   surface-2-night: "#232931"
@@ -41,6 +45,7 @@ colors:
   line-2-green-night: "#2bc06a"
   mtr-red-night: "#ff5a4f"
   line-1-blue-night: "#4d8fe8"
+  line-5-purple-night: "#b98fd6"
 typography:
   display:
     fontFamily: "Pretendard, -apple-system, BlinkMacSystemFont, Apple SD Gothic Neo, Noto Sans KR, PingFang TC, system-ui, sans-serif"
@@ -138,7 +143,7 @@ components:
 
 # Design System: Metro line
 
-Source of truth: `metro.css` (the Korean, Cantonese and English apps). The Mongolian app keeps `style.css` and is outside this system. Product facts: `PRODUCT.md`; the direction this was built from: `docs/design/language-apps.md`.
+Source of truth: `metro.css` (the Korean, Cantonese and English apps, and Films). The Mongolian app keeps `style.css` and is outside this system. Product facts: `PRODUCT.md`; the direction this was built from: `docs/design/language-apps.md`.
 
 ## Overview
 
@@ -154,6 +159,7 @@ Each app owns one line colour, set by `<html data-line="ko|yue|en">`, and that c
 - **Line 2 Green** (#00a84d; strong #007a37 for filled buttons and text; soft #cdebd8 for track not yet travelled; ink #005c29 for text on soft): the Korean app.
 - **MTR Red** (#e2231a; strong #c41c14; soft #f8d0cd; ink #9b1410): the Cantonese app.
 - **Line 1 Blue** (#0052a4; soft #cbd9ee; ink #003f80): the English app.
+- **Line 5 Purple** (#996cac; strong #7b4f92 for filled buttons and text; soft #e6dcef; ink #5a3670; on a sign #c39be0; at night #b98fd6 with dark text on fills): the Films app (`films/`, added 15 November 2026). Green, red and blue were taken; orange would blur with signage yellow and hanja amber.
 - On a charcoal sign the line is drawn a step brighter (`--route-sign`: #00b453, #ff3b30, #3d8ff0) so the 4px rule reads. At night the line brightens (#2bc06a, #ff5a4f, #4d8fe8) and filled buttons take dark text (`--on-route`).
 
 ### Secondary
@@ -206,6 +212,12 @@ Rounded rectangles in four steps: signs 16px, cards 14px, controls and list rows
 
 ### The station sign (study card)
 Charcoal panel, 16px radius, 20px/18px padding. Closed: the headword and its part of speech, "tap to flip" with a short line-colour dash. Open: a 4px line-colour **rule** draws across (480ms ease-out), then the subtitle lines rise in: hanja, meaning, romanisation, pictogram tile (white, 112px), notes, and examples separated by hairlines. On Home the closed sign also carries a glance line (hanja and meaning) under a hairline, beneath a "09:00 · Word of the hour" strip.
+
+### The film sign (Films)
+A film's sheet opens on a station sign: the poster beside the titles stacked as a trilingual Seoul sign stacks them. A Korean title is Pretendard ExtraBold in the sign's white; a Chinese title takes signage yellow, as hanja do (PingFang, glyph by glyph); the English title follows in the sign's ink. The 4px rule draws across, then the year, place, runtime and genres, the rating with its drawn star, the ranks in the line colour, and the people and plot rise in beneath it, separated by hairlines, never boxed. On a light ground (poster rows, lists) Chinese titles are hanja amber. Poster tiles use the card radius, flat with a hairline; a film with no poster shows its title on a charcoal tile in the same sign colours.
+
+### The era line (Films)
+Films' one use of the signature move: the decades as a horizontal line of seven stations, Classics to the 2020s, drawn like Home's line (6px rail, 22px stops, a 32px ringed you-are-here). Tap a station to ride to that era, tap it again to clear. A place's named era (Hong Kong's 1980s and 1990s Golden age) is an ink-ringed interchange with its name beneath; a decade with no films for the place and genre is an unfilled stop that can't be tapped.
 
 ### The line (Home)
 Five tappable stations; tapping one opens that unit in Learn. The rail is filled up to the current stop and part-filled toward the next by the share of the current unit introduced. Off-tier stops show the tier name under the unit; the first stop of a new tier is an interchange.

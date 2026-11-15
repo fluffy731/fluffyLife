@@ -1,0 +1,15 @@
+{
+  "name": "Films",
+  "short_name": "Films",
+  "description": "Good Hong Kong, Chinese, Korean and English-language films by place, era and genre.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f1f3f2",
+  "theme_color": "#f1f3f2",
+  "icons": [
+    { "src": "../icons/films.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/films-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/films-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

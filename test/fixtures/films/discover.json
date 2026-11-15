@@ -1,0 +1,221 @@
+{
+ "page": 1,
+ "results": [
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    28,
+    80,
+    18,
+    53
+   ],
+   "id": 10775,
+   "original_language": "cn",
+   "original_title": "無間道",
+   "overview": "Two moles, one in the police and one in a triad, race to unmask each other before their own cover is blown.",
+   "popularity": 21.4,
+   "poster_path": "/sample10775.jpg",
+   "release_date": "2002-12-12",
+   "title": "Infernal Affairs",
+   "video": false,
+   "vote_average": 7.9,
+   "vote_count": 3201
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18,
+    10749
+   ],
+   "id": 843,
+   "original_language": "cn",
+   "original_title": "花樣年華",
+   "overview": "Neighbours in 1960s Hong Kong grow close after finding out their spouses are having an affair.",
+   "popularity": 18.2,
+   "poster_path": "/sample843.jpg",
+   "release_date": "2000-09-29",
+   "title": "In the Mood for Love",
+   "video": false,
+   "vote_average": 8.1,
+   "vote_count": 3000
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    28,
+    35,
+    80,
+    14
+   ],
+   "id": 9470,
+   "original_language": "cn",
+   "original_title": "功夫",
+   "overview": "A small-time crook wants to join a feared gang, until a run-down housing block turns out to hide kung fu masters.",
+   "popularity": 30.1,
+   "poster_path": "/sample9470.jpg",
+   "release_date": "2004-12-23",
+   "title": "Kung Fu Hustle",
+   "video": false,
+   "vote_average": 7.4,
+   "vote_count": 4300
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18,
+    12,
+    28,
+    36
+   ],
+   "id": 79,
+   "original_language": "zh",
+   "original_title": "英雄",
+   "overview": "A nameless swordsman tells the King of Qin how he defeated three assassins, and each telling changes colour.",
+   "popularity": 15.5,
+   "poster_path": "/sample79.jpg",
+   "release_date": "2002-12-19",
+   "title": "Hero",
+   "video": false,
+   "vote_average": 7.4,
+   "vote_count": 2900
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18,
+    36
+   ],
+   "id": 43049,
+   "original_language": "zh",
+   "original_title": "悲情城市",
+   "overview": "A Taiwanese family is caught up in the years after Japanese rule ends in 1945.",
+   "popularity": 4.2,
+   "poster_path": "/sample43049.jpg",
+   "release_date": "1989-09-01",
+   "title": "A City of Sadness",
+   "video": false,
+   "vote_average": 7.6,
+   "vote_count": 150
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    80,
+    18,
+    53
+   ],
+   "id": 11423,
+   "original_language": "ko",
+   "original_title": "살인의 추억",
+   "overview": "Two detectives in a farming town chase a serial killer with little more than hunches.",
+   "popularity": 19.9,
+   "poster_path": "/sample11423.jpg",
+   "release_date": "2003-05-02",
+   "title": "Memories of Murder",
+   "video": false,
+   "vote_average": 8.1,
+   "vote_count": 4400
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18,
+    10749
+   ],
+   "id": 289,
+   "original_language": "en",
+   "original_title": "Casablanca",
+   "overview": "A bar owner in wartime Morocco has to choose between an old love and helping her husband escape.",
+   "popularity": 14,
+   "poster_path": "/sample289.jpg",
+   "release_date": "1942-11-26",
+   "title": "Casablanca",
+   "video": false,
+   "vote_average": 8.2,
+   "vote_count": 5500
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    28,
+    12,
+    14
+   ],
+   "id": 311324,
+   "original_language": "en",
+   "original_title": "The Great Wall",
+   "overview": "A mercenary on the Great Wall joins an army holding back monsters.",
+   "popularity": 25,
+   "poster_path": "/sample311324.jpg",
+   "release_date": "2016-12-16",
+   "title": "The Great Wall",
+   "video": false,
+   "vote_average": 6,
+   "vote_count": 6000
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18
+   ],
+   "id": 900001,
+   "original_language": "cn",
+   "original_title": "Lost Reel",
+   "overview": "",
+   "popularity": 1,
+   "poster_path": null,
+   "release_date": "1975-05-01",
+   "title": "Lost Reel",
+   "video": false,
+   "vote_average": 6.5,
+   "vote_count": 25
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18
+   ],
+   "id": 900002,
+   "original_language": "cn",
+   "original_title": "即將上映",
+   "overview": "Not out yet.",
+   "popularity": 2,
+   "poster_path": "/sample900002.jpg",
+   "release_date": "",
+   "title": "Coming Soon",
+   "video": false,
+   "vote_average": 0,
+   "vote_count": 0
+  },
+  {
+   "adult": false,
+   "backdrop_path": null,
+   "genre_ids": [
+    18
+   ],
+   "id": 900003,
+   "original_language": "cn",
+   "original_title": "Late Show",
+   "overview": "Left out of the catalogue.",
+   "popularity": 3,
+   "poster_path": "/sample900003.jpg",
+   "release_date": "1992-01-01",
+   "title": "Late Show",
+   "video": false,
+   "vote_average": 5.5,
+   "vote_count": 40
+  }
+ ],
+ "total_pages": 1,
+ "total_results": 11
+}
