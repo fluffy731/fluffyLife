@@ -120,7 +120,6 @@ jobs:
         with:
           path: |
             films/feed.json
-            films/tmdb.svg
             ~/.films-cache
           key: films-v1-${{ github.run_id }}
           restore-keys: films-v1-

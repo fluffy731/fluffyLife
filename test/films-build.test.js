@@ -254,3 +254,67 @@ test("run --probe writes into the cache folder, not the site", async () => {
   assert.ok(!existsSync(t.out));
   assert.ok(existsSync(join(t.cacheDir, "probe-feed.json")));
 });
+
+// ---------- fixes from the final review ----------
+
+test("a malformed 200 is retried, and one that never parses doesn't sink the build", async () => {
+  const once = await run({ key: KEY, fetch: fakeTMDB({ "/3/movie/843": [{ status: 200, body: "<html>busy</html>" }] }).fetch, now: NOW, ...tmp(), thinFloor: 1, backoff: 0, log: quiet });
+  assert.ok(once.wrote && once.feed.films.some((f) => f.id === 843) && once.feed.sources.failed === 0);
+  const bad = Array.from({ length: 4 }, () => ({ status: 200, body: "<html>" }));
+  const t = tmp();
+  const never = await run({ key: KEY, fetch: fakeTMDB({ "/3/movie/843": bad }).fetch, now: NOW, ...t, thinFloor: 1, backoff: 0, log: quiet });
+  assert.ok(never.wrote && !never.feed.films.some((f) => f.id === 843) && never.feed.sources.failed === 1);
+  assert.ok(existsSync(join(t.cacheDir, "details.json")), "the details already fetched are kept");
+});
+
+test("run never touches TMDB's website, only its API", async () => {
+  const tm = fakeTMDB();
+  await run({ key: KEY, fetch: tm.fetch, now: NOW, ...tmp(), thinFloor: 1, log: quiet });
+  assert.ok(tm.calls.length > 0 && tm.calls.every((c) => c.startsWith("/3/")), tm.calls.filter((c) => !c.startsWith("/3/")).join(" "));
+});
+
+test("a feed older than 150 days is removed even without a key", async () => {
+  const t = tmp();
+  writeFileSync(t.out, JSON.stringify({ version: 1, built: new Date(NOW - 151 * 864e5).toISOString(), rules: "r1", films: [] }));
+  await run({ key: "", fetch: fakeTMDB().fetch, now: NOW, ...t, log: quiet });
+  assert.ok(!existsSync(t.out));
+  writeFileSync(t.out, JSON.stringify({ version: 1, built: new Date(NOW - 100 * 864e5).toISOString(), rules: "r1", films: [] }));
+  await run({ key: "", fetch: fakeTMDB().fetch, now: NOW, ...t, log: quiet });
+  assert.ok(existsSync(t.out), "a younger feed stays");
+});
+
+test("the detail cache is pruned on every run, even when nothing is rebuilt", async () => {
+  const t = tmp();
+  await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, thinFloor: 1, rules: "r1", log: quiet });
+  const file = join(t.cacheDir, "details.json");
+  const cache = JSON.parse(readFileSync(file, "utf8"));
+  cache["843"].at = new Date(NOW - 31 * 864e5).toISOString();
+  writeFileSync(file, JSON.stringify(cache));
+  await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, rules: "r1", log: quiet });
+  assert.ok(!JSON.parse(readFileSync(file, "utf8"))["843"]);
+});
+
+test("Popular right now and ratings come from this week's discover results", async () => {
+  const t = tmp();
+  await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, thinFloor: 1, log: quiet });
+  const fresh = { ...discover, results: discover.results.map((r) => (r.id === 10775 ? { ...r, popularity: 99.04, vote_count: 3300, vote_average: 8.04 } : r)) };
+  const fetch = async (url, init) => (new URL(url).pathname === "/3/discover/movie" ? new Response(JSON.stringify(fresh)) : fakeTMDB().fetch(url, init));
+  const r = await run({ key: KEY, fetch, now: NOW, ...t, thinFloor: 1, force: true, log: quiet });
+  const ia = r.feed.films.find((f) => f.id === 10775);
+  assert.deepEqual([ia.pop, ia.votes, ia.rating], [99, 3300, 8]);
+});
+
+test("the detail cache keeps only what the catalogue needs", async () => {
+  const t = tmp();
+  await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, thinFloor: 1, log: quiet });
+  const d = JSON.parse(readFileSync(join(t.cacheDir, "details.json"), "utf8"))["10775"].d;
+  assert.ok(!("production_companies" in d) && !("budget" in d));
+  assert.ok(d.credits.crew.every((c) => c.job === "Director"));
+  assert.ok(d.credits.cast.length <= 10 && d.videos.results.every((v) => v.site === "YouTube" && v.type === "Trailer"));
+  assert.deepEqual(filmFrom(d, ["HK"]), filmFrom(details[10775], ["HK"]), "the slim copy makes the same film");
+});
+
+test("filmFrom refuses a poster path that isn't a plain file name", () => {
+  assert.equal(filmFrom({ ...details[289], poster_path: '/x" onerror="alert(1).jpg' }, ["EN"]).poster, null);
+  assert.equal(filmFrom(details[289], ["EN"]).poster, "/sample289.jpg");
+});

@@ -7,11 +7,12 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const NO_FEED = "The film list arrives with the next update, once a TMDB key has been added to the repository.";
+const LOADING = `<p class="empty">Loading films…</p>`;
 const LISTS = { rated: "Best rated", popular: "Most popular", crowd: "Crowd-pleasers", now: "Popular right now" };
 const GRID_STEP = 24;
 
 const state = load();
-let feed = null, ranks = new Map(), byId = new Map();
+let feed, ranks = new Map(), byId = new Map();   // feed: undefined while loading, null when there is none
 let tab = "browse";
 let grid = null;            // { list: "rated"|"popular"|"crowd", genre: string|null, shown: number } while a full list is open
 
@@ -28,11 +29,11 @@ const ICON_DICE = `<svg class="ic-btn" viewBox="0 0 24 24" aria-hidden="true"><r
 // A poster tile: the poster (or its title when there's none or it won't load), both titles, the year and rating.
 export function tile(f) {
   const marks = (state.seen[f.id] ? `<i class="mark seen" title="Seen"></i>` : "") + (state.want[f.id] ? `<i class="mark want" title="On your watchlist"></i>` : "");
-  const img = f.poster ? `<img loading="lazy" alt="" src="${posterURL(f.poster)}" onerror="this.remove()">` : "";
+  const img = f.poster ? `<img loading="lazy" alt="" src="${esc(posterURL(f.poster))}" onerror="this.remove()">` : "";
   const en = f.title && f.title !== f.original ? `<span class="t-en">${esc(f.title)}</span>` : "";
-  return `<button class="film" data-film="${f.id}"><span class="poster"><span class="ph" lang="${langOf(f)}">${esc(f.original)}</span>${img}${marks}</span>`
+  return `<button class="film" data-film="${esc(f.id)}"><span class="poster"><span class="ph" lang="${langOf(f)}">${esc(f.original)}</span>${img}${marks}</span>`
     + `<b class="t-orig${isZh(f) ? " zh-t" : ""}" lang="${langOf(f)}">${esc(f.original)}</b>${en}`
-    + `<span class="meta">${f.year} <i class="star" aria-hidden="true"></i>${(f.rating || 0).toFixed(1)}</span></button>`;
+    + `<span class="meta">${esc(f.year)} <i class="star" aria-hidden="true"></i>${(f.rating || 0).toFixed(1)}</span></button>`;
 }
 
 const chip = (attr, val, label, on) => `<button data-${attr}="${esc(val)}"${on ? ' class="on"' : ""}>${label}</button>`;
@@ -42,7 +43,7 @@ function eraLine(f) {
   return `<div class="era-line" role="group" aria-label="Era">${ERAS.map((e) => {
     const label = named[e.id];
     const cls = ["stop", f.era === e.id ? "on" : "", label ? "interchange" : ""].filter(Boolean).join(" ");
-    return `<button class="${cls}" data-era="${e.id}"${live.has(e.id) ? "" : " disabled"} aria-pressed="${f.era === e.id}"><i></i><b>${e.name}</b>${label ? `<small>${esc(label)}</small>` : ""}</button>`;
+    return `<button class="${cls}" data-era="${e.id}"${live.has(e.id) || f.era === e.id ? "" : " disabled"} aria-pressed="${f.era === e.id}"><i></i><b>${e.name}</b>${label ? `<small>${esc(label)}</small>` : ""}</button>`;
   }).join("")}</div>`;
 }
 
@@ -54,6 +55,7 @@ function row(key, title, list) {
 
 // ---------- screens (each fills the view) ----------
 function browse(el) {
+  if (feed === undefined) { el.innerHTML = LOADING; return; }
   if (!feed) { el.innerHTML = `<p class="empty">${NO_FEED}</p>`; return; }
   if (grid) return fullList(el);
   const f = shelf(), all = films();
@@ -79,7 +81,7 @@ function fullList(el) {
   const list = lists[grid.list];
   el.innerHTML = `<div class="grid-head"><button class="back" data-back>Back</button><h2>${esc(grid.genre || LISTS[grid.list])}</h2></div>`
     + `<div class="chips sorts">${sorts.map((k) => `<button data-sort="${k}"${k === grid.list ? ' class="on"' : ""}>${LISTS[k]}</button>`).join("")}</div>`
-    + `<div id="grid" class="grid">${list.slice(0, grid.shown).map(tile).join("")}</div>`
+    + (list.length ? `<div id="grid" class="grid">${list.slice(0, grid.shown).map(tile).join("")}</div>` : `<div id="grid" class="grid"></div><p class="empty">No films here yet. Try another era or genre, or turn off Hide films I've seen.</p>`)
     + (list.length > grid.shown ? `<div class="more-sentinel" aria-hidden="true"></div>` : "");
   const sentinel = $(".more-sentinel", el);
   if (sentinel && "IntersectionObserver" in window) {
@@ -100,10 +102,10 @@ function fullList(el) {
 function rowItem(f) {
   const place = PLACES.find((p) => p.id === f.places?.[0]);
   const zh = /[㐀-鿿]/.test(f.original || "");
-  const img = f.poster ? `<img loading="lazy" alt="" src="${posterURL(f.poster)}" onerror="this.remove()">` : "";
+  const img = f.poster ? `<img loading="lazy" alt="" src="${esc(posterURL(f.poster))}" onerror="this.remove()">` : "";
   const en = f.title && f.title !== f.original ? `${esc(f.title)} · ` : "";
-  return `<button class="item film-row" data-film="${f.id}"><span class="poster mini">${img}</span>`
-    + `<span class="row-t"><b class="${zh ? "zh-t" : ""}">${esc(f.original || f.title)}</b><span class="meta">${en}${f.year || ""}${place ? ` · ${place.name}` : ""}</span></span></button>`;
+  return `<button class="item film-row" data-film="${esc(f.id)}"><span class="poster mini">${img}</span>`
+    + `<span class="row-t"><b class="${zh ? "zh-t" : ""}">${esc(f.original || f.title)}</b><span class="meta">${en}${esc(f.year || "")}${place ? ` · ${place.name}` : ""}</span></span></button>`;
 }
 
 let query = "", queryTimer = 0;
@@ -117,8 +119,9 @@ function searchScreen(el) {
 function showResults() {
   const box = $("#results");
   if (!box) return;
+  if (feed === undefined) { box.innerHTML = LOADING; return; }
   if (!feed) { box.innerHTML = `<p class="empty">${NO_FEED}</p>`; return; }
-  const hits = search(films(), query);
+  const hits = search(feed.films, query);   // search finds Seen films too, whatever Hide seen says
   box.innerHTML = hits.length ? hits.map(rowItem).join("") : query.trim() ? `<p class="empty">No films match. The list holds the best-rated and most-rated films of each place and decade.</p>` : "";
 }
 
@@ -183,7 +186,7 @@ function settingsScreen(el) {
     + `<h2>Your watchlist</h2><div class="actions"><button class="btn" data-act="backup">Back up</button><button class="btn" data-act="restore">Restore</button></div>`
     + `<p class="note">Your watchlist and Seen list stay on this phone. Back them up now and then: iPhone can clear a website's storage, and the file moves them to a new phone.</p>`
     + `<h2>About the films</h2>`
-    + `<p class="note">${feed ? `Catalogue built ${built} · ${fmt(feed.films.length)} films` : NO_FEED}</p>`
+    + `<p class="note">${feed ? `Catalogue built ${built} · ${fmt(feed.films.length)} films` : feed === undefined ? "Loading films…" : NO_FEED}</p>`
     + `<p class="note">The best-rated and most-rated Hong Kong, Chinese, Korean and English-language films of each decade on TMDB, rebuilt every week. Best rated weighs each film's rating by how many people rated it; Most popular is how many people rated it; Crowd-pleasers are popular films rated below their shelf's middle. Every list is ranked within its place, so Hollywood never buries the rest. Mainland audiences mostly rate on Douban, so Chinese numbers are a rough guide.</p>`
     + `<div class="tmdb-credit"><img src="./tmdb.svg" alt="TMDB" onerror="this.remove()"><p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p></div>`;
 }
@@ -229,7 +232,7 @@ function sheetHTML(f, gone, fromSurprise) {
   const zh = isZh(f) || /[㐀-鿿]/.test(f.original || ""), ko = f.lang === "ko" || /[가-힣]/.test(f.original || "");
   const original = zh && !ko ? `<b class="hanja zh" lang="${langOf(f)}">${esc(f.original)}</b>` : `<b class="k"${ko ? ' lang="ko"' : ""}>${esc(f.original || f.title)}</b>`;
   const en = f.title && f.title !== f.original ? `<span class="en-t">${esc(f.title)}</span>` : "";
-  const img = f.poster ? `<img alt="" src="${posterURL(f.poster, 342)}" onerror="this.remove()">` : "";
+  const img = f.poster ? `<img alt="" src="${esc(posterURL(f.poster, 342))}" onerror="this.remove()">` : "";
   const meta = [f.year, placeLine(f), f.runtime ? `${f.runtime} min` : "", (f.genres || []).join(", ")].filter(Boolean).join(" · ");
   const r = !gone && ranks.get(f.id)?.[f.places[0]];
   const where = PLACES.find((p) => p.id === f.places[0])?.name;
@@ -245,12 +248,12 @@ function sheetHTML(f, gone, fromSurprise) {
     + `<p class="sign-meta">${esc(meta)}</p>${rating}${rankLine}`
     + (people.length ? `<p class="people">${people.join("<br>")}</p>` : "")
     + (f.plot ? `<p class="plot">${esc(f.plot)}</p>` : "")
-    + (gone ? `<p class="gone">No longer in this week's list</p>` : "") + `</div>`
+    + (gone ? `<p class="gone">${feed ? "No longer in this week's list" : "Saved on this phone. The film list isn't loaded right now."}</p>` : "") + `</div>`
     + `<div class="actions film-actions"><button class="btn${want ? "" : " primary"}" data-act="want" aria-pressed="${want}">${want ? "On your watchlist" : "Want to watch"}</button>`
     + `<button class="btn" data-act="seen" aria-pressed="${seen}">${seen ? "Seen" : "Seen it"}</button></div>`
     + (fromSurprise ? `<button class="surprise another" data-act="another">${ICON_DICE}Another</button>` : "")
     + `<p class="links">${f.trailer ? `<a class="trailer" href="https://www.youtube.com/watch?v=${encodeURIComponent(f.trailer)}" target="_blank" rel="noopener">Trailer</a>` : ""}`
-    + `<a class="tmdb" href="https://www.themoviedb.org/movie/${f.id}" target="_blank" rel="noopener">TMDB page</a>${douban}</p>`
+    + `<a class="tmdb" href="https://www.themoviedb.org/movie/${encodeURIComponent(f.id)}" target="_blank" rel="noopener">TMDB page</a>${douban}</p>`
     + (like.length ? `<h2>More like this</h2><div class="posters more-like">${like.map(tile).join("")}</div>` : "")
     + `</div>`;
 }

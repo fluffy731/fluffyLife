@@ -196,7 +196,7 @@ Two lists: **Want to watch** (newest first) and **Seen** (newest first, phase B 
 
 ### Settings (from More)
 
-Theme (phone, light, dark, as in the study apps); Hide films I've seen; Back up / Restore; when the catalogue was built and how many films it holds; and the TMDB attribution with TMDB's logo and the notice "This product uses the TMDB API but is not endorsed or certified by TMDB", which the terms require. The build downloads the logo into `films/` so it's served from the site; if that fails, the notice shows as text.
+Theme (phone, light, dark, as in the study apps); Hide films I've seen; Back up / Restore; when the catalogue was built and how many films it holds; and the TMDB attribution with TMDB's logo and the notice "This product uses the TMDB API but is not endorsed or certified by TMDB", which the terms require. TMDB's official logo file is committed as `films/tmdb.svg` by hand (revised after the final review: TMDB's website refuses scripts, and getting around that would break the anti-goal above); until it is, the notice shows as text.
 
 ### Before there's a feed
 

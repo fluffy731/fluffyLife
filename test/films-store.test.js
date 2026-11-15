@@ -71,3 +71,14 @@ test("restore refuses foreign files", () => {
     assert.deepEqual(st, before);
   }
 });
+
+test("restore checks each entry's fields, so a crafted file can't put markup in the page", () => {
+  const st = structuredClone(DEFAULTS);
+  const before = structuredClone(st);
+  const entry = (o) => JSON.stringify({ app: "films", version: 1, want: { 7: { ...snapshot(F(7), AT), ...o } }, seen: {} });
+  for (const bad of [{ year: "<img src=x onerror=alert(1)>" }, { poster: '/p.jpg" onerror="alert(1)' }, { title: { html: "x" } }, { places: "HK" }, { cast: "x" }]) {
+    assert.throws(() => restore(st, entry(bad)), { message: "This file is not a Films backup." }, JSON.stringify(bad));
+    assert.deepEqual(st, before);
+  }
+  assert.deepEqual(restore(st, entry({ poster: null })), { added: 1 }, "no poster is fine");
+});

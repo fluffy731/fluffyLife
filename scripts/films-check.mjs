@@ -188,7 +188,7 @@ await page.click('#tabs [data-tab="watchlist"]');
 ok("offline: the watchlist still lists a saved film", (await page.textContent("#view")).includes("Gone Film"));
 await page.click('.item[data-film="99999"]');
 await page.waitForFunction(() => document.querySelector("#film").open);
-ok("offline: its sheet says it's no longer in the list", (await sheetText(page)).includes("No longer in this week's list"));
+ok("offline: its sheet doesn't claim it left the list", !(await sheetText(page)).includes("No longer in this week's list") && (await sheetText(page)).includes("Saved on this phone"));
 await page.context().close();
 
 // 6. Settings, backup and restore
@@ -216,6 +216,64 @@ await page.waitForFunction(() => document.querySelector("#toast").textContent.in
 ok("a foreign file is refused", (await page.textContent("#toast")) === "This file is not a Films backup." && (await page.textContent("#want-badge")) === "2 to watch");
 ok("Settings has Back up and Restore", (await page.$$('#view [data-act="backup"]')).length === 1 && (await page.$$('#view [data-act="restore"]')).length === 1);
 ok("no pictographs in Settings", (await pictographs(page)).length === 0);
+await page.context().close();
+
+// 7. Fixes from the final review
+// While the feed is still on its way, Browse says it's loading, never that the key is missing.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block" });
+  const p = await ctx.newPage();
+  p.on("pageerror", (e) => errs.push(e.message));
+  await p.route("**/films/feed.json", async (r) => { await new Promise((res) => setTimeout(res, 1500)); await r.fulfill({ contentType: "application/json", body: FEED_JSON }); });
+  await p.route(/^https:\/\/image\.tmdb\.org\//, (r) => r.fulfill({ status: 404, body: "" }));
+  await p.goto(base, { waitUntil: "load" });
+  await p.waitForTimeout(400);
+  const during = await p.textContent("#view");
+  ok("loading: no false 'add a key' message while the feed loads", !during.includes("TMDB key") && /Loading/.test(during));
+  await p.waitForSelector('section[data-list="rated"]');
+  ok("loading: then the shelves", true);
+  await ctx.close();
+}
+page = await newPage({ init: setStore({ settings: { place: "KR", era: "classics" } }) });
+ok("a chosen era with no films can still be cleared", await page.$eval('.era-line [data-era="classics"]', (el) => !el.disabled && el.classList.contains("on")));
+await page.click('.era-line [data-era="classics"]');
+ok("…and tapping it clears it", (await page.$$(".era-line .on")).length === 0 && (await page.$$('section[data-list="rated"]')).length === 1);
+await page.context().close();
+
+page = await newPage({ init: setStore({ settings: { hideSeen: true }, seen: { 10775: snap(10775) } }) });
+await page.click('#tabs [data-tab="search"]');
+await page.fill("#q", "infernal");
+await page.waitForFunction(() => document.querySelector("#view").textContent.includes("Infernal Affairs"));
+ok("search still finds a seen film with Hide seen on", (await page.$$('#view .item[data-film="10775"]')).length === 1);
+await page.context().close();
+
+const krAll = FEED.films.filter((f) => f.places.includes("KR"));
+const last = krAll[0].id;
+page = await newPage({ init: setStore({ settings: { place: "KR", hideSeen: true }, seen: Object.fromEntries(krAll.filter((f) => f.id !== last).map((f) => [f.id, snap(f.id)])) }) });
+await page.click('section[data-list="rated"] [data-all]');
+await page.waitForSelector(`#grid [data-film="${last}"]`);
+await page.click(`#grid [data-film="${last}"]`);
+await page.waitForFunction(() => document.querySelector("#film").open);
+await page.click('#film [data-act="seen"]');
+await page.keyboard.press("Escape");
+await page.waitForFunction(() => !document.querySelector("#film").open);
+ok("an emptied grid says so", (await page.$$("#grid [data-film]")).length === 0 && /No films here yet/.test(await page.textContent("#view")));
+await page.context().close();
+
+const crafted = { 77: { id: 77, title: "Crafted", original: "Crafted", year: "<img src=x onerror=window.__pwned=1>", places: ["HK"], genres: [], cast: [], director: null, poster: '/a.jpg" onerror="window.__pwned=2', at: "2026-11-01T00:00:00Z" } };
+page = await newPage({ init: setStore({ want: crafted }) });
+await page.click('#tabs [data-tab="watchlist"]');
+await page.click('.item[data-film="77"]');
+await page.waitForFunction(() => document.querySelector("#film").open);
+await page.waitForTimeout(200);
+ok("stored text is escaped, never run", (await page.evaluate(() => window.__pwned)) === undefined && (await page.$$("#view img[src='x'], #film img[src='x']")).length === 0);
+await page.context().close();
+
+page = await newPage({ init: setStore({ want: { 99999: { id: 99999, title: "Gone Film", original: "消失的電影", year: 1990, era: "1990s", places: ["HK"], genres: ["Drama"], director: { id: 1, name: "Someone" }, cast: [], poster: null, at: "2026-11-01T00:00:00Z" } } }) });
+await page.click('#tabs [data-tab="watchlist"]');
+await page.click('.item[data-film="99999"]');
+await page.waitForFunction(() => document.querySelector("#film").open);
+ok("with the list loaded, a missing film is 'no longer in this week's list'", (await sheetText(page)).includes("No longer in this week's list"));
 await page.context().close();
 
 ok("no page errors", errs.length === 0);

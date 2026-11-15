@@ -34,9 +34,12 @@ test("the page uses the Metro shell", () => {
   assert.ok(manifest.icons.some((i) => i.src === "../icons/films-512.png"));
 });
 
-test("feed and logo are git-ignored; the home page links Films", () => {
+test("the feed is git-ignored, the logo is a committed file (never fetched); the home page links Films", () => {
   const ignore = read(".gitignore").split("\n");
-  assert.ok(ignore.includes("films/feed.json") && ignore.includes("films/tmdb.svg"));
+  assert.ok(ignore.includes("films/feed.json"));
+  assert.ok(!ignore.includes("films/tmdb.svg"), "TMDB's official logo is committed by hand, not fetched by the build");
+  assert.ok(!read(".github/workflows/pages.yml").includes("films/tmdb.svg"), "nor cached between runs");
+  assert.ok(!read("scripts/build-films.mjs").includes("themoviedb.org/about"), "the build never scrapes TMDB's website");
   assert.match(read("index.html"), /<a href="\.\/films\/">Films<\/a>/);
 });
 

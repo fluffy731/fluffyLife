@@ -41,7 +41,18 @@ export function toggleSeen(state, film, at) {
 export const backupText = (state) => JSON.stringify({ app: "films", version: 1, saved: new Date().toISOString(), want: state.want, seen: state.seen }, null, 1);
 
 const NOT_OURS = "This file is not a Films backup.";
-const entriesOk = (o) => o && typeof o === "object" && Object.values(o).every((e) => e && Number.isFinite(e.id));
+// Each entry must look like one of our snapshots: anything else (markup in a year, a quote in a poster path)
+// could reach the page, so the whole file is refused.
+const str = (v) => v == null || typeof v === "string";
+const person = (p) => p && Number.isFinite(p.id) && typeof p.name === "string";
+const entryOk = (e) => e && typeof e === "object" && Number.isFinite(e.id)
+  && (e.year == null || Number.isFinite(e.year)) && str(e.title) && str(e.original) && str(e.era) && str(e.at)
+  && (e.poster == null || /^\/[\w.-]+$/.test(e.poster))
+  && (e.places == null || (Array.isArray(e.places) && e.places.every((x) => typeof x === "string")))
+  && (e.genres == null || (Array.isArray(e.genres) && e.genres.every((x) => typeof x === "string")))
+  && (e.cast == null || (Array.isArray(e.cast) && e.cast.every(person)))
+  && (e.director == null || person(e.director));
+const entriesOk = (o) => o && typeof o === "object" && Object.values(o).every(entryOk);
 
 // Merges a backup in by film id, keeping what's already here; anything else is refused before a change is made.
 export function restore(state, text) {
