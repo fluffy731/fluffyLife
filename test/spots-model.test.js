@@ -6,7 +6,7 @@ import {
   minutesLeft, isOpenAt, nextOpen, hoursLabel, dayHours,
   score, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, slotTimes, buildDayPlan, tomorrow,
   KEY, blank, load, save, areaFromAddress, savePlace, unsave, isSaved, staleSaved, addStamp, passportStats,
-  backupJSON, mergeBackup, noteRegion,
+  backupJSON, mergeBackup, noteRegion, saveEvent, unsaveEvent, isEventSaved, upcomingEvents,
 } from "../spots/model.js";
 import { REGIONS, surpriseRegion } from "../spots/regions.js";
 
@@ -460,4 +460,38 @@ test("swapStop never puts a place in two stops", () => {
   assert.equal(plan[3].travel, travelMinutes(haversineKm(plan[1].place, plan[3].place), { at: plan[3].at }), "next stop's drive is from the new place");
   plan = swapStop(plan, 1, CBD);
   assert.equal(plan[1].place.id, "A", "swapping again cycles back");
+});
+
+// ---------- Saved events ----------
+
+const feedEvent = { id: "wom:/things-to-do/polish-festival", src: "wom", title: "Polish Festival", url: "https://whatson.melbourne.vic.gov.au/things-to-do/polish-festival",
+  venue: "Fed Square", address: "Swanston St & Flinders St, Melbourne 3000", area: "Melbourne", cat: "festival", from: "2026-11-20", to: "2026-11-21",
+  days: ["2026-11-14", "2026-11-21"], next: "2026-11-21T11:00", blurb: "Pierogi", image: "https://x/y.jpg" };
+
+test("saveEvent keeps the first day it's on from today, that day's session, and no more than it needs", () => {
+  const s = saveEvent(blank(), feedEvent, "2026-11-15");
+  assert.deepEqual(s.events, [{ id: feedEvent.id, title: "Polish Festival", url: feedEvent.url, venue: "Fed Square", address: feedEvent.address,
+    area: "Melbourne", cat: "festival", day: "2026-11-21", to: "2026-11-21", time: "11:00" }]);
+  assert.ok(isEventSaved(s, feedEvent.id));
+  assert.equal(unsaveEvent(s, feedEvent.id).events.length, 0);
+  const noDays = saveEvent(blank(), { ...feedEvent, days: [], next: null }, "2026-11-15");
+  assert.equal(noDays.events[0].day, "2026-11-20", "its start, when no day is listed");
+  const running = saveEvent(blank(), { ...feedEvent, days: [], next: null, from: "2026-11-01" }, "2026-11-15");
+  assert.equal(running.events[0].day, "2026-11-15", "already running: today");
+});
+
+test("saved events: unsafe links dropped, old ones gone, soonest first, survive a reload and a backup", () => {
+  let s = saveEvent(blank(), { ...feedEvent, url: "javascript:alert(1)" }, "2026-11-15");
+  assert.equal(s.events[0].url, "");
+  s = saveEvent(s, { ...feedEvent, id: "ef:1", title: "Gig", days: ["2026-11-16"], next: "2026-11-16T20:00", from: "2026-11-16", to: "2026-11-16" }, "2026-11-15");
+  s = { ...s, events: [...s.events, { id: "old", title: "Done", day: "2026-11-01", to: "2026-11-02", cat: "other", url: "", venue: "", address: "", area: "", time: "" }] };
+  assert.deepEqual(upcomingEvents(s, "2026-11-15").map((x) => x.title), ["Gig", "Polish Festival"]);
+  const ls = fakeLS(); save(ls, s);
+  assert.deepEqual(load(ls).events, s.events);
+  const text = backupJSON(s, {});
+  const { state, added } = mergeBackup(blank(), text);
+  assert.equal(added, 3);
+  assert.deepEqual(state.events.map((x) => x.id).sort(), s.events.map((x) => x.id).sort());
+  assert.equal(mergeBackup(state, text).added, 0, "nothing twice");
+  assert.deepEqual(mergeBackup(blank(), JSON.stringify({ app: "spots", saved: [], stamps: [] })).state.events, [], "older backups have no events");
 });

@@ -64,11 +64,11 @@ Built by `scripts/build-spots.mjs` in the hourly run (`--probe` reports each sou
   sources: [{ id, ok, count }] }
 ```
 
-- **Event categories** (`cat`), by keywords in the title and blurb, in this order: market, comedy, music, film, theatre, arts, food, family, outdoors, festival, other. Each has an emoji.
+- **Event categories** (`cat`), by keywords in the title (then the blurb), in this order: market, comedy, music, film, theatre, festival, arts, food, family, talk, sport, outdoors, other. Each has an emoji.
 - **Free:** listed under What's On's `free` sub-category, or "free" in the title or blurb.
 - **Outdoors:** park, garden, river, beach, walk, run, picnic, cruise or open-air in the title, blurb or venue. On a rainy day outdoor events sort lower.
 - **What's On paging:** up to 10 pages for today, 6 each for tomorrow and this weekend, and the `free` sub-category for each, fetched at most every 3 hours (and straight after Melbourne midnight) to go easy on the City's server. Eventfinda and the article feeds are fetched every hour.
-- **Duplicates** across sources (same normalised title, overlapping dates) keep What's On's copy, which has the address.
+- **Duplicates** across sources (the same normalised title, or one title with an add-on such as "Opera Up Late" and "Opera Up Late with Reuben Kaye"; only when the dates overlap) keep What's On's copy, which has the address.
 - **What's new** keeps items for 21 days by merging with the last published feed (restored from the Actions cache, as Stocks does, or else fetched from the live site), newest first, at most 40. Kinds: eat, drink, coffee, dessert, or other (events and things to do), from the link section and keywords. Event write-ups (Time Out's things-to-do, Concrete Playground's `/event/`) always count; other articles only when the headline reads as an opening or something new (open, opening, new, launch, first look, pop-up, coming soon, returns), and never when it's about a closure.
 - **Round-ups:** "things to do this weekend / this week" articles from the last 7 days, kept as links under the weekend list.
 - If a source fails, its items from the last feed are kept (events that haven't ended; what's-new items still inside 21 days), so a bad hour never empties the screen.
@@ -88,7 +88,7 @@ Today becomes the first tab and opens by default. The tab bar becomes **Today ·
 │ 🛍 Stock Up Vintage Market   Free     │
 │    Queen Victoria Market · all day   │
 │ 🎤 Sunday Night Stand-Up · 8 pm      │
-│ THIS WEEK                            │
+│ TOMORROW (Sun) / THIS WEEKEND        │
 │ …                                    │
 │ NEW IN TOWN                          │
 │ [pic] Two new restaurants from …     │

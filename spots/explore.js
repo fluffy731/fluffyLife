@@ -106,6 +106,23 @@ async function onClick(app, e) {
 
 // ---------- Searching ----------
 
+// An idea from Today: set the controls it names, open Explore and search (or show the setup card when there's
+// no key and no sample places).
+export function runPreset(app, p) {
+  const u = app.ui;
+  u.mode = p.mode;
+  if (p.kinds) u.kinds = new Set(p.kinds);
+  if (p.minutes) u.minutes = p.minutes;
+  if (p.lateKinds) u.lateKinds = new Set(p.lateKinds);
+  if (p.late) u.late = p.late;
+  if (p.where) u.where = p.where;
+  if (p.pace) u.pace = p.pace;
+  if (p.start) u.start = p.start;
+  app.show("explore");
+  const s = app.state.settings;
+  if (s.sample || s.key) return find(app);
+}
+
 async function find(app) {
   const btn = $("#find"), res = $("#results"), u = app.ui;
   btn.disabled = true; btn.textContent = u.mode === "tomorrow" ? "Planning…" : "Finding…";

@@ -36,7 +36,7 @@ export const PART_NAME = { early: "early morning", morning: "morning", lunch: "l
 export const CAT = {
   market: ["🛍️", "Market"], comedy: ["🎤", "Comedy"], music: ["🎵", "Music"], film: ["🎬", "Film"], theatre: ["🎭", "Theatre"],
   festival: ["🎉", "Festival"], arts: ["🖼️", "Art"], food: ["🍷", "Food and drink"], family: ["🧸", "Family"],
-  talk: ["💬", "Talks and workshops"], outdoors: ["🌳", "Outdoors"], other: ["📅", "Event"],
+  talk: ["💬", "Talks and workshops"], sport: ["🏟️", "Sport"], outdoors: ["🌳", "Outdoors"], other: ["📅", "Event"],
 };
 export const catOf = (e) => CAT[e.cat] || CAT.other;
 // The stamp's kind when you check in at an event.

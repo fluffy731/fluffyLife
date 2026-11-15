@@ -5,5 +5,6 @@ audio-jobs.json
 dict/
 news/feed.json
 stocks/feed.json
+spots/feed.json
 stocks/history/
 .impeccable/review/

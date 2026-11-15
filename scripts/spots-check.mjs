@@ -15,14 +15,33 @@ const WED_1PM = new Date(2026, 10, 18, 13, 0);
 const WED_3PM = new Date(2026, 10, 18, 15, 0);
 const sampleOn = () => localStorage.setItem("spots.v1", JSON.stringify({ settings: { sample: true } }));
 
-async function newPage({ geo = true, at = WED_1PM, sample = false } = {}) {
+// A Today feed made from the recorded source samples in test/fixtures/spots (Sunday 15 November 2026).
+const fb = await import("./build-spots.mjs");
+const fx = (n) => readFile(join(process.cwd(), "test/fixtures/spots", n), "utf8");
+const FEED_DAY = "2026-11-15";
+const FEED = JSON.stringify({
+  built: "2026-11-14T23:17:00Z", today: FEED_DAY, fetched: {}, sources: [],
+  weather: fb.weatherFrom(JSON.parse(await fx("open-meteo.json"))), holidays: [{ date: "2026-12-25", name: "Christmas Day" }],
+  events: fb.mergeEvents([{ events: fb.parseWhatsOn(await fx("whatson-today.txt")).map(fb.womEvent).filter(Boolean), days: [FEED_DAY] },
+    { events: fb.parseEventfinda(await fx("eventfinda.xml")) },
+    { events: [{ id: "ef:m", src: "ef", title: "Stock Up Vintage Market", blurb: "Vintage and DJs", url: "https://www.eventfinda.com.au/m", venue: "Queen Victoria Market", address: "Queen St, Melbourne 3000",
+      area: "Melbourne", image: null, from: FEED_DAY, to: FEED_DAY, days: [FEED_DAY], next: null, free: true, cat: "market", outdoor: null }] }], FEED_DAY),
+  fresh: fb.mergeFresh((await Promise.all(["timeout", "concrete", "gnews"].map(async (x) => fb.articlesFrom(x, await fx(`${x}.xml`), FEED_DAY)))).flat(), [], FEED_DAY),
+  roundups: fb.roundupsFrom("gnews", await fx("gnews.xml")),
+});
+
+// Opens Spots on Explore (where most checks start) unless tab says otherwise; feed: true serves the sample feed.
+async function newPage({ geo = true, at = WED_1PM, sample = false, tab = "explore", feed = true } = {}) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block",
     ...(geo ? { permissions: ["geolocation"], geolocation: { latitude: -37.8136, longitude: 144.9631 } } : {}) });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => errs.push(e.message));
   await page.clock.setFixedTime(at);
   if (sample) await page.addInitScript(sampleOn);
+  await page.route("**/spots/feed.json", (r) => (feed ? r.fulfill({ contentType: "application/json", body: FEED }) : r.fulfill({ status: 404, body: "" })));
+  await page.route(/^https:\/\/(cdn\.eventfinda|media\.timeout|cdn\.concreteplayground)/, (r) => r.fulfill({ status: 404, body: "" }));
   await page.goto(base, { waitUntil: "load" });
+  if (tab !== "today") await page.click(`.tab[data-tab="${tab}"]`);
   return page;
 }
 
@@ -172,6 +191,51 @@ await page.waitForSelector(".result img", { timeout: 10000 }).catch(() => {});
 ok("a changed key reloads Spots so Google uses the new key", keysLoaded.at(-1) === "KEY_B");
 ok("Google photos load with the site as referrer (no referrerpolicy)", (await page.locator(".result img").count()) > 0 && (await page.locator(".result img").first().getAttribute("referrerpolicy")) === null);
 ok("search centre sent to Google is just lat and lng", (await page.evaluate(() => Object.keys(window.__reqs[0].locationBias.center).sort().join(","))) === "lat,lng");
+
+// 12. Today: ideas for the moment, what's on, saving an event, checking in at it
+const SUN_1030 = new Date(2026, 10, 15, 10, 30);
+page = await newPage({ at: SUN_1030, sample: true, tab: "today" });
+ok("Spots opens on Today", (await page.locator("#v-today:not([hidden])").count()) === 1 && (await page.locator('.tab[data-tab="today"][aria-current="page"]').count()) === 1);
+await page.waitForSelector("#ev-today .ev", { timeout: 5000 });
+ok("the moment line names the day, part of the day and the rain", (await page.textContent(".moment")).startsWith("Sunday morning · 🌧 92% rain"));
+const ideaIds = await page.$$eval("[data-idea]", (bs) => bs.map((b) => b.dataset.idea));
+ok(`Sunday morning in the rain: brunch, the markets, and a gallery instead of out and about (${ideaIds})`, ideaIds.join() === "brunch,ev:market,museum");
+const firstTwo = await page.$$eval("#ev-today .ev b", (bs) => bs.slice(0, 2).map((b) => b.textContent));
+ok(`On today puts one-day free things first (${firstTwo})`, firstTwo.includes("Stock Up Vintage Market"));
+ok("Tomorrow is the second list on a Sunday", (await page.textContent("#ev-next h3")) === "Tomorrow");
+ok("New in town lists openings with their source and age", (await page.locator(".fresh").count()) >= 4 && /(Broadsheet|Time Out|Concrete Playground) · (today|yesterday|\d+ days ago)/.test(await page.textContent(".fresh")));
+ok("no horizontal scroll on Today", (await page.evaluate(() => document.documentElement.scrollWidth)) <= 390);
+await page.click('[data-idea="ev:market"]');
+const marketRows = await page.$$eval("#ev-today .ev b", (bs) => bs.map((b) => b.textContent));
+ok(`the markets idea filters On today to markets (${marketRows})`, marketRows.length >= 1 && marketRows.every((t) => /Market/.test(t)) && (await page.locator("[data-unfilter]").count()) === 1);
+await page.click("[data-unfilter]");
+await page.locator("#ev-today .ev", { hasText: "Stock Up Vintage Market" }).click();
+await page.waitForSelector("#sheet[open] [data-evsave]");
+ok("the event sheet has Details and a Google Maps search for the venue", (await page.getAttribute("#sheet a.maps", "href")).includes("Queen%20Victoria%20Market") && (await page.locator('#sheet a:text("Details")').count()) === 1);
+await page.click("#sheet [data-evsave]");
+await page.click("#sheet [data-close]");
+ok("a saved event is marked on Today", (await page.locator("#ev-today .ev", { hasText: "Stock Up Vintage Market" }).locator(".saved-mark").count()) === 1);
+await page.click('.tab[data-tab="saved"]');
+ok("Saved shows the event under Coming up", (await page.textContent("#v-saved")).includes("Coming up") && (await page.textContent("#v-saved")).includes("Stock Up Vintage Market"));
+await page.click("#fab");
+await page.waitForSelector("#sheet[open] .cand");
+ok("Check in offers today's saved event first", (await page.textContent("#sheet .cand >> nth=0")).includes("Stock Up Vintage Market"));
+await page.click("#sheet [data-close]");
+await page.click('.tab[data-tab="today"]');
+await page.click('[data-idea="brunch"]');
+await page.waitForSelector(".result", { timeout: 10000 });
+ok("the Brunch idea opens Explore set to Now, 2 h, Coffee and Eat, and searches",
+  (await page.locator("#mode-now[aria-pressed=true]").count()) === 1 && (await page.locator('[data-min="120"][aria-pressed=true]').count()) === 1
+  && (await page.$$eval('.kinds [aria-pressed="true"]', (bs) => bs.map((b) => b.dataset.kind).sort().join())) === "coffee,eat");
+
+page = await newPage({ at: new Date(2026, 10, 20, 19, 0), sample: true, tab: "today" });
+await page.waitForSelector("[data-idea]");
+ok("Friday evening offers Plan tomorrow", (await page.locator('[data-idea="tomorrow"]').count()) === 1);
+
+page = await newPage({ at: SUN_1030, tab: "today", feed: false });
+await page.waitForFunction(() => document.querySelector("#v-today")?.textContent.includes("next hourly update"), null, { timeout: 5000 }).catch(() => {});
+ok("without a feed, Today says when events arrive and still offers ideas", (await page.textContent("#v-today")).includes("next hourly update") && (await page.locator("[data-idea]").count()) >= 2);
+await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/spots-today-nofeed.png` : "/tmp/spots-today-nofeed.png" });
 
 ok(`no page errors${errs.length ? ": " + errs.join(" | ") : ""}`, errs.length === 0);
 await b.close(); srv.close();

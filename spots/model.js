@@ -294,7 +294,7 @@ const num = (v) => (Number.isFinite(v) ? v : null);
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const isoDay = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-export const blank = () => ({ saved: [], stamps: [], settings: { key: "", sample: false, theme: "auto", lastBackup: null }, recentRegions: [] });
+export const blank = () => ({ saved: [], stamps: [], events: [], settings: { key: "", sample: false, theme: "auto", lastBackup: null }, recentRegions: [] });
 
 function cleanSaved(x) {
   if (!x || typeof x !== "object" || !str(x.id) || !str(x.name)) return null;
@@ -307,6 +307,14 @@ function cleanStamp(x) {
   return { id: str(x.id), placeId: str(x.placeId), name: str(x.name), area: str(x.area), kind: kindOf(x.kind).id, date: x.date,
     rating: r, note: str(x.note), photoId: str(x.photoId) || null };
 }
+// A saved event: our own copy of public listing data (What's On, Eventfinda), not Google's, so it can be kept.
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+function cleanEvent(x) {
+  if (!x || typeof x !== "object" || !str(x.id) || !str(x.title) || !DAY.test(x.day || "")) return null;
+  return { id: str(x.id), title: str(x.title), url: /^https:\/\//.test(x.url || "") ? x.url : "", venue: str(x.venue), address: str(x.address),
+    area: str(x.area), cat: str(x.cat) || "other", day: x.day, to: DAY.test(x.to || "") && x.to >= x.day ? x.to : x.day,
+    time: /^\d{2}:\d{2}$/.test(x.time || "") ? x.time : "" };
+}
 const list = (v, f) => (Array.isArray(v) ? v.map(f).filter(Boolean) : []);
 const byNewest = (a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0);
 
@@ -316,6 +324,7 @@ function clean(raw) {
   return {
     saved: list(raw.saved, cleanSaved),
     stamps: list(raw.stamps, cleanStamp),
+    events: list(raw.events, cleanEvent),
     settings: { key: str(set.key), sample: set.sample === true, theme: THEMES.includes(set.theme) ? set.theme : "auto", lastBackup: str(set.lastBackup) || null },
     recentRegions: Array.isArray(raw.recentRegions) ? raw.recentRegions.filter((x) => typeof x === "string").slice(0, 3) : [],
   };
@@ -364,11 +373,26 @@ export function passportStats(state) {
   return { stamps: st.length, places: new Set(st.map((s) => s.placeId || s.name)).size, suburbs: new Set(st.map((s) => s.area).filter(Boolean)).size };
 }
 
+// ---------- Saved events ----------
+// day: the first day it's on from today (a day a source listed it for, else its start); time: that day's session.
+export function saveEvent(state, e, today) {
+  const day = (Array.isArray(e.days) ? e.days : []).find((d) => d >= today) || (e.from && e.from > today ? e.from : today);
+  const time = e.next && e.next.startsWith(day) ? e.next.slice(11, 16) : "";
+  const entry = cleanEvent({ ...e, day, to: e.to || day, time });
+  if (!entry) return state;
+  return { ...state, events: [entry, ...state.events.filter((x) => x.id !== entry.id && x.to >= today)] };
+}
+export const unsaveEvent = (state, id) => ({ ...state, events: state.events.filter((x) => x.id !== id) });
+export const isEventSaved = (state, id) => state.events.some((x) => x.id === id);
+// Not over yet, soonest first. Events drop off the day after they end.
+export const upcomingEvents = (state, today) => state.events.filter((x) => x.to >= today)
+  .sort((a, b) => (a.day < b.day ? -1 : a.day > b.day ? 1 : (a.time || "99") < (b.time || "99") ? -1 : 1));
+
 export const noteRegion = (state, id) => ({ ...state, recentRegions: [id, ...state.recentRegions.filter((x) => x !== id)].slice(0, 3) });
 
-// The backup carries places, stamps and stamp photos, never settings (so never the Google key).
+// The backup carries places, saved events, stamps and stamp photos, never settings (so never the Google key).
 export function backupJSON(state, photos, now = new Date()) {
-  return JSON.stringify({ app: "spots", v: 1, savedAt: now.toISOString(), saved: state.saved, stamps: state.stamps, recentRegions: state.recentRegions, photos: photos || {} });
+  return JSON.stringify({ app: "spots", v: 1, savedAt: now.toISOString(), saved: state.saved, stamps: state.stamps, events: state.events || [], recentRegions: state.recentRegions, photos: photos || {} });
 }
 
 export function mergeBackup(state, text) {
@@ -378,11 +402,13 @@ export function mergeBackup(state, text) {
   const haveSaved = new Set(state.saved.map((x) => x.id)), haveStamps = new Set(state.stamps.map((x) => x.id));
   const newSaved = list(o.saved, cleanSaved).filter((x) => !haveSaved.has(x.id));
   const newStamps = list(o.stamps, cleanStamp).filter((x) => !haveStamps.has(x.id));
+  const haveEvents = new Set((state.events || []).map((x) => x.id));
+  const newEvents = list(o.events, cleanEvent).filter((x) => !haveEvents.has(x.id));
   const photos = {};
   for (const s of newStamps) if (s.photoId && o.photos && typeof o.photos[s.photoId] === "string") photos[s.photoId] = o.photos[s.photoId];
   return {
-    state: { ...state, saved: [...state.saved, ...newSaved], stamps: [...state.stamps, ...newStamps].sort(byNewest) },
-    photos, added: newSaved.length + newStamps.length,
+    state: { ...state, saved: [...state.saved, ...newSaved], stamps: [...state.stamps, ...newStamps].sort(byNewest), events: [...(state.events || []), ...newEvents] },
+    photos, added: newSaved.length + newStamps.length + newEvents.length,
   };
 }
 

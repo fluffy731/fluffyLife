@@ -89,6 +89,16 @@ test("mergeEvents: one copy per event, What's On's address kept, the other's ses
   assert.deepEqual(all.find((e) => e.title === "Fijian Flying Circus").days, [TODAY]);
 });
 
+test("mergeEvents: a title with an add-on is the same event when the dates overlap", () => {
+  const a = { id: "ef:1", src: "ef", title: "Opera Up Late", blurb: "", from: "2026-11-15", to: "2026-11-15", next: "2026-11-15T21:00", days: [] };
+  const b = { id: "wom:/x", src: "wom", title: "Opera Up Late with Reuben Kaye", blurb: "", from: "2026-11-15", to: "2026-11-15", days: [], venue: "Arts Centre" };
+  const c = { id: "ef:2", src: "ef", title: "Opera Up Late", blurb: "", from: "2027-03-01", to: "2027-03-01", days: [] };
+  const out = mergeEvents([{ events: [a, b, c] }], TODAY);
+  assert.equal(out.length, 2, "the March show is another event");
+  const m = out.find((e) => e.from === TODAY);
+  assert.deepEqual([m.src, m.venue, m.next], ["wom", "Arts Centre", "2026-11-15T21:00"]);
+});
+
 test("mergeEvents drops what has ended and dates already past", () => {
   const e = { id: "x", src: "ef", title: "Old", blurb: "", from: "2026-11-01", to: "2026-11-14", days: ["2026-11-14"] };
   const f = { id: "y", src: "ef", title: "New", blurb: "", from: "2026-11-10", to: "2026-11-20", days: ["2026-11-14", "2026-11-16"] };
@@ -104,6 +114,7 @@ test("catOf: the title decides before the blurb", () => {
   assert.equal(catOf("Spartans & Anzacs", "This exhibition invites reflection"), "arts");
   assert.equal(catOf("Melbourne Magic Show"), "theatre");
   assert.equal(catOf("Wellness Expo"), "other");
+  assert.equal(catOf("Victoria vs Western Australia - Dean Jones Trophy"), "sport");
 });
 
 // ---------- what's new ----------

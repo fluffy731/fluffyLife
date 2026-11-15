@@ -55,6 +55,7 @@ export const CATS = [
   ["food", /\b(food|foodies?|wine|beer|dining|tastings?|feast\w*|cooking|degustation|cocktails?|whisky|gin|brunch|dinner|lunch)\b/i],
   ["family", /\b(kids?|family|families|children|school holidays)\b/i],
   ["talk", /\b(talks?|workshops?|class(es)?|lectures?|in conversation|writing|books?|masterclass)\b/i],
+  ["sport", /\b(vs\.?|versus|cricket|footy|AFLW?|A-League|tennis|races?|racing|grand prix|marathon|basketball|netball|rugby|soccer)\b/i],
   ["outdoors", /\b(walk(s|ing)?|run(s|ning)?|fun-run|tours?|yoga|cruise|picnic|ride|hike)\b/i],
 ];
 export const catOf = (title, blurb = "") => (CATS.find(([, re]) => re.test(title)) || CATS.find(([, re]) => re.test(blurb)) || ["other"])[0];
@@ -138,12 +139,16 @@ export function parseEventfinda(xml) {
 
 // lists: [{ events, days?: [date], weekend?: saturday, free?: true }] -> one list, each event once.
 // What's On's copy wins a duplicate (it has the address); the other source's next session and picture are kept.
+// Titles that differ only by an add-on ("Opera Up Late" and "Opera Up Late with Reuben Kaye") are the same event
+// when their dates overlap.
+const overlaps = (a, b) => !a.from || !b.from || ((a.from <= (b.to || b.from)) && (b.from <= (a.to || a.from)));
 export function mergeEvents(lists, today) {
   const byKey = new Map();
+  const find = (k, e) => [...byKey.keys()].find((o) => (o.split("|")[0] === k || (Math.min(o.length, k.length) >= 8 && (o.startsWith(k) || k.startsWith(o)))) && overlaps(byKey.get(o), e));
   for (const { events, days = [], weekend = null, free = false } of lists) {
     for (const e of events) {
       if (!e || (e.to && e.to < today)) continue;
-      const k = sameKey(e.title);
+      const k = find(sameKey(e.title), e) || (byKey.has(sameKey(e.title)) ? `${sameKey(e.title)}|${e.from}` : sameKey(e.title));
       const old = byKey.get(k);
       const add = { ...e, days: [...new Set([...(e.days || []), ...days])], weekend: weekend || e.weekend, free: free || e.free || (FREE.test(`${e.title} ${e.blurb}`) || null) };
       if (!old) { byKey.set(k, add); continue; }
