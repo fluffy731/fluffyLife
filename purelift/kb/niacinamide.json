@@ -1,0 +1,438 @@
+{
+ "id": "niacinamide",
+ "category": "skincare",
+ "review": false,
+ "pages": "13-15",
+ "zh": {
+  "title": "烟酰胺：了解它在皮肤屏障与肤色护理中的作用",
+  "summary": "烟酰胺是维生素 B3 的一种形式，受到关注主要与支持皮肤屏障、改善部分肤色不均及调节油脂表现有关。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "烟酰胺（Niacinamide，也称 Nicotinamide）是维生素 B3 的一种形式，属于水溶性成分，常见于精华、乳液、面霜及防晒产品。"
+   },
+   {
+    "t": "p",
+    "text": "它受到关注，主要与支持皮肤屏障、改善部分肤色不均及调节油脂表现有关。"
+   },
+   {
+    "t": "p",
+    "text": "**烟酰胺并不是去角质酸类，也不是“浓度越高，效果越好”的成分。**选择时应结合完整配方、皮肤需求和耐受程度。"
+   },
+   {
+    "t": "h",
+    "text": "一、烟酰胺是什么？"
+   },
+   {
+    "t": "p",
+    "text": "烟酰胺是人体合成辅酶 NAD 和 NADP 的前体之一。这些辅酶参与细胞能量代谢及氧化还原反应，与维持正常细胞功能有关。"
+   },
+   {
+    "t": "p",
+    "text": "但成分在人体中的生理作用，不能直接等同于涂抹护肤品后的临床效果。外用烟酰胺能带来哪些变化，仍需要看具体配方和人体研究。"
+   },
+   {
+    "t": "p",
+    "text": "虽然名称中带有“酰胺”，它并不属于果酸、水杨酸等去角质成分，也不需要通过脱皮来发挥作用。"
+   },
+   {
+    "t": "h",
+    "text": "二、支持皮肤屏障，帮助减少水分流失"
+   },
+   {
+    "t": "p",
+    "text": "皮肤最外层的角质层，可理解为由角质细胞和细胞间脂质共同形成的保护结构。其中，神经酰胺、胆固醇及游离脂肪酸等脂质，有助于减少水分流失，并阻挡外界刺激。"
+   },
+   {
+    "t": "p",
+    "text": "实验及人体研究发现，烟酰胺可促进部分角质层脂质的形成；外用后，也观察到干燥皮肤的经皮水分流失减少。"
+   },
+   {
+    "t": "p",
+    "text": "因此，含烟酰胺的合适配方，可用于支持日常屏障护理。但需要区分："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**支持屏障功能**，不代表所有受损皮肤都适合立即使用。",
+     "**减少水分流失**，不等于单靠烟酰胺就能完成保湿。",
+     "**含有修护成分**，也不代表整款产品一定没有刺激性。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "对于干燥、紧绷的皮肤，仍需结合温和清洁，以及含保湿和润肤成分的产品。"
+   },
+   {
+    "t": "h",
+    "text": "三、改善部分色素沉着与肤色不均"
+   },
+   {
+    "t": "p",
+    "text": "黑色素由黑色素细胞产生，并装载在黑素小体中，再转移至周围的角质形成细胞，参与形成可见肤色。"
+   },
+   {
+    "t": "p",
+    "text": "烟酰胺的相关机制之一，是减少部分黑素小体向角质形成细胞的转移。研究也观察到特定配方对色素沉着的改善。"
+   },
+   {
+    "t": "p",
+    "text": "这并不意味着它会“清除黑色素细胞”，或让健康肤色无限度变白。合理的目标是改善部分色素沉着，使肤色逐渐显得更均匀。"
+   },
+   {
+    "t": "p",
+    "text": "色斑、痘印和暗沉的成因不同，不能仅靠一种成分处理所有问题。新出现、持续变化或性质不明的色素斑，应先接受专业评估。"
+   },
+   {
+    "t": "h",
+    "text": "四、对油脂与毛孔外观有什么帮助？"
+   },
+   {
+    "t": "p",
+    "text": "部分研究评估了含 **2% 烟酰胺**的保湿配方，观察到部分皮脂指标改善，但不同研究人群和测量指标的结果并不完全一致。"
+   },
+   {
+    "t": "p",
+    "text": "因此，更准确的说法是：烟酰胺可能帮助部分人改善油光表现，而不是保证“停止出油”。"
+   },
+   {
+    "t": "p",
+    "text": "毛孔外观还受到皮脂、毛囊结构、堵塞、年龄及皮肤弹性等因素影响。**减少油光，不等于毛孔被永久缩小或关闭。**对于明显黑头、粉刺或痤疮，也需要考虑其他针对性护理或治疗。"
+   },
+   {
+    "t": "h",
+    "text": "五、对细纹与皮肤纹理有作用吗？"
+   },
+   {
+    "t": "p",
+    "text": "一项纳入 50 名女性、持续 12 周的随机半脸对照研究发现，与基础保湿配方相比，加入 **5% 烟酰胺**的配方在部分细纹、色素沉着、皮肤纹理及斑驳泛红指标上出现改善。"
+   },
+   {
+    "t": "p",
+    "text": "这为其改善部分皮肤老化外观提供了依据，但研究结果仍有范围限制："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "研究对应的是特定配方和人群。",
+     "可测量的改善，不一定代表每个人都会看到明显变化。",
+     "改善细纹外观，不代表能够纠正深层组织下垂或产生填充效果。"
+    ]
+   },
+   {
+    "t": "h",
+    "text": "六、烟酰胺能治疗痤疮或敏感肌吗？"
+   },
+   {
+    "t": "p",
+    "text": "烟酰胺具有与炎症调节相关的作用，部分外用制剂也被用于痤疮护理研究。但普通含烟酰胺护肤品，不能直接视为痤疮药物。"
+   },
+   {
+    "t": "p",
+    "text": "反复出现炎症性痘痘、结节、疼痛或瘢痕时，应进行正规评估，避免只靠“控油精华”延误治疗。"
+   },
+   {
+    "t": "p",
+    "text": "同样，“敏感肌”描述的是一种表现，并非单一诊断。泛红、刺痛可能与刺激、过敏、湿疹或玫瑰痤疮有关。烟酰胺可能适合部分人的屏障护理，但不能保证适合所有敏感皮肤。"
+   },
+   {
+    "t": "h",
+    "text": "七、浓度应该怎样选择？"
+   },
+   {
+    "t": "p",
+    "text": "部分人体研究在 **2%—5%** 范围内，已经观察到油脂、肤色或皮肤外观方面的变化。因此，没有必要把高浓度作为起点。"
+   },
+   {
+    "t": "table",
+    "head": [
+     "选择因素",
+     "需要考虑的问题"
+    ],
+    "rows": [
+     [
+      "浓度",
+      "是否有必要使用较高浓度？低一些是否已经足够？"
+     ],
+     [
+      "完整配方",
+      "是否同时含酸类、香精或其他可能刺激的成分？"
+     ],
+     [
+      "产品类型",
+      "保湿乳霜是否比高浓度精华更适合当前需求？"
+     ],
+     [
+      "使用体验",
+      "是否出现持续刺痛、泛红、干燥或皮疹？"
+     ],
+     [
+      "现有护肤",
+      "其他产品是否已经含有烟酰胺？是否需要额外叠加？"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "**目前不能仅凭“10%”或更高的标注，就认定产品比低浓度配方更有效。**能够规律使用、保持舒适的产品，更适合长期护理。"
+   },
+   {
+    "t": "h",
+    "text": "八、如何加入日常护肤？"
+   },
+   {
+    "t": "p",
+    "text": "烟酰胺通常可以安排在早间或晚间，具体遵循产品说明。"
+   },
+   {
+    "t": "p",
+    "text": "一般护理顺序可以是："
+   },
+   {
+    "t": "p",
+    "text": "**温和洁面 → 烟酰胺精华或乳液 → 保湿 → 白天防晒**"
+   },
+   {
+    "t": "p",
+    "text": "若使用的面霜已经含有烟酰胺，不一定还需要额外添加精华。"
+   },
+   {
+    "t": "p",
+    "text": "初次使用时，建议："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "先在小范围试用，观察反应。",
+     "从每天一次或隔天使用开始。",
+     "一次只引入一种新产品，方便判断刺激来源。",
+     "根据舒适度调整，而不是为了追求效果持续加量。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "烟酰胺不能替代防晒。尤其在管理色素沉着时，持续的日晒防护仍是基础。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不代替个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Niacinamide: understanding its role in skin barrier and skin tone care",
+  "summary": "Niacinamide is a form of vitamin B3 that attracts interest mainly for supporting the skin barrier, improving some uneven skin tone and regulating oiliness.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "Niacinamide (also called nicotinamide) is a form of vitamin B3. It is a water-soluble ingredient commonly found in serums, lotions, creams and sunscreen products."
+   },
+   {
+    "t": "p",
+    "text": "Interest in it relates mainly to supporting the skin barrier, improving some uneven skin tone and regulating oiliness."
+   },
+   {
+    "t": "p",
+    "text": "**Niacinamide is not an exfoliating acid, nor is it an ingredient where “the higher the concentration, the better the effect”.** When choosing a product, consider the full formulation, your skin’s needs and your tolerance."
+   },
+   {
+    "t": "h",
+    "text": "1. What is niacinamide?"
+   },
+   {
+    "t": "p",
+    "text": "Niacinamide is one of the precursors the body uses to make the coenzymes NAD and NADP. These coenzymes take part in cellular energy metabolism and redox reactions, and are involved in maintaining normal cell function."
+   },
+   {
+    "t": "p",
+    "text": "However, an ingredient’s physiological role in the body cannot be directly equated with the clinical effects of applying a skincare product. What changes topical niacinamide can bring still depends on the specific formulation and on human studies."
+   },
+   {
+    "t": "p",
+    "text": "Although its name contains “amide”, it is not one of the exfoliating ingredients such as alpha hydroxy acids (AHAs) or salicylic acid, and it does not need to make the skin peel in order to work."
+   },
+   {
+    "t": "h",
+    "text": "2. Supporting the skin barrier and helping reduce water loss"
+   },
+   {
+    "t": "p",
+    "text": "The outermost layer of the skin, the stratum corneum, can be thought of as a protective structure formed by corneocytes (surface skin cells) together with the lipids between them. Among these, lipids such as ceramides, cholesterol and free fatty acids help reduce water loss and block external irritants."
+   },
+   {
+    "t": "p",
+    "text": "Laboratory and human studies have found that niacinamide can promote the formation of some stratum corneum lipids; after topical use, reduced transepidermal water loss has also been observed in dry skin."
+   },
+   {
+    "t": "p",
+    "text": "So a suitable formulation containing niacinamide can be used to support everyday barrier care. But some distinctions need to be made:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**Supporting barrier function** does not mean all damaged skin is suitable for immediate use.",
+     "**Reducing water loss** does not mean niacinamide alone is enough to moisturise the skin.",
+     "**Containing repairing ingredients** does not mean the product as a whole is necessarily free of irritation."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Dry, tight skin still needs gentle cleansing, together with products that contain moisturising and emollient ingredients."
+   },
+   {
+    "t": "h",
+    "text": "3. Improving some pigmentation and uneven skin tone"
+   },
+   {
+    "t": "p",
+    "text": "Melanin is produced by melanocytes and packaged into melanosomes, which are then transferred to the surrounding keratinocytes, contributing to visible skin colour."
+   },
+   {
+    "t": "p",
+    "text": "One of the mechanisms associated with niacinamide is reducing the transfer of some melanosomes to keratinocytes. Studies have also observed improvements in pigmentation with specific formulations."
+   },
+   {
+    "t": "p",
+    "text": "This does not mean it will “clear away melanocytes” or make healthy skin whiter without limit. A reasonable goal is to improve some pigmentation so that skin tone gradually looks more even."
+   },
+   {
+    "t": "p",
+    "text": "Dark spots, acne marks and dullness have different causes, and no single ingredient can deal with all of them. Pigmented spots that are new, keep changing or are of uncertain nature should be professionally assessed first."
+   },
+   {
+    "t": "h",
+    "text": "4. How can it help with oiliness and the appearance of pores?"
+   },
+   {
+    "t": "p",
+    "text": "Some studies have evaluated a moisturising formulation containing **2% niacinamide** and observed improvements in some sebum measures, but the results have not been fully consistent across different study populations and measures."
+   },
+   {
+    "t": "p",
+    "text": "So it is more accurate to say that niacinamide may help some people reduce shine, rather than guaranteeing that it will “stop oil production”."
+   },
+   {
+    "t": "p",
+    "text": "The appearance of pores is also affected by factors such as sebum, follicle structure, blockage, age and skin elasticity. **Reducing shine does not mean pores are permanently shrunk or closed.** For prominent blackheads, comedones or acne, other targeted care or treatment also needs to be considered."
+   },
+   {
+    "t": "h",
+    "text": "5. Does it help with fine lines and skin texture?"
+   },
+   {
+    "t": "p",
+    "text": "A randomised, split-face controlled study of 50 women over 12 weeks found that, compared with a base moisturising formulation, a formulation with **5% niacinamide** added showed improvements in some measures of fine lines, pigmentation, skin texture and blotchy redness."
+   },
+   {
+    "t": "p",
+    "text": "This provides some evidence that it can improve some visible signs of skin ageing, but the findings are still limited in scope:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "The study applies to a specific formulation and population.",
+     "A measurable improvement does not necessarily mean everyone will see a noticeable change.",
+     "Improving the appearance of fine lines does not mean it can correct deeper tissue sagging or have a filling effect."
+    ]
+   },
+   {
+    "t": "h",
+    "text": "6. Can niacinamide treat acne or sensitive skin?"
+   },
+   {
+    "t": "p",
+    "text": "Niacinamide has effects related to regulating inflammation, and some topical preparations have also been used in acne care research. However, ordinary skincare products containing niacinamide cannot simply be regarded as acne medicines."
+   },
+   {
+    "t": "p",
+    "text": "If you keep getting inflamed pimples, nodules, pain or scarring, have a proper assessment, and avoid delaying treatment by relying only on an “oil-control serum”."
+   },
+   {
+    "t": "p",
+    "text": "Likewise, “sensitive skin” describes a presentation, not a single diagnosis. Redness and stinging may be related to irritation, allergy, eczema or rosacea. Niacinamide may suit some people’s barrier care, but it cannot be guaranteed to suit all sensitive skin."
+   },
+   {
+    "t": "h",
+    "text": "7. How should you choose a concentration?"
+   },
+   {
+    "t": "p",
+    "text": "Some human studies have already observed changes in oiliness, skin tone or skin appearance within the **2%–5%** range. So there is no need to start with a high concentration."
+   },
+   {
+    "t": "table",
+    "head": [
+     "Factor",
+     "Questions to consider"
+    ],
+    "rows": [
+     [
+      "Concentration",
+      "Is a higher concentration necessary? Would a somewhat lower one already be enough?"
+     ],
+     [
+      "Full formulation",
+      "Does it also contain acids, fragrance or other potentially irritating ingredients?"
+     ],
+     [
+      "Product type",
+      "Would a moisturising cream suit your current needs better than a high-concentration serum?"
+     ],
+     [
+      "How it feels in use",
+      "Are you getting persistent stinging, redness, dryness or a rash?"
+     ],
+     [
+      "Current skincare",
+      "Do your other products already contain niacinamide? Do you need to add more on top?"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "**At present, a label of “10%” or higher is not enough on its own to conclude that a product is more effective than a lower-concentration formulation.** A product you can use regularly and that stays comfortable is better suited to long-term care."
+   },
+   {
+    "t": "h",
+    "text": "8. How can you add it to your daily skincare?"
+   },
+   {
+    "t": "p",
+    "text": "Niacinamide can usually be used in the morning or the evening; follow the specific product instructions."
+   },
+   {
+    "t": "p",
+    "text": "A general order of use could be:"
+   },
+   {
+    "t": "p",
+    "text": "**Gentle cleanser → niacinamide serum or lotion → moisturiser → sunscreen (daytime)**"
+   },
+   {
+    "t": "p",
+    "text": "If the cream you use already contains niacinamide, you may not need to add a separate serum."
+   },
+   {
+    "t": "p",
+    "text": "When using it for the first time, it is suggested that you:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Try it on a small area first and watch how your skin reacts.",
+     "Start with once a day or every second day.",
+     "Introduce only one new product at a time, so it is easier to tell what is causing any irritation.",
+     "Adjust according to comfort, rather than continually increasing the amount in pursuit of results."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Niacinamide cannot replace sun protection. Consistent sun protection remains the foundation, especially when managing pigmentation."
+   },
+   {
+    "t": "note",
+    "text": "This article is for general skin health education only and does not replace individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}

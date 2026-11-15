@@ -1,0 +1,602 @@
+{
+ "id": "injectable-ha",
+ "category": "treatment",
+ "review": true,
+ "pages": "16-19",
+ "zh": {
+  "title": "注射类 HA（透明质酸）：了解作用、产品差异与风险",
+  "summary": "HA 是材料名称，不是单一治疗；不同产品的结构、作用和适用范围存在差异。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "HA 是 Hyaluronic Acid 的缩写，中文称为**透明质酸**，也常被称为“玻尿酸”。它是人体组织中天然存在的糖胺聚糖，具有结合水分的能力，是细胞外基质的组成部分。"
+   },
+   {
+    "t": "p",
+    "text": "注射类 HA 产品经过特定加工和配方设计，用于不同的医疗目的。部分产品主要用于补充组织容量或改善轮廓，另一些产品则针对特定部位的皮肤平滑度等指标。"
+   },
+   {
+    "t": "p",
+    "text": "**HA 是材料名称，不是单一治疗。不同产品的结构、作用和适用范围存在差异，不能仅凭“都含玻尿酸”就互相替代。**"
+   },
+   {
+    "t": "h",
+    "text": "一、注射类 HA 如何发挥作用？"
+   },
+   {
+    "t": "h3",
+    "text": "组织占位与容量补充"
+   },
+   {
+    "t": "p",
+    "text": "部分 HA 产品以凝胶形式存在，注入组织后可产生物理占位作用，从而改变局部容量、轮廓或皱褶外观。"
+   },
+   {
+    "t": "p",
+    "text": "这种变化与凝胶的物理性质、用量、放置位置及原有组织结构有关。它并不是让已经流失的脂肪、骨骼或韧带恢复原状。治疗结果及持续时间也会因材料和部位而不同。"
+   },
+   {
+    "t": "h3",
+    "text": "与水分结合"
+   },
+   {
+    "t": "p",
+    "text": "HA 能够结合水分，但注射后的表现不只是“补水”。它还受到配方、凝胶结构和周围组织影响。"
+   },
+   {
+    "t": "p",
+    "text": "对于某些部位，过度的含水变化或局部肿胀可能是不希望出现的结果。因此，不能把“吸水能力更强”直接理解为“产品更好”。"
+   },
+   {
+    "t": "h3",
+    "text": "改善特定肤质指标"
+   },
+   {
+    "t": "p",
+    "text": "部分注射类 HA 产品的研究重点是皮肤平滑度等指标，而非明显增加面部体积。例如，已有特定产品获准用于改善面颊皮肤平滑度。"
+   },
+   {
+    "t": "p",
+    "text": "这类证据针对具体产品、部位和研究人群，不能推广为所有 HA 注射都能改善全脸肤质，也不能将海外批准用途直接等同于澳大利亚的批准用途。"
+   },
+   {
+    "t": "h",
+    "text": "二、填充型与肤质改善型 HA 有什么区别？"
+   },
+   {
+    "t": "p",
+    "text": "以下分类有助于理解治疗目标，但并不是所有产品都能简单归入两类。"
+   },
+   {
+    "t": "table",
+    "head": [
+     "比较项目",
+     "以容量或轮廓为主要目标的产品",
+     "以特定肤质指标为主要目标的产品"
+    ],
+    "rows": [
+     [
+      "主要目的",
+      "补充局部容量、改变轮廓或改善部分皱褶",
+      "改善研究支持的皮肤平滑度等表现"
+     ],
+     [
+      "配方关注点",
+      "支撑、形变、组织整合及稳定性等",
+      "铺展、组织分布及与目标指标相关的特性"
+     ],
+     [
+      "效果判断",
+      "容量、轮廓、对称性和自然度",
+      "使用经过验证的肤质评价指标"
+     ],
+     [
+      "主要局限",
+      "不能逆转所有深层衰老变化",
+      "不能等同于明显提升或结构性填充"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "“水光”“长效水光”“肤质针”等名称并不是统一的产品标准。了解一项治疗时，应确认具体成分、产品用途及临床证据，而不是只看通俗名称。"
+   },
+   {
+    "t": "h",
+    "text": "三、什么是交联？为什么需要交联？"
+   },
+   {
+    "t": "p",
+    "text": "天然 HA 在人体内会持续更新和降解。部分注射产品通过交联，使 HA 分子链之间形成连接，改变凝胶结构和耐降解性。"
+   },
+   {
+    "t": "p",
+    "text": "交联程度与方式，可能影响产品的弹性、黏度、铺展及其他物理表现。但**交联并不是衡量品质的单一等级**，不能简单理解为越多越好、越持久越好。"
+   },
+   {
+    "t": "p",
+    "text": "同样，“非交联”也不等于没有风险。产品是否适合某个部位，需要结合完整配方、使用说明和临床评估判断。"
+   },
+   {
+    "t": "h",
+    "text": "四、产品浓度越高，效果越好吗？"
+   },
+   {
+    "t": "p",
+    "text": "不能只按 HA 浓度判断。"
+   },
+   {
+    "t": "p",
+    "text": "即使两款产品标注相同的毫克数，其分子结构、加工方式、交联、凝胶特性和临床表现仍可能不同。"
+   },
+   {
+    "t": "p",
+    "text": "评估时需要综合考虑："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "产品的具体用途与临床证据。",
+     "凝胶的物理特性。",
+     "目标部位的解剖与组织状态。",
+     "既往注射材料及残留情况。",
+     "希望改善的问题与可接受的风险。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "**更高浓度、更强支撑或更长持续时间，都不是对所有人更合适的选择。**"
+   },
+   {
+    "t": "h",
+    "text": "五、哪些问题可能得到改善？哪些不能？"
+   },
+   {
+    "t": "p",
+    "text": "依据具体产品和当地批准用途，部分 HA 产品可用于改善特定皱褶、局部容量不足或轮廓问题；部分配方则针对特定皮肤质量指标。"
+   },
+   {
+    "t": "p",
+    "text": "但面部老化涉及皮肤、脂肪、韧带和骨骼等多个层次。HA 不能治疗所有类型的皱纹，也不能保证纠正明显下垂或达到手术提升的效果。"
+   },
+   {
+    "t": "p",
+    "text": "有时，继续增加容量并不能解决原有问题，反而可能造成过度饱满或比例失衡。是否需要治疗，以及是否适合 HA，应在评估后决定。"
+   },
+   {
+    "t": "h",
+    "text": "六、多久可以看到结果？能维持多久？"
+   },
+   {
+    "t": "p",
+    "text": "容量型产品可能在治疗后较快产生外观变化，但早期表现同时包含注射创伤和肿胀，不能立即视为最终结果。"
+   },
+   {
+    "t": "p",
+    "text": "肤质相关变化则应按照具体产品研究中的观察时间和指标评估，不能用治疗后短暂的光泽或饱满感判断长期效果。"
+   },
+   {
+    "t": "p",
+    "text": "持续时间受到产品、部位、用量及个体情况影响，不能统一承诺固定月数。外观效果减弱，也不代表组织内材料已经完全消失。因此，再次治疗前需要重新评估，而不是仅按日历重复注射。"
+   },
+   {
+    "t": "h",
+    "text": "七、注射类 HA 有哪些风险？"
+   },
+   {
+    "t": "h3",
+    "text": "常见的局部反应"
+   },
+   {
+    "t": "p",
+    "text": "可能出现肿胀、瘀青、疼痛、触痛、泛红或瘙痒。部分反应会逐渐缓解，但持续或加重时需要复查。"
+   },
+   {
+    "t": "h3",
+    "text": "其他并发症"
+   },
+   {
+    "t": "p",
+    "text": "可能发生不平整、不对称、持续水肿、感染、结节或迟发性炎症。部分问题可能在治疗数周、数月甚至更久后才出现。"
+   },
+   {
+    "t": "h3",
+    "text": "严重血管并发症"
+   },
+   {
+    "t": "p",
+    "text": "材料意外进入血管可导致组织供血受损，造成皮肤坏死；严重时可能出现视力损害、失明或卒中。"
+   },
+   {
+    "t": "p",
+    "text": "这些风险虽然不常见，但可能造成永久后果。**不存在能够保证零风险的部位、工具或注射技术。**"
+   },
+   {
+    "t": "h",
+    "text": "八、HA 可以溶解，是否代表安全？"
+   },
+   {
+    "t": "p",
+    "text": "部分 HA 相关问题可以考虑使用透明质酸酶处理，但“可溶解”不能理解为随时能够完全逆转。"
+   },
+   {
+    "t": "p",
+    "text": "是否使用、如何处理以及需要几次治疗，取决于产品、材料位置及并发症性质。透明质酸酶本身也有风险，并不能保证逆转已经发生的组织损伤或视力损害。"
+   },
+   {
+    "t": "p",
+    "text": "因此，可处理性不能代替预防、充分知情和及时识别并发症。去除或减少填充材料本身也可能需要医疗干预，并存在风险。"
+   },
+   {
+    "t": "h",
+    "text": "九、治疗前应告知哪些情况？"
+   },
+   {
+    "t": "p",
+    "text": "评估时，应如实提供："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "既往注射、埋线、手术及其他面部治疗史。",
+     "已知的产品名称、治疗部位和时间。",
+     "过敏史及既往注射不良反应。",
+     "当前感染、皮疹、炎症及近期健康变化。",
+     "正在服用的药物和补充剂。",
+     "怀孕、备孕或哺乳情况。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "不要自行停用处方抗凝药或其他重要药物。是否需要调整，应由负责相关治疗的医生决定。"
+   },
+   {
+    "t": "p",
+    "text": "治疗前还应了解替代方案、不治疗的选择、预计恢复过程、费用，以及出现问题后的联系与处理安排。"
+   },
+   {
+    "t": "h",
+    "text": "十、哪些症状需要立即就医？"
+   },
+   {
+    "t": "p",
+    "text": "治疗后出现以下情况，应立即联系治疗者并寻求紧急医疗评估："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "异常、明显或持续加重的疼痛。",
+     "皮肤发白、灰暗或出现网状、花斑样变色。",
+     "视力模糊、视野变化、眼痛或突然视力下降。",
+     "突发无力、说话困难或其他神经系统症状。"
+    ]
+   },
+   {
+    "t": "warn",
+    "text": "出现视力或神经系统症状，应立即拨打 000，不要等待常规复查。填充注射相关血管并发症可能需要紧急处理。"
+   },
+   {
+    "t": "p",
+    "text": "持续加重的红肿、发热、局部发烫或分泌物，也应及时评估。"
+   },
+   {
+    "t": "h",
+    "text": "十一、注射后还需要日常护肤吗？"
+   },
+   {
+    "t": "p",
+    "text": "需要。注射不能替代温和清洁、保湿、防晒，也不能治疗所有导致干燥、敏感或色素变化的原因。"
+   },
+   {
+    "t": "p",
+    "text": "恢复期应遵循个体化护理说明，不自行反复按压或按摩治疗区域，也不擅自叠加刺激性护肤或其他美容操作。"
+   },
+   {
+    "t": "p",
+    "text": "**注射类 HA 的合理使用，建立在明确的治疗目标、适合的产品、充分的风险沟通和持续随访之上。它是一项医疗干预，而不只是“把水分补进皮肤”。**"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不代替个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Injectable HA (hyaluronic acid): understanding its actions, product differences and risks",
+  "summary": "HA is the name of a material, not a single treatment; different products differ in structure, action and scope of use.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "HA is the abbreviation for **hyaluronic acid**, which is also commonly called “玻尿酸” in Chinese. It is a glycosaminoglycan that occurs naturally in human tissue, is able to bind water and forms part of the extracellular matrix."
+   },
+   {
+    "t": "p",
+    "text": "Injectable HA products undergo specific processing and formulation design and are used for different medical purposes. Some products are used mainly to restore tissue volume or improve contour, while others target measures such as skin smoothness in particular areas."
+   },
+   {
+    "t": "p",
+    "text": "**HA is the name of a material, not a single treatment. Different products differ in structure, action and scope of use, and one cannot be substituted for another simply because they “all contain hyaluronic acid”.**"
+   },
+   {
+    "t": "h",
+    "text": "1. How does injectable HA work?"
+   },
+   {
+    "t": "h3",
+    "text": "Occupying space in tissue and restoring volume"
+   },
+   {
+    "t": "p",
+    "text": "Some HA products take the form of a gel. After injection into tissue they can physically occupy space, which can change local volume, contour or the appearance of folds."
+   },
+   {
+    "t": "p",
+    "text": "This change depends on the gel's physical properties, the amount used, where it is placed and the existing tissue structure. It does not restore fat, bone or ligaments that have already been lost to their original state. Results and how long they last also vary with the material and the area treated."
+   },
+   {
+    "t": "h3",
+    "text": "Binding water"
+   },
+   {
+    "t": "p",
+    "text": "HA can bind water, but how it behaves after injection is not simply “hydration”. It is also affected by the formulation, the gel structure and the surrounding tissue."
+   },
+   {
+    "t": "p",
+    "text": "In some areas, excessive changes in water content or local swelling may be an unwanted outcome. So “stronger water-binding capacity” should not be taken to mean “a better product”."
+   },
+   {
+    "t": "h3",
+    "text": "Improving specific skin-quality measures"
+   },
+   {
+    "t": "p",
+    "text": "Research on some injectable HA products focuses on measures such as skin smoothness rather than a noticeable increase in facial volume. For example, a particular product has been approved to improve the smoothness of cheek skin."
+   },
+   {
+    "t": "p",
+    "text": "This evidence relates to specific products, areas and study populations. It cannot be generalised to mean that all HA injections improve skin quality across the whole face, nor can an approved use overseas be treated as the same as an approved use in Australia."
+   },
+   {
+    "t": "h",
+    "text": "2. What is the difference between filler-type HA and skin-quality HA?"
+   },
+   {
+    "t": "p",
+    "text": "The following classification helps in understanding treatment goals, but not every product fits neatly into one of these two groups."
+   },
+   {
+    "t": "table",
+    "head": [
+     "Comparison",
+     "Products aimed mainly at volume or contour",
+     "Products aimed mainly at specific skin-quality measures"
+    ],
+    "rows": [
+     [
+      "Main purpose",
+      "Restoring local volume, changing contour or improving some folds",
+      "Improving research-supported outcomes such as skin smoothness"
+     ],
+     [
+      "Formulation focus",
+      "Support, deformation, tissue integration, stability and similar properties",
+      "Spread, tissue distribution and properties relevant to the target measure"
+     ],
+     [
+      "How results are judged",
+      "Volume, contour, symmetry and natural appearance",
+      "Validated skin-quality assessment measures"
+     ],
+     [
+      "Main limitations",
+      "Cannot reverse all deeper ageing changes",
+      "Not equivalent to noticeable lifting or structural filling"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Names such as “skin booster”, “long-acting skin booster” and “skin-quality injections” are not standard product definitions. When looking into a treatment, confirm the specific ingredients, the product's intended use and the clinical evidence, rather than going by the popular name alone."
+   },
+   {
+    "t": "h",
+    "text": "3. What is cross-linking, and why is it needed?"
+   },
+   {
+    "t": "p",
+    "text": "Natural HA is continually renewed and broken down in the body. Some injectable products use cross-linking to form links between HA molecular chains, changing the gel structure and its resistance to breakdown."
+   },
+   {
+    "t": "p",
+    "text": "The degree and method of cross-linking may affect a product's elasticity, viscosity, spread and other physical properties. However, **cross-linking is not a single scale of quality**, and it cannot simply be taken to mean that more is better or that longer-lasting is better."
+   },
+   {
+    "t": "p",
+    "text": "Likewise, “non-cross-linked” does not mean risk-free. Whether a product suits a particular area needs to be judged on the full formulation, the instructions for use and a clinical assessment."
+   },
+   {
+    "t": "h",
+    "text": "4. Does a higher product concentration mean better results?"
+   },
+   {
+    "t": "p",
+    "text": "HA concentration alone cannot be used to judge a product."
+   },
+   {
+    "t": "p",
+    "text": "Even when two products list the same number of milligrams, their molecular structure, processing, cross-linking, gel properties and clinical performance may still differ."
+   },
+   {
+    "t": "p",
+    "text": "An assessment needs to take all of the following into account:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "The product's specific intended use and clinical evidence.",
+     "The physical properties of the gel.",
+     "The anatomy and tissue condition of the target area.",
+     "Previously injected materials and any residue.",
+     "The concern to be improved and the level of risk that is acceptable."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "**Higher concentration, stronger support or longer duration is not the more suitable choice for everyone.**"
+   },
+   {
+    "t": "h",
+    "text": "5. Which concerns may improve, and which may not?"
+   },
+   {
+    "t": "p",
+    "text": "Depending on the specific product and its locally approved uses, some HA products can be used to improve particular folds, local volume loss or contour concerns; some formulations target particular measures of skin quality."
+   },
+   {
+    "t": "p",
+    "text": "But facial ageing involves several layers, including skin, fat, ligaments and bone. HA cannot treat every type of wrinkle, and it cannot guarantee correction of marked sagging or results equivalent to a surgical lift."
+   },
+   {
+    "t": "p",
+    "text": "Sometimes adding more volume does not solve the original problem and may instead lead to overfilling or imbalanced proportions. Whether treatment is needed, and whether HA is suitable, should be decided after an assessment."
+   },
+   {
+    "t": "h",
+    "text": "6. How soon can results be seen, and how long do they last?"
+   },
+   {
+    "t": "p",
+    "text": "Volume-type products may change appearance fairly quickly after treatment, but the early appearance also includes injection trauma and swelling, so it should not be regarded straight away as the final result."
+   },
+   {
+    "t": "p",
+    "text": "Changes in skin quality should be assessed according to the observation periods and measures used in research on the specific product. Short-lived glow or plumpness after treatment cannot be used to judge long-term results."
+   },
+   {
+    "t": "p",
+    "text": "Duration depends on the product, the area, the amount used and the individual, so no fixed number of months can be promised. A fading visible effect also does not mean that the material in the tissue has completely gone. For this reason, a fresh assessment is needed before any repeat treatment, rather than simply repeating injections according to the calendar."
+   },
+   {
+    "t": "h",
+    "text": "7. What are the risks of injectable HA?"
+   },
+   {
+    "t": "h3",
+    "text": "Common local reactions"
+   },
+   {
+    "t": "p",
+    "text": "Swelling, bruising, pain, tenderness, redness or itching may occur. Some reactions settle gradually, but a review is needed if they persist or get worse."
+   },
+   {
+    "t": "h3",
+    "text": "Other complications"
+   },
+   {
+    "t": "p",
+    "text": "Unevenness, asymmetry, persistent oedema, infection, nodules or delayed inflammation may occur. Some problems may appear only weeks, months or even longer after treatment."
+   },
+   {
+    "t": "h3",
+    "text": "Serious vascular complications"
+   },
+   {
+    "t": "p",
+    "text": "If material accidentally enters a blood vessel, it can compromise the blood supply to tissue and cause skin necrosis; in severe cases, vision damage, blindness or stroke may occur."
+   },
+   {
+    "t": "p",
+    "text": "Although these risks are uncommon, they can have permanent consequences. **No area, tool or injection technique can guarantee zero risk.**"
+   },
+   {
+    "t": "h",
+    "text": "8. HA can be dissolved. Does that mean it is safe?"
+   },
+   {
+    "t": "p",
+    "text": "Some HA-related problems may be managed with hyaluronidase, but “dissolvable” should not be taken to mean that the treatment can be fully reversed at any time."
+   },
+   {
+    "t": "p",
+    "text": "Whether it is used, how the problem is managed and how many treatments are needed depend on the product, where the material sits and the nature of the complication. Hyaluronidase carries its own risks and cannot guarantee reversal of tissue damage or vision damage that has already occurred."
+   },
+   {
+    "t": "p",
+    "text": "So the fact that a problem can be treated does not replace prevention, being fully informed and prompt recognition of complications. Removing or reducing filler material may itself require medical intervention and carries risks."
+   },
+   {
+    "t": "h",
+    "text": "9. What should you disclose before treatment?"
+   },
+   {
+    "t": "p",
+    "text": "During the assessment, give accurate information about:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Previous injections, thread procedures, surgery and other facial treatments.",
+     "Known product names, treatment areas and dates.",
+     "Allergies and any previous adverse reactions to injections.",
+     "Current infection, rash or inflammation, and recent changes in health.",
+     "Medicines and supplements you are taking.",
+     "Pregnancy, planning a pregnancy or breastfeeding."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Do not stop prescribed anticoagulants or other important medicines on your own. Whether any adjustment is needed should be decided by the doctor responsible for the relevant treatment."
+   },
+   {
+    "t": "p",
+    "text": "Before treatment, you should also understand the alternatives, the option of not having treatment, the expected recovery, the cost, and the arrangements for contact and management if a problem occurs."
+   },
+   {
+    "t": "h",
+    "text": "10. Which symptoms need immediate medical attention?"
+   },
+   {
+    "t": "p",
+    "text": "If any of the following occur after treatment, contact the person who treated you immediately and seek urgent medical assessment:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Unusual, marked or steadily worsening pain.",
+     "Skin that turns pale or grey, or shows net-like or mottled discolouration.",
+     "Blurred vision, changes in the field of vision, eye pain or sudden loss of vision.",
+     "Sudden weakness, difficulty speaking or other neurological symptoms."
+    ]
+   },
+   {
+    "t": "warn",
+    "text": "If vision or neurological symptoms occur, call 000 immediately; do not wait for a routine follow-up. Vascular complications related to filler injections may need urgent treatment."
+   },
+   {
+    "t": "p",
+    "text": "Redness and swelling that keep getting worse, fever, local heat or discharge should also be assessed promptly."
+   },
+   {
+    "t": "h",
+    "text": "11. Is daily skincare still needed after injections?"
+   },
+   {
+    "t": "p",
+    "text": "Yes. Injections cannot replace gentle cleansing, moisturising and sun protection, nor can they treat every cause of dryness, sensitivity or pigment changes."
+   },
+   {
+    "t": "p",
+    "text": "During recovery, follow your individual aftercare instructions. Do not repeatedly press or massage the treated area yourself, and do not add irritating skincare or other cosmetic procedures on your own."
+   },
+   {
+    "t": "p",
+    "text": "**Appropriate use of injectable HA rests on clear treatment goals, a suitable product, thorough discussion of risks and ongoing follow-up. It is a medical intervention, not simply “putting water into the skin”.**"
+   },
+   {
+    "t": "note",
+    "text": "This article is general skin-health information only and does not replace individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}

@@ -1,0 +1,178 @@
+{
+ "id": "prp-hair",
+ "category": "treatment",
+ "review": true,
+ "pages": "6-7",
+ "zh": {
+  "title": "PRP与头发生长",
+  "summary": "PRP（富血小板血浆）是一种使用自身血液成分的治疗方式，可注射至需要治疗的头皮或面部区域。",
+  "blocks": [
+   {
+    "t": "h",
+    "text": "什么是PRP？"
+   },
+   {
+    "t": "p",
+    "text": "PRP（Platelet-Rich Plasma，富血小板血浆）是一种使用自身血液成分的治疗方式。治疗时，医疗人员会抽取少量静脉血，经离心处理分离获得富含血小板的血浆，再注射至需要治疗的头皮或是面部区域。"
+   },
+   {
+    "t": "h",
+    "text": "一、PRP为什么可能影响头发生长？"
+   },
+   {
+    "t": "p",
+    "text": "毛囊的生长具有周期性，包括生长期、退行期及休止期。雄激素性脱发的主要变化之一，是毛囊逐渐微小化，使头发变细、生长期缩短，最终表现为发量减少。"
+   },
+   {
+    "t": "p",
+    "text": "血小板除参与止血外，还能释放多种生长因子及信号分子。PRP用于头皮治疗的理论基础，是通过这些生物信号影响毛囊周围的微环境，支持毛囊细胞活动，并可能促进或维持毛囊的生长期。"
+   },
+   {
+    "t": "p",
+    "text": "PRP并不是毛囊移植，也不能被理解为制造新的毛囊。对于瘢痕性脱发、长期光滑且毛囊已被破坏的区域，不能期待PRP使其重新长出正常头发。"
+   },
+   {
+    "t": "h",
+    "text": "PRP可能帮助改善什么？"
+   },
+   {
+    "t": "p",
+    "text": "部分研究显示，PRP可能帮助部分男性及女性型脱发患者："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "减少掉发；",
+     "增加头发密度；",
+     "改善发丝粗细，使头发看起来更丰盈。"
+    ]
+   },
+   {
+    "t": "h",
+    "text": "PRP适合我吗？"
+   },
+   {
+    "t": "p",
+    "text": "对于逐渐出现发缝变宽、头顶部稀疏，或已确诊男性型、女性型脱发的人士，PRP可能是一项值得评估的辅助治疗选择。"
+   },
+   {
+    "t": "p",
+    "text": "并非所有脱发类型都适合PRP。如果掉发与营养缺乏、激素变化、疾病或头皮问题有关，需要先明确并处理相关原因。突然出现、呈斑片状或伴有头皮不适的脱发，应先接受医疗评估。"
+   },
+   {
+    "t": "h",
+    "text": "治疗后多久能看到变化？"
+   },
+   {
+    "t": "p",
+    "text": "头发的生长与变化需要时间，通常需要数月才能评估治疗反应。根据个人情况，可能需要多次治疗及后续维持治疗。"
+   },
+   {
+    "t": "p",
+    "text": "我们会与您讨论合理的预期，并通过复查和标准化照片记录，评估是否出现改善，以及是否适合继续治疗。"
+   },
+   {
+    "t": "h",
+    "text": "治疗前需要了解什么？"
+   },
+   {
+    "t": "p",
+    "text": "PRP使用自身血液，但仍属于有风险的注射治疗。可能出现头皮疼痛、触痛、红肿、淤青、少量出血或头痛，也存在感染等风险。"
+   },
+   {
+    "t": "p",
+    "text": "治疗前，我们会评估您的健康状况、用药及头皮情况，并解释潜在收益、风险、费用与其他管理选择，帮助您作出知情决定。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不代替个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "PRP and hair growth",
+  "summary": "PRP (platelet-rich plasma) is a treatment that uses components of your own blood, injected into the area of the scalp or face being treated.",
+  "blocks": [
+   {
+    "t": "h",
+    "text": "What is PRP?"
+   },
+   {
+    "t": "p",
+    "text": "PRP (platelet-rich plasma) is a treatment that uses components of your own blood. During treatment, a health professional draws a small amount of venous blood and spins it in a centrifuge to separate out plasma rich in platelets, which is then injected into the area of the scalp or face being treated."
+   },
+   {
+    "t": "h",
+    "text": "1. Why might PRP affect hair growth?"
+   },
+   {
+    "t": "p",
+    "text": "Hair follicles grow in cycles, which include a growth phase, a regression phase and a resting phase. One of the main changes in androgenetic alopecia is that the follicles gradually miniaturise, so hairs become finer and the growth phase becomes shorter, eventually showing up as reduced hair volume."
+   },
+   {
+    "t": "p",
+    "text": "Besides their role in stopping bleeding, platelets can release a range of growth factors and signalling molecules. The theoretical basis for using PRP on the scalp is that these biological signals influence the microenvironment around the hair follicles, supporting follicle cell activity and possibly promoting or maintaining the follicles' growth phase."
+   },
+   {
+    "t": "p",
+    "text": "PRP is not a hair transplant, and it should not be understood as creating new hair follicles. In areas of scarring hair loss, or areas that have long been smooth and where the follicles have been destroyed, PRP cannot be expected to regrow normal hair."
+   },
+   {
+    "t": "h",
+    "text": "What might PRP help improve?"
+   },
+   {
+    "t": "p",
+    "text": "Some studies suggest that PRP may help some people with male- or female-pattern hair loss to:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "reduce hair shedding;",
+     "increase hair density;",
+     "improve the thickness of individual hairs, so that the hair looks fuller."
+    ]
+   },
+   {
+    "t": "h",
+    "text": "Is PRP right for me?"
+   },
+   {
+    "t": "p",
+    "text": "For people whose parting is gradually widening or whose crown is thinning, or who have been diagnosed with male- or female-pattern hair loss, PRP may be an adjunctive treatment option worth assessing."
+   },
+   {
+    "t": "p",
+    "text": "Not every type of hair loss is suitable for PRP. If hair loss is related to nutritional deficiency, hormonal changes, illness or scalp problems, the underlying cause needs to be identified and treated first. Hair loss that comes on suddenly, appears in patches or comes with scalp discomfort should be medically assessed first."
+   },
+   {
+    "t": "h",
+    "text": "How long after treatment before changes can be seen?"
+   },
+   {
+    "t": "p",
+    "text": "Hair growth and change take time, and it usually takes several months before the response to treatment can be assessed. Depending on individual circumstances, several treatments and ongoing maintenance treatment may be needed."
+   },
+   {
+    "t": "p",
+    "text": "We will discuss reasonable expectations with you, and use follow-up reviews and standardised photographs to assess whether there has been any improvement and whether continuing treatment is appropriate."
+   },
+   {
+    "t": "h",
+    "text": "What should I know before treatment?"
+   },
+   {
+    "t": "p",
+    "text": "PRP uses your own blood, but it is still an injectable treatment that carries risks. Scalp pain, tenderness, redness and swelling, bruising, minor bleeding or headache may occur, and there are also risks such as infection."
+   },
+   {
+    "t": "p",
+    "text": "Before treatment, we will assess your health, medications and scalp condition, and explain the potential benefits, risks, costs and other management options, to help you make an informed decision."
+   },
+   {
+    "t": "note",
+    "text": "This article is for general skin health education only and does not replace individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}

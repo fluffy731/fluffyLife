@@ -1,0 +1,228 @@
+{
+ "id": "skin-barrier",
+ "category": "concern",
+ "review": false,
+ "pages": "32-34",
+ "zh": {
+  "title": "皮肤屏障受损：从识别到日常护理",
+  "summary": "皮肤最外层的角质层帮助减少水分流失并抵御外界刺激，当这层保护功能受到影响时，皮肤可能变得干燥、紧绷或容易刺痛。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "皮肤最外层的角质层帮助减少水分流失，并抵御外界刺激。当这层保护功能受到影响时，皮肤可能变得干燥、紧绷或容易刺痛。"
+   },
+   {
+    "t": "p",
+    "text": "“皮肤屏障受损”是常见说法，**不是单独的医学诊断**。相似表现也可能由湿疹、接触性皮炎、玫瑰痤疮或其他皮肤问题引起，因此持续不适时需要进一步评估。"
+   },
+   {
+    "t": "h",
+    "text": "可能有哪些表现？"
+   },
+   {
+    "t": "p",
+    "text": "屏障功能受影响时，常见的表现包括："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "干燥、紧绷，或皮肤比平时更容易脱屑。",
+     "使用护肤品时出现刺痛、灼热或不适。",
+     "局部泛红、粗糙，或对温度变化更敏感。",
+     "皮肤感觉不舒服，但外观变化可能不明显。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "这些表现并不能单独确定原因。例如，接触性皮炎也可能造成红、痒、干燥或起疹；如果症状反复出现在某个产品接触的位置，需考虑刺激或过敏反应。"
+   },
+   {
+    "t": "h",
+    "text": "哪些因素可能影响皮肤屏障？"
+   },
+   {
+    "t": "p",
+    "text": "常见诱因包括过度清洁、频繁去角质、同时使用多种活性成分、使用不耐受的产品，以及反复接触清洁剂、溶剂或热水。干燥环境和原有皮肤状况也可能让皮肤更容易受到刺激。"
+   },
+   {
+    "t": "p",
+    "text": "不适也可能在使用某款产品后出现，但这不一定代表“排毒”或所谓的正常适应期。记录新产品和症状出现的时间，有助于之后判断可能的诱因。"
+   },
+   {
+    "t": "h",
+    "text": "日常护理可以怎么调整？"
+   },
+   {
+    "t": "h3",
+    "text": "先简化护肤步骤"
+   },
+   {
+    "t": "p",
+    "text": "症状明显时，暂时减少非必要的精华和去角质产品。A 醇、果酸、水杨酸及其他可能引起刺痛的成分，可先暂停或请专业人员判断何时恢复。若使用的是处方药，请先咨询开药者，不要自行停药。"
+   },
+   {
+    "t": "h3",
+    "text": "温和清洁"
+   },
+   {
+    "t": "p",
+    "text": "选择温和的洁面产品，用温水清洁，避免热水、磨砂颗粒、洁面刷和用力搓洗。洗后轻轻拍干，不要反复擦拭。"
+   },
+   {
+    "t": "h3",
+    "text": "使用适合自己的保湿产品"
+   },
+   {
+    "t": "p",
+    "text": "可选择配方相对简单、无香料的乳霜或软膏。甘油、神经酰胺及封闭性保湿成分常用于帮助保持皮肤水分；具体质地可按肤感选择。清洁或洗澡后皮肤还略微湿润时涂抹，可能更容易缓解干燥。若某款保湿品持续引起灼痛或红疹，应停止使用并评估。"
+   },
+   {
+    "t": "h3",
+    "text": "减少可避免的刺激"
+   },
+   {
+    "t": "p",
+    "text": "留意近期新增的护肤品、香料产品、清洁剂、频繁洗脸或其他摩擦。如果怀疑某个产品引发反应，可记录名称和使用时间；反复或明显的皮疹，可能需要医生评估，必要时考虑过敏检查。"
+   },
+   {
+    "t": "h",
+    "text": "多久能恢复？"
+   },
+   {
+    "t": "p",
+    "text": "恢复时间取决于诱因、皮肤状况和炎症程度。轻微干燥在减少刺激并做好保湿后可能逐渐缓解；若持续泛红、瘙痒或反复发作，单靠换护肤品可能无法解决根本原因。"
+   },
+   {
+    "t": "p",
+    "text": "不必用脱皮量来判断护理是否有效，也不建议为了“修复更快”不断添加新的精华。"
+   },
+   {
+    "t": "h",
+    "text": "什么时候应该看医生？"
+   },
+   {
+    "t": "p",
+    "text": "若症状持续、反复或加重，出现明显瘙痒、疼痛、裂口、渗液、结痂或范围扩大，应咨询医生。水疱、迅速加重的皮疹，或伴随发热、全身不适时，应尽快寻求医疗评估。"
+   },
+   {
+    "t": "p",
+    "text": "**温和清洁、适合的保湿和减少刺激，是日常护理的起点。**如果症状背后是湿疹、接触性皮炎或其他皮肤疾病，明确原因并针对处理会更重要。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不构成个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Skin barrier damage: from recognising it to everyday care",
+  "summary": "The outermost layer of the skin helps reduce water loss and protects against outside irritants; when this protection is affected, skin may become dry, tight or prone to stinging.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "The stratum corneum, the outermost layer of the skin, helps reduce water loss and protects against outside irritants. When this protective function is affected, the skin may become dry, tight or prone to stinging."
+   },
+   {
+    "t": "p",
+    "text": "‘Skin barrier damage’ is a common expression, **not a medical diagnosis in its own right**. Similar signs can also be caused by eczema, contact dermatitis, rosacea or other skin problems, so ongoing discomfort needs further assessment."
+   },
+   {
+    "t": "h",
+    "text": "What signs might there be?"
+   },
+   {
+    "t": "p",
+    "text": "When barrier function is affected, common signs include:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Dryness, tightness, or skin that flakes more easily than usual.",
+     "Stinging, burning or discomfort when using skincare products.",
+     "Patchy redness, roughness, or greater sensitivity to temperature changes.",
+     "Skin that feels uncomfortable even though visible changes may not be obvious."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "These signs alone cannot establish the cause. For example, contact dermatitis can also cause redness, itch, dryness or a rash; if symptoms keep appearing where a particular product touches the skin, irritation or an allergic reaction should be considered."
+   },
+   {
+    "t": "h",
+    "text": "What factors may affect the skin barrier?"
+   },
+   {
+    "t": "p",
+    "text": "Common triggers include over-cleansing, frequent exfoliation, using several active ingredients at once, using products the skin does not tolerate, and repeated contact with detergents, solvents or hot water. Dry environments and existing skin conditions can also make the skin more easily irritated."
+   },
+   {
+    "t": "p",
+    "text": "Discomfort may also appear after using a particular product, but this does not necessarily mean ‘detox’ or a so-called normal adjustment period. Noting when new products were started and when symptoms appeared can help work out possible triggers later."
+   },
+   {
+    "t": "h",
+    "text": "How can everyday care be adjusted?"
+   },
+   {
+    "t": "h3",
+    "text": "Simplify your skincare routine first"
+   },
+   {
+    "t": "p",
+    "text": "While symptoms are obvious, temporarily cut back on non-essential serums and exfoliating products. Retinol, AHAs, salicylic acid and other ingredients that may cause stinging can be paused first, or a professional can advise when to restart them. If you are using a prescription medicine, check with the prescriber first and do not stop it on your own."
+   },
+   {
+    "t": "h3",
+    "text": "Gentle cleansing"
+   },
+   {
+    "t": "p",
+    "text": "Choose a gentle cleanser and wash with lukewarm water, avoiding hot water, scrub particles, cleansing brushes and vigorous scrubbing. Gently pat dry afterwards rather than rubbing repeatedly."
+   },
+   {
+    "t": "h3",
+    "text": "Use a moisturiser that suits you"
+   },
+   {
+    "t": "p",
+    "text": "You can choose a fragrance-free cream or ointment with a relatively simple formulation. Glycerin, ceramides and occlusive moisturising ingredients are commonly used to help keep skin hydrated; the texture can be chosen by how it feels on your skin. Applying it while the skin is still slightly damp after cleansing or showering may help ease dryness more easily. If a moisturiser keeps causing burning or a red rash, stop using it and have it assessed."
+   },
+   {
+    "t": "h3",
+    "text": "Reduce avoidable irritation"
+   },
+   {
+    "t": "p",
+    "text": "Pay attention to recently added skincare products, fragranced products, detergents, frequent face washing or other friction. If you suspect a product has caused a reaction, you can note its name and when you used it; a recurring or obvious rash may need assessment by a doctor, including allergy testing if necessary."
+   },
+   {
+    "t": "h",
+    "text": "How long does recovery take?"
+   },
+   {
+    "t": "p",
+    "text": "Recovery time depends on the trigger, skin condition and degree of inflammation. Mild dryness may gradually settle once irritation is reduced and the skin is well moisturised; if redness or itching persists or keeps flaring, changing skincare products alone may not address the underlying cause."
+   },
+   {
+    "t": "p",
+    "text": "There is no need to judge whether your care is working by how much the skin peels, and it is not advisable to keep adding new serums to ‘repair faster’."
+   },
+   {
+    "t": "h",
+    "text": "When should I see a doctor?"
+   },
+   {
+    "t": "p",
+    "text": "If symptoms persist, keep coming back or get worse, or there is marked itching, pain, cracking, oozing, crusting or a spreading area, see a doctor. If there are blisters, a rapidly worsening rash, or fever or feeling generally unwell, seek medical assessment as soon as possible."
+   },
+   {
+    "t": "p",
+    "text": "**Gentle cleansing, suitable moisturising and reducing irritation are the starting point of everyday care.** If eczema, contact dermatitis or another skin disease lies behind the symptoms, identifying the cause and treating it specifically becomes more important."
+   },
+   {
+    "t": "note",
+    "text": "This article is general skin health education only and does not constitute individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}

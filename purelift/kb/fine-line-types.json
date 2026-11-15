@@ -1,0 +1,116 @@
+{
+ "id": "fine-line-types",
+ "category": "concern",
+ "review": false,
+ "pages": "32",
+ "zh": {
+  "title": "细纹的类型：怎样观察自己的皮肤",
+  "summary": "可以在自然光线下观察面部放松和做表情时的变化，并留意清洁后与保湿后的差异。",
+  "blocks": [
+   {
+    "t": "table",
+    "head": [
+     "观察到的情况",
+     "可能的表现"
+    ],
+    "rows": [
+     [
+      "皮肤干燥时更明显，保湿后稍减轻",
+      "可能包含干燥相关的浅表细纹"
+     ],
+     [
+      "做表情时出现或加深，放松后减轻",
+      "可能以动态纹为主"
+     ],
+     [
+      "放松时仍能看到，做表情时更深",
+      "可能兼有静态纹与动态纹"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "这张表只能帮助理解，并不能单凭外观确定纹路的具体成因。"
+   },
+   {
+    "t": "h",
+    "text": "怎样观察自己的皮肤？"
+   },
+   {
+    "t": "p",
+    "text": "可以在自然光线下观察面部放松和做表情时的变化，并留意清洁后与保湿后的差异。拍照比较时，尽量保持光线、角度、距离和表情相似，因为阴影和拍摄角度会让纹路看起来更深或更浅。"
+   },
+   {
+    "t": "h",
+    "text": "日常护理可以从哪里开始？"
+   },
+   {
+    "t": "p",
+    "text": "温和清洁、选择适合自己的保湿产品，并做好日常防晒，是基础护理的一部分。保湿有助于减轻干燥造成的细纹外观；防晒则有助于减少紫外线带来的皮肤损伤。两者都不能保证消除已经形成的纹路。"
+   },
+   {
+    "t": "p",
+    "text": "如果纹路伴随持续红肿、瘙痒、脱屑或疼痛，或者近期突然明显变化，建议先咨询医生，确认是否存在皮肤问题。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不构成个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Types of fine lines: how to look at your own skin",
+  "summary": "You can look at how your face changes at rest and with expressions in natural light, and notice the difference after cleansing and after moisturising.",
+  "blocks": [
+   {
+    "t": "table",
+    "head": [
+     "What you notice",
+     "Possible presentation"
+    ],
+    "rows": [
+     [
+      "More obvious when the skin is dry, slightly better after moisturising",
+      "May include superficial fine lines related to dryness"
+     ],
+     [
+      "Appear or deepen with facial expressions, ease when the face relaxes",
+      "May be mainly dynamic lines"
+     ],
+     [
+      "Still visible when the face is relaxed, deeper with expressions",
+      "May include both static and dynamic lines"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "This table is only a guide to understanding; the specific cause of lines cannot be determined from appearance alone."
+   },
+   {
+    "t": "h",
+    "text": "How can I look at my own skin?"
+   },
+   {
+    "t": "p",
+    "text": "You can look at how your face changes at rest and when making expressions in natural light, and notice the difference after cleansing and after moisturising. When comparing photos, try to keep the lighting, angle, distance and expression similar, because shadows and camera angle can make lines look deeper or shallower."
+   },
+   {
+    "t": "h",
+    "text": "Where can everyday care start?"
+   },
+   {
+    "t": "p",
+    "text": "Gentle cleansing, choosing a moisturiser that suits you and daily sun protection are part of basic care. Moisturising helps soften the look of fine lines caused by dryness; sun protection helps reduce skin damage from ultraviolet (UV) radiation. Neither can guarantee to remove lines that have already formed."
+   },
+   {
+    "t": "p",
+    "text": "If the lines come with persistent redness and swelling, itching, flaking or pain, or have recently changed suddenly and noticeably, it is advisable to see a doctor first to check whether there is a skin problem."
+   },
+   {
+    "t": "note",
+    "text": "This article is general skin health education only and does not constitute individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}

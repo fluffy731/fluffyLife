@@ -1,0 +1,212 @@
+{
+ "id": "dry-skin-fine-lines",
+ "category": "concern",
+ "review": false,
+ "pages": "36-37",
+ "zh": {
+  "title": "皮肤干燥、有细纹：从肤质到细纹类型，了解你的护理方向",
+  "summary": "皮肤不够水润、上妆容易卡粉，眼周或面颊出现细小纹路，是常见的医美咨询困扰。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "皮肤不够水润、上妆容易卡粉，眼周或面颊出现细小纹路，是常见的医美咨询困扰。虽然这些变化可能同时出现，但**干燥、肤质变化与皱纹形成，涉及的原因并不完全相同。**"
+   },
+   {
+    "t": "p",
+    "text": "医美评估的第一步，是分清你在意的变化来自哪里。"
+   },
+   {
+    "t": "h",
+    "text": "常见原因：不只是“缺水”"
+   },
+   {
+    "t": "h3",
+    "text": "皮肤保水能力下降"
+   },
+   {
+    "t": "p",
+    "text": "当皮肤表层含水量不足时，肌肤可能显得粗糙、缺乏光泽，原本不明显的细纹也更容易被看见。环境干燥、过度清洁及刺激性护肤，都可能参与其中。"
+   },
+   {
+    "t": "h3",
+    "text": "日晒与年龄相关变化"
+   },
+   {
+    "t": "p",
+    "text": "长期紫外线暴露和自然衰老，会影响皮肤的胶原、弹性纤维等结构。这类变化可能表现为细纹逐渐加深、弹性下降，以及纹理不均。"
+   },
+   {
+    "t": "h3",
+    "text": "反复的面部表情"
+   },
+   {
+    "t": "p",
+    "text": "笑、眯眼或皱眉时出现的纹路，与肌肉活动有关。随着时间推移，部分纹路在面部放松时也可能持续存在。"
+   },
+   {
+    "t": "p",
+    "text": "因此，咨询时需要结合皮肤状态、纹路位置，以及静止和做表情时的变化来判断，不能仅凭“有细纹”就确定治疗方案。"
+   },
+   {
+    "t": "h",
+    "text": "日常护理：医美评估前的重要基础"
+   },
+   {
+    "t": "h3",
+    "text": "先让皮肤状态稳定"
+   },
+   {
+    "t": "p",
+    "text": "如果同时存在刺痛、泛红或脱屑，应先明确原因并调整护理。皮肤正在发炎或明显不耐受时，可能需要暂缓部分医美操作。"
+   },
+   {
+    "t": "h3",
+    "text": "做好保湿与防晒"
+   },
+   {
+    "t": "p",
+    "text": "温和清洁、适合自己的保湿产品，以及持续防晒，是日常护理的基础。保湿可能减轻部分干燥相关细纹的外观，但不能解决所有皱纹或深层结构变化。"
+   },
+   {
+    "t": "h3",
+    "text": "减少反复刺激"
+   },
+   {
+    "t": "p",
+    "text": "避免为了追求光滑、水润而频繁刷酸、去角质，或不断叠加功效产品。护理应根据皮肤耐受逐步调整。"
+   },
+   {
+    "t": "h",
+    "text": "医美咨询可以帮助你了解什么？"
+   },
+   {
+    "t": "p",
+    "text": "评估会围绕以下问题展开："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**主要困扰是什么？**是紧绷、粗糙、细纹，还是弹性与轮廓变化？",
+     "**细纹属于哪种表现？**干燥时更明显、做表情时出现，还是静止时也存在？",
+     "**皮肤是否适合开展治疗？**是否存在炎症、感染、过敏或其他需要先处理的问题？",
+     "**有哪些合理选择？**包括继续日常护理、进一步医疗评估，以及适合时讨论医美治疗的预期收益、风险、恢复期与费用。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "涉及注射或其他医疗操作时，需要结合病史、用药及个体情况进行评估；如涉及处方药物，还需由有资质的处方者判断是否适用。"
+   },
+   {
+    "t": "p",
+    "text": "**不同层次的问题，可能需要不同的处理方向；并非每个人都需要治疗，也并非一个项目能够解决所有问题。**"
+   },
+   {
+    "t": "note",
+    "text": "本文为一般科普信息，不构成个体诊断或治疗建议。治疗是否适合及实际效果因人而异。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Dry skin and fine lines: from skin type to types of lines, understanding your care options",
+  "summary": "Skin that lacks moisture, makeup that clings to dry patches, and fine lines around the eyes or on the cheeks are common concerns in aesthetic medicine consultations.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "Skin that lacks moisture, makeup that clings to dry patches, and fine lines around the eyes or on the cheeks are common concerns in aesthetic medicine consultations. Although these changes may appear together, **dryness, changes in skin quality and wrinkle formation do not have entirely the same causes.**"
+   },
+   {
+    "t": "p",
+    "text": "The first step in an aesthetic assessment is to work out where the changes that concern you are coming from."
+   },
+   {
+    "t": "h",
+    "text": "Common causes: not just ‘lack of water’"
+   },
+   {
+    "t": "h3",
+    "text": "Reduced ability of the skin to hold water"
+   },
+   {
+    "t": "p",
+    "text": "When the water content of the skin’s surface layer is too low, the skin may look rough and dull, and fine lines that were barely visible become easier to see. A dry environment, over-cleansing and irritating skincare may all play a part."
+   },
+   {
+    "t": "h3",
+    "text": "Sun-related and age-related changes"
+   },
+   {
+    "t": "p",
+    "text": "Long-term ultraviolet (UV) exposure and natural ageing affect structures in the skin such as collagen and elastic fibres. These changes may show as fine lines gradually deepening, reduced elasticity and uneven texture."
+   },
+   {
+    "t": "h3",
+    "text": "Repeated facial expressions"
+   },
+   {
+    "t": "p",
+    "text": "Lines that appear when smiling, squinting or frowning are related to muscle activity. Over time, some of these lines may also remain when the face is relaxed."
+   },
+   {
+    "t": "p",
+    "text": "So a consultation needs to take into account skin condition, where the lines are, and how they change at rest and with expressions; a treatment plan cannot be decided just because ‘there are fine lines’."
+   },
+   {
+    "t": "h",
+    "text": "Everyday care: an important foundation before an aesthetic assessment"
+   },
+   {
+    "t": "h3",
+    "text": "Settle the skin first"
+   },
+   {
+    "t": "p",
+    "text": "If there is also stinging, redness or flaking, the cause should be identified and care adjusted first. While the skin is inflamed or clearly not tolerating products, some aesthetic procedures may need to be postponed."
+   },
+   {
+    "t": "h3",
+    "text": "Moisturise and protect from the sun"
+   },
+   {
+    "t": "p",
+    "text": "Gentle cleansing, a moisturiser that suits you, and consistent sun protection are the foundation of everyday care. Moisturising may soften the look of some dryness-related fine lines, but it cannot resolve all wrinkles or deeper structural changes."
+   },
+   {
+    "t": "h3",
+    "text": "Reduce repeated irritation"
+   },
+   {
+    "t": "p",
+    "text": "Avoid frequent acid use and exfoliation, or constantly layering active products, in pursuit of smooth, dewy skin. Care should be adjusted step by step according to what the skin tolerates."
+   },
+   {
+    "t": "h",
+    "text": "What can an aesthetic consultation help you understand?"
+   },
+   {
+    "t": "p",
+    "text": "The assessment will centre on the following questions:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**What is the main concern?** Is it tightness, roughness, fine lines, or changes in elasticity and contour?",
+     "**What kind of fine lines are they?** Are they more obvious when the skin is dry, do they appear with expressions, or are they visible at rest too?",
+     "**Is the skin suitable for treatment?** Is there inflammation, infection, allergy or another problem that needs to be dealt with first?",
+     "**What are the reasonable options?** These include continuing everyday care, further medical assessment and, where appropriate, discussing the expected benefits, risks, recovery time and cost of aesthetic treatment."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Injections or other medical procedures require assessment that takes into account medical history, medicines and individual circumstances; where prescription-only medicines are involved, a qualified prescriber also needs to decide whether they are suitable."
+   },
+   {
+    "t": "p",
+    "text": "**Concerns at different layers may need different approaches; not everyone needs treatment, and no single procedure can solve every problem.**"
+   },
+   {
+    "t": "note",
+    "text": "This article is general health information and does not constitute individual diagnosis or treatment advice. Whether treatment is suitable, and its actual results, vary from person to person."
+   }
+  ]
+ }
+}

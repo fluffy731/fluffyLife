@@ -1,0 +1,578 @@
+{
+ "id": "microneedling",
+ "category": "treatment",
+ "review": false,
+ "pages": "27-29",
+ "zh": {
+  "title": "微针护理：了解皮肤重塑的原理、作用与恢复过程",
+  "summary": "微针（Microneedling），也称皮肤针刺治疗，是使用带有细小针头的器械，在皮肤上形成可控微小穿刺的操作。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "微针（Microneedling），也称皮肤针刺治疗，是使用带有细小针头的器械，在皮肤上形成可控微小穿刺的操作。"
+   },
+   {
+    "t": "p",
+    "text": "目前，微针被用于改善部分凹陷性痤疮瘢痕、细纹及皮肤纹理问题。它会暂时影响皮肤屏障，并启动组织修复反应，因此需要在治疗前评估适用性，治疗后也需要适当护理。"
+   },
+   {
+    "t": "p",
+    "text": "**微针并非针越深、出血越多，效果就越好。治疗强度应根据问题、部位、设备和皮肤状态决定。**"
+   },
+   {
+    "t": "h",
+    "text": "一、微针如何发挥作用？"
+   },
+   {
+    "t": "p",
+    "text": "皮肤受到微小损伤后，会启动自然的伤口愈合过程，涉及炎症反应、组织修复及后续重塑。"
+   },
+   {
+    "t": "p",
+    "text": "微针的理论基础，是通过可控机械刺激，促进与胶原形成及细胞外基质重塑有关的过程，从而可能逐渐改善部分瘢痕及皮肤纹理。"
+   },
+   {
+    "t": "p",
+    "text": "这些变化需要时间。治疗后立即出现的饱满或光泽，可能包含短暂肿胀，并不能直接视为胶原增加或最终效果。"
+   },
+   {
+    "t": "p",
+    "text": "微针也不能替代面部提升手术，或保证消除所有皱纹、毛孔和瘢痕。"
+   },
+   {
+    "t": "h",
+    "text": "二、微针可能改善哪些问题？"
+   },
+   {
+    "t": "h3",
+    "text": "凹陷性痤疮瘢痕"
+   },
+   {
+    "t": "p",
+    "text": "微针是部分凹陷性痤疮瘢痕的治疗选择之一，但不同类型的痘坑，反应可能不同。"
+   },
+   {
+    "t": "p",
+    "text": "较深、边缘陡峭或存在深层牵拉的瘢痕，可能需要其他针对性处理。微针不能保证将瘢痕恢复为完全正常的皮肤。"
+   },
+   {
+    "t": "h3",
+    "text": "部分细纹与纹理不均"
+   },
+   {
+    "t": "p",
+    "text": "微针可能逐步改善部分细纹、粗糙和纹理问题，但效果与治疗方案和个人情况有关，不能保证每次都有明显变化。"
+   },
+   {
+    "t": "h3",
+    "text": "部分其他瘢痕"
+   },
+   {
+    "t": "p",
+    "text": "某些外伤或手术瘢痕也可能接受评估，但瘢痕的成熟程度、形态和位置都很重要。隆起性瘢痕及瘢痕疙瘩，与凹陷性瘢痕的处理不同，不能直接采用相同方案。"
+   },
+   {
+    "t": "h",
+    "text": "三、哪些问题不应简单归为“适合微针”？"
+   },
+   {
+    "t": "p",
+    "text": "毛孔明显不一定只与皮肤松弛有关。油脂、毛囊结构和堵塞等因素都可能参与，不能承诺永久缩小或关闭毛孔。"
+   },
+   {
+    "t": "p",
+    "text": "色素问题也需要先明确原因。微针造成的炎症可能诱发色素沉着，尤其是既往容易出现炎症后色素沉着的人。并不是所有暗沉、色斑或黄褐斑都适合以微针处理。"
+   },
+   {
+    "t": "p",
+    "text": "活动性痤疮、湿疹、皮肤感染或破损区域，应先评估和处理原有问题。TGA 建议有活动性痤疮、伤口或其他增加损伤与感染风险的皮肤状况时，避免进行微针。"
+   },
+   {
+    "t": "h",
+    "text": "四、普通微针与射频微针有什么区别？"
+   },
+   {
+    "t": "table",
+    "head": [
+     "类型",
+     "主要作用方式",
+     "需要了解的区别"
+    ],
+    "rows": [
+     [
+      "普通微针",
+      "通过针头形成机械性微小穿刺",
+      "主要涉及针刺损伤与后续修复"
+     ],
+     [
+      "射频微针",
+      "针刺同时向组织传递射频能量",
+      "另有热损伤及能量相关风险"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "两者的研究结果、恢复时间和风险不能直接互换。"
+   },
+   {
+    "t": "p",
+    "text": "FDA 曾针对射频微针的某些使用发出安全警示，涉及烧伤、瘢痕、脂肪流失及神经损伤等报告。这些风险不能直接套用于普通微针，但说明设备类型和操作方式必须明确。"
+   },
+   {
+    "t": "h",
+    "text": "五、微针是不是为了“把精华导进去”？"
+   },
+   {
+    "t": "p",
+    "text": "微针会暂时改变皮肤屏障，但这不代表任何护肤成分都适合进入皮肤。"
+   },
+   {
+    "t": "p",
+    "text": "**适合涂在完整皮肤表面的产品，不一定适合接触针刺后的皮肤，更不代表可以注入或导入。**普通精华中的香精、防腐体系或其他成分，可能增加刺激、过敏或炎症风险。"
+   },
+   {
+    "t": "p",
+    "text": "FDA 明确指出，其许可的微针设备用途并不自动包括将化妆品、药物、维生素溶液或 PRP 等血液制品递送至皮肤。该信息属于美国监管范围；实际使用还需核对当地规定、设备用途及相关产品。"
+   },
+   {
+    "t": "p",
+    "text": "若采用联合方案，应单独说明联合使用的证据、风险及是否属于设备说明范围内的用途。"
+   },
+   {
+    "t": "h",
+    "text": "六、治疗前需要评估什么？"
+   },
+   {
+    "t": "p",
+    "text": "评估应包括皮肤问题、既往病史、用药及愈合情况，尤其需要告知："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "活动性感染、痤疮、湿疹或其他皮肤病。",
+     "唇疱疹或其他疱疹病史。",
+     "瘢痕疙瘩、异常瘢痕或愈合不良史。",
+     "容易出现炎症后色素沉着。",
+     "出血问题、免疫抑制或影响愈合的疾病。",
+     "正在使用的药物，包括口服异维 A 酸及外用活性成分。",
+     "近期接受的激光、焕肤、注射或其他操作。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "是否适合、是否需要调整治疗时间，应由专业人员结合具体情况判断，不应仅按统一清单自行决定。"
+   },
+   {
+    "t": "h",
+    "text": "七、治疗时会痛吗？需要出血才有效吗？"
+   },
+   {
+    "t": "p",
+    "text": "治疗可能引起刺痛或灼热感，部分方案会使用表面麻醉。麻醉本身也需要评估成分、用量和过敏史，不能将微针描述为完全无痛。"
+   },
+   {
+    "t": "p",
+    "text": "出血程度受部位、针刺深度及皮肤状态影响。**出血量不是衡量疗效的标准**，过度损伤可能增加恢复负担和并发症风险。"
+   },
+   {
+    "t": "h",
+    "text": "八、常见反应和风险有哪些？"
+   },
+   {
+    "t": "p",
+    "text": "常见反应包括泛红、肿胀、触痛、紧绷、干燥或脱屑。恢复时间与治疗强度及个人情况有关，不宜承诺固定天数完全恢复。"
+   },
+   {
+    "t": "p",
+    "text": "其他风险包括："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "感染或疱疹复发。",
+     "持续色素加深或变浅。",
+     "皮炎或对接触产品的反应。",
+     "针刺轨迹、持续红斑或瘢痕。",
+     "原有皮肤问题加重。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "操作人员的培训、设备选择、无菌耗材及术后护理，都会影响安全性。"
+   },
+   {
+    "t": "h",
+    "text": "九、治疗后怎样护理？"
+   },
+   {
+    "t": "h3",
+    "text": "温和清洁"
+   },
+   {
+    "t": "p",
+    "text": "按照治疗者说明恢复清洁，避免热水、磨砂、洁面刷及用力揉搓。不要自行使用酒精等刺激性物质消毒面部。"
+   },
+   {
+    "t": "h3",
+    "text": "使用指定的保湿护理"
+   },
+   {
+    "t": "p",
+    "text": "选择治疗者确认适合当前恢复阶段的产品。即使主要成分是 HA，也不能只凭“保湿”就认定可以立即使用。"
+   },
+   {
+    "t": "h3",
+    "text": "暂停刺激性产品"
+   },
+   {
+    "t": "p",
+    "text": "A 醇、去角质酸类、低 pH 的 VC 或其他容易刺激的产品，应按皮肤恢复情况逐步恢复，而不是自行套用固定时间。"
+   },
+   {
+    "t": "h3",
+    "text": "做好日晒防护"
+   },
+   {
+    "t": "p",
+    "text": "避免主动日晒，结合遮阳、帽子及衣物保护。何时开始或恢复防晒霜，应按治疗深度、皮肤耐受及术后说明安排。"
+   },
+   {
+    "t": "h3",
+    "text": "不抠抓，不强行去皮"
+   },
+   {
+    "t": "p",
+    "text": "让脱屑自然脱落，避免抓挠、反复触摸或自行加做去角质。化妆、游泳、桑拿及剧烈运动的恢复时间，应根据具体方案确认。"
+   },
+   {
+    "t": "h",
+    "text": "十、哪些情况需要及时复查？"
+   },
+   {
+    "t": "p",
+    "text": "出现以下情况，应及时联系治疗者或就医："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "疼痛、红肿持续加重。",
+     "局部明显发烫、流脓或伴发热。",
+     "成簇水疱，尤其有疱疹病史时。",
+     "明显肿胀、皮疹或疑似过敏。",
+     "皮肤颜色异常变化，或恢复明显偏离预期。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "持续恶化的症状不应一概解释为“正常修复”或“排毒”。"
+   },
+   {
+    "t": "h",
+    "text": "十一、需要几次？多久看到效果？"
+   },
+   {
+    "t": "p",
+    "text": "部分问题可能需要分次治疗，但次数和间隔应依据皮肤状态、设备、目标及恢复情况安排。"
+   },
+   {
+    "t": "p",
+    "text": "胶原重塑需要时间，通常应以数周至数月观察。每次治疗前都应重新评估恢复情况和实际获益，而不是为完成套餐反复增加强度。"
+   },
+   {
+    "t": "p",
+    "text": "对瘢痕的评估，应使用相近光线、角度和距离的照片，避免把光线差异或治疗后肿胀当成改善。"
+   },
+   {
+    "t": "p",
+    "text": "**微针的合理应用，建立在明确的问题、适合的设备和操作、充分的风险沟通，以及规范恢复护理之上。**"
+   }
+  ]
+ },
+ "en": {
+  "title": "Microneedling: understanding how skin remodelling works, what it can do and the recovery process",
+  "summary": "Microneedling, also called skin needling, is a procedure that uses a device with fine needles to make controlled tiny punctures in the skin.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "Microneedling, also called skin needling, is a procedure that uses a device with fine needles to make controlled tiny punctures in the skin."
+   },
+   {
+    "t": "p",
+    "text": "Microneedling is currently used to improve some depressed acne scars, fine lines and skin texture problems. It temporarily affects the skin barrier and triggers a tissue repair response, so suitability needs to be assessed before treatment, and appropriate care is needed afterwards."
+   },
+   {
+    "t": "p",
+    "text": "**With microneedling, deeper needles and more bleeding do not mean better results. Treatment intensity should be decided according to the concern, the area, the device and the condition of the skin.**"
+   },
+   {
+    "t": "h",
+    "text": "1. How does microneedling work?"
+   },
+   {
+    "t": "p",
+    "text": "When the skin receives tiny injuries, it starts the natural wound-healing process, which involves inflammation, tissue repair and later remodelling."
+   },
+   {
+    "t": "p",
+    "text": "The theory behind microneedling is that controlled mechanical stimulation promotes processes related to collagen formation and remodelling of the extracellular matrix, which may gradually improve some scars and skin texture."
+   },
+   {
+    "t": "p",
+    "text": "These changes take time. Plumpness or glow seen straight after treatment may partly be temporary swelling, and cannot be taken as a direct sign of increased collagen or of the final result."
+   },
+   {
+    "t": "p",
+    "text": "Microneedling also cannot replace facelift surgery, nor can it guarantee to remove all wrinkles, pores and scars."
+   },
+   {
+    "t": "h",
+    "text": "2. What concerns might microneedling improve?"
+   },
+   {
+    "t": "h3",
+    "text": "Depressed acne scars"
+   },
+   {
+    "t": "p",
+    "text": "Microneedling is one treatment option for some depressed acne scars, but different types of acne pits may respond differently."
+   },
+   {
+    "t": "p",
+    "text": "Scars that are deeper, have steep edges or are tethered by deeper tissue may need other targeted treatment. Microneedling cannot guarantee to restore scarred skin to completely normal skin."
+   },
+   {
+    "t": "h3",
+    "text": "Some fine lines and uneven texture"
+   },
+   {
+    "t": "p",
+    "text": "Microneedling may gradually improve some fine lines, roughness and texture problems, but results depend on the treatment plan and the individual, and a noticeable change cannot be guaranteed every time."
+   },
+   {
+    "t": "h3",
+    "text": "Some other scars"
+   },
+   {
+    "t": "p",
+    "text": "Some scars from injury or surgery may also be assessed, but the scar's maturity, shape and location all matter. Raised scars and keloids are managed differently from depressed scars, and the same approach cannot simply be applied."
+   },
+   {
+    "t": "h",
+    "text": "3. Which concerns should not simply be classed as \"suitable for microneedling\"?"
+   },
+   {
+    "t": "p",
+    "text": "Visible pores are not necessarily related only to skin laxity. Factors such as oil, follicle structure and blockage may all be involved, and permanently shrinking or closing pores cannot be promised."
+   },
+   {
+    "t": "p",
+    "text": "Pigmentation problems also need their cause identified first. Inflammation caused by microneedling may trigger pigmentation, especially in people who have previously been prone to post-inflammatory hyperpigmentation. Not all dullness, dark spots or melasma are suitable for treatment with microneedling."
+   },
+   {
+    "t": "p",
+    "text": "For active acne, eczema, skin infection or broken skin, the existing problem should be assessed and managed first. The Therapeutic Goods Administration (TGA) advises avoiding microneedling when you have active acne, wounds or other skin conditions that increase the risk of injury and infection."
+   },
+   {
+    "t": "h",
+    "text": "4. How does standard microneedling differ from radiofrequency microneedling?"
+   },
+   {
+    "t": "table",
+    "head": [
+     "Type",
+     "Main mode of action",
+     "Differences to understand"
+    ],
+    "rows": [
+     [
+      "Standard microneedling",
+      "Needles create tiny mechanical punctures",
+      "Mainly involves needle injury and the repair that follows"
+     ],
+     [
+      "Radiofrequency microneedling",
+      "Needling while delivering radiofrequency energy into the tissue",
+      "Adds thermal injury and energy-related risks"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "The research findings, recovery times and risks of the two are not directly interchangeable."
+   },
+   {
+    "t": "p",
+    "text": "The US Food and Drug Administration (FDA) has issued a safety warning about certain uses of radiofrequency microneedling, involving reports of burns, scarring, fat loss and nerve damage. These risks cannot be applied directly to standard microneedling, but they show that the device type and how the procedure is performed must be made clear."
+   },
+   {
+    "t": "h",
+    "text": "5. Is microneedling for \"pushing serums into the skin\"?"
+   },
+   {
+    "t": "p",
+    "text": "Microneedling temporarily alters the skin barrier, but this does not mean every skincare ingredient is suitable to enter the skin."
+   },
+   {
+    "t": "p",
+    "text": "**A product suitable for applying to intact skin is not necessarily suitable for contact with needled skin, let alone for injecting or infusing into it.** Fragrance, preservative systems or other ingredients in ordinary serums may increase the risk of irritation, allergy or inflammation."
+   },
+   {
+    "t": "p",
+    "text": "The FDA has stated clearly that the uses it has authorised for microneedling devices do not automatically include delivering cosmetics, medicines, vitamin solutions or blood products such as platelet-rich plasma (PRP) into the skin. This information applies to US regulation; actual use also needs to be checked against local rules, the device's intended use and the products involved."
+   },
+   {
+    "t": "p",
+    "text": "If a combined approach is used, the evidence and risks of the combination, and whether it falls within the device's stated uses, should be explained separately."
+   },
+   {
+    "t": "h",
+    "text": "6. What needs to be assessed before treatment?"
+   },
+   {
+    "t": "p",
+    "text": "Assessment should cover your skin concerns, medical history, medicines and how you heal. In particular, tell the practitioner about:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Active infection, acne, eczema or other skin conditions.",
+     "A history of cold sores or other herpes infections.",
+     "A history of keloids, abnormal scarring or poor healing.",
+     "A tendency to post-inflammatory hyperpigmentation.",
+     "Bleeding problems, immunosuppression or conditions that affect healing.",
+     "Medicines you are using, including oral isotretinoin and topical active ingredients.",
+     "Recent laser treatment, peels, injections or other procedures."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Whether you are suitable, and whether treatment timing needs adjusting, should be judged by a professional based on your situation, not decided on your own from a standard checklist."
+   },
+   {
+    "t": "h",
+    "text": "7. Does treatment hurt? Does it need to bleed to work?"
+   },
+   {
+    "t": "p",
+    "text": "Treatment may cause stinging or a burning sensation, and some protocols use a topical anaesthetic. The anaesthetic itself also needs assessment of its ingredients, amount and any allergy history, and microneedling cannot be described as completely painless."
+   },
+   {
+    "t": "p",
+    "text": "How much bleeding occurs depends on the area, needle depth and skin condition. **The amount of bleeding is not a measure of effectiveness**, and excessive injury may increase the burden of recovery and the risk of complications."
+   },
+   {
+    "t": "h",
+    "text": "8. What are the common reactions and risks?"
+   },
+   {
+    "t": "p",
+    "text": "Common reactions include redness, swelling, tenderness, tightness, dryness or flaking. Recovery time depends on treatment intensity and the individual, and full recovery within a fixed number of days should not be promised."
+   },
+   {
+    "t": "p",
+    "text": "Other risks include:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Infection or a herpes flare-up.",
+     "Persistent darkening or lightening of pigment.",
+     "Dermatitis or reactions to products in contact with the skin.",
+     "Needle track marks, persistent redness or scarring.",
+     "Worsening of existing skin problems."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "The operator's training, choice of device, sterile consumables and aftercare all affect safety."
+   },
+   {
+    "t": "h",
+    "text": "9. How should the skin be cared for after treatment?"
+   },
+   {
+    "t": "h3",
+    "text": "Gentle cleansing"
+   },
+   {
+    "t": "p",
+    "text": "Resume cleansing as your practitioner instructs, avoiding hot water, scrubs, cleansing brushes and vigorous rubbing. Do not use alcohol or other irritating substances to disinfect your face on your own."
+   },
+   {
+    "t": "h3",
+    "text": "Use the recommended moisturising care"
+   },
+   {
+    "t": "p",
+    "text": "Choose products your practitioner has confirmed are suitable for your current stage of recovery. Even if the main ingredient is hyaluronic acid (HA), being \"moisturising\" alone does not mean a product can be used straight away."
+   },
+   {
+    "t": "h3",
+    "text": "Pause irritating products"
+   },
+   {
+    "t": "p",
+    "text": "Retinol, exfoliating acids, low-pH vitamin C or other products likely to irritate should be reintroduced gradually according to how your skin is recovering, rather than by applying a fixed timeframe yourself."
+   },
+   {
+    "t": "h3",
+    "text": "Protect from the sun"
+   },
+   {
+    "t": "p",
+    "text": "Avoid deliberate sun exposure, and use shade, hats and clothing for protection. When to start or resume sunscreen should depend on treatment depth, skin tolerance and your aftercare instructions."
+   },
+   {
+    "t": "h3",
+    "text": "Don't pick or scratch, and don't force off peeling skin"
+   },
+   {
+    "t": "p",
+    "text": "Let flaking skin shed naturally, and avoid scratching, repeated touching or adding extra exfoliation of your own. When you can return to make-up, swimming, saunas and strenuous exercise should be confirmed according to your specific treatment plan."
+   },
+   {
+    "t": "h",
+    "text": "10. When should you be reviewed promptly?"
+   },
+   {
+    "t": "p",
+    "text": "Contact your practitioner or seek medical care promptly if you have:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Pain, redness or swelling that keeps getting worse.",
+     "Marked local heat, pus, or fever.",
+     "Clusters of blisters, especially if you have a history of herpes.",
+     "Marked swelling, a rash or a suspected allergy.",
+     "Unusual changes in skin colour, or recovery that is clearly not going as expected."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Symptoms that keep getting worse should not automatically be explained away as \"normal healing\" or \"detox\"."
+   },
+   {
+    "t": "h",
+    "text": "11. How many sessions are needed? How long until results show?"
+   },
+   {
+    "t": "p",
+    "text": "Some concerns may need a series of treatments, but the number of sessions and the interval between them should be based on skin condition, the device, the goals and how recovery is going."
+   },
+   {
+    "t": "p",
+    "text": "Collagen remodelling takes time and should usually be observed over weeks to months. Recovery and actual benefit should be reassessed before each treatment, rather than repeatedly increasing intensity to complete a package."
+   },
+   {
+    "t": "p",
+    "text": "Scars should be assessed using photos taken with similar lighting, angle and distance, so that differences in lighting or post-treatment swelling are not mistaken for improvement."
+   },
+   {
+    "t": "p",
+    "text": "**Appropriate use of microneedling rests on a clearly defined concern, a suitable device and technique, thorough communication about risks, and proper recovery care.**"
+   }
+  ]
+ }
+}

@@ -1,0 +1,254 @@
+{
+ "id": "retinol",
+ "category": "skincare",
+ "review": false,
+ "pages": "10-12",
+ "zh": {
+  "title": "A 醇（视黄醇）：了解维 A 类护肤成分",
+  "summary": "A 醇是日常护肤中常见的维 A 类成分，可在皮肤能够耐受的前提下，用于逐步改善部分皮肤老化表现。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "随着年龄增长、日晒及环境因素的累积，皮肤可能逐渐出现细纹、粗糙和肤色不均。A 醇是日常护肤中常见的维 A 类成分，可在皮肤能够耐受的前提下，用于逐步改善部分皮肤老化表现。"
+   },
+   {
+    "t": "p",
+    "text": "了解它的作用、局限和使用方法，有助于建立更适合自己的长期护理方案。"
+   },
+   {
+    "t": "h",
+    "text": "什么是 A 醇？"
+   },
+   {
+    "t": "p",
+    "text": "A 醇的英文名称为 Retinol，中文称为**视黄醇**，是维生素 A 的一种形式，常见于精华、乳液及面霜。"
+   },
+   {
+    "t": "p",
+    "text": "A 醇需要在皮肤内先转化为视黄醛，再转化为具有生物活性的维 A 酸，才能发挥相关作用。它与处方维 A 酸属于同一家族，但并不是同一种成分，不能将两者的浓度或效果直接等同。"
+   },
+   {
+    "t": "h",
+    "text": "A 醇如何影响皮肤？"
+   },
+   {
+    "t": "p",
+    "text": "维 A 类成分可调节表皮细胞的更新与分化，并影响与胶原代谢有关的过程。这也是它们被用于改善皮肤纹理及部分光老化表现的原因。"
+   },
+   {
+    "t": "p",
+    "text": "A 醇并非单纯通过“剥脱角质”发挥作用。使用后是否脱皮，也不能作为判断效果的依据。其实际表现与浓度、配方、稳定性、使用规律及个人耐受程度有关。"
+   },
+   {
+    "t": "h",
+    "text": "A 醇可能帮助改善哪些问题？"
+   },
+   {
+    "t": "h3",
+    "text": "细纹与光老化表现"
+   },
+   {
+    "t": "p",
+    "text": "长期日晒可影响皮肤的结构与外观，造成细纹和纹理变化。A 醇可能逐步改善部分表现，但不能消除所有皱纹，也不能纠正明显的组织下垂。"
+   },
+   {
+    "t": "h3",
+    "text": "粗糙与纹理不均"
+   },
+   {
+    "t": "p",
+    "text": "规律使用可能帮助皮肤表面逐渐变得平滑。变化通常需要时间，并非使用后立即出现。"
+   },
+   {
+    "t": "h3",
+    "text": "肤色不均"
+   },
+   {
+    "t": "p",
+    "text": "A 醇可用于改善部分肤色不均及色素沉着，但不同色斑的成因不同。持续、加深或性质不明的色素变化，应先接受专业评估。"
+   },
+   {
+    "t": "p",
+    "text": "需要注意，维 A 类成分中，**处方维 A 酸在光老化方面的研究更充分**。这些研究结果不能直接代表每一款含 A 醇护肤品的效果。"
+   },
+   {
+    "t": "h",
+    "text": "如何循序渐进地使用？"
+   },
+   {
+    "t": "p",
+    "text": "对于初次使用者，应遵循产品说明，从较低频率开始，并根据皮肤反应调整。"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "低频起步：可先每周使用两个晚上，耐受后再逐渐增加频率。",
+     "少量薄涂：洁面后待皮肤干燥再使用，避开破损处及容易受刺激的区域。",
+     "配合保湿：温和的保湿产品有助于缓解干燥和紧绷。",
+     "简化护肤：初期避免同时引入多种酸类或其他刺激性成分。",
+     "坚持防晒：白天使用广谱 SPF 30 或以上防晒，并结合遮阳措施。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "并非每个人都需要每天使用，也不必为了追求效果不断提高浓度。能够持续耐受的护理方案更有价值。"
+   },
+   {
+    "t": "h",
+    "text": "使用后泛红、脱皮，应该怎么办？"
+   },
+   {
+    "t": "p",
+    "text": "A 醇可能引起干燥、紧绷、刺痛、泛红或脱屑。这些表现属于刺激反应，并不意味着产品“更有效”。"
+   },
+   {
+    "t": "p",
+    "text": "出现不适时，应降低频率或暂停使用，先恢复温和清洁与保湿。若红肿、疼痛或皮疹持续，应寻求专业评估。对容易出现色素沉着的皮肤，尤其需要避免反复刺激。"
+   },
+   {
+    "t": "h",
+    "text": "哪些情况需要先咨询专业人士？"
+   },
+   {
+    "t": "p",
+    "text": "怀孕或正在备孕期间，应避免使用 A 醇及其他维 A 类产品；哺乳期使用前应咨询医生。"
+   },
+   {
+    "t": "p",
+    "text": "湿疹、玫瑰痤疮、明显敏感或皮肤屏障受损者，也应先评估是否适合。若正在使用处方维 A 类药物，不建议自行叠加 A 醇。"
+   },
+   {
+    "t": "p",
+    "text": "计划接受微针、化学焕肤或激光等治疗时，请提前告知治疗者正在使用的护肤品及药物，停用和恢复时间应结合具体治疗与皮肤状态安排。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不代替个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Retinol: understanding vitamin A skincare ingredients",
+  "summary": "Retinol is a common vitamin A ingredient in everyday skincare that, provided the skin can tolerate it, can be used to gradually improve some signs of skin ageing.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "With age, and as sun exposure and environmental factors build up, the skin may gradually develop fine lines, roughness and uneven skin tone. Retinol is a common vitamin A ingredient in everyday skincare and, provided the skin can tolerate it, can be used to gradually improve some signs of skin ageing."
+   },
+   {
+    "t": "p",
+    "text": "Understanding what it does, its limitations and how to use it can help you build a long-term care routine that suits you better."
+   },
+   {
+    "t": "h",
+    "text": "What is retinol?"
+   },
+   {
+    "t": "p",
+    "text": "Its English name is **retinol** (Chinese: 视黄醇). It is a form of vitamin A and is commonly found in serums, lotions and creams."
+   },
+   {
+    "t": "p",
+    "text": "Retinol must first be converted in the skin into retinaldehyde, and then into biologically active retinoic acid, before it can have these effects. It belongs to the same family as prescription retinoic acid (tretinoin), but it is not the same ingredient, and the concentrations or effects of the two cannot be treated as directly equivalent."
+   },
+   {
+    "t": "h",
+    "text": "How does retinol affect the skin?"
+   },
+   {
+    "t": "p",
+    "text": "Vitamin A ingredients (retinoids) can regulate the renewal and differentiation of epidermal cells and influence processes related to collagen metabolism. This is also why they are used to improve skin texture and some signs of photoageing."
+   },
+   {
+    "t": "p",
+    "text": "Retinol does not work simply by “exfoliating” the skin. Whether or not the skin peels after use is not a basis for judging its effect either. How it actually performs depends on the concentration, formulation, stability, regularity of use and individual tolerance."
+   },
+   {
+    "t": "h",
+    "text": "What problems might retinol help improve?"
+   },
+   {
+    "t": "h3",
+    "text": "Fine lines and signs of photoageing"
+   },
+   {
+    "t": "p",
+    "text": "Long-term sun exposure can affect the structure and appearance of the skin, causing fine lines and changes in texture. Retinol may gradually improve some of these signs, but it cannot eliminate all wrinkles, nor can it correct marked tissue sagging."
+   },
+   {
+    "t": "h3",
+    "text": "Roughness and uneven texture"
+   },
+   {
+    "t": "p",
+    "text": "Regular use may help the skin’s surface gradually become smoother. Changes usually take time and do not appear immediately after use."
+   },
+   {
+    "t": "h3",
+    "text": "Uneven skin tone"
+   },
+   {
+    "t": "p",
+    "text": "Retinol can be used to improve some uneven skin tone and pigmentation, but different dark spots have different causes. Pigment changes that are persistent, deepening or of uncertain nature should be professionally assessed first."
+   },
+   {
+    "t": "p",
+    "text": "Note that, among vitamin A ingredients, **prescription retinoic acid has been more thoroughly studied for photoageing**. These study results cannot be taken as directly representing the effect of every skincare product that contains retinol."
+   },
+   {
+    "t": "h",
+    "text": "How can you introduce it gradually?"
+   },
+   {
+    "t": "p",
+    "text": "If you are using it for the first time, follow the product instructions, start at a low frequency and adjust according to how your skin responds."
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Start infrequently: you could begin with two nights a week, then gradually increase the frequency once your skin tolerates it.",
+     "Apply a small, thin layer: after cleansing, wait until the skin is dry before applying, and avoid broken skin and easily irritated areas.",
+     "Moisturise as well: a gentle moisturiser can help ease dryness and tightness.",
+     "Keep your routine simple: in the early stages, avoid introducing several acids or other irritating ingredients at the same time.",
+     "Use sun protection consistently: during the day, use a broad-spectrum SPF 30 or higher sunscreen, combined with shade and other sun-shielding measures."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Not everyone needs to use it every day, and there is no need to keep increasing the concentration in pursuit of results. A routine your skin can tolerate over time is more valuable."
+   },
+   {
+    "t": "h",
+    "text": "What should you do if your skin becomes red or peels after use?"
+   },
+   {
+    "t": "p",
+    "text": "Retinol may cause dryness, tightness, stinging, redness or flaking. These are signs of irritation and do not mean the product is “more effective”."
+   },
+   {
+    "t": "p",
+    "text": "If discomfort occurs, reduce the frequency or stop using it for a while, and go back to gentle cleansing and moisturising first. If redness and swelling, pain or a rash persists, seek a professional assessment. Repeated irritation is especially important to avoid in skin that is prone to pigmentation."
+   },
+   {
+    "t": "h",
+    "text": "When should you consult a professional first?"
+   },
+   {
+    "t": "p",
+    "text": "Avoid retinol and other vitamin A products during pregnancy or while trying to conceive; if you are breastfeeding, consult a doctor before use."
+   },
+   {
+    "t": "p",
+    "text": "People with eczema, rosacea, marked sensitivity or a damaged skin barrier should also first have its suitability assessed. If you are using a prescription retinoid medicine, adding retinol on your own is not recommended."
+   },
+   {
+    "t": "p",
+    "text": "If you are planning treatments such as microneedling, a chemical peel or laser, tell your practitioner in advance about the skincare products and medicines you are using. When to stop and when to resume should be planned according to the specific treatment and the condition of your skin."
+   },
+   {
+    "t": "note",
+    "text": "This article is for general skin health education only and does not replace individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}
