@@ -71,7 +71,9 @@ Built by `scripts/build-spots.mjs` in the hourly run (`--probe` reports each sou
 - **Duplicates** across sources (the same normalised title, or one title with an add-on such as "Opera Up Late" and "Opera Up Late with Reuben Kaye"; only when the dates overlap) keep What's On's copy, which has the address.
 - **What's new** keeps items for 21 days by merging with the last published feed (restored from the Actions cache, as Stocks does, or else fetched from the live site), newest first, at most 40. Kinds: eat, drink, coffee, dessert, or other (events and things to do), from the link section and keywords. Event write-ups (Time Out's things-to-do, Concrete Playground's `/event/`) always count; other articles only when the headline reads as an opening or something new (open, opening, new, launch, first look, pop-up, coming soon, returns), and never when it's about a closure.
 - **Round-ups:** "things to do this weekend / this week" articles from the last 7 days, kept as links under the weekend list.
-- If a source fails, its items from the last feed are kept (events that haven't ended; what's-new items still inside 21 days), so a bad hour never empties the screen.
+- If a source fails, its items from the last build are kept (events that haven't ended; what's-new items still inside 21 days), so a bad hour never empties the screen. Each source's own lists are cached before merging (`~/.spots-cache/raw.json`, in the Actions cache, never published) and merged afresh every run, so a source that is down or reused never freezes or drops what the other adds (review fix, 15 November). A What's On fetch with pages missing keeps the last lists alongside and isn't counted as fetched, so the next hour tries again.
+- **Times.** For markets, festivals and exhibitions, Eventfinda's start time is when it opens: they stay on all day, shown as "From 11 am"; from 5 pm only those opening at 5 or later, or festivals, stay. Everything else with a time is a session, gone an hour after it starts (15 minutes, from 5 pm).
+- **Merging** never joins two events in different suburbs (Eventfinda's plain "Melbourne" fits any), and add-on title matches also need venues that don't disagree.
 
 ## The Today screen
 
@@ -140,9 +142,9 @@ The owner, the same day: "say if I'm going to a place then the app can suggest p
 
 ## Saved events
 
-- **Save** on an event keeps `{ id, title, url, venue, address, area, cat, day, to }` on the phone (our own copy of public listing data, not Google's), where `day` is the first day it was listed for, or its start.
+- **Save** on an event keeps `{ id, title, url, venue, address, area, cat, day, to, time }` on the phone (our own copy of public listing data, not Google's), where `day` is the first day it's listed for from the day of the list it was saved from (Today: today; This weekend: Saturday; Tomorrow: tomorrow), else that day or its start.
 - **Saved** shows **Coming up** above the places: saved events by date, with Details, Maps and Remove. Events drop off the day after they end.
-- **Check in** offers today's saved events first. The stamp's kind comes from the category: market, food → Eat; arts → Sights; everything else → Activities.
+- **Check in** offers today's saved events first. The stamp's kind comes from the category: market, food → Eat; arts → Sights; everything else → Activities. Its area is the suburb, so Passport's suburb count stays honest.
 - Backup and restore carry saved events.
 
 ## How it fits the repo

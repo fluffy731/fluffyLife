@@ -135,16 +135,17 @@ export function openEvent(app, e, day = iso(new Date())) {
       ${e.venue || e.area ? `<button class="btn" type="button" data-evnear="${esc(e.id)}">★ Top-rated near here</button>` : ""}
     </div>
     <p class="attrib">${esc(SOURCE[e.src] || "")}</p>`);
-  d._event = e;
+  d._event = e; d._day = day;
   if (!d.dataset.evbound) {
     d.addEventListener("click", (ev) => {
       if (ev.target.closest("[data-evnear]") && d._event) return nearFrom(app, venueOf(d._event));
       const b = ev.target.closest("[data-evsave]");
       if (!b) return;
-      const item = (app.feed?.events || []).find((x) => x.id === b.dataset.evsave);
+      // The feed's copy, or else the one this sheet shows (a saved event whose listing has left the feed).
+      const item = (app.feed?.events || []).find((x) => x.id === b.dataset.evsave) || (d._event && d._event.id === b.dataset.evsave ? d._event : null);
       const was = isEventSaved(app.state, b.dataset.evsave);
       if (!was && !item) return;
-      app.state = was ? unsaveEvent(app.state, b.dataset.evsave) : saveEvent(app.state, item, iso(new Date()));
+      app.state = was ? unsaveEvent(app.state, b.dataset.evsave) : saveEvent(app.state, item, iso(new Date()), d._day);
       app.persist();
       toast(was ? "Removed from Saved" : "Saved: it's in Saved until it's over");
       b.textContent = was ? "♡ Save" : "♥ Saved"; b.classList.toggle("hot", !was);

@@ -99,6 +99,26 @@ test("mergeEvents: a title with an add-on is the same event when the dates overl
   assert.deepEqual([m.src, m.venue, m.next], ["wom", "Arts Centre", "2026-11-15T21:00"]);
 });
 
+test("mergeEvents keeps events apart in different suburbs, or at different venues when only part of the title matches", () => {
+  const e = (o) => ({ src: "ef", blurb: "", from: TODAY, to: TODAY, days: [TODAY], ...o });
+  const trivia = mergeEvents([{ events: [
+    e({ id: "ef:1", title: "Trivia Night", venue: "The Union Hotel", area: "Brunswick", next: `${TODAY}T19:00` }),
+    e({ id: "ef:2", title: "Trivia Night", venue: "The Railway Hotel", area: "Windsor", next: `${TODAY}T20:00` }),
+  ] }], TODAY);
+  assert.deepEqual(trivia.map((x) => x.area).sort(), ["Brunswick", "Windsor"]);
+  const markets = mergeEvents([{ events: [
+    e({ id: "wom:/n", src: "wom", title: "Night Market", venue: "Queen Victoria Market", area: "Melbourne", from: "2026-11-01", to: "2027-03-01" }),
+    e({ id: "ef:3", title: "Night Markets Box Hill", venue: "Box Hill Central", area: "Melbourne", next: `${TODAY}T17:00` }),
+  ] }], TODAY);
+  assert.equal(markets.length, 2);
+  assert.equal(markets.find((x) => x.src === "wom").next, undefined, "Box Hill's time stays with Box Hill");
+  const polish = mergeEvents([{ events: [
+    e({ id: "wom:/p", src: "wom", title: "Polish Festival", venue: "Fed Square", area: "Melbourne" }),
+    e({ id: "ef:4", title: "Polish Festival 2026", venue: "Federation Square", area: "Melbourne CBD", next: `${TODAY}T11:00` }),
+  ] }], TODAY);
+  assert.equal(polish.length, 1, "Fed Square and Federation Square, same suburb, same title: one event");
+});
+
 test("mergeEvents drops what has ended and dates already past", () => {
   const e = { id: "x", src: "ef", title: "Old", blurb: "", from: "2026-11-01", to: "2026-11-14", days: ["2026-11-14"] };
   const f = { id: "y", src: "ef", title: "New", blurb: "", from: "2026-11-10", to: "2026-11-20", days: ["2026-11-14", "2026-11-16"] };

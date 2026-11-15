@@ -212,3 +212,15 @@ test("ideas: a saved event on today puts top-rated places near its venue first, 
   assert.ok(!ids(ideasFor(at(15, 19, 30), FEED, { saved })).includes("near"), "it has started");
   assert.ok(!ids(ideasFor(at(16, 12), FEED, { saved })).includes("near"), "it was yesterday");
 });
+
+test("a market or festival with a start time stays on all day: the time is when it opens", () => {
+  const polish = ev({ title: "Polish Festival", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], next: "2026-11-15T11:00", cat: "festival" });
+  const market = ev({ title: "Farmers Market", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], next: "2026-11-15T08:00", cat: "market" });
+  const nightMkt = ev({ title: "Riverside Market", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], next: "2026-11-15T17:30", cat: "market" });
+  const feed = { ...FEED, events: [polish, market, nightMkt] };
+  assert.deepEqual(onToday(feed, at(15, 12, 30)).map((e) => e.title).sort(), ["Farmers Market", "Polish Festival", "Riverside Market"]);
+  assert.deepEqual(onToday(feed, at(15, 18)).map((e) => e.title).sort(), ["Polish Festival", "Riverside Market"], "tonight: festivals, and markets opening at 5 pm or later");
+  assert.equal(whenLabel(polish, "2026-11-15"), "From 11 am");
+  assert.equal(whenLabel(nightMkt, "2026-11-15", { withDay: true }), "Sun from 5:30 pm");
+  assert.equal(ideasFor(at(15, 12, 30), feed).find((i) => i.id === "ev:market").count, 2);
+});

@@ -220,7 +220,10 @@ ok("Saved shows the event under Coming up", (await page.textContent("#v-saved"))
 await page.click("#fab");
 await page.waitForSelector("#sheet[open] .cand");
 ok("Check in offers today's saved event first", (await page.textContent("#sheet .cand >> nth=0")).includes("Stock Up Vintage Market"));
-await page.click("#sheet [data-close]");
+await page.focus("#hold");
+await page.keyboard.press("Enter");
+await page.waitForSelector("#v-passport:not([hidden]) .stamp", { timeout: 5000 });
+ok("a check-in at an event stamps the suburb, not the venue", (await page.evaluate(() => JSON.parse(localStorage.getItem("spots.v1")).stamps[0].area)) === "Melbourne");
 await page.click('.tab[data-tab="today"]');
 ok("a saved event on today puts 'Near <venue>' first in Right now", (await page.getAttribute("[data-idea] >> nth=0", "data-idea")) === "near" && (await page.textContent("[data-idea] >> nth=0")).includes("Near Queen Victoria Market"));
 await page.click('[data-idea="brunch"]');

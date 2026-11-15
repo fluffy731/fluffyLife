@@ -392,9 +392,12 @@ export function passportStats(state) {
 }
 
 // ---------- Saved events ----------
-// day: the first day it's on from today (a day a source listed it for, else its start); time: that day's session.
-export function saveEvent(state, e, today) {
-  const day = (Array.isArray(e.days) ? e.days : []).find((d) => d >= today) || (e.from && e.from > today ? e.from : today);
+// day: the first day it's on from the day of the list it was saved from (Today's list: today; This weekend:
+// Saturday; Tomorrow: tomorrow), going by the days a source listed it for, else that day or its start if later.
+// time: that day's session.
+export function saveEvent(state, e, today, listDay = today) {
+  const from = listDay > today ? listDay : today;
+  const day = (Array.isArray(e.days) ? e.days : []).find((d) => d >= from) || (e.from && e.from > from ? e.from : from);
   const time = e.next && e.next.startsWith(day) ? e.next.slice(11, 16) : "";
   const entry = cleanEvent({ ...e, day, to: e.to || day, time });
   if (!entry) return state;

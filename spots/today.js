@@ -69,15 +69,19 @@ export function rank(list, day, { rain = null } = {}) {
 }
 
 const EVENING = new Set(["music", "comedy", "theatre", "film", "festival", "food"]);
+// For these a start time is when it opens (a market at 8, a festival at 11), not a session that's soon over.
+// Classes, tours, walks and shows are sessions.
+export const OPENS = new Set(["market", "festival", "arts"]);
 const NIGHTY = /\b(nights?|twilight|evening|after dark|late|sunset|dinner|moonlight)\b/i;
 export const isTonight = (at) => at.getHours() >= 17;
 
 // Still worth showing at this time: a session that hasn't started (or started within the hour, before 5 pm);
-// from 5 pm, untimed things only if they're evening kinds.
+// something that opens at a time (a market, a festival) all day; from 5 pm, untimed or opening-time things only
+// if they're evening kinds, sound like night, or open at 5 pm or later.
 export function stillOn(e, day, at) {
   const t = startOn(e, day), now = at.getHours() * 60 + at.getMinutes();
-  if (t) return toMin(t) >= now - (isTonight(at) ? 15 : 60);
-  if (isTonight(at)) return EVENING.has(e.cat) || NIGHTY.test(`${e.title} ${e.blurb || ""}`);
+  if (t && !OPENS.has(e.cat)) return toMin(t) >= now - (isTonight(at) ? 15 : 60);
+  if (isTonight(at)) return EVENING.has(e.cat) || NIGHTY.test(`${e.title} ${e.blurb || ""}`) || (!!t && toMin(t) >= 17 * 60);
   return true;
 }
 
@@ -105,9 +109,10 @@ export function nextList(feed, at) {
 // The short line under an event's title. withDay names the day (for the weekend and tomorrow lists).
 export function whenLabel(e, day, { withDay = false } = {}) {
   const pre = withDay ? `${weekdayOf(day)} ` : "";
-  const t = startOn(e, day);
-  if (!t && withDay && e.next && e.next >= day && between(day, e.next.slice(0, 10)) <= 1) return `${weekdayOf(e.next.slice(0, 10))} ${clock(e.next.slice(11, 16))}`;
-  if (t) return pre + clock(t);
+  const t = startOn(e, day), from = OPENS.has(e.cat) ? "from " : "";
+  const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+  if (!t && withDay && e.next && e.next >= day && between(day, e.next.slice(0, 10)) <= 1) return `${weekdayOf(e.next.slice(0, 10))} ${from}${clock(e.next.slice(11, 16))}`;
+  if (t) return withDay ? `${pre}${from}${clock(t)}` : cap(`${from}${clock(t)}`);
   if (e.from === e.to && e.from) return withDay ? `${weekdayOf(e.from)} only` : "Today only";
   if (e.to === day) return withDay ? `Until ${weekdayOf(day)}` : "Last day";
   if (e.from === day) return withDay ? `Opens ${weekdayOf(day)}` : "Opens today";

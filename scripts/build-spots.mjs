@@ -4,11 +4,16 @@
 //   node scripts/build-spots.mjs            build spots/feed.json (merging the last one, so a failed source keeps its items)
 //   node scripts/build-spots.mjs --probe    report what each source gives, and what Today would show
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join, dirname } from "node:path";
 import { parseFeed } from "./build-news.mjs";
 
 const UA = "Mozilla/5.0 (compatible; fluffyLife-spots/1.0; personal reader)";
 const TZ = "Australia/Melbourne";
 const OUT = "spots/feed.json";
+// Each source's own listings, before merging, so a failed or reused source can be merged afresh with the others.
+// Outside the published site; the workflow keeps it in the Actions cache.
+const RAW = join(process.env.SPOTS_CACHE || join(homedir(), ".spots-cache"), "raw.json");
 const LIVE = "https://fluffy731.github.io/fluffyLife/spots/feed.json";
 export const WOM = "https://whatson.melbourne.vic.gov.au";
 const EF = "https://www.eventfinda.com.au/feed/events/melbourne/whatson";
@@ -139,16 +144,31 @@ export function parseEventfinda(xml) {
 
 // lists: [{ events, days?: [date], weekend?: saturday, free?: true }] -> one list, each event once.
 // What's On's copy wins a duplicate (it has the address); the other source's next session and picture are kept.
-// Titles that differ only by an add-on ("Opera Up Late" and "Opera Up Late with Reuben Kaye") are the same event
-// when their dates overlap.
+// The same event: the same title, or one with an add-on ("Opera Up Late" and "Opera Up Late with Reuben Kaye"),
+// with overlapping dates, and not in two different suburbs (Eventfinda's plain "Melbourne" fits any). Add-on
+// matches also need venues that don't disagree, so "Night Market" at Queen Vic isn't "Night Markets Box Hill".
 const overlaps = (a, b) => !a.from || !b.from || ((a.from <= (b.to || b.from)) && (b.from <= (a.to || a.from)));
+const place = (s) => text(s || "").toLowerCase().replace(/\b(the|cbd|inner city|city|vic|victoria)\b/g, " ").replace(/[^\p{L}\p{N}]+/gu, "");
+const differ = (a, b, { generic = false } = {}) => {
+  const x = place(a), y = place(b);
+  if (!x || !y || (generic && (x === "melbourne" || y === "melbourne"))) return false;
+  return !x.includes(y) && !y.includes(x);
+};
+function sameEvent(oKey, k, old, e) {
+  const exact = oKey.split("|")[0] === k;
+  if (!exact && !(Math.min(oKey.length, k.length) >= 8 && (oKey.startsWith(k) || k.startsWith(oKey)))) return false;
+  if (!overlaps(old, e) || differ(old.area, e.area, { generic: true })) return false;
+  return exact || !differ(old.venue, e.venue);
+}
 export function mergeEvents(lists, today) {
   const byKey = new Map();
-  const find = (k, e) => [...byKey.keys()].find((o) => (o.split("|")[0] === k || (Math.min(o.length, k.length) >= 8 && (o.startsWith(k) || k.startsWith(o)))) && overlaps(byKey.get(o), e));
+  const find = (k, e) => [...byKey.keys()].find((o) => sameEvent(o, k, byKey.get(o), e));
   for (const { events, days = [], weekend = null, free = false } of lists) {
     for (const e of events) {
       if (!e || (e.to && e.to < today)) continue;
-      const k = find(sameKey(e.title), e) || (byKey.has(sameKey(e.title)) ? `${sameKey(e.title)}|${e.from}` : sameKey(e.title));
+      const base = sameKey(e.title);
+      let k = find(base, e);
+      if (!k) { k = base; for (let n = 2; byKey.has(k); n++) k = `${base}|${n}`; }
       const old = byKey.get(k);
       const add = { ...e, days: [...new Set([...(e.days || []), ...days])], weekend: weekend || e.weekend, free: free || e.free || (FREE.test(`${e.title} ${e.blurb}`) || null) };
       if (!old) { byKey.set(k, add); continue; }
@@ -266,11 +286,12 @@ async function womSearch(args) {
   if (j.error || j.result?.isError) throw new Error(`What's On: ${j.error?.message || "tool error"}`);
   return (j.result?.content || []).map((c) => c.text || "").join("\n");
 }
+// Every page it could get, and whether it got them all.
 async function womAll(args, maxPages) {
   const first = await womSearch(args);
   const pages = Math.min(maxPages, pagesOf(first));
-  const rest = await pool(Array.from({ length: pages - 1 }, (_, i) => i + 2), 3, (p) => womSearch({ ...args, page_number: p }).catch(() => ""));
-  return [first, ...rest].flatMap(parseWhatsOn);
+  const rest = await pool(Array.from({ length: pages - 1 }, (_, i) => i + 2), 3, (p) => womSearch({ ...args, page_number: p }).catch(() => null));
+  return { items: [first, ...rest].filter((t) => t != null).flatMap(parseWhatsOn), complete: rest.every((t) => t != null) };
 }
 
 async function fetchWhatsOn(today) {
@@ -279,12 +300,15 @@ async function fetchWhatsOn(today) {
   // One query at a time (each fetches up to 3 pages at once), to go easy on the City's server.
   const t = await q("today", 10), tf = await q("today", 5, "free"), m = await q("tomorrow", 6), mf = await q("tomorrow", 3, "free"),
     w = await q("this_weekend", 6), wf = await q("this_weekend", 3, "free");
-  const ev = (list) => list.map(womEvent).filter(Boolean);
-  return [
-    { events: ev(t), days: [today] }, { events: ev(tf), days: [today], free: true },
-    { events: ev(m), days: [tmr] }, { events: ev(mf), days: [tmr], free: true },
-    { events: ev(w), weekend: sat }, { events: ev(wf), weekend: sat, free: true },
-  ];
+  const ev = (r) => r.items.map(womEvent).filter(Boolean);
+  return {
+    complete: [t, tf, m, mf, w, wf].every((r) => r.complete),
+    lists: [
+      { events: ev(t), days: [today] }, { events: ev(tf), days: [today], free: true },
+      { events: ev(m), days: [tmr] }, { events: ev(mf), days: [tmr], free: true },
+      { events: ev(w), weekend: sat }, { events: ev(wf), weekend: sat, free: true },
+    ],
+  };
 }
 
 async function fetchEventfinda(today) {
@@ -295,31 +319,45 @@ async function fetchEventfinda(today) {
   return rs.filter(({ r }) => r.text).map(({ k, r }) => ({ events: parseEventfinda(r.text), ...(k === "weekend" ? { weekend: sat } : {}) }));
 }
 
-function readPrev() {
-  try { if (existsSync(OUT)) return JSON.parse(readFileSync(OUT, "utf8")); } catch { /* broken file: start afresh */ }
+function readJSON(path) {
+  try { if (existsSync(path)) return JSON.parse(readFileSync(path, "utf8")); } catch { /* broken file: start afresh */ }
   return null;
 }
+// A source's lists, without what has ended.
+const live = (lists, today) => (Array.isArray(lists) ? lists : []).map((l) => ({ ...l, events: (l.events || []).filter((e) => !e.to || e.to >= today) }));
 
-export async function build({ now = new Date(), out = OUT } = {}) {
+export async function build({ now = new Date(), out = OUT, raw: rawPath = RAW } = {}) {
   const { date: today } = melb(now);
-  let prev = readPrev();
+  let prev = readJSON(out);
   if (!prev) { const r = await get(LIVE, {}, 15000); try { prev = r.text ? JSON.parse(r.text) : null; } catch { prev = null; } }
+  const rawPrev = readJSON(rawPath) || {};
   const fetched = { ...(prev && prev.fetched) };
   const sources = [];
   const note = (id, ok, count, error) => sources.push({ id, ok, count, ...(error ? { error: String(error).slice(0, 120) } : {}) });
-  const prevEvents = (src) => (prev && Array.isArray(prev.events) ? prev.events.filter((e) => e.src === src && (!e.to || e.to >= today)) : []);
+  const count = (lists) => new Set(lists.flatMap((x) => x.events.map((e) => e.id))).size;
+  // A source's last lists: from the raw cache, or else (first run, cache lost) its events in the last feed.
+  const kept = (src) => (rawPrev[src] ? live(rawPrev[src], today)
+    : [{ events: prev && Array.isArray(prev.events) ? prev.events.filter((e) => e.src === src && (!e.to || e.to >= today)) : [] }]);
 
-  // Events
-  const lists = [];
-  const womFresh = fetched.wom && now - new Date(fetched.wom) < WOM_EVERY && melb(new Date(fetched.wom)).date === today;
-  if (womFresh) { const kept = prevEvents("wom"); lists.push({ events: kept }); note("whatson", true, kept.length, "kept: fetched within 3 hours"); }
+  // Events: each source's lists are kept apart and merged afresh, so a source that's down or reused never
+  // freezes or drops what the other one adds (session times, pictures, days).
+  const raw = {};
+  const womFresh = rawPrev.wom && fetched.wom && now - new Date(fetched.wom) < WOM_EVERY && melb(new Date(fetched.wom)).date === today;
+  if (womFresh) { raw.wom = kept("wom"); note("whatson", true, count(raw.wom), "kept: fetched within 3 hours"); }
   else {
-    try { const l = await fetchWhatsOn(today); lists.push(...l); fetched.wom = now.toISOString(); note("whatson", true, new Set(l.flatMap((x) => x.events.map((e) => e.id))).size); }
-    catch (e) { const kept = prevEvents("wom"); lists.push({ events: kept }); note("whatson", false, kept.length, e.message); }
+    try {
+      const r = await fetchWhatsOn(today);
+      // Some pages missing: keep the last lists alongside, and try again next hour.
+      raw.wom = r.complete ? r.lists : [...r.lists, ...kept("wom")];
+      if (r.complete) fetched.wom = now.toISOString();
+      note("whatson", true, count(raw.wom), r.complete ? "" : "some pages missing: last lists kept too");
+    } catch (e) { raw.wom = kept("wom"); note("whatson", false, count(raw.wom), e.message); }
   }
-  try { const l = await fetchEventfinda(today); lists.push(...l); fetched.ef = now.toISOString(); note("eventfinda", true, new Set(l.flatMap((x) => x.events.map((e) => e.id))).size); }
-  catch (e) { const kept = prevEvents("ef"); lists.push({ events: kept }); note("eventfinda", false, kept.length, e.message); }
-  const events = mergeEvents(lists, today);
+  try { raw.ef = await fetchEventfinda(today); fetched.ef = now.toISOString(); note("eventfinda", true, count(raw.ef)); }
+  catch (e) { raw.ef = kept("ef"); note("eventfinda", false, count(raw.ef), e.message); }
+  const events = mergeEvents([...raw.wom, ...raw.ef], today);
+  mkdirSync(dirname(rawPath), { recursive: true });
+  writeFileSync(rawPath, JSON.stringify({ wom: live(raw.wom, today), ef: live(raw.ef, today) }));
 
   // What's new and round-ups
   const feeds = [
@@ -365,7 +403,7 @@ export async function build({ now = new Date(), out = OUT } = {}) {
 }
 
 async function probe() {
-  const feed = await build({ out: "/tmp/spots-probe-feed.json" });
+  const feed = await build({ out: "/tmp/spots-probe-feed.json", raw: "/tmp/spots-probe-raw.json" });
   for (const s of feed.sources) console.log(`${s.ok ? "OK  " : "FAIL"} ${s.id.padEnd(14)} ${String(s.count).padStart(4)} ${s.error || ""}`);
   console.log(`\nevents: ${feed.events.length} (${["wom", "ef"].map((s) => `${s} ${feed.events.filter((e) => e.src === s).length}`).join(", ")}), today-listed ${feed.events.filter((e) => e.days.includes(feed.today)).length}, free ${feed.events.filter((e) => e.free).length}`);
   const cats = {}; for (const e of feed.events) cats[e.cat] = (cats[e.cat] || 0) + 1;

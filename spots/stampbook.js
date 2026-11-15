@@ -81,7 +81,8 @@ export function openCheckIn(app, pre) {
   const r = app.lastResult, found = r ? (r.places || r.plan.map((s) => s.place)).filter(Boolean) : [];
   // Saved events on today come straight after the place you tapped: you're probably there.
   const today = iso(new Date());
-  const onNow = upcomingEvents(app.state, today).filter((x) => x.day <= today).map((x) => ({ id: x.id, name: x.title, area: x.venue || x.area, kind: kindForCat(x.cat) }));
+  // The stamp's area is the suburb (Passport counts suburbs), not the venue.
+  const onNow = upcomingEvents(app.state, today).filter((x) => x.day <= today).map((x) => ({ id: x.id, name: x.title, area: x.area, kind: kindForCat(x.cat) }));
   for (const p of [pre, ...onNow, ...byDistance(app, app.state.saved), ...byDistance(app, found)]) if (p && p.id && !seen.has(p.id) && cands.length < 8) { seen.add(p.id); cands.push(p); }
   const st = { sel: cands[0] ? cands[0].id : "other", rating: 4, kind: "eat", file: null };
   const d = openSheet(`${sheetBar}

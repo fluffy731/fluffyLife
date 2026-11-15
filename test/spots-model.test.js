@@ -520,3 +520,11 @@ test("pickNear: within the walk, rated high enough by enough people, best rated 
   assert.equal(pickNear(list, { center: CBD, radiusKm: 2, minRating: 4.5, minReviews: 1000, max: 2 }).more, 3);
   assert.deepEqual(NEAR.reviews, [300, 1000, 2000]);
 });
+
+test("saveEvent from the weekend list saves it for the weekend, not today", () => {
+  const circus = { id: "wom:/c", src: "wom", title: "Fijian Flying Circus", venue: "Flemington Racecourse", area: "Flemington", cat: "theatre",
+    from: "2026-10-17", to: "2026-11-22", days: [], weekend: "2026-11-21", next: null };
+  assert.equal(saveEvent(blank(), circus, "2026-11-18", "2026-11-21").events[0].day, "2026-11-21");
+  assert.equal(saveEvent(blank(), { ...circus, days: ["2026-11-18", "2026-11-22"] }, "2026-11-18", "2026-11-21").events[0].day, "2026-11-22", "the first listed day from Saturday");
+  assert.equal(saveEvent(blank(), circus, "2026-11-18").events[0].day, "2026-11-18", "from Today's list: today");
+});
