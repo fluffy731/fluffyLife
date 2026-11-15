@@ -77,3 +77,40 @@
 .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; }
 .grid .film { width: auto; }
 .more-sentinel { height: 1px; }
+
+/* ---------- the film sheet ---------- */
+.sheet-body { padding: 0 16px calc(env(safe-area-inset-bottom) + 22px); }
+.film-sign { min-height: 0; cursor: auto; user-select: text; -webkit-user-select: text; }
+.sign-top { display: flex; gap: 14px; align-items: flex-start; }
+.poster.big { flex: none; width: 96px; margin: 0; border-color: var(--sign-hair); }
+.poster.big .ph { font-size: 13px; padding: 8px; }
+.titles { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding-top: 2px; }
+.film-sign .k { font-family: var(--font-sign); font-size: clamp(24px, 7vw, 32px); line-height: 1.15; font-weight: 800; letter-spacing: -.02em; word-break: keep-all; overflow-wrap: anywhere; }
+.film-sign .hanja { font-size: clamp(26px, 7.6vw, 34px); letter-spacing: .04em; word-break: keep-all; overflow-wrap: anywhere; }
+.film-sign .zh { margin-top: 0; }
+.en-t { font-size: 16px; line-height: 1.35; font-weight: 600; }
+.film-sign p { margin: 0; }
+.sign-meta { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.sign-rate { margin-top: 8px !important; display: flex; align-items: center; gap: 2px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.sign-rate .star { width: 15px; height: 15px; margin: 0 4px 0 0; }
+.ranks { margin-top: 2px !important; font-size: 13px; font-weight: 600; color: var(--route); }
+.people, .plot, .gone { margin-top: 12px !important; padding-top: 12px; border-top: 1px solid var(--hair); }
+.people { font-size: 14.5px; line-height: 1.5; }
+.plot { font-size: 15px; line-height: 1.55; }
+.gone { font-size: 13.5px; color: var(--muted); }
+#film .flash + .actions { position: static; margin: 12px 0 0; padding: 0; background: none; box-shadow: none; border: 0; }
+.another { margin-top: 10px; }
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; }
+.links a { display: inline-flex; align-items: center; min-height: 40px; padding: 8px 14px; border: 1.5px solid var(--hair-strong); border-radius: 999px;
+  color: var(--route-ink); font-size: 14px; font-weight: 700; text-decoration: none; background: var(--surface); }
+.links a::after { content: ""; width: 14px; height: 14px; margin-left: 4px; background: currentColor; -webkit-mask: var(--next) center / contain no-repeat; mask: var(--next) center / contain no-repeat; }
+#film h2 { margin-top: 22px; }
+
+/* ---------- list rows: search results, the watchlist ---------- */
+.film-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px 8px 8px; text-align: left; color: var(--ink); font: inherit; }
+.poster.mini { flex: none; width: 44px; margin: 0; border-radius: 8px; }
+.row-t { display: flex; flex-direction: column; min-width: 0; }
+.row-t b { font-size: 16px; font-weight: 700; line-height: 1.3; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.row-t b.zh-t { color: var(--hanja); font-family: var(--font-han); }
+.row-t .meta { font-size: 13px; display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+#q { width: 100%; margin-bottom: 12px; }

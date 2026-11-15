@@ -72,7 +72,8 @@ await page.context().close();
 // 4. Browse
 const idsIn = (page, sel) => page.$$eval(`${sel} [data-film]`, (els) => els.map((e) => Number(e.dataset.film)));
 const placeOf = new Map(FEED.films.map((f) => [f.id, f.places]));
-const setStore = (obj) => ({ fn: (o) => localStorage.setItem("films.v1", JSON.stringify(o)), arg: obj });
+// Seeds the phone's storage once per tab (init scripts run again on reload, which would wipe what the check did).
+const setStore = (obj) => ({ fn: (o) => { if (!sessionStorage.getItem("seeded")) { localStorage.setItem("films.v1", JSON.stringify(o)); sessionStorage.setItem("seeded", "1"); } }, arg: obj });
 page = await newPage();
 ok("Browse shows the three lists", (await idsIn(page, 'section[data-list="rated"]')).length >= 1 && (await idsIn(page, 'section[data-list="popular"]')).length >= 1);
 await page.click('#place-chips [data-place="KR"]');
@@ -111,7 +112,7 @@ page = await newPage({ init: setStore({ settings: { place: "KR" }, seen: seenKR 
 const picks = [];
 for (let i = 0; i < 5; i++) {
   await page.click("#surprise");
-  picks.push(Number(await page.evaluate(() => document.body.dataset.opened)));
+  picks.push(Number(await page.evaluate(() => document.querySelector("#film").dataset.id)));
   await page.evaluate(() => { for (const d of document.querySelectorAll("dialog[open]")) d.close(); });
 }
 ok("Surprise me opens a film, never a seen one", picks.every((id) => id === keep));
@@ -123,6 +124,72 @@ for (const scheme of ["light", "dark"]) {
   ok(`Browse has no pictographs (${scheme})`, (await pictographs(page)).length === 0);
   await page.context().close();
 }
+
+// 5. The film sheet, the watchlist and search
+const sheetText = (page) => page.textContent("#film");
+const sheetOpen = (page) => page.$eval("#film", (el) => el.open);
+page = await newPage({ init: setStore({ settings: { place: "HK" } }) });
+await page.click('section[data-list="rated"] [data-film="10775"]');
+await page.waitForFunction(() => document.querySelector("#film").open);
+const ia = await sheetText(page);
+ok("film sheet: titles, director, ratings and links", ["無間道", "Infernal Affairs", "Andrew Lau", "ratings"].every((t) => ia.includes(t))
+  && (await page.$$("#film a.tmdb")).length === 1 && (await page.$$("#film a.douban")).length === 1 && (await page.$$("#film a.trailer")).length === 1);
+ok("film sheet: titles sit on a station sign", (await page.$$("#film .card.flash.film-sign .rule")).length === 1);
+ok("more like this leaves out the film itself", !(await idsIn(page, "#film .more-like")).includes(10775) && (await idsIn(page, "#film .more-like")).length > 0);
+ok("a film opened from a tile has no Another", (await page.$$('#film [data-act="another"]')).length === 0);
+await page.click('#film [data-act="want"]');
+ok("want: the badge counts it", (await page.textContent("#want-badge")) === "1 to watch" && /On your watchlist/.test(await sheetText(page)));
+await page.keyboard.press("Escape");
+await page.waitForFunction(() => !document.querySelector("#film").open);
+ok("Escape closes the sheet", !(await sheetOpen(page)));
+await page.reload({ waitUntil: "load" });
+await page.waitForSelector("#place-chips");
+ok("the watchlist survives a reload", (await page.textContent("#want-badge")) === "1 to watch");
+await page.click('section[data-list="rated"] [data-film="10775"]');
+await page.waitForFunction(() => document.querySelector("#film").open);
+await page.click('#film [data-act="seen"]');
+ok("seen takes it off the watchlist", await page.$eval("#want-badge", (el) => el.hidden));
+await page.keyboard.press("Escape");
+await page.click('#tabs [data-tab="watchlist"]');
+const wl = await page.textContent("#view");
+ok("Watchlist lists it under Seen", /Want to watch[\s\S]*Nothing here yet[\s\S]*Seen[\s\S]*Infernal Affairs/.test(wl));
+await page.click('#tabs [data-tab="search"]');
+await page.fill("#q", "kung");
+await page.waitForFunction(() => document.querySelector("#view").textContent.includes("Kung Fu Hustle"));
+ok("search finds Kung Fu Hustle", true);
+await page.fill("#q", "살인");
+await page.waitForFunction(() => document.querySelector("#view").textContent.includes("Memories of Murder"));
+ok("search finds 살인의 추억", true);
+await page.fill("#q", "casablanca");
+await page.waitForSelector('.item[data-film="289"]');
+await page.click('.item[data-film="289"]');
+await page.waitForFunction(() => document.querySelector("#film").open);
+ok("Casablanca has no Douban link", (await page.$$("#film a.douban")).length === 0 && (await page.$$("#film a.tmdb")).length === 1);
+await page.keyboard.press("Escape");
+await page.waitForFunction(() => !document.querySelector("#film").open);
+await page.fill("#q", "");
+await page.waitForTimeout(200);
+ok("clearing search lists nothing", (await page.$$("#view .item[data-film]")).length === 0);
+await page.context().close();
+
+page = await newPage({ init: setStore({ settings: { place: "KR" } }) });
+await page.click("#surprise");
+await page.waitForFunction(() => document.querySelector("#film").open);
+const first = await page.$eval("#film", (el) => Number(el.dataset.id));
+ok("Another shows after Surprise me", (await page.$$('#film [data-act="another"]')).length === 1);
+await page.click('#film [data-act="another"]');
+await page.waitForFunction((id) => Number(document.querySelector("#film").dataset.id) !== id, first);
+const second = await page.$eval("#film", (el) => Number(el.dataset.id));
+ok("Another draws a different Korean film", second !== first && placeOf.get(second).includes("KR"));
+await page.context().close();
+
+page = await newPage({ feed: false, init: setStore({ want: { 99999: { id: 99999, title: "Gone Film", original: "消失的電影", year: 1990, era: "1990s", places: ["HK"], genres: ["Drama"], director: { id: 1, name: "Someone" }, cast: [], poster: null, at: "2026-11-01T00:00:00Z" } } }) });
+await page.click('#tabs [data-tab="watchlist"]');
+ok("offline: the watchlist still lists a saved film", (await page.textContent("#view")).includes("Gone Film"));
+await page.click('.item[data-film="99999"]');
+await page.waitForFunction(() => document.querySelector("#film").open);
+ok("offline: its sheet says it's no longer in the list", (await sheetText(page)).includes("No longer in this week's list"));
+await page.context().close();
 
 ok("no page errors", errs.length === 0);
 if (errs.length) console.log(errs.join("\n"));

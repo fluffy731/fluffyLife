@@ -1,7 +1,7 @@
 // Films: the screens. Renders films/feed.json (built weekly on GitHub Actions by scripts/build-films.mjs) on the
 // Metro line look (../metro.css, data-line="film"). The ranking logic is in model.js; what the phone keeps, store.js.
-import { PLACES, ERAS, NAMED_ERAS, shelfLists, genreChips, erasWithFilms, rankMap, surprise } from "./model.js";
-import { load, save } from "./store.js";
+import { PLACES, ERAS, NAMED_ERAS, shelfLists, genreChips, erasWithFilms, rankMap, surprise, moreLike, search } from "./model.js";
+import { load, save, toggleWant, toggleSeen } from "./store.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -94,10 +94,43 @@ function fullList(el) {
   }
 }
 
+// A list row (search results, the watchlist): a small poster, both titles, the year and place. Works from a
+// catalogue film or a stored snapshot.
+function rowItem(f) {
+  const place = PLACES.find((p) => p.id === f.places?.[0]);
+  const zh = /[㐀-鿿]/.test(f.original || "");
+  const img = f.poster ? `<img loading="lazy" alt="" src="${posterURL(f.poster)}" onerror="this.remove()">` : "";
+  const en = f.title && f.title !== f.original ? `${esc(f.title)} · ` : "";
+  return `<button class="item film-row" data-film="${f.id}"><span class="poster mini">${img}</span>`
+    + `<span class="row-t"><b class="${zh ? "zh-t" : ""}">${esc(f.original || f.title)}</b><span class="meta">${en}${f.year || ""}${place ? ` · ${place.name}` : ""}</span></span></button>`;
+}
+
+let query = "", queryTimer = 0;
+function searchScreen(el) {
+  el.innerHTML = `<h2>Search</h2><input type="search" id="q" placeholder="Title, director or actor" autocomplete="off" autocapitalize="off" enterkeyhint="search" value="${esc(query)}">`
+    + `<div class="list results" id="results"></div>`;
+  const q = $("#q", el);
+  q.addEventListener("input", () => { clearTimeout(queryTimer); queryTimer = setTimeout(() => { query = q.value; showResults(); }, 120); });
+  showResults();
+}
+function showResults() {
+  const box = $("#results");
+  if (!box) return;
+  if (!feed) { box.innerHTML = `<p class="empty">${NO_FEED}</p>`; return; }
+  const hits = search(films(), query);
+  box.innerHTML = hits.length ? hits.map(rowItem).join("") : query.trim() ? `<p class="empty">No films match. The list holds the best-rated and most-rated films of each place and decade.</p>` : "";
+}
+
+function watchlistScreen(el) {
+  const newest = (o) => Object.values(o).sort((a, b) => String(b.at || "").localeCompare(String(a.at || "")));
+  const section = (title, entries) => `<h2>${title}</h2>` + (entries.length ? `<div class="list">${entries.map(rowItem).join("")}</div>` : `<p class="empty">Nothing here yet</p>`);
+  el.innerHTML = section("Want to watch", newest(state.want)) + section("Seen", newest(state.seen));
+}
+
 const SCREENS = {
   browse,
-  search(el) { el.innerHTML = `<h2>Search</h2>`; },
-  watchlist(el) { el.innerHTML = `<h2>Watchlist</h2>`; },
+  search: searchScreen,
+  watchlist: watchlistScreen,
   settings(el) { el.innerHTML = `<h2>Settings</h2>`; },
 };
 
@@ -140,8 +173,71 @@ function applyTheme() {
   else delete document.documentElement.dataset.theme;
 }
 
-// The film sheet arrives with the next task; for now opening a film just records which.
-function openFilm(id) { document.body.dataset.opened = id; }
+// ---------- the film sheet ----------
+// The titles stack on a station sign, as a trilingual Seoul station sign stacks 한글, 漢字 and English; the line's
+// rule draws across and the details rise in beneath it.
+const fmt = (n) => Number(n || 0).toLocaleString("en-AU");
+const placeLine = (f) => f.places.map((p) => {
+  const place = PLACES.find((x) => x.id === p);
+  return p === "CN" && f.country === "TW" ? "Taiwan" : p === "CN" && f.country === "CN" ? "Mainland China" : place?.name;
+}).filter(Boolean).join(" · ");
+
+function sheetHTML(f, gone, fromSurprise) {
+  const zh = isZh(f) || /[㐀-鿿]/.test(f.original || ""), ko = f.lang === "ko" || /[가-힣]/.test(f.original || "");
+  const original = zh && !ko ? `<b class="hanja zh" lang="${langOf(f)}">${esc(f.original)}</b>` : `<b class="k"${ko ? ' lang="ko"' : ""}>${esc(f.original || f.title)}</b>`;
+  const en = f.title && f.title !== f.original ? `<span class="en-t">${esc(f.title)}</span>` : "";
+  const img = f.poster ? `<img alt="" src="${posterURL(f.poster, 342)}" onerror="this.remove()">` : "";
+  const meta = [f.year, placeLine(f), f.runtime ? `${f.runtime} min` : "", (f.genres || []).join(", ")].filter(Boolean).join(" · ");
+  const r = !gone && ranks.get(f.id)?.[f.places[0]];
+  const where = PLACES.find((p) => p.id === f.places[0])?.name;
+  const rankLine = r ? `<p class="ranks">#${r.popular} most popular among ${esc(where)} films · #${r.rated} best rated</p>` : "";
+  const rating = !gone ? `<p class="sign-rate"><i class="star" aria-hidden="true"></i>${(f.rating || 0).toFixed(1)} · ${fmt(f.votes)} ratings</p>` : "";
+  const people = [f.director ? `Directed by ${esc(f.director.name)}` : "", f.cast?.length ? `With ${f.cast.map((c) => esc(c.name)).join(", ")}` : ""].filter(Boolean);
+  const want = !!state.want[f.id], seen = !!state.seen[f.id];
+  const douban = f.places.some((p) => p === "HK" || p === "CN") ? `<a class="douban" href="https://search.douban.com/movie/subject_search?search_text=${encodeURIComponent(f.original || f.title)}" target="_blank" rel="noopener">Douban</a>` : "";
+  const like = gone ? [] : moreLike(f, films());
+  return `<div class="sheet-grab" aria-hidden="true"></div><div class="sheet-body">`
+    + `<div class="card flash film-sign"><div class="sign-top"><span class="poster big"><span class="ph" lang="${langOf(f)}">${esc(f.original || f.title)}</span>${img}</span>`
+    + `<div class="titles">${original}${en}</div></div><div class="rule"></div>`
+    + `<p class="sign-meta">${esc(meta)}</p>${rating}${rankLine}`
+    + (people.length ? `<p class="people">${people.join("<br>")}</p>` : "")
+    + (f.plot ? `<p class="plot">${esc(f.plot)}</p>` : "")
+    + (gone ? `<p class="gone">No longer in this week's list</p>` : "") + `</div>`
+    + `<div class="actions film-actions"><button class="btn${want ? "" : " primary"}" data-act="want" aria-pressed="${want}">${want ? "On your watchlist" : "Want to watch"}</button>`
+    + `<button class="btn" data-act="seen" aria-pressed="${seen}">${seen ? "Seen" : "Seen it"}</button></div>`
+    + (fromSurprise ? `<button class="surprise another" data-act="another">${ICON_DICE}Another</button>` : "")
+    + `<p class="links">${f.trailer ? `<a class="trailer" href="https://www.youtube.com/watch?v=${encodeURIComponent(f.trailer)}" target="_blank" rel="noopener">Trailer</a>` : ""}`
+    + `<a class="tmdb" href="https://www.themoviedb.org/movie/${f.id}" target="_blank" rel="noopener">TMDB page</a>${douban}</p>`
+    + (like.length ? `<h2>More like this</h2><div class="posters more-like">${like.map(tile).join("")}</div>` : "")
+    + `</div>`;
+}
+
+function openFilm(id, { fromSurprise = false } = {}) {
+  const f = byId.get(id) || state.want[id] || state.seen[id];
+  if (!f) return;
+  const sheet = $("#film");
+  sheet.dataset.id = id;
+  sheet.dataset.surprise = fromSurprise ? "1" : "";
+  sheet.innerHTML = sheetHTML({ places: [], genres: [], cast: [], ...f }, !byId.has(id), fromSurprise);
+  openSheet(sheet);
+  sheet.scrollTop = 0;
+}
+
+function sheetAct(act) {
+  const sheet = $("#film"), id = Number(sheet.dataset.id);
+  const f = byId.get(id) || state.want[id] || state.seen[id];
+  if (!f) return;
+  const at = new Date().toISOString();
+  if (act === "want") toggleWant(state, f, at);
+  if (act === "seen") toggleSeen(state, f, at);
+  if (act === "another") {
+    const pick = surprise(films(), feed.stats, shelf(), new Set([...seenSet(), id]));
+    return pick ? openFilm(pick.id, { fromSurprise: true }) : toast("No other films here you haven't seen");
+  }
+  persist();
+  openFilm(id, { fromSurprise: sheet.dataset.surprise === "1" });
+  render();
+}
 
 // ---------- sheets: More, and the film sheet (same slide, swipe and close) ----------
 // They close on a destination, Escape, a tap above them, or a swipe down of more than 80px.
@@ -180,7 +276,7 @@ function setFilter(key, val) {
 }
 
 document.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-tab],[data-more],[data-place],[data-era],[data-genre],[data-all],[data-sort],[data-back],[data-film],#surprise");
+  const el = e.target.closest("[data-tab],[data-more],[data-place],[data-era],[data-genre],[data-all],[data-sort],[data-back],[data-film],[data-act],#surprise");
   if (!el || el.disabled) return;
   const d = el.dataset;
   if (d.more !== undefined) return openSheet($("#more"));
@@ -196,6 +292,7 @@ document.addEventListener("click", (e) => {
   if (d.sort) { grid.list = d.sort; grid.shown = GRID_STEP; return render(); }
   if (d.back !== undefined) { grid = null; return render(); }
   if (d.film) return openFilm(Number(d.film));
+  if (d.act && el.closest("#film")) return sheetAct(d.act);
   if (el.id === "surprise") {
     const pick = surprise(films(), feed.stats, shelf(), seenSet());
     return pick ? openFilm(pick.id, { fromSurprise: true }) : toast("You've seen everything here");
@@ -214,6 +311,7 @@ async function loadFeed() {
 
 applyTheme();
 setupSheet($("#more"));
+setupSheet($("#film"));
 render();
 await loadFeed();
 render();
