@@ -69,6 +69,61 @@ page = await newPage({ scheme: "dark" });
 ok("night theme follows the phone", (await page.$eval("body", (el) => getComputedStyle(el).backgroundColor)) === "rgb(13, 16, 19)");
 await page.context().close();
 
+// 4. Browse
+const idsIn = (page, sel) => page.$$eval(`${sel} [data-film]`, (els) => els.map((e) => Number(e.dataset.film)));
+const placeOf = new Map(FEED.films.map((f) => [f.id, f.places]));
+const setStore = (obj) => ({ fn: (o) => localStorage.setItem("films.v1", JSON.stringify(o)), arg: obj });
+page = await newPage();
+ok("Browse shows the three lists", (await idsIn(page, 'section[data-list="rated"]')).length >= 1 && (await idsIn(page, 'section[data-list="popular"]')).length >= 1);
+await page.click('#place-chips [data-place="KR"]');
+const kr = await idsIn(page, 'section[data-list="rated"]');
+ok("place narrows the rows", kr.length > 0 && kr.every((id) => placeOf.get(id).includes("KR")));
+ok("era line: classics disabled for Korean", await page.$eval('.era-line [data-era="classics"]', (el) => el.disabled));
+await page.click('.era-line [data-era="2000s"]');
+const on1 = await page.$$eval(".era-line .on", (els) => els.map((e) => e.dataset.era));
+await page.click('.era-line [data-era="2000s"]');
+const on2 = await page.$$eval(".era-line .on", (els) => els.length);
+ok("era line rides and clears", on1.length === 1 && on1[0] === "2000s" && on2 === 0);
+await page.click('#place-chips [data-place="HK"]');
+ok("named era: Hong Kong 1990s is the Golden age interchange", await page.$eval('.era-line [data-era="1990s"]', (el) => el.classList.contains("interchange") && el.textContent.includes("Golden age")));
+await page.reload({ waitUntil: "load" });
+await page.waitForSelector("#place-chips");
+ok("filters persist", await page.$eval('#place-chips [data-place="HK"]', (el) => el.classList.contains("on")));
+await page.click('#place-chips [data-place="all"]');
+const ratedFirst = (await idsIn(page, 'section[data-list="rated"]'))[0];
+await page.click('section[data-list="rated"] [data-all]');
+await page.waitForSelector("#grid [data-film]");
+ok("All opens a three-across grid", (await page.$eval("#grid", (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length)) === 3
+  && (await idsIn(page, "#grid"))[0] === ratedFirst);
+await page.click('[data-sort="popular"]');
+ok("the grid's sort switch reorders it", (await idsIn(page, "#grid"))[0] !== ratedFirst);
+ok("no overflow on the grid", (await page.evaluate(() => document.documentElement.scrollWidth)) <= 390);
+await page.context().close();
+
+page = await newPage({ init: setStore({ settings: { place: "KR", era: "classics" } }) });
+ok("thin shelf: no empty rows, and a note instead", (await page.$$("section.row-list")).length === 0 && /No films here yet/.test(await page.textContent("#view")));
+await page.context().close();
+
+const krFilms = FEED.films.filter((f) => f.places.includes("KR"));
+const keep = krFilms[krFilms.length - 1].id;
+const seenKR = Object.fromEntries(krFilms.filter((f) => f.id !== keep).map((f) => [f.id, { id: f.id, title: f.title }]));
+page = await newPage({ init: setStore({ settings: { place: "KR" }, seen: seenKR }) });
+const picks = [];
+for (let i = 0; i < 5; i++) {
+  await page.click("#surprise");
+  picks.push(Number(await page.evaluate(() => document.body.dataset.opened)));
+  await page.evaluate(() => { for (const d of document.querySelectorAll("dialog[open]")) d.close(); });
+}
+ok("Surprise me opens a film, never a seen one", picks.every((id) => id === keep));
+await page.context().close();
+
+for (const scheme of ["light", "dark"]) {
+  page = await newPage({ scheme });
+  ok(`no overflow on Browse (${scheme})`, (await page.evaluate(() => document.documentElement.scrollWidth)) <= 390);
+  ok(`Browse has no pictographs (${scheme})`, (await pictographs(page)).length === 0);
+  await page.context().close();
+}
+
 ok("no page errors", errs.length === 0);
 if (errs.length) console.log(errs.join("\n"));
 console.log(out.join("\n"));
