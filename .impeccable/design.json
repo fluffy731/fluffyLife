@@ -34,6 +34,17 @@
           "#003f80"
         ]
       },
+      "line-5-purple": {
+        "role": "primary",
+        "displayName": "Seoul Line 5 Purple (Films app)",
+        "tonalRamp": [
+          "#e6dcef",
+          "#c39be0",
+          "#996cac",
+          "#7b4f92",
+          "#5a3670"
+        ]
+      },
       "signage-yellow": {
         "role": "secondary",
         "displayName": "Signage Yellow (hanja on a sign)"

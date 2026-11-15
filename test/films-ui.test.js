@@ -39,3 +39,24 @@ test("feed and logo are git-ignored; the home page links Films", () => {
   assert.ok(ignore.includes("films/feed.json") && ignore.includes("films/tmdb.svg"));
   assert.match(read("index.html"), /<a href="\.\/films\/">Films<\/a>/);
 });
+
+test("the deploy builds Films with the secret and never fails the deploy", () => {
+  const yml = read(".github/workflows/pages.yml");
+  const at = yml.indexOf("- name: Build the Films catalogue");
+  assert.ok(at > 0, "a Films build step");
+  const step = yml.slice(at, yml.indexOf("- name:", at + 10));
+  assert.match(step, /run: node scripts\/build-films\.mjs/);
+  assert.match(step, /TMDB_API_KEY: \$\{\{ secrets\.TMDB_API_KEY \}\}/);
+  assert.match(step, /continue-on-error: true/);
+  assert.match(yml, /~\/\.films-cache/);
+  assert.ok(yml.indexOf("Build the Films catalogue") < yml.indexOf("Stamp service-worker cache version"), "built before the site is uploaded");
+});
+
+test("the design system records the fourth line", () => {
+  const design = read("DESIGN.md");
+  assert.match(design, /line-5-purple: "#996cac"/);
+  assert.match(design, /\*\*Line 5 Purple\*\*/);
+  assert.match(design, /### The film sign/);
+  assert.match(design, /### The era line/);
+  assert.ok(JSON.parse(read(".impeccable/design.json")).extensions.colorMeta["line-5-purple"]);
+});
