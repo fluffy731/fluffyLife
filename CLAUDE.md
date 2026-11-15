@@ -13,3 +13,14 @@ After every push, merge or deploy, tell the owner how many GitHub Actions minute
 - The hourly `schedule` run (`.github/workflows/pages.yml`, news and stocks) costs about 2 minutes a run, roughly 48 a day. Mention it when the owner asks about total usage.
 - A docs-only change can skip CI: put `[skip ci]` in the commit message, and in the merge commit title when merging. A skipped push runs nothing and costs 0 minutes.
 - **Branch pushes keep their `test` run here** (owner's ruling, 6 November 2026). Skipping CI on a branch push, when the tests already passed locally, is for **private repos only**: there the merge's own `test` job still guards the deploy, and skipping saves 1 billed minute per change. fluffyLife is public, so the minutes are free and the pull request keeps its green tick.
+
+## UI work (owner's rule, 15 November 2026)
+
+Any change to a page, screen or component follows `.claude/skills/ui-presentation/SKILL.md`: rules for fit, type, colour, spacing, components, motion, optical alignment and accessibility, drawn from Monnie's design system. Each app keeps its own look (`DESIGN.md`, its stylesheet); the rules govern fit, legibility, behaviour and proof.
+
+- **Not done until the width sweep passes:** `node .claude/skills/ui-presentation/references/width-check.mjs . /<app>/ --shots <scratchpad>`. It covers phones (320–430 px), tablet and laptop widths, light and dark, with iPhone's line breaking.
+- **Use stress content**, not tidy samples: long names and paths, an empty list and a long one. A `--setup` module can stub the app's JSON feed.
+- **Look at the screenshots**, and add or extend the app's browser check for the screens touched (Spots: `scripts/spots-check.mjs`).
+- **Known backlog (15 Nov 2026):** the sweep passes on every app with today's content. About 20 bare `1fr` grid tracks remain in `style.css`, `metro.css`, `shine/`, `mc/` and `builder/`. 28 page-widths have tap targets of 36–42 px, under the 44 px rule. Fix them when touching those apps.
+- `.claude/agents/ui-auditor.md` measures, fixes and reports on its own branch.
+- To bring the rules to another repo, copy `.claude/skills/ui-presentation/` and `.claude/agents/ui-auditor.md` into it.

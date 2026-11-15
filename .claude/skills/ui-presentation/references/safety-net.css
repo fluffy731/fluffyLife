@@ -1,0 +1,29 @@
+/* ---- Safety net: no page wider than the phone (ui-presentation rules, sections 1, 2 and 7) ----
+   Paste at the END of the stylesheet, after every other rule, and adjust the selectors to the app (it assumes the
+   content sits in <main>; use the app's own wrapper if not). It is a net, not the fix: fix each fault at its source
+   (minmax(0, 1fr), min-width: 0, wrapping or truncating), and let the width sweep, which measures spills, prove it. */
+
+@media (width < 1280px) {
+  /* Any word may break where it must... */
+  main { overflow-wrap: anywhere; }
+  /* ...no picture or field is wider than its box... */
+  main img, main video, main canvas, main iframe, main svg { max-width: 100%; }
+  main input, main select, main textarea { max-width: 100%; min-width: 0; }
+  /* ...but a label, a figure or a table cell breaks between words, never inside one ("Receive / d"). Name the places;
+     a blanket exemption (all of <strong>) once let a long path push a page 69 px past a phone. */
+  main button, main .button, main .btn, main .chip, main .pill, main .tag, main .status, main table { overflow-wrap: normal; }
+}
+
+/* iOS zooms the whole page when a field under 16 px is tapped, and stays zoomed. */
+@media (max-width: 760px) {
+  input:where(:not([type=checkbox], [type=radio], [type=range], [type=color], [type=file])), select, textarea { font-size: max(16px, 1em) !important; }
+}
+
+/* Motion only for those who haven't asked for less (animations should already sit inside no-preference). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Last rule: nothing can make the page slide sideways. clip, not hidden, so position: sticky keeps working.
+   Never set overflow on html as well. */
+body { overflow-x: clip; }
