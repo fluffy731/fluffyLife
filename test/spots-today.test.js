@@ -201,3 +201,14 @@ test("momentLine: day, part of the day and weather; a holiday's name", () => {
   assert.equal(momentLine(new Date(2026, 11, 25, 19), FEED), "Christmas Day · evening");
   assert.equal(momentLine(at(18, 23), null), "Wednesday night");
 });
+
+test("ideas: a saved event on today puts top-rated places near its venue first, until it starts", () => {
+  const saved = [{ id: "e", title: "Men I Trust", venue: "Forum Melbourne", address: "154 Flinders St, Melbourne 3000", area: "Melbourne", cat: "music", day: "2026-11-15", to: "2026-11-15", time: "19:00" }];
+  const list = ideasFor(at(15, 16), FEED, { saved });
+  assert.equal(list[0].id, "near");
+  assert.equal(list[0].label, "Near Forum Melbourne");
+  assert.deepEqual(list[0].preset, { mode: "near", near: { q: "Forum Melbourne, 154 Flinders St, Melbourne 3000", label: "Forum Melbourne" } });
+  assert.equal(list.length, 3);
+  assert.ok(!ids(ideasFor(at(15, 19, 30), FEED, { saved })).includes("near"), "it has started");
+  assert.ok(!ids(ideasFor(at(16, 12), FEED, { saved })).includes("near"), "it was yesterday");
+});

@@ -1,12 +1,14 @@
 // Today: ideas for this moment, what's on today and next, and what's new in town. It makes no Google call:
 // tapping an idea opens Explore and runs a Find there. Logic in today.js; the feed is spots/feed.json.
 import { iso, addDays, clock, ideasFor, onToday, nextList, whenLabel, dateRange, momentLine, catOf, isTonight, kindForCat, startOn, weekdayOf } from "./today.js";
-import { saveEvent, unsaveEvent, isEventSaved } from "./model.js";
-import { runPreset } from "./explore.js";
+import { saveEvent, unsaveEvent, isEventSaved, upcomingEvents } from "./model.js";
+import { runPreset, nearFrom } from "./explore.js";
 import { $, esc, toast, openSheet, sheetBar } from "./ui.js";
 
 const SHOW = 6;
 const safe = (u) => (/^https?:\/\//.test(u || "") ? u : "");
+// An event's venue as Near here wants it: looked up by name and address.
+export const venueOf = (e) => ({ q: [e.venue, e.address || e.area].filter(Boolean).join(", ") || e.title, label: e.venue || e.area || e.title, name: e.venue || e.title });
 export const eventMaps = (e) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([e.venue, e.address || e.area].filter(Boolean).join(", ") || e.title)}`;
 const SOURCE = { wom: "What's On Melbourne (City of Melbourne)", ef: "Eventfinda" };
 const FRESH_KIND = { eat: ["🍜", "Eat"], drink: ["🍸", "Drink"], coffee: ["☕", "Coffee"], dessert: ["🍨", "Dessert"], event: ["🎟️", "On"], other: ["✨", "New"] };
@@ -62,7 +64,7 @@ function freshRow(f, today) {
 
 function draw(app) {
   const v = $("#v-today"), now = new Date(), day = iso(now), f = app.feed, u = app.ui, s = app.state.settings;
-  const ideas = ideasFor(now, f);
+  const ideas = ideasFor(now, f, { saved: upcomingEvents(app.state, day) });
   app._ideas = ideas;
   const today = onToday(f, now, { filter: u.todayFilter });
   const next = nextList(f, now);
@@ -130,10 +132,13 @@ export function openEvent(app, e, day = iso(new Date())) {
       <button class="btn${saved ? " hot" : ""}" type="button" data-evsave="${esc(e.id)}">${saved ? "♥ Saved" : "♡ Save"}</button>
       ${safe(e.url) ? `<a class="btn" href="${esc(e.url)}" target="_blank" rel="noopener">Details</a>` : ""}
       <a class="btn maps" href="${esc(eventMaps(e))}" target="_blank" rel="noopener">Google Maps</a>
+      ${e.venue || e.area ? `<button class="btn" type="button" data-evnear="${esc(e.id)}">★ Top-rated near here</button>` : ""}
     </div>
     <p class="attrib">${esc(SOURCE[e.src] || "")}</p>`);
+  d._event = e;
   if (!d.dataset.evbound) {
     d.addEventListener("click", (ev) => {
+      if (ev.target.closest("[data-evnear]") && d._event) return nearFrom(app, venueOf(d._event));
       const b = ev.target.closest("[data-evsave]");
       if (!b) return;
       const item = (app.feed?.events || []).find((x) => x.id === b.dataset.evsave);

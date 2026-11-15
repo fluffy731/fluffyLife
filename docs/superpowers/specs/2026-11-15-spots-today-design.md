@@ -129,6 +129,15 @@ Cards with the picture, title, source and date, linking to the article, food and
 
 Before the first hourly run after deploy, or offline with nothing cached: "Events and new openings arrive with the next hourly update." Right now ideas still work, because they need only the clock (the weather and holidays just refine them).
 
+## Near a place (added 15 November)
+
+The owner, the same day: "say if I'm going to a place then the app can suggest places in the area for great google reviews like more than 1000+ 5 star reviews etc".
+
+- **What "great reviews" can mean.** Google's Places API gives a place's average rating and its total number of reviews, not the spread of stars, so the filter is an average of at least ★ 4.5 from at least 1,000 reviews by default, both adjustable (★ 4.3 / 4.5 / 4.7; 300 / 1,000 / 2,000). The screen says so in one line.
+- **Where it lives.** A fourth Explore mode, **Near** ("top-rated"), with: Going to (typed venue, address or suburb, or a chip for a saved event's venue or a saved place), Within (500 m, 1 km, 2 km walk), Rated, Reviews, What (default Eat, Drink, Coffee) and Budget. **★ Top-rated near here** on the place sheet, the event sheet and the Saved rows opens it already filled in. Today's Right now puts **Near <venue>** first when a saved event is on today and hasn't started.
+- **How it searches.** Where you're going is found with one small Text Search (id, name, location, address; skipped for a saved place, which has a position). Then one Text Search per kind around it (up to 20 results, Google's `minRating` filter in half-star steps; if Google ever refuses that field, the search runs without it and Spots filters by rating itself). `pickNear` in `model.js` keeps places inside the walk, at or above the rating and review count, within budget, sorted by rating then review count, six per kind, and counts how many more would show with a third of the reviews so the empty state can suggest it.
+- **Cost.** One tap is 1 + one per kind searches (4 by default), billed like any Find.
+
 ## Saved events
 
 - **Save** on an event keeps `{ id, title, url, venue, address, area, cat, day, to }` on the phone (our own copy of public listing data, not Google's), where `day` is the first day it was listed for, or its start.

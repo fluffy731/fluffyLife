@@ -249,6 +249,24 @@ export function pickLate(places, { from, at, maxMinutes, priceMax = null }) {
   }).sort((a, b) => lateness(b) - lateness(a) || score(b) - score(a)).slice(0, 12);
 }
 
+// ---------- Near a place: well-reviewed places around somewhere you're going ----------
+// Google gives each place its average rating and how many reviews it has (not how many are five-star), so
+// "great reviews" means an average of at least minRating from at least minReviews people.
+export const NEAR = { radii: [0.5, 1, 2], reviews: [300, 1000, 2000], ratings: [4.3, 4.5, 4.7], kinds: ["eat", "drink", "coffee"] };
+
+export function pickNear(places, { center, radiusKm = 1, minRating = 4.5, minReviews = 1000, priceMax = null, max = 6 }) {
+  const near = uniq(places).filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)).map((p) => {
+    const km = haversineKm(center, p);
+    return { ...p, km: Math.round(km * 10) / 10, travel: travelMinutes(km, { mode: "walk" }) };
+  }).filter((p) => p.km <= radiusKm && fitsBudget(p, priceMax));
+  const rated = (p, r, n) => (p.rating ?? 0) >= r && (p.ratingCount ?? 0) >= n;
+  const good = near.filter((p) => rated(p, minRating, minReviews))
+    .sort((a, b) => b.rating - a.rating || b.ratingCount - a.ratingCount || a.km - b.km);
+  // How many more would show with a third of the reviews, so the app can suggest lowering the bar.
+  const almost = near.filter((p) => !rated(p, minRating, minReviews) && rated(p, minRating, Math.floor(minReviews / 3))).length;
+  return { places: good.slice(0, max), more: Math.max(0, good.length - max), almost };
+}
+
 // ---------- Tomorrow: a day plan ----------
 
 const slot = (id, label, time, kinds, query, visit) => ({ id, label, time, kinds, query, visit });

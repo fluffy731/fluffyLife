@@ -2,9 +2,9 @@
 import { KINDS, kindOf, haversineKm, travelMinutes, fmtMinutes, mapsUrl, unsave, addStamp, passportStats, backupJSON, mergeBackup, upcomingEvents, unsaveEvent } from "./model.js";
 import { putPhoto, getPhoto, delPhoto, thumb, photosAsDataURLs, dataURLToBlob } from "./db.js";
 import { $, EMOJI, esc, toast, openSheet, closeSheet, sheetBar } from "./ui.js";
-import { openPlace } from "./explore.js";
+import { openPlace, nearFrom } from "./explore.js";
 import { iso, addDays, clock, weekdayOf, catOf, kindForCat } from "./today.js";
-import { openEvent, eventMaps } from "./todayview.js";
+import { openEvent, eventMaps, venueOf } from "./todayview.js";
 
 const MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const stampDate = (iso) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${MON[m - 1]} ${String(y).slice(2)}`; };
@@ -40,6 +40,7 @@ export function renderSaved(app) {
         <span class="badge" aria-hidden="true">${catOf(x)[0]}</span>
         <button class="open-place" type="button" data-eopen="${esc(x.id)}"><b>${esc(x.title)}</b><small>${esc(eventLine(x, today))}</small></button>
         <div class="row-acts">
+          <button class="icon-btn" type="button" data-enear="${esc(x.id)}" aria-label="Top-rated places near ${esc(x.venue || x.title)}">★</button>
           <a class="icon-btn" href="${esc(eventMaps(x))}" target="_blank" rel="noopener" aria-label="Open ${esc(x.title)} in Google Maps">↗</a>
           <button class="icon-btn" type="button" data-edel="${esc(x.id)}" aria-label="Remove ${esc(x.title)}">✕</button>
         </div></div>`).join("")}<h3 class="sub-h">Places</h3>` : ""}
@@ -48,6 +49,7 @@ export function renderSaved(app) {
         <span class="badge" aria-hidden="true">${EMOJI[s.kind]}</span>
         <button class="open-place" type="button" data-sopen="${esc(s.id)}"><b>${esc(s.name)}</b><small>${esc(s.area || kindOf(s.kind).label)}${distLine(app, s)}</small></button>
         <div class="row-acts">
+          <button class="icon-btn" type="button" data-snear="${esc(s.id)}" aria-label="Top-rated places near ${esc(s.name)}"${Number.isFinite(s.lat) ? "" : " hidden"}>★</button>
           <a class="icon-btn" href="${esc(mapsUrl(s))}" target="_blank" rel="noopener" aria-label="Open ${esc(s.name)} in Google Maps">↗</a>
           <button class="icon-btn" type="button" data-scheck="${esc(s.id)}" aria-label="Check in at ${esc(s.name)}">◎</button>
           <button class="icon-btn" type="button" data-sdel="${esc(s.id)}" aria-label="Remove ${esc(s.name)}">✕</button>
@@ -60,6 +62,8 @@ export function renderSaved(app) {
       const t = e.target, get = (a) => app.state.saved.find((s) => s.id === t.closest(`[${a}]`).getAttribute(a));
       const ev = (a) => app.state.events.find((x) => x.id === t.closest(`[${a}]`).getAttribute(a));
       if (t.closest("[data-edel]")) { const x = ev("data-edel"); app.state = unsaveEvent(app.state, x.id); app.persist(); toast(`Removed ${x.title}`); return renderSaved(app); }
+      if (t.closest("[data-enear]")) return nearFrom(app, venueOf(ev("data-enear")));
+      if (t.closest("[data-snear]")) return nearFrom(app, get("data-snear"));
       if (t.closest("[data-eopen]")) { const x = ev("data-eopen"); return openEvent(app, asEvent(app, x), x.day); }
       if (t.closest("[data-skind]")) { app.ui.savedKind = t.closest("[data-skind]").dataset.skind; return renderSaved(app); }
       if (t.closest("[data-sdel]")) { const s = get("data-sdel"); app.state = unsave(app.state, s.id); app.persist(); toast(`Removed ${s.name}`); return renderSaved(app); }

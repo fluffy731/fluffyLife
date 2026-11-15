@@ -201,3 +201,39 @@ test("testConnection loads a photo and reports fields Google refused", async () 
   assert.ok(!failR.fields.includes("photo"));
   assert.match(failR.notes.join(" "), /photo/i);
 });
+
+// ---------- Near a place ----------
+
+test("search passes a minimum rating in half-star steps", async () => {
+  const { lib, calls } = fakeLib();
+  await googleProvider(lib).search({ query: "restaurant", kind: "eat", center: CBD, radiusKm: 1, minRating: 4.7 });
+  assert.equal(calls[0].search.minRating, 4.5);
+});
+
+test("if Google refuses minRating, the search runs again without it, and later searches leave it out", async () => {
+  const calls = [];
+  class Place { static async searchByText(req) { calls.push(req); if ("minRating" in req) throw new Error("Unknown field minRating"); return { places: [gp()] }; } }
+  const g = googleProvider({ Place, PriceLevel: {} });
+  const out = await g.search({ query: "bar", kind: "drink", center: CBD, radiusKm: 1, minRating: 4.5 });
+  assert.equal(out.length, 1);
+  await g.search({ query: "bar", kind: "drink", center: CBD, radiusKm: 1, minRating: 4.5 });
+  assert.ok(!("minRating" in calls.at(-1)));
+});
+
+test("locate finds where you're going with one small search around Melbourne", async () => {
+  const { lib, calls } = fakeLib();
+  const loc = await googleProvider(lib).locate("Federation Square");
+  assert.deepEqual(loc, { id: "ChIJ123", name: "Hand Pulled Noodles", address: "1 Smith St, Fitzroy VIC 3065, Australia", area: "Fitzroy", lat: -37.8, lng: 144.98 });
+  assert.deepEqual(calls[0].search.fields, ["id", "displayName", "location", "formattedAddress"]);
+  assert.equal(calls[0].search.maxResultCount, 1);
+  class None { static async searchByText() { return { places: [] }; } }
+  assert.equal(await googleProvider({ Place: None }).locate("nowhere at all"), null);
+});
+
+test("sample locate is the same spot for the same words, near the CBD", async () => {
+  const s = sampleProvider();
+  const a = await s.locate("Fitzroy"), b = await s.locate("fitzroy ");
+  assert.deepEqual([a.lat, a.lng], [b.lat, b.lng]);
+  assert.ok(haversineKm(CBD, a) < 9);
+  assert.equal(a.sample, true);
+});

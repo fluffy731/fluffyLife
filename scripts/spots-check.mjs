@@ -222,11 +222,45 @@ await page.waitForSelector("#sheet[open] .cand");
 ok("Check in offers today's saved event first", (await page.textContent("#sheet .cand >> nth=0")).includes("Stock Up Vintage Market"));
 await page.click("#sheet [data-close]");
 await page.click('.tab[data-tab="today"]');
+ok("a saved event on today puts 'Near <venue>' first in Right now", (await page.getAttribute("[data-idea] >> nth=0", "data-idea")) === "near" && (await page.textContent("[data-idea] >> nth=0")).includes("Near Queen Victoria Market"));
 await page.click('[data-idea="brunch"]');
 await page.waitForSelector(".result", { timeout: 10000 });
 ok("the Brunch idea opens Explore set to Now, 2 h, Coffee and Eat, and searches",
   (await page.locator("#mode-now[aria-pressed=true]").count()) === 1 && (await page.locator('[data-min="120"][aria-pressed=true]').count()) === 1
   && (await page.$$eval('.kinds [aria-pressed="true"]', (bs) => bs.map((b) => b.dataset.kind).sort().join())) === "coffee,eat");
+
+// 13. Near a place: well-reviewed places around somewhere you're going
+const ratingsOK = async () => (await page.$$eval(".result .meta b", (bs) => bs.map((b) => b.textContent)))
+  .every((t) => { const m = t.match(/★ ([\d.]+)/); return m && +m[1] >= 4.5; });
+const countsOK = async () => (await page.$$eval(".result .meta", (ms) => ms.map((m) => m.textContent).filter((t) => t.includes("★"))))
+  .every((t) => { const m = t.match(/\(([\d,]+)\)/); return m && +m[1].replace(/,/g, "") >= 1000; });
+page = await newPage({ at: SUN_1030, sample: true });
+await page.click("#mode-near");
+await page.click("#find");
+await page.waitForSelector("#results .error", { timeout: 5000 }).catch(() => {});
+ok("Near with nothing typed asks where you're going", (await page.textContent("#results")).includes("Type where you're going"));
+await page.fill("#near-q", "Fitzroy");
+await page.click("#find");
+await page.waitForSelector(".region", { timeout: 10000 });
+ok("Near shows top-rated places around the place typed, by kind", (await page.textContent(".region")).includes("Top-rated near") && (await page.textContent(".region h3")) === "Fitzroy" && (await page.locator("#results .res-head").count()) === 3);
+ok(`every place shown is rated ★ 4.5 or more by at least 1,000 people (${await page.locator(".result").count()} shown)`, (await page.locator(".result").count()) > 0 && await ratingsOK() && await countsOK());
+ok("distances are walks from the place you're going", (await page.textContent(".result .meta >> nth=1")).includes("walk from Fitzroy"));
+await page.click('[data-nrev="300"]');
+await page.click("#find");
+await page.waitForFunction(() => document.querySelectorAll(".result").length > 0, null, { timeout: 10000 });
+const n300 = await page.locator(".result").count();
+ok(`300+ reviews finds at least as many (${n300})`, n300 >= 1);
+await page.locator(".result .open-place").first().click();
+await page.waitForSelector('#sheet[open] [data-act="near"]');
+ok("a place's sheet offers Top-rated near here", true);
+
+page = await newPage({ at: SUN_1030, sample: true, tab: "today" });
+await page.waitForSelector("#ev-today .ev");
+await page.locator("#ev-today .ev", { hasText: "Stock Up Vintage Market" }).click();
+await page.click("#sheet [data-evnear]");
+await page.waitForSelector(".region", { timeout: 10000 });
+ok("an event's Top-rated near here opens Near for its venue", (await page.inputValue("#near-q")) === "Queen Victoria Market, Queen St, Melbourne 3000" && (await page.textContent(".region h3")) === "Queen Victoria Market");
+await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/spots-near.png` : "/tmp/spots-near.png", fullPage: true });
 
 page = await newPage({ at: new Date(2026, 10, 20, 19, 0), sample: true, tab: "today" });
 await page.waitForSelector("[data-idea]");

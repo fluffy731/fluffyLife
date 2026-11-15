@@ -159,7 +159,8 @@ const TABLE = {
 
 // Up to three ideas for this moment. Rain (60% or more) swaps outdoor ideas for indoor ones; 30° or hotter puts
 // gelato first; an events idea shows only when the feed has some on; Plan tomorrow only before a weekend or holiday day.
-export function ideasFor(at, feed, { max = 3 } = {}) {
+// saved: the saved events (model.upcomingEvents); one on today, not yet started, puts "Near <venue>" first.
+export function ideasFor(at, feed, { max = 3, saved = [] } = {}) {
   const day = iso(at), tmr = addDays(day, 1), part = partOf(at), type = dayType(at, feed);
   const wx = weatherOn(feed, day), wxT = weatherOn(feed, tmr);
   const wet = (wx?.rain ?? 0) >= 60, hot = (wx?.max ?? 0) >= 30;
@@ -172,6 +173,13 @@ export function ideasFor(at, feed, { max = 3 } = {}) {
 
   const today = onToday(feed, at);
   const out = [];
+  const nowHM = `${String(at.getHours()).padStart(2, "0")}:${String(at.getMinutes()).padStart(2, "0")}`;
+  const going = part === "late" ? null : saved.find((x) => x.day <= day && day <= x.to && (x.venue || x.area) && (!x.time || x.day !== day || x.time > nowHM));
+  if (going) {
+    const where = going.venue || going.area;
+    out.push({ id: "near", emoji: "⭐", label: `Near ${where}`, sub: `Top-rated, before ${going.title}`,
+      preset: { mode: "near", near: { q: [going.venue, going.address || going.area].filter(Boolean).join(", "), label: where } } });
+  }
   for (const id of [...new Set(ids)]) {
     if (out.length >= max) break;
     if (id.startsWith("ev:")) {

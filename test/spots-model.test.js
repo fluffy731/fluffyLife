@@ -6,7 +6,7 @@ import {
   minutesLeft, isOpenAt, nextOpen, hoursLabel, dayHours,
   score, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, slotTimes, buildDayPlan, tomorrow,
   KEY, blank, load, save, areaFromAddress, savePlace, unsave, isSaved, staleSaved, addStamp, passportStats,
-  backupJSON, mergeBackup, noteRegion, saveEvent, unsaveEvent, isEventSaved, upcomingEvents,
+  backupJSON, mergeBackup, noteRegion, saveEvent, unsaveEvent, isEventSaved, upcomingEvents, NEAR, pickNear,
 } from "../spots/model.js";
 import { REGIONS, surpriseRegion } from "../spots/regions.js";
 
@@ -494,4 +494,29 @@ test("saved events: unsafe links dropped, old ones gone, soonest first, survive 
   assert.deepEqual(state.events.map((x) => x.id).sort(), s.events.map((x) => x.id).sort());
   assert.equal(mergeBackup(state, text).added, 0, "nothing twice");
   assert.deepEqual(mergeBackup(blank(), JSON.stringify({ app: "spots", saved: [], stamps: [] })).state.events, [], "older backups have no events");
+});
+
+// ---------- Near a place ----------
+
+test("pickNear: within the walk, rated high enough by enough people, best rated first", () => {
+  const at = (km, o) => ({ id: o.id, name: o.id, kind: "eat", lat: CBD.lat + km / 111.2, lng: CBD.lng, price: 2, ...o });
+  const list = [
+    at(0.3, { id: "A", rating: 4.6, ratingCount: 2400 }),
+    at(0.5, { id: "B", rating: 4.8, ratingCount: 1100 }),
+    at(0.2, { id: "C", rating: 4.8, ratingCount: 5200 }),
+    at(0.4, { id: "few", rating: 4.9, ratingCount: 400 }),     // too few reviews, but a third of 1,000 or more
+    at(0.4, { id: "low", rating: 4.3, ratingCount: 9000 }),    // rated too low
+    at(1.6, { id: "far", rating: 4.9, ratingCount: 9000 }),    // too far for 1 km
+    at(0.3, { id: "dear", rating: 4.9, ratingCount: 3000, price: 4 }),
+    { id: "nowhere", rating: 4.9, ratingCount: 9000, lat: null, lng: null },
+  ];
+  const r = pickNear(list, { center: CBD, radiusKm: 1, minRating: 4.5, minReviews: 1000, priceMax: 3 });
+  assert.deepEqual(r.places.map((p) => p.id), ["C", "B", "A"], "same rating: more reviews first");
+  assert.equal(r.almost, 1);
+  assert.equal(r.more, 0);
+  assert.equal(r.places[0].km, 0.2);
+  assert.equal(r.places[0].travel, travelMinutes(haversineKm(CBD, list[2]), { mode: "walk" }), "walking minutes from the place you're going");
+  assert.deepEqual(pickNear(list, { center: CBD, radiusKm: 2, minRating: 4.5, minReviews: 1000 }).places.map((p) => p.id), ["far", "dear", "C", "B", "A"]);
+  assert.equal(pickNear(list, { center: CBD, radiusKm: 2, minRating: 4.5, minReviews: 1000, max: 2 }).more, 3);
+  assert.deepEqual(NEAR.reviews, [300, 1000, 2000]);
 });

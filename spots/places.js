@@ -67,6 +67,7 @@ const OPTIONAL = ["priceRange", "reviewSummary"];
 
 export function googleProvider(lib) {
   const dropped = new Set();
+  let minRatingOk = true; // Text Search's minRating filter; if Google ever refuses it, Spots filters by rating itself
   const keep = (fields) => fields.filter((f) => !dropped.has(f));
   async function withRetry(fields, run) {
     try { return await run(keep(fields)); }
@@ -82,15 +83,33 @@ export function googleProvider(lib) {
   return {
     label: "Google Maps",
     dropped: () => [...dropped],
-    async search({ query, kind, center, radiusKm, openNow, priceMax, max = 12 }) {
+    async search({ query, kind, center, radiusKm, openNow, priceMax, max = 12, minRating = null }) {
       const base = { textQuery: query, locationBias: { center: { lat: center.lat, lng: center.lng }, radius: Math.round(Math.min(50, Math.max(0.5, radiusKm)) * 1000) },
         maxResultCount: Math.min(20, max), language: "en-AU", region: "au" };
       if (openNow) base.isOpenNow = true;
       if (priceMax != null && priceMax >= 1 && kindOf(kind).priced) {
         base.priceLevels = PRICE_NAMES.slice(1, priceMax + 1).map((n) => (lib.PriceLevel && lib.PriceLevel[n]) || n);
       }
-      const { places } = await withRetry(SEARCH_FIELDS, (fields) => lib.Place.searchByText({ ...base, fields }));
-      return (places || []).map((g) => toPlace(g, kind));
+      // Google takes the minimum rating in half-star steps.
+      if (minRating != null && minRatingOk) base.minRating = Math.floor(minRating * 2) / 2;
+      let res;
+      try { res = await withRetry(SEARCH_FIELDS, (fields) => lib.Place.searchByText({ ...base, fields })); }
+      catch (e) {
+        if (!("minRating" in base)) throw e;
+        delete base.minRating;
+        res = await withRetry(SEARCH_FIELDS, (fields) => lib.Place.searchByText({ ...base, fields }));
+        minRatingOk = false;
+      }
+      return (res.places || []).map((g) => toPlace(g, kind));
+    },
+    // Where somewhere is: a venue, an address or a suburb, looked for around Melbourne. One small search.
+    async locate(query) {
+      const { places } = await lib.Place.searchByText({ textQuery: query, fields: ["id", "displayName", "location", "formattedAddress"], maxResultCount: 1,
+        locationBias: { center: { lat: CBD.lat, lng: CBD.lng }, radius: 50000 }, language: "en-AU", region: "au" });
+      const g = (places || [])[0];
+      if (!g || !g.location) return null;
+      const lat = numOr(val(g.location.lat)), lng = numOr(val(g.location.lng));
+      return lat == null || lng == null ? null : { id: g.id, name: text(g.displayName) || query, address: g.formattedAddress || "", area: areaFromAddress(g.formattedAddress || ""), lat, lng };
     },
     async details(p) {
       if (p.sample) return p;
