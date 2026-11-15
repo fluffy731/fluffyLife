@@ -1,4 +1,6 @@
-// Songs tab logic (Korean app): lyric lines, list import, the Claude request and reply, cost, study cards.
+// Songs tab logic: lyric lines, list import, the Claude request and reply, cost, study cards. The lyric
+// helpers take the study language's rules (isLyric: which lines are lyrics to translate), defaulting to
+// the Korean app's; the Korean request, reply and cards live here, the Cantonese ones in songs/yue.js.
 // Pure functions only, so all of it runs in Node tests. Lyrics never live in the repo: they come from
 // LRCLIB or the user's paste and are stored on the phone (see songs/db.js).
 
@@ -12,23 +14,30 @@ export const normLine = (s) => String(s ?? "").trim().replace(/\s+/g, " ");
 const STAMP = /\[\d{1,2}:\d{2}(?:[.:]\d{1,3})?\]/g;
 const MARKER = /^\s*[[(][^\])]*[\])]\s*$/;
 
-export function splitLyrics(text) {
+export function splitLyrics(text, isLyric = hasHangul) {
   return String(text ?? "").split(/\r?\n/).map((l) => {
     const line = l.replace(STAMP, "").trim();
-    return MARKER.test(line) && !hasHangul(line) ? "" : line;
+    return MARKER.test(line) && !isLyric(line) ? "" : line;
   });
 }
 
-// One entry per distinct Korean line, in first-seen order: choruses are translated once.
-export function uniqueHangulLines(lines) {
+// One entry per distinct lyric line, in first-seen order: choruses are translated once.
+export function uniqueLines(lines, isLyric = hasHangul) {
   const seen = new Set(), out = [];
   for (const l of lines) {
     const n = normLine(l);
-    if (!n || !hasHangul(n) || seen.has(n)) continue;
+    if (!n || !isLyric(n) || seen.has(n)) continue;
     seen.add(n); out.push(n);
   }
   return out;
 }
+export const uniqueHangulLines = (lines) => uniqueLines(lines, hasHangul);   // Korean shorthands, kept for the Korean tests
+// The distinct lines to translate in a lyrics text.
+export const lyricLines = (lyrics, isLyric = hasHangul) => uniqueLines(splitLyrics(lyrics ?? "", isLyric), isLyric);
+
+// The Korean app's lyric rules; songs/yue.js has the Cantonese ones. missing: the error code for lyrics
+// with no lines in the language; lineKey: an analysed line's lyric text; searchText: its translations.
+export const KO_RULES = { isLyric: hasHangul, missing: "noKorean", lineKey: (l) => l.ko, searchText: (l) => [l.zh, l.en] };
 
 export const songKey = (title, artist) => `${normLine(title).toLowerCase()}|${normLine(artist).toLowerCase()}`;
 
@@ -106,43 +115,47 @@ export const ANALYSIS_SCHEMA = obj({
   }) },
 });
 
-export function buildRequest({ model, lines, grammar }) {
+// A language's request builder from its system text and reply schema (songs/yue.js makes the Cantonese one).
+export const requestBuilder = (sysText, schema) => ({ model, lines, grammar }) => {
   const req = {
     model, max_tokens: 64000,
-    system: [{ type: "text", text: systemText(grammar), cache_control: { type: "ephemeral" } }],
+    system: [{ type: "text", text: sysText(grammar), cache_control: { type: "ephemeral" } }],
     messages: [{ role: "user", content: lines.map((l, i) => `${i + 1}. ${l}`).join("\n") }],
-    output_config: { effort: "medium", format: { type: "json_schema", schema: ANALYSIS_SCHEMA } },
+    output_config: { effort: "medium", format: { type: "json_schema", schema } },
   };
   // Server-side refusal fallbacks exist for Opus and Sonnet only.
   if (model !== "claude-haiku-5-5") Object.assign(req, { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" });
   return req;
-}
+};
+export const buildRequest = requestBuilder(systemText, ANALYSIS_SCHEMA);
 
 // ---------- checking the reply ----------
 const MAX = 400;
 const fail = () => { throw new Error("invalid"); };
-const str = (v) => (typeof v === "string" ? v.slice(0, MAX) : fail());
-const strOrNull = (v) => (v == null || v === "" ? null : str(v));
-const arr = (v) => (Array.isArray(v) ? v : fail());
+export const str = (v) => (typeof v === "string" ? v.slice(0, MAX) : fail());
+export const strOrNull = (v) => (v == null || v === "" ? null : str(v));
+export const arr = (v) => (Array.isArray(v) ? v : fail());
+// The app's own grammar id, only when it is one the request listed.
+export const knownId = (v, grammarIds) => { const id = strOrNull(v); return id && grammarIds.has(id) ? id : null; };
 
-export function parseAnalysis(text, lines, grammarIds) {
+// Every numbered line exactly once; shape(reply line, lyric line, grammarIds) checks one line's fields.
+export function parseLines(text, lines, grammarIds, shape) {
   let j;
   try { j = JSON.parse(text); } catch { fail(); }
   const got = new Map();
   for (const l of arr(j?.lines)) {
     if (!Number.isInteger(l?.n) || l.n < 1 || l.n > lines.length || got.has(l.n)) fail();
-    got.set(l.n, {
-      ko: lines[l.n - 1], zh: str(l.zh), en: str(l.en),
-      grammar: arr(l.grammar).map((g) => {
-        const appId = strOrNull(g?.appId);
-        return { form: str(g.form), appId: appId && grammarIds.has(appId) ? appId : null, en: str(g.en), zh: str(g.zh), note: str(g.note) };
-      }),
-      words: arr(l.words).slice(0, 5).map((w) => ({ ko: str(w?.ko), base: str(w.base), hanja: strOrNull(w.hanja), zh: str(w.zh), en: str(w.en), pos: str(w.pos) })),
-    });
+    got.set(l.n, shape(l, lines[l.n - 1], grammarIds));
   }
   if (got.size !== lines.length) fail();
   return { lines: lines.map((_, i) => got.get(i + 1)) };
 }
+
+export const parseAnalysis = (text, lines, grammarIds) => parseLines(text, lines, grammarIds, (l, ko) => ({
+  ko, zh: str(l.zh), en: str(l.en),
+  grammar: arr(l.grammar).map((g) => ({ form: str(g?.form), appId: knownId(g.appId, grammarIds), en: str(g.en), zh: str(g.zh), note: str(g.note) })),
+  words: arr(l.words).slice(0, 5).map((w) => ({ ko: str(w?.ko), base: str(w.base), hanja: strOrNull(w.hanja), zh: str(w.zh), en: str(w.en), pos: str(w.pos) })),
+}));
 
 // ---------- cost (US$) ----------
 export function estimateCost(model, lyricsChars, lineCount, systemChars = 9000) {
@@ -190,18 +203,18 @@ export const inReviews = (id, progress) => !!progress?.[id];
 // form the translation found. Case and spaces are ignored, so 볼때마다 finds "볼 때마다". Returns where it
 // matched and the Korean line to show under the song (null for title and artist), or null for no match.
 const squash = (s) => String(s ?? "").normalize("NFC").toLowerCase().replace(/\s+/g, "");
-export function findInSong(song, q) {
+export function findInSong(song, q, L = KO_RULES) {
   const k = squash(q);
   if (!k) return { field: null, line: null };
   if (squash(song.title).includes(k)) return { field: "title", line: null };
   if (squash(song.artist).includes(k)) return { field: "artist", line: null };
-  const lyric = splitLyrics(song.lyrics ?? "").find((l) => l && squash(l).includes(k));
+  const lyric = splitLyrics(song.lyrics ?? "", L.isLyric).find((l) => l && squash(l).includes(k));
   if (lyric) return { field: "lyric", line: normLine(lyric) };
   const lines = song.analysis?.lines ?? [];
-  const tr = lines.find((l) => squash(l.zh).includes(k) || squash(l.en).includes(k));
-  if (tr) return { field: "translation", line: tr.ko };
+  const tr = lines.find((l) => L.searchText(l).some((t) => squash(t).includes(k)));
+  if (tr) return { field: "translation", line: L.lineKey(tr) };
   const gr = lines.find((l) => l.grammar.some((g) => squash(g.form).includes(k)));
-  if (gr) return { field: "grammar", line: gr.ko };
+  if (gr) return { field: "grammar", line: L.lineKey(gr) };
   return null;
 }
 
@@ -213,24 +226,26 @@ export function inFilter(song, f) {
   return true;
 }
 
-// Korean lines in a lyrics text (repeats counted once). Zero means there is nothing to translate.
-export const koreanLineCount = (lyrics) => uniqueHangulLines(splitLyrics(lyrics ?? "")).length;
+// Lyric lines in a lyrics text (repeats counted once). Zero means there is nothing to translate.
+export const lineCount = (lyrics, isLyric = hasHangul) => lyricLines(lyrics, isLyric).length;
+export const koreanLineCount = (lyrics) => lineCount(lyrics, hasHangul);
 
 // The lyrics search can return an English version (or a song sung in English) first. Take the first result,
-// in the search's own order, that has Korean lines; with none, say whether lyrics were missing or not Korean.
-export function pickLyrics(hits) {
+// in the search's own order, that has lyric lines in the language; with none, say whether lyrics were missing
+// or not in the language (L.missing).
+export function pickLyrics(hits, L = KO_RULES) {
   const usable = hits.filter((h) => h.lyrics && !h.instrumental);
   if (!usable.length) return { hit: null, reason: "noLyrics" };
-  const hit = usable.find((h) => koreanLineCount(h.lyrics) > 0);
-  return hit ? { hit, reason: null } : { hit: null, reason: "noKorean" };
+  const hit = usable.find((h) => lineCount(h.lyrics, L.isLyric) > 0);
+  return hit ? { hit, reason: null } : { hit: null, reason: L.missing };
 }
 
 // Which songs a batch translates. Ticks live only while the app is open, so with nothing ticked (after
 // reopening) the batch covers every song still to translate, minus those waiting for Korean lyrics (not found,
 // or found only without Korean): they need lyrics picked or pasted first, and retrying would only fail again.
-export const waitingForLyrics = (s) => (s.error === "noLyrics" || s.error === "noKorean") && !koreanLineCount(s.lyrics);
-const translatable = (s) => s.status !== "done" && !waitingForLyrics(s);
-export function batchSongs(songs, ticked) {
+export const waitingForLyrics = (s, L = KO_RULES) => (s.error === "noLyrics" || s.error === L.missing) && !lineCount(s.lyrics, L.isLyric);
+export function batchSongs(songs, ticked, L = KO_RULES) {
+  const translatable = (s) => s.status !== "done" && !waitingForLyrics(s, L);
   const chosen = [...ticked].map((id) => songs.find((s) => s.id === id)).filter((s) => s && translatable(s));
   if (chosen.length) return { ticked: true, list: chosen };
   return { ticked: false, list: songs.filter(translatable) };
@@ -242,9 +257,11 @@ export const newSongId = () => `s${Date.now().toString(36)}${Math.random().toStr
 const STATUSES = ["queued", "lyrics", "done", "error"];
 const s = (v) => (typeof v === "string" ? v : null);
 const num = (v) => (Number.isFinite(v) ? v : 0);
-const cleanG = (g) => ({ form: s(g?.form) ?? "", appId: s(g?.appId), en: s(g?.en) ?? "", zh: s(g?.zh) ?? "", note: s(g?.note) ?? "" });
-const cleanW = (w) => ({ ko: s(w?.ko) ?? "", base: s(w?.base) ?? "", hanja: s(w?.hanja), zh: s(w?.zh) ?? "", en: s(w?.en) ?? "", pos: s(w?.pos) ?? "" });
-const cleanLine = (l) => ({ ko: s(l?.ko) ?? "", zh: s(l?.zh) ?? "", en: s(l?.en) ?? "",
+// The Korean app's fields always; the Cantonese app's extra ones (Jyutping, Korean meanings, the ? flag) when present.
+const extra = (o, keys) => ({ ...Object.fromEntries(keys.filter((k) => typeof o?.[k] === "string").map((k) => [k, o[k]])), ...(o?.unsure === true ? { unsure: true } : {}) });
+const cleanG = (g) => ({ form: s(g?.form) ?? "", appId: s(g?.appId), en: s(g?.en) ?? "", zh: s(g?.zh) ?? "", note: s(g?.note) ?? "", ...extra(g, ["formJp", "ko"]) });
+const cleanW = (w) => ({ ko: s(w?.ko) ?? "", base: s(w?.base) ?? "", hanja: s(w?.hanja), zh: s(w?.zh) ?? "", en: s(w?.en) ?? "", pos: s(w?.pos) ?? "", ...extra(w, ["jp"]) });
+const cleanLine = (l) => ({ ko: s(l?.ko) ?? "", zh: s(l?.zh) ?? "", en: s(l?.en) ?? "", ...extra(l, ["jp"]),
   grammar: Array.isArray(l?.grammar) ? l.grammar.map(cleanG) : [], words: Array.isArray(l?.words) ? l.words.map(cleanW) : [] });
 
 // Backups are user files: keep only the known fields with the right types, so nothing else reaches the page.

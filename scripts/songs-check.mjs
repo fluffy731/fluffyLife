@@ -1,4 +1,5 @@
-// Songs tab (Korean app) in a real browser, with LRCLIB and the Claude API replaced by local fakes.
+// Songs tab (Korean and Cantonese apps) in a real browser, with LRCLIB, the Claude API and the Cantonese
+// dictionary replaced by local fakes.
 //   PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node scripts/songs-check.mjs
 // The lyrics are invented (test/fixtures/songs.js): real lyrics never go in this public repo.
 import { createServer } from "node:http";
@@ -24,7 +25,7 @@ const tabTo = async (p, name) => {
 const out = []; const ok = (name, cond) => out.push(`${cond ? "PASS" : "FAIL"} ${name}`);
 const browser = await chromium.launch();
 
-// ---- the tab exists in the Korean app only ----
+// ---- Korean: a tab on the bar; Cantonese: a tile in More ----
 {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   await page.goto(base + "korean/", { waitUntil: "networkidle" });
@@ -35,7 +36,10 @@ const browser = await chromium.launch();
   const text = await page.textContent("#view");
   ok("empty Songs tab offers Add song and Import list", text.includes("No songs yet") && text.includes("Add song") && text.includes("Import list"));
   await page.goto(base + "yue/", { waitUntil: "networkidle" });
-  ok("Cantonese app has no Songs tab, on the bar or in More", (await page.locator('[data-tab="songs"]').count()) === 0 && (await page.locator("#tabs button").count()) === 5);
+  ok("Cantonese app has Songs in More, not on the bar", (await page.locator('#tabs [data-tab="songs"]').count()) === 0 && (await page.locator('#more [data-tab="songs"]').count()) === 1 && (await page.locator("#tabs button").count()) === 5);
+  await tabTo(page, "songs");
+  await page.waitForSelector("#view .songs");
+  ok("Cantonese Songs is in Korean", (await page.textContent("#view")).includes("아직 노래가 없어요") && (await page.textContent("#view")).includes("노래 추가"));
   await page.close();
 }
 
@@ -67,7 +71,17 @@ function sse(json) {
     + ev("message_delta", { delta: { stop_reason: "end_turn", stop_sequence: null }, usage: { output_tokens: 800 } })
     + ev("message_stop", {});
 }
+// The Cantonese reply: 掛 comes back as gwaa2, which the dictionary (gwaa3) doesn't list, so that line gets a ?.
+const YUE_JP = { "你好嗎": "nei5 hou2 maa3", "我好掛住你": "ngo5 hou2 gwaa2 zyu6 nei5" };
+function yueAnalysisFor(body) {
+  const lines = body.messages[0].content.split("\n").map((l) => l.replace(/^\d+\. /, ""));
+  return { lines: lines.map((zh, i) => ({ n: i + 1, jp: YUE_JP[zh] ?? "", ko: i ? "네가 너무 보고 싶어" : "잘 지내?", en: i ? "I miss you so much" : "How are you?",
+    grammar: [i ? { form: "好", formJp: "hou2", appId: null, ko: "아주", en: "very", note: "형용사·동사 앞에서 '아주'라는 뜻이에요." }
+      : { form: "嗎", formJp: "maa3", appId: "yg:2:嗎", ko: "~요?", en: "question particle", note: "문장 끝에 붙어 예/아니요 질문이 돼요." }],
+    words: [i ? { zh: "掛住", jp: "gwaa3 zyu6", ko: "보고 싶다", en: "to miss", pos: "v" } : { zh: "你", jp: "nei5", ko: "너", en: "you", pos: "pron" }] })) };
+}
 function analysisFor(body) {
+  if (body.system[0].text.includes("native Korean speaker")) return yueAnalysisFor(body);
   const lines = body.messages[0].content.split("\n");
   return { lines: lines.map((_, i) => ({ n: i + 1, zh: `中文${i + 1}`, en: `English ${i + 1}`,
     grammar: [{ form: i ? "-아도/어도" : "-게 되다", appId: null, en: i ? "even if" : "come to", zh: i ? "即使" : "變得", note: "note" }],
@@ -85,7 +99,7 @@ async function mockNetwork(target) {
     return r.fulfill({ status: 200, headers: { ...CORS, "content-type": "text/event-stream" }, body: sse(analysisFor(body)) });
   });
 }
-const stateOf = (page) => page.evaluate(() => JSON.parse(localStorage.getItem("korean.v1") || "{}"));
+const stateOf = (page, key = "korean.v1") => page.evaluate((k) => JSON.parse(localStorage.getItem(k) || "{}"), key);
 let backupText = null;
 {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block", acceptDownloads: true });
@@ -396,6 +410,92 @@ let backupText = null;
   ok("lyrics with no Korean: no Translate button, a way to fix it instead", (await page.locator('[data-s="translate"]').count()) === 0 && (await page.textContent("#view")).includes("no Korean lines") && (await page.locator('[data-s="relyrics"]').count()) >= 1);
   await ctx.close();
   lrclibHits = null;
+}
+
+// ---- Cantonese: her own key and songs, each line as 한글, Jyutping, characters and Korean, the ? check ----
+{
+  const { YUE_LYRICS } = await import(join(process.cwd(), "test/fixtures/songs.js"));
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block", acceptDownloads: true });
+  await mockNetwork(ctx);
+  // The dictionary is built at deploy; these rows stand in for it.
+  await ctx.route("**/dict/yue.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify({ rows: [
+    ["你好", "nei5 hou2", "hello", ""], ["掛住", "gwaa3 zyu6", "to miss", ""], ["我", "ngo5", "I", ""], ["嗎", "maa3", "question particle", ""]] }) }));
+  lrclibHits = [{ trackName: "想你", artistName: "가수", albumName: "A", duration: 180, instrumental: false, plainLyrics: YUE_LYRICS, syncedLyrics: null }];
+  const page = await ctx.newPage();
+  page.on("dialog", (d) => d.accept());
+  await page.clock.install({ time: new Date("2026-11-03T09:00:00") });
+  await page.goto(base + "yue/", { waitUntil: "networkidle" });
+
+  await tabTo(page, "settings");
+  await page.fill("#song-key", "sk-ant-yue-key-5678");
+  await page.click('[data-s="key-save"]');
+  ok("yue: key saved under its own name, not the Korean app's", (await page.evaluate(() => [localStorage.getItem("yue.songs.apiKey"), localStorage.getItem("korean.songs.apiKey")])).join("|") === "sk-ant-yue-key-5678|");
+  ok("yue: Settings shows the key masked, in Korean", (await page.textContent("#view")).includes("저장됨: sk-ant-…5678"));
+
+  const calls = apiBodies.length;
+  await tabTo(page, "songs");
+  await page.click('[data-s="add"]');
+  await page.fill("#song-title", "想你");
+  await page.click('[data-s="search"]');
+  await page.waitForSelector('[data-s="pick"]');
+  await page.click('[data-s="pick"]');
+  await page.click('[data-s="save"]');
+  ok("yue: the Translate button shows the estimate in Korean", (await page.textContent('[data-s="translate"]')).includes("번역과 설명 (약 US$"));
+  await page.click('[data-s="translate"]');
+  await page.waitForSelector(".song-sum");
+  const body = apiBodies[calls];
+  ok("yue: one call, the Cantonese request, the 2 Chinese lines numbered", apiBodies.length === calls + 1 && body.system[0].text.includes("native Korean speaker") && body.messages[0].content === "1. 你好嗎\n2. 我好掛住你");
+  ok("yue: 4 lyric rows (Oh baby shown plain)", (await page.locator(".song-line").count()) === 4 && (await page.locator(".song-line.plain").count()) === 1);
+  const first = page.locator(".song-line.item").first();
+  ok("yue: a line leads with tone-coloured 한글", (await first.locator(".k .syl.t5").count()) === 1 && (await first.locator(".k").textContent()).includes("네이"));
+  ok("yue: then Jyutping, the characters and the Korean meaning", (await first.locator(".rr").textContent()).includes("nei5 hou2 maa3") && (await first.locator(".zh").textContent()) === "你好嗎" && (await first.locator(".en").textContent()) === "잘 지내?");
+  ok("yue: the line whose reading the dictionary doesn't list is marked ?", (await page.locator(".song-line.item").nth(1).locator(".rr .check").count()) === 1 && (await first.locator(".rr .check").count()) === 0);
+  ok("yue: the summary explains the ?", (await page.textContent(".song-sum")).includes("? 표시는"));
+
+  // Add to study: 嗎 is the app's own lesson (by id), 好 too (by form), 你 is the app's word; 掛住 is new.
+  const T0 = Date.parse("2026-11-03T09:00:00");
+  const inADay = (p) => p && p.due - T0 > 20 * 3600e3 && p.due - T0 < 30 * 3600e3;
+  await first.click();
+  await page.locator('.song-line.item.open [data-s="study"][data-kind="grammar"]').click();
+  await page.locator('.song-line.item.open [data-s="study"][data-kind="word"]').click();
+  let st = await stateOf(page, "yue.v1");
+  ok("yue: grammar the app teaches schedules its own lesson; a word it has, its own card", inADay(st.progress["yg:2:嗎"]) && inADay(st.progress["y:你"]) && !(st.custom || []).length);
+  const second = page.locator(".song-line.item").nth(1);
+  await second.click();
+  ok("yue: a word shows the hanja bridge", (await second.locator(".bridge").count()) === 1 && (await second.locator(".bridge").textContent()).includes("괘"));
+  await page.locator('.song-line.item.open [data-s="study"][data-kind="grammar"]').click();
+  ok("yue: 好 matches the app's lesson by its form", inADay((await stateOf(page, "yue.v1")).progress["yg:1:好"]));
+  await page.locator('.song-line.item.open [data-s="study"][data-kind="word"]').click();
+  st = await stateOf(page, "yue.v1");
+  const card = (st.custom || [])[0];
+  ok("yue: a new word becomes a Cantonese card with the line as its example", st.custom?.length === 1 && card.zh === "掛住" && card.jp === "gwaa3 zyu6" && card.exZh === "我好掛住你" && card.exKo === "네가 너무 보고 싶어" && inADay(st.progress[card.id]));
+  ok("yue: the card keeps the line's ? (check)", card?.check === true);
+  ok("yue: the buttons now say 복습에 있음", (await page.locator(".song-line.item.open .in-reviews").count()) === 2);
+  await tabTo(page, "browse");
+  await page.fill("#q", "掛住");
+  ok("yue: the new card is in Browse, with its ?", (await page.textContent("#browse-list")).includes("掛住") && (await page.locator("#browse-list .check").count()) >= 1);
+
+  // Backup: the song with its ? marks, no key.
+  await tabTo(page, "settings");
+  const [dl] = await Promise.all([page.waitForEvent("download"), page.click("[data-export]")]);
+  const backup = JSON.parse(await readFile(await dl.path(), "utf8"));
+  ok("yue: backup has the song with its Jyutping and ? mark, and no key", backup.songs?.length === 1 && backup.songs[0].analysis.lines[1].jp === "ngo5 hou2 gwaa2 zyu6 nei5" && backup.songs[0].analysis.lines[1].unsure === true && !JSON.stringify(backup).includes("sk-ant"));
+
+  // English-only lyrics: nothing to translate, no call.
+  await tabTo(page, "songs");
+  await page.click('[data-s="back"]');
+  await page.click('[data-s="add"]');
+  await page.fill("#song-title", "English one"); await page.fill("#song-lyrics", "Oh baby\nla la");
+  await page.click('[data-s="save"]');
+  ok("yue: no Chinese lines: no Translate button, no call", (await page.locator('[data-s="translate"]').count()) === 0 && (await page.textContent("#view")).includes("한자로 된 줄이 없어서") && apiBodies.length === calls + 1);
+
+  // Same site, separate songs: the Korean app's list is still empty.
+  await page.goto(base + "korean/", { waitUntil: "networkidle" });
+  await tabTo(page, "songs");
+  await page.waitForSelector("#view .songs .card");
+  ok("yue: the Korean app doesn't see her songs", (await page.textContent("#view")).includes("No songs yet"));
+  lrclibHits = null;
+  await ctx.close();
 }
 
 // ---- restore on a fresh phone, then read it offline ----

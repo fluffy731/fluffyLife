@@ -1,10 +1,11 @@
-// Songs are kept in IndexedDB on the phone (database fluffy-songs, store songs), not in localStorage:
-// every fluffyLife app shares about 5 MB of localStorage on this origin, and translated songs add up.
-export function openSongs(idb = globalThis.indexedDB) {
+// Songs are kept in IndexedDB on the phone (store songs), not in localStorage: every fluffyLife app shares
+// about 5 MB of localStorage on this origin, and translated songs add up. Each app has its own database
+// (the Korean app's fluffy-songs, the Cantonese app's fluffy-songs-yue), so the two never mix in Safari.
+export function openSongs(idb = globalThis.indexedDB, name = "fluffy-songs") {
   return new Promise((resolve, reject) => {
     if (!idb) return reject(new Error("nostorage"));
     let req;
-    try { req = idb.open("fluffy-songs", 1); } catch { return reject(new Error("nostorage")); }
+    try { req = idb.open(name, 1); } catch { return reject(new Error("nostorage")); }
     req.onupgradeneeded = () => req.result.createObjectStore("songs", { keyPath: "id" });
     req.onerror = () => reject(new Error("nostorage"));
     req.onblocked = () => reject(new Error("nostorage"));

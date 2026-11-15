@@ -8,7 +8,8 @@ export class SongError extends Error {
 
 const loadVendored = () => import("../lib/vendor/anthropic-sdk.js");
 
-export async function translateSong({ apiKey, model, lines, grammar }, { loadSdk = loadVendored } = {}) {
+// lang: the study language's buildRequest and parseAnalysis (songs/yue.js for Cantonese); Korean by default.
+export async function translateSong({ apiKey, model, lines, grammar, lang = { buildRequest, parseAnalysis } }, { loadSdk = loadVendored } = {}) {
   apiKey = String(apiKey ?? "").trim();
   if (!apiKey) throw new SongError("noKey");
   let Anthropic;
@@ -16,7 +17,7 @@ export async function translateSong({ apiKey, model, lines, grammar }, { loadSdk
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true, maxRetries: 2 });
   let msg;
   try {
-    msg = await client.beta.messages.stream(buildRequest({ model, lines, grammar })).finalMessage();
+    msg = await client.beta.messages.stream(lang.buildRequest({ model, lines, grammar })).finalMessage();
   } catch (e) {
     if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) throw new SongError("badKey");
     if (e instanceof Anthropic.RateLimitError) throw new SongError("rateLimit");
@@ -30,6 +31,6 @@ export async function translateSong({ apiKey, model, lines, grammar }, { loadSdk
   if (msg.stop_reason === "max_tokens") throw new SongError("tooLong");
   const text = msg.content?.find((b) => b.type === "text")?.text;
   let analysis;
-  try { analysis = parseAnalysis(text ?? "", lines, new Set(grammar.map((g) => g.id))); } catch { throw new SongError("invalid"); }
+  try { analysis = lang.parseAnalysis(text ?? "", lines, new Set(grammar.map((g) => g.id))); } catch { throw new SongError("invalid"); }
   return { analysis, usage: msg.usage, costUsd: actualCost(model, msg.usage), model: msg.model || model };
 }
