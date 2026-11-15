@@ -263,6 +263,12 @@ await page.locator(".result .open-place").first().click();
 await page.waitForSelector('#sheet[open] [data-act="near"]');
 ok("a place's sheet offers Top-rated near here", true);
 
+await page.click("#sheet [data-close]");
+await page.click("#fab");
+await page.waitForSelector("#sheet[open] .cand", { timeout: 5000 }).catch(() => {});
+ok("Check in opens after a Near search, offering the places it found", (await page.locator("#sheet[open] .cand").count()) > 1);
+await page.click("#sheet [data-close]").catch(() => {});
+
 page = await newPage({ at: SUN_1030, sample: true, tab: "today" });
 await page.waitForSelector("#ev-today .ev");
 await page.locator("#ev-today .ev", { hasText: "Stock Up Vintage Market" }).click();
@@ -289,6 +295,31 @@ ok("Late night doesn't offer Nature or Beach", (await page.locator('.kinds [data
 page = await newPage({ at: new Date(2026, 10, 15, 10, 30), sample: true, tab: "today" });
 await page.waitForSelector("[data-idea]");
 ok("a rainy morning offers nothing outdoors", !(await page.$$eval("[data-idea]", (bs) => bs.map((b) => b.dataset.idea))).some((id) => ["nature", "trail", "beach", "sunset", "outAbout"].includes(id)));
+
+// 15. Long names never push the page wider than the phone (an iPhone SE is 320 wide)
+const LONG_VENUE = "Melbourne Convention and Exhibition Centre (MCEC)";
+const long = (f) => ({ ...f, events: [{ id: "wom:/long", src: "wom", title: "MindBodySpirit Festival: wellness, lifestyle and holistic living", blurb: "", url: "https://whatson.melbourne.vic.gov.au/x",
+  venue: LONG_VENUE, address: "1 Convention Pl, South Wharf 3006", area: "South Wharf", image: null, from: "2026-11-13", to: "2026-11-15", days: [FEED_DAY], next: `${FEED_DAY}T10:00`, free: true, cat: "festival", outdoor: null }, ...f.events] });
+for (const width of [390, 320]) {
+  const ctx = await b.newContext({ viewport: { width, height: 800 }, serviceWorkers: "block" });
+  const p2 = await ctx.newPage();
+  p2.on("pageerror", (e) => errs.push(e.message));
+  await p2.clock.setFixedTime(SUN_1030);
+  await p2.addInitScript(sampleOn);
+  await p2.route("**/spots/feed.json", (r) => r.fulfill({ contentType: "application/json", body: JSON.stringify(long(JSON.parse(FEED))) }));
+  await p2.goto(base, { waitUntil: "load" });
+  await p2.waitForSelector("#ev-today .ev");
+  await p2.locator("#ev-today .ev", { hasText: "MindBodySpirit" }).click();
+  await p2.click("#sheet [data-evsave]");
+  await p2.click("#sheet [data-close]");
+  const fits = async () => (await p2.evaluate(() => document.documentElement.scrollWidth)) <= width
+    && (await p2.evaluate((w) => [...document.querySelectorAll("main *")].every((e) => e.getBoundingClientRect().right <= w + 0.5), width));
+  ok(`${width} px: Today fits with a long venue, the Free tag stays on screen`, await fits()
+    && (await p2.locator("#ev-today .ev", { hasText: "MindBodySpirit" }).locator(".tag.free").evaluate((e, w) => e.getBoundingClientRect().right <= w, width)));
+  await p2.click('.tab[data-tab="saved"]');
+  ok(`${width} px: Saved fits with a long venue`, await fits());
+  await ctx.close();
+}
 
 page = await newPage({ at: new Date(2026, 10, 20, 19, 0), sample: true, tab: "today" });
 await page.waitForSelector("[data-idea]");
