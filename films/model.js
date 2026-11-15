@@ -71,3 +71,66 @@ export function weightedRating(film, { mean, m }) {
   if (v + m === 0) return mean;
   return (v / (v + m)) * film.rating + (m / (v + m)) * mean;
 }
+
+// ---------- shelves ----------
+// A shelf is place × era × genre ("all" for any). Every list is ranked within a place; under All places the
+// places' own lists are interleaved, so English films never bury the rest.
+
+const by = (key) => (a, b) => key(b) - key(a) || b.votes - a.votes || a.id - b.id;
+
+export function inShelf(film, { place, era, genre }) {
+  return (place === "all" || film.places.includes(place))
+    && (era === "all" || film.era === era)
+    && (genre === "all" || film.genres.includes(genre));
+}
+
+export function interleave(lists) {
+  const out = [], seen = new Set(), longest = Math.max(0, ...lists.map((l) => l.length));
+  for (let i = 0; i < longest; i++) {
+    for (const l of lists) if (i < l.length && !seen.has(l[i].id)) { seen.add(l[i].id); out.push(l[i]); }
+  }
+  return out;
+}
+
+// One place's lists for a shelf. Crowd-pleasers: the shelf's top third by votes, rated below the shelf's median.
+function placeLists(films, stat, f, place) {
+  const shelf = films.filter((x) => inShelf(x, { ...f, place }));
+  const wr = new Map(shelf.map((x) => [x.id, weightedRating(x, stat)]));
+  const rated = [...shelf].sort(by((x) => wr.get(x.id)));
+  const popular = [...shelf].sort(by((x) => x.votes));
+  const med = median([...wr.values()]);
+  const crowd = popular.slice(0, Math.ceil(popular.length / 3)).filter((x) => wr.get(x.id) < med);
+  const now = f.era === "all" ? [...shelf].sort(by((x) => x.pop || 0)).slice(0, 20) : [];
+  return { rated, popular, crowd: crowd.length >= 4 ? crowd : [], now };
+}
+
+export function shelfLists(films, stats, f) {
+  const places = (f.place === "all" ? PLACES.map((p) => p.id) : [f.place]).filter((p) => stats[p]);
+  const per = places.map((p) => placeLists(films, stats[p], f, p));
+  const join = (k) => interleave(per.map((l) => l[k]));
+  return { rated: join("rated"), popular: join("popular"), crowd: join("crowd"), now: join("now") };
+}
+
+// 1-based ranks within each of a film's places, over the whole place: "#1 most popular in Hong Kong".
+export function rankMap(films, stats) {
+  const ranks = new Map();
+  for (const p of Object.keys(stats)) {
+    const { rated, popular } = placeLists(films, stats[p], { place: p, era: "all", genre: "all" }, p);
+    rated.forEach((x, i) => { const r = ranks.get(x.id) || {}; r[p] = { rated: i + 1, popular: 0 }; ranks.set(x.id, r); });
+    popular.forEach((x, i) => { ranks.get(x.id)[p].popular = i + 1; });
+  }
+  return ranks;
+}
+
+// Genre chips for the shelf (whatever genre is chosen): only genres with at least 4 films, biggest first.
+export function genreChips(films, f) {
+  const n = {};
+  for (const x of films) if (inShelf(x, { ...f, genre: "all" })) for (const g of x.genres) n[g] = (n[g] || 0) + 1;
+  return Object.entries(n).filter(([, c]) => c >= 4).map(([genre, count]) => ({ genre, count }))
+    .sort((a, b) => b.count - a.count || GENRES.indexOf(a.genre) - GENRES.indexOf(b.genre));
+}
+
+// The eras that have films for this place and genre: the era line's live stations.
+export function erasWithFilms(films, f) {
+  return new Set(films.filter((x) => inShelf(x, { ...f, era: "all" })).map((x) => x.era));
+}

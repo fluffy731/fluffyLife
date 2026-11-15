@@ -1,6 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { PLACES, ERAS, NAMED_ERAS, GENRES, placesOf, eraOf, placeStats, weightedRating } from "../films/model.js";
+import {
+  PLACES, ERAS, NAMED_ERAS, GENRES, placesOf, eraOf, placeStats, weightedRating,
+  inShelf, shelfLists, interleave, rankMap, genreChips, erasWithFilms,
+} from "../films/model.js";
 
 // A valid Film; tests override what they need.
 let nextId = 1;
@@ -59,4 +62,79 @@ test("placeStats uses each place's own mean and median votes", () => {
   const both = placeStats([...hk, film({ places: ["HK", "CN"], votes: 40, rating: 9 })]);
   assert.deepEqual(both.HK, { mean: 7.5, m: 25 }, "a co-production counts in Hong Kong");
   assert.deepEqual(both.CN, { mean: 9, m: 40 }, "and in Chinese");
+});
+
+// ---------- shelves ----------
+
+const ALL = { place: "all", era: "all", genre: "all" };
+const HK = { ...ALL, place: "HK" };
+const flat = { HK: { mean: 7, m: 1 }, CN: { mean: 7, m: 1 }, KR: { mean: 7, m: 1 }, EN: { mean: 7, m: 1 } }; // WR ≈ rating
+
+test("interleave alternates places without duplicates", () => {
+  const [a, b, c, d] = [film(), film(), film(), film()];
+  assert.deepEqual(interleave([[a, b], [c, a], [d]]).map((x) => x.id), [a, c, d, b].map((x) => x.id));
+});
+
+test("inShelf filters by place, era and genre", () => {
+  const f = film({ places: ["HK", "CN"], year: 1994, genres: ["Crime"] });
+  assert.ok(inShelf(f, { place: "CN", era: "1990s", genre: "Crime" }));
+  assert.ok(!inShelf(f, { place: "KR", era: "all", genre: "all" }));
+  assert.ok(!inShelf(f, { place: "all", era: "2000s", genre: "all" }));
+  assert.ok(!inShelf(f, { place: "all", era: "all", genre: "Comedy" }));
+});
+
+test("crowd-pleasers are popular films rated below the shelf median", () => {
+  const steady = Array.from({ length: 10 }, (_, i) => film({ rating: 7, votes: 100 * (i + 1) }));
+  const [hit, c1, c2, c3, c4] = [[8, 5000], [5, 4000], [4.5, 3000], [4, 2000], [3.5, 1500]].map(([rating, votes]) => film({ rating, votes }));
+  const { crowd } = shelfLists([...steady, hit, c1, c2, c3, c4], flat, HK);
+  assert.deepEqual(crowd.map((x) => x.id), [c1, c2, c3, c4].map((x) => x.id));
+  const small = [film({ rating: 8, votes: 5000 }), film({ rating: 5, votes: 4000 }), film({ rating: 4, votes: 3000 }),
+    ...Array.from({ length: 6 }, (_, i) => film({ rating: 7, votes: 100 * (i + 1) }))];
+  assert.deepEqual(shelfLists(small, flat, HK).crowd, [], "fewer than four qualify, so the row hides");
+});
+
+test("crowd-pleasers are per shelf", () => {
+  const low = [[5.0, 600], [5.2, 550], [5.4, 500], [5.6, 450]].map(([rating, votes]) => film({ year: 1975, rating, votes }));
+  const rest = Array.from({ length: 8 }, (_, i) => film({ year: 1975, rating: 7 + i / 10, votes: 50 * (i + 1) }));
+  const modern = Array.from({ length: 6 }, () => film({ year: 2005, rating: 7.5, votes: 10000 }));
+  const films = [...low, ...rest, ...modern];
+  const { crowd } = shelfLists(films, placeStats(films), { ...HK, era: "1970s" });
+  assert.deepEqual(crowd.map((x) => x.id), low.map((x) => x.id));
+});
+
+test("All places interleaves each place's ranking", () => {
+  const a = film({ rating: 8, votes: 1000 }), b = film({ rating: 6, votes: 1000 });
+  const c = film({ places: ["CN"], rating: 9, votes: 1000 }), d = film({ places: ["CN"], rating: 5, votes: 1000 });
+  const { rated } = shelfLists([a, b, c, d], flat, ALL);
+  assert.deepEqual(rated.map((x) => x.id), [a, c, b, d].map((x) => x.id));
+});
+
+test("Popular right now only without an era", () => {
+  const films = Array.from({ length: 25 }, (_, i) => film({ pop: i }));
+  const { now } = shelfLists(films, flat, HK);
+  assert.equal(now.length, 20);
+  assert.equal(now[0].pop, 24);
+  assert.deepEqual(shelfLists(films, flat, { ...HK, era: "1990s" }).now, []);
+});
+
+test("lists on an empty shelf", () => {
+  const films = [film({ genres: ["Western"], year: 1960 }), film()];
+  const f = { place: "KR", era: "classics", genre: "Western" };
+  assert.deepEqual(shelfLists(films, placeStats(films), f), { rated: [], popular: [], crowd: [], now: [] });
+  assert.deepEqual(genreChips(films, f), []);
+  assert.ok(!erasWithFilms(films, f).has("classics"));
+  assert.ok(erasWithFilms(films, { ...f, place: "HK" }).has("classics"));
+});
+
+test("genreChips hides genres with fewer than 4 films", () => {
+  const films = [...Array.from({ length: 5 }, () => film({ genres: ["Crime", "Thriller"] })), ...Array.from({ length: 3 }, () => film({ genres: ["Comedy"] })),
+    film({ genres: ["Thriller"] })];
+  assert.deepEqual(genreChips(films, { ...HK, genre: "Comedy" }), [{ genre: "Thriller", count: 6 }, { genre: "Crime", count: 5 }]);
+});
+
+test("rankMap ranks a co-production in each place", () => {
+  const x = film({ rating: 6, votes: 100 }), y = film({ places: ["HK", "CN"], rating: 8, votes: 300 }), z = film({ places: ["CN"], rating: 9, votes: 500 });
+  const ranks = rankMap([x, y, z], flat);
+  assert.deepEqual(ranks.get(y.id), { HK: { rated: 1, popular: 1 }, CN: { rated: 2, popular: 2 } });
+  assert.deepEqual(ranks.get(x.id), { HK: { rated: 2, popular: 2 } });
 });
