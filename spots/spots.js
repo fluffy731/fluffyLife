@@ -14,7 +14,7 @@ const app = {
   state: load(localStorage),
   ui: { mode: "now", minutes: 120, travel: "drive", kinds: new Set(["eat"]), price: null, late: 30,
     lateKinds: new Set(["eat", "drink", "dessert"]), where: "town", start: "09:00", pace: "relaxed", savedKind: "all", todayFilter: null, showAll: {},
-    near: { q: "", label: "", target: null, radius: 1, minRating: 4.5, minReviews: 1000, kinds: new Set(["eat", "drink", "coffee"]) } },
+    near: { q: "", label: "", target: null, range: "d15", minRating: 4.5, minReviews: 1000, kinds: new Set(["eat", "drink", "coffee"]) } },
   pos: null, places: new Map(), lastResult: null, freshStamp: null, tab: "today",
   feed: null, feedAt: 0, feedState: "none",
   persist() { save(localStorage, this.state); },

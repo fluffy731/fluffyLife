@@ -2,7 +2,7 @@
 import {
   KINDS, kindOf, reachKm, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, buildDayPlan, tomorrow,
   travelMinutes, haversineKm, fmtMinutes, hoursLabel, minutesLeft, dayHours, priceSymbols, priceRangeLabel, mapsUrl,
-  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop, NEAR, pickNear, upcomingEvents,
+  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop, NEAR, nearRange, rangeKm, pickNear, upcomingEvents,
 } from "./model.js";
 import { REGIONS, surpriseRegion } from "./regions.js";
 import { $, EMOJI, esc, fmtCount, toast, openSheet, closeSheet, sheetBar } from "./ui.js";
@@ -24,7 +24,6 @@ const EMPTY = {
 const chip = (attr, val, label, on) => `<button class="chip" type="button" ${attr}="${esc(val)}" aria-pressed="${on}">${label}</button>`;
 const kindChips = (set) => `<div class="chips kinds">${KINDS.map((k) => `<button class="chip" type="button" data-kind="${k.id}" aria-pressed="${set.has(k.id)}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>`;
 const fmtN = (n) => n.toLocaleString("en-AU");
-const RADIUS_LABEL = { 0.5: "500 m", 1: "1 km", 2: "2 km" };
 // Places to look around: today's and coming saved events, then saved places.
 function nearPicks(app) {
   const today = new Date(), iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -43,7 +42,7 @@ function controls(u, app) {
     <p class="label"><label for="near-q">Going to</label></p>
     <input id="near-q" class="near-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="A venue, address or suburb" value="${esc(n.q)}">
     ${picks.length ? `<div class="chips scroll" style="margin-top:8px">${picks.map((x) => chip("data-nearpick", x.key, esc(x.label), n.q === x.q)).join("")}</div>` : ""}
-    <p class="label">Within</p><div class="chips">${NEAR.radii.map((r) => chip("data-nradius", r, `${RADIUS_LABEL[r]} walk`, n.radius === r)).join("")}</div>
+    <p class="label">Within</p><div class="chips">${NEAR.ranges.map((r) => chip("data-nrange", r.id, `<span aria-label="${r.label}">${r.short}</span>`, n.range === r.id)).join("")}</div>
     <p class="label">Rated</p><div class="chips">${NEAR.ratings.map((r) => chip("data-nrate", r, `★ ${r}+`, n.minRating === r)).join("")}</div>
     <p class="label">Reviews</p><div class="chips">${NEAR.reviews.map((r) => chip("data-nrev", r, `${fmtN(r)}+`, n.minReviews === r)).join("")}</div>
     <p class="label">What</p>${kindChips(n.kinds)}
@@ -120,7 +119,7 @@ async function onClick(app, e) {
   if (d("[data-start]")) { u.start = d("[data-start]").dataset.start; return refreshControls(app); }
   if (d("[data-pace]")) { u.pace = d("[data-pace]").dataset.pace; return refreshControls(app); }
   if (d("[data-price]")) { const v = d("[data-price]").dataset.price; u.price = v === "any" ? null : +v; return refreshControls(app); }
-  if (d("[data-nradius]")) { u.near.radius = +d("[data-nradius]").dataset.nradius; return refreshControls(app); }
+  if (d("[data-nrange]")) { u.near.range = d("[data-nrange]").dataset.nrange; return refreshControls(app); }
   if (d("[data-nrate]")) { u.near.minRating = +d("[data-nrate]").dataset.nrate; return refreshControls(app); }
   if (d("[data-nrev]")) { u.near.minReviews = +d("[data-nrev]").dataset.nrev; return refreshControls(app); }
   if (d("[data-nearpick]")) {
@@ -238,11 +237,11 @@ async function findNear(provider, u) {
     if (!loc) throw new Error(`Couldn't find "${n.q.trim()}". Try a suburb or a fuller address.`);
     n.target = { ...loc, q: n.q };
   }
-  const t = n.target, kinds = [...n.kinds];
-  const lists = await Promise.all(kinds.map((k) => provider.search({ query: kindOf(k).query, kind: k, center: t, radiusKm: n.radius, openNow: false,
+  const t = n.target, kinds = [...n.kinds], range = nearRange(n.range), at = new Date();
+  const lists = await Promise.all(kinds.map((k) => provider.search({ query: kindOf(k).query, kind: k, center: t, radiusKm: rangeKm(range, at), openNow: false,
     priceMax: u.price, max: 20, minRating: n.minRating })));
-  const groups = kinds.map((k, i) => ({ kind: k, ...pickNear(lists[i], { center: t, radiusKm: n.radius, minRating: n.minRating, minReviews: n.minReviews, priceMax: u.price }) }));
-  return { type: "near", at: new Date(), target: t, label: n.label && n.label !== n.q ? n.label : t.name, groups, radius: n.radius, minRating: n.minRating, minReviews: n.minReviews };
+  const groups = kinds.map((k, i) => ({ kind: k, ...pickNear(lists[i], { center: t, range, at, minRating: n.minRating, minReviews: n.minReviews, priceMax: u.price }) }));
+  return { type: "near", at, target: t, label: n.label && n.label !== n.q ? n.label : t.name, groups, range, minRating: n.minRating, minReviews: n.minReviews };
 }
 
 // ---------- Showing results ----------
@@ -290,10 +289,10 @@ function renderResults(app) {
   if (r.type === "near") {
     const bar = `★ ${r.minRating}+ from ${fmtN(r.minReviews)}+ reviews`;
     res.innerHTML = `<div class="card region"><p class="eyebrow">Top-rated near</p><h3>${esc(r.label)}</h3>
-      <p>${esc([r.target.address || r.target.area, `within a ${RADIUS_LABEL[r.radius]} walk`, bar].filter(Boolean).join(" · "))}</p></div>`
+      <p>${esc([r.target.address || r.target.area, `within a ${r.range.label}`, bar].filter(Boolean).join(" · "))}</p></div>`
       + r.groups.map((g) => `<div class="res-head"><h3>${EMOJI[g.kind]} ${esc(kindOf(g.kind).label)}</h3><span>${g.places.length ? `${g.places.length}${g.more ? ` of ${g.places.length + g.more}` : ""} found` : ""}</span></div>`
-        + (g.places.length ? g.places.map((p, i) => card(app, p, i, r.at, "walk", r.label)).join("")
-          : `<div class="empty">None ${bar.toLowerCase()} within a ${RADIUS_LABEL[r.radius]} walk.${g.almost ? ` ${g.almost} more with ${fmtN(Math.floor(r.minReviews / 3))}+ reviews: try fewer reviews.` : r.radius < 2 ? " Try a longer walk." : ""}</div>`)).join("")
+        + (g.places.length ? g.places.map((p, i) => card(app, p, i, r.at, r.range.mode, r.label)).join("")
+          : `<div class="empty">None ${bar.toLowerCase()} within a ${r.range.label}.${g.almost ? ` ${g.almost} more with ${fmtN(Math.floor(r.minReviews / 3))}+ reviews: try fewer reviews.` : r.range.id !== NEAR.ranges.at(-1).id ? ` Try a ${r.range.mode === "walk" ? "short drive" : "longer drive"}.` : ""}</div>`)).join("")
       + attrib;
     return;
   }

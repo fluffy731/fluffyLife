@@ -252,13 +252,28 @@ export function pickLate(places, { from, at, maxMinutes, priceMax = null }) {
 // ---------- Near a place: well-reviewed places around somewhere you're going ----------
 // Google gives each place its average rating and how many reviews it has (not how many are five-star), so
 // "great reviews" means an average of at least minRating from at least minReviews people.
-export const NEAR = { radii: [0.5, 1, 2], reviews: [300, 1000, 2000], ratings: [4.3, 4.5, 4.7], kinds: ["eat", "drink", "coffee"] };
+// How far: a short walk, or a short drive (drive minutes as the travel model counts them, parking included, so
+// a 15-minute drive reaches about 4 km by day, less at peak, more at night).
+export const NEAR = {
+  ranges: [
+    { id: "w500", mode: "walk", km: 0.5, label: "500 m walk", short: "🚶 500 m" },
+    { id: "w1", mode: "walk", km: 1, label: "1 km walk", short: "🚶 1 km" },
+    { id: "d10", mode: "drive", minutes: 10, label: "10 min drive", short: "🚗 10 min" },
+    { id: "d15", mode: "drive", minutes: 15, label: "15 min drive", short: "🚗 15 min" },
+    { id: "d20", mode: "drive", minutes: 20, label: "20 min drive", short: "🚗 20 min" },
+  ],
+  reviews: [300, 1000, 2000], ratings: [4.3, 4.5, 4.7], kinds: ["eat", "drink", "coffee"],
+};
+export const nearRange = (id) => NEAR.ranges.find((r) => r.id === id) || NEAR.ranges.find((r) => r.id === "d15");
+// The search radius for a range at a given time.
+export const rangeKm = (range, at = new Date()) => (range.mode === "walk" ? range.km : Math.max(0.5, reachKm(range.minutes, { mode: "drive", at })));
 
-export function pickNear(places, { center, radiusKm = 1, minRating = 4.5, minReviews = 1000, priceMax = null, max = 6 }) {
+export function pickNear(places, { center, range = "d15", at = new Date(), minRating = 4.5, minReviews = 1000, priceMax = null, max = 6 }) {
+  const r = typeof range === "string" ? nearRange(range) : range;
   const near = uniq(places).filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)).map((p) => {
     const km = haversineKm(center, p);
-    return { ...p, km: Math.round(km * 10) / 10, travel: travelMinutes(km, { mode: "walk" }) };
-  }).filter((p) => p.km <= radiusKm && fitsBudget(p, priceMax));
+    return { ...p, km: Math.round(km * 10) / 10, travel: travelMinutes(km, { mode: r.mode, at }) };
+  }).filter((p) => (r.mode === "walk" ? p.km <= r.km : p.travel <= r.minutes) && fitsBudget(p, priceMax));
   const rated = (p, r, n) => (p.rating ?? 0) >= r && (p.ratingCount ?? 0) >= n;
   const good = near.filter((p) => rated(p, minRating, minReviews))
     .sort((a, b) => b.rating - a.rating || b.ratingCount - a.ratingCount || a.km - b.km);

@@ -6,7 +6,7 @@ import {
   minutesLeft, isOpenAt, nextOpen, hoursLabel, dayHours,
   score, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, slotTimes, buildDayPlan, tomorrow,
   KEY, blank, load, save, areaFromAddress, savePlace, unsave, isSaved, staleSaved, addStamp, passportStats,
-  backupJSON, mergeBackup, noteRegion, saveEvent, unsaveEvent, isEventSaved, upcomingEvents, NEAR, pickNear,
+  backupJSON, mergeBackup, noteRegion, saveEvent, unsaveEvent, isEventSaved, upcomingEvents, NEAR, nearRange, rangeKm, pickNear,
 } from "../spots/model.js";
 import { REGIONS, surpriseRegion } from "../spots/regions.js";
 
@@ -510,15 +510,30 @@ test("pickNear: within the walk, rated high enough by enough people, best rated 
     at(0.3, { id: "dear", rating: 4.9, ratingCount: 3000, price: 4 }),
     { id: "nowhere", rating: 4.9, ratingCount: 9000, lat: null, lng: null },
   ];
-  const r = pickNear(list, { center: CBD, radiusKm: 1, minRating: 4.5, minReviews: 1000, priceMax: 3 });
+  const r = pickNear(list, { center: CBD, range: "w1", minRating: 4.5, minReviews: 1000, priceMax: 3 });
   assert.deepEqual(r.places.map((p) => p.id), ["C", "B", "A"], "same rating: more reviews first");
   assert.equal(r.almost, 1);
   assert.equal(r.more, 0);
   assert.equal(r.places[0].km, 0.2);
   assert.equal(r.places[0].travel, travelMinutes(haversineKm(CBD, list[2]), { mode: "walk" }), "walking minutes from the place you're going");
-  assert.deepEqual(pickNear(list, { center: CBD, radiusKm: 2, minRating: 4.5, minReviews: 1000 }).places.map((p) => p.id), ["far", "dear", "C", "B", "A"]);
-  assert.equal(pickNear(list, { center: CBD, radiusKm: 2, minRating: 4.5, minReviews: 1000, max: 2 }).more, 3);
   assert.deepEqual(NEAR.reviews, [300, 1000, 2000]);
+});
+
+test("pickNear by car: anything within the drive, with drive minutes; a 15-minute drive is the default", () => {
+  const wed1pm = new Date(2026, 10, 18, 13);
+  const at = (km, o) => ({ id: o.id, name: o.id, kind: "eat", lat: CBD.lat + km / 111.2, lng: CBD.lng, rating: 4.7, ratingCount: 2000, ...o });
+  const list = [at(0.4, { id: "near" }), at(3.2, { id: "short drive" }), at(5, { id: "too far" })];
+  const r = pickNear(list, { center: CBD, at: wed1pm });
+  assert.deepEqual(r.places.map((p) => p.id), ["near", "short drive"], "default: 15 min drive");
+  assert.equal(r.places[1].travel, travelMinutes(haversineKm(CBD, list[1]), { mode: "drive", at: wed1pm }));
+  assert.ok(r.places[1].travel <= 15);
+  assert.deepEqual(pickNear(list, { center: CBD, range: "d20", at: wed1pm }).places.map((p) => p.id), ["near", "short drive", "too far"]);
+  assert.deepEqual(pickNear(list, { center: CBD, range: "w1", at: wed1pm }).places.map((p) => p.id), ["near"]);
+  assert.equal(pickNear(list, { center: CBD, range: "d20", at: wed1pm, max: 1 }).more, 2);
+  assert.equal(nearRange("nonsense").id, "d15");
+  assert.equal(rangeKm(nearRange("w1")), 1);
+  assert.equal(rangeKm(nearRange("d15"), wed1pm), reachKm(15, { at: wed1pm }), "the drive's reach by day");
+  assert.ok(rangeKm(nearRange("d15"), new Date(2026, 10, 18, 17, 30)) < rangeKm(nearRange("d15"), wed1pm), "less far at peak");
 });
 
 test("saveEvent from the weekend list saves it for the weekend, not today", () => {
