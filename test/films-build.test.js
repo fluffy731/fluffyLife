@@ -1,8 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdtempSync, existsSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
-  GENRE_IDS, MIN_VOTES, VOTED_FLOOR, auth, cellQueries, nowQuery, filmFrom, trimPlot, assemble, isThin, needsBuild, summary,
+  GENRE_IDS, MIN_VOTES, VOTED_FLOOR, auth, cellQueries, nowQuery, filmFrom, trimPlot, assemble, isThin, needsBuild, summary, run,
 } from "../scripts/build-films.mjs";
 
 const fx = (n) => JSON.parse(readFileSync(new URL(`./fixtures/films/${n}`, import.meta.url), "utf8"));
@@ -141,4 +143,114 @@ test("summary never prints a plot", () => {
   assert.match(out, /poster \d+%/);
   assert.match(out, /size \d+ KB/);
   assert.match(out, /sample \d+ .+ \(\d{4}\)/);
+});
+
+// ---------- the runner, against a fake TMDB ----------
+
+const discover = fx("discover.json");
+const KEY = "secret-test-key-123";
+// A fake fetch: discover pages from the fixture, details by id; records every call; `plan` can override answers.
+function fakeTMDB(plan = {}) {
+  const calls = [];
+  const fetch = async (url, init = {}) => {
+    const u = new URL(url);
+    calls.push(u.pathname);
+    if (u.hostname !== "api.themoviedb.org") return new Response("no", { status: 404 });
+    if (u.searchParams.get("api_key") !== KEY) return new Response("{}", { status: 401 });
+    const over = plan[u.pathname]?.shift?.();
+    if (over) return new Response(over.body ?? "{}", { status: over.status, headers: over.headers || {} });
+    if (u.pathname === "/3/discover/movie") return new Response(JSON.stringify(plan.emptyDiscover ? { ...discover, results: [] } : discover));
+    const id = u.pathname.match(/^\/3\/movie\/(\d+)$/)?.[1];
+    if (id && details[id]) return new Response(JSON.stringify(details[id]));
+    return new Response("{}", { status: 404 });
+  };
+  return { fetch, calls, detailCalls: () => calls.filter((c) => c.startsWith("/3/movie/")) };
+}
+const tmp = () => {
+  const dir = mkdtempSync(join(tmpdir(), "films-"));
+  return { out: join(dir, "feed.json"), cacheDir: join(dir, "cache") };
+};
+const NOW = new Date("2026-11-15T03:00:00Z");
+const quiet = () => {};
+
+test("run skips without a key", async () => {
+  const lines = [];
+  const r = await run({ key: "", fetch: fakeTMDB().fetch, ...tmp(), log: (l) => lines.push(l) });
+  assert.deepEqual(r, { wrote: false, feed: null });
+  assert.match(lines.join("\n"), /TMDB_API_KEY not set: skipping films/);
+});
+
+test("run builds a feed from fixtures and caches details", async () => {
+  const t = tmp(), tm = fakeTMDB();
+  const r = await run({ key: KEY, fetch: tm.fetch, now: NOW, ...t, thinFloor: 1, rules: "r1", log: quiet });
+  assert.equal(r.wrote, true);
+  const feed = JSON.parse(readFileSync(t.out, "utf8"));
+  assert.deepEqual(feed.films.map((f) => f.id).sort((a, b) => a - b), [79, 289, 843, 9470, 10775, 11423, 43049, 311324, 900001]);
+  assert.equal(feed.rules, "r1");
+  assert.equal(feed.built, NOW.toISOString());
+  assert.deepEqual(feed.films.find((f) => f.id === 9470).places, ["HK", "CN"]);
+  assert.equal(tm.detailCalls().length, 11, "each film's details fetched once");
+  const again = fakeTMDB();
+  await run({ key: KEY, fetch: again.fetch, now: NOW, ...t, thinFloor: 1, rules: "r1", force: true, log: quiet });
+  assert.equal(again.detailCalls().length, 0, "details come from the cache");
+});
+
+test("run re-fetches details older than 30 days", async () => {
+  const t = tmp();
+  await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, thinFloor: 1, log: quiet });
+  const cacheFile = join(t.cacheDir, "details.json");
+  const cache = JSON.parse(readFileSync(cacheFile, "utf8"));
+  cache["843"].at = new Date(NOW - 31 * 864e5).toISOString();
+  writeFileSync(cacheFile, JSON.stringify(cache));
+  const tm = fakeTMDB();
+  await run({ key: KEY, fetch: tm.fetch, now: NOW, ...t, thinFloor: 1, force: true, log: quiet });
+  assert.deepEqual(tm.detailCalls(), ["/3/movie/843"]);
+});
+
+test("run retries a 429 then succeeds", async () => {
+  const t = tmp(), tm = fakeTMDB({ "/3/movie/10775": [{ status: 429, headers: { "Retry-After": "0" } }] });
+  const r = await run({ key: KEY, fetch: tm.fetch, now: NOW, ...t, thinFloor: 1, log: quiet });
+  assert.ok(r.feed.films.some((f) => f.id === 10775));
+  assert.equal(tm.detailCalls().filter((c) => c === "/3/movie/10775").length, 2);
+  assert.equal(r.feed.sources.failed, 0);
+});
+
+test("run keeps the old feed when the new one is thin", async () => {
+  const t = tmp();
+  await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, thinFloor: 1, log: quiet });
+  const before = readFileSync(t.out, "utf8");
+  const lines = [];
+  const r = await run({ key: KEY, fetch: fakeTMDB({ emptyDiscover: true }).fetch, now: NOW, ...t, force: true, log: (l) => lines.push(l) });
+  assert.equal(r.wrote, false);
+  assert.equal(readFileSync(t.out, "utf8"), before);
+  assert.match(lines.join("\n"), /thin/i);
+});
+
+test("run logs no plots and never the key", async () => {
+  const lines = [];
+  await run({ key: KEY, fetch: fakeTMDB({ "/3/movie/843": [{ status: 500 }, { status: 500 }, { status: 500 }, { status: 500 }] }).fetch,
+    now: NOW, ...tmp(), thinFloor: 1, log: (l) => lines.push(String(l)) });
+  const out = lines.join("\n");
+  assert.ok(!out.includes(KEY), "the key never reaches the log");
+  for (const d of Object.values(details)) if (d.overview) assert.ok(!out.includes(d.overview.slice(0, 30)));
+  assert.match(out, /failed 1/, "a detail that fails four times counts once");
+});
+
+test("run returns early when the feed is fresh", async () => {
+  const t = tmp();
+  await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, thinFloor: 1, rules: "r1", log: quiet });
+  const tm = fakeTMDB();
+  const r = await run({ key: KEY, fetch: tm.fetch, now: new Date(NOW.getTime() + 2 * 864e5), ...t, rules: "r1", log: quiet });
+  assert.equal(r.wrote, false);
+  assert.equal(tm.calls.length, 0);
+  const rebuilt = await run({ key: KEY, fetch: fakeTMDB().fetch, now: new Date(NOW.getTime() + 2 * 864e5), ...t, rules: "r2", thinFloor: 1, log: quiet });
+  assert.equal(rebuilt.wrote, true, "a rules change rebuilds at once");
+});
+
+test("run --probe writes into the cache folder, not the site", async () => {
+  const t = tmp();
+  const r = await run({ key: KEY, fetch: fakeTMDB().fetch, now: NOW, ...t, thinFloor: 1, probe: true, log: quiet });
+  assert.equal(r.wrote, true);
+  assert.ok(!existsSync(t.out));
+  assert.ok(existsSync(join(t.cacheDir, "probe-feed.json")));
 });
