@@ -78,7 +78,9 @@ export function renderSaved(app) {
 
 export function openCheckIn(app, pre) {
   const seen = new Set(), cands = [];
-  const r = app.lastResult, found = r ? (r.places || r.plan.map((s) => s.place)).filter(Boolean) : [];
+  // The places from the last search, whichever mode found them (a list, Near's groups, or Tomorrow's plan).
+  const r = app.lastResult;
+  const found = (r ? r.places || (r.groups ? r.groups.flatMap((g) => g.places) : r.plan ? r.plan.map((s) => s.place) : []) : []).filter(Boolean);
   // Saved events on today come straight after the place you tapped: you're probably there.
   const today = iso(new Date());
   // The stamp's area is the suburb (Passport counts suburbs), not the venue.
