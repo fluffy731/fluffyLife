@@ -139,10 +139,21 @@ test("isOpening needs an opening word, or 'new' next to a venue", () => {
   assert.ok(!isOpening("Victoria's premier announces new budget measures"));
   assert.ok(!isOpening("Beloved Fitzroy cafe to close, then reopen"), "closures win");
   assert.ok(isRoundup("The best things to do in Melbourne this weekend (November 14–15)"));
+  assert.ok(!isOpening("PHOTOS: Melbourne Queer Film Festival Opening Night 2026"));
+  assert.ok(!isOpening("Inside the opening weekend of the festival"));
   assert.equal(freshKind("https://x/melbourne/cafes/a", "Anything"), "coffee");
   assert.equal(freshKind("https://x/news/a", "A gelato bar arrives"), "dessert");
   assert.equal(freshKind("https://x/news/a", "A pizza bar opens"), "eat");
   assert.equal(freshKind("https://x/news/a", "A wine bar opens"), "drink");
+});
+
+test("round-ups must be about Melbourne", () => {
+  const xml = `<rss><channel>
+    <item><title>The best things to do in Sydney this weekend - Secret Sydney</title><link>https://n/1</link><pubDate>Fri, 13 Nov 2026 02:00:00 GMT</pubDate></item>
+    <item><title>Things to do this weekend - About Regional</title><link>https://n/2</link><pubDate>Fri, 13 Nov 2026 02:00:00 GMT</pubDate></item>
+    <item><title>Things to do in Melbourne this weekend - Urban List</title><link>https://n/3</link><pubDate>Fri, 13 Nov 2026 02:00:00 GMT</pubDate></item>
+  </channel></rss>`;
+  assert.deepEqual(roundupsFrom("gnews", xml).map((r) => r.source), ["Urban List"]);
 });
 
 test("round-ups: one per source, the last 7 days", () => {

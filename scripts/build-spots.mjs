@@ -166,7 +166,8 @@ export function mergeEvents(lists, today) {
 const OPEN = /\b(opens?|opening|opened|now open|newest|launch(es|ed|ing)?|debuts?|arriv(es|ing|ed)|coming soon|pop-?ups?|first look|returns?|is back|unveil\w*|reopen\w*)\b|\bnew\s+(\S+\s+){0,2}(restaurants?|bars?|caf[eé]s?|venues?|spots?|eater(y|ies)|bak(ery|eries)|pubs?|rooftops?|markets?|exhibitions?|festivals?|shows?|menus?|stores?|precincts?|dessert|gelato|cinemas?|galler(y|ies)|attractions?|openings?|diner|wine bar|food hall)\b/i;
 const CLOSE = /\b(clos(e|es|ed|ing|ure|ures)|shut(s|ting)?|calls? it quits|final (days|service)|goes bust|administration)\b/i;
 const ELSEWHERE = /\b(Sydney|Perth|Brisbane|Adelaide|Hobart|Canberra|Gold Coast|Darwin|Auckland|NSW|Queensland)\b/i;
-export const isOpening = (title) => OPEN.test(title) && !CLOSE.test(title);
+const NOT_NEW = /\bopening (night|weekend|party|ceremony)\b|^\s*(photos?|gallery|watch|video|listen)\s*:/i;
+export const isOpening = (title) => OPEN.test(title) && !CLOSE.test(title) && !NOT_NEW.test(title);
 export const isRoundup = (title) => /\b(things to do|what'?s on|best events)\b.*\b(this weekend|this week|weekend)\b|\bthis weekend in melbourne\b/i.test(title);
 const KIND_PATH = [[/\/restaurants?\//, "eat"], [/\/bars?\//, "drink"], [/\/(cafes?|coffee)\//, "coffee"]];
 const KIND_WORD = [
@@ -210,8 +211,8 @@ export function roundupsFrom(src, xml) {
     let title = it.title, source = src === "timeout" ? "Time Out" : "";
     const m = src === "gnews" && title.match(/^(.*\S)\s+-\s+([^-]+)$/);
     if (m) { title = m[1]; source = m[2].trim(); }
-    return { title, source, url: it.link, date: it.time ? melb(new Date(it.time)).date : null };
-  }).filter((r) => isRoundup(r.title) && r.date);
+    return { title: src === "timeout" && !/\bMelb/i.test(title) ? `${title} (Melbourne)` : title, source, url: it.link, date: it.time ? melb(new Date(it.time)).date : null };
+  }).filter((r) => isRoundup(r.title) && r.date && /\bMelb/i.test(r.title) && !ELSEWHERE.test(`${r.title} ${r.source}`));
 }
 
 // New items first, then the last feed's, each once (by id or same headline), inside the window, newest first.
