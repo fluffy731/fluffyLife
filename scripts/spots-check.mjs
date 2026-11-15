@@ -31,14 +31,15 @@ const FEED = JSON.stringify({
 });
 
 // Opens Spots on Explore (where most checks start) unless tab says otherwise; feed: true serves the sample feed.
-async function newPage({ geo = true, at = WED_1PM, sample = false, tab = "explore", feed = true } = {}) {
+async function newPage({ geo = true, at = WED_1PM, sample = false, tab = "explore", feed = true, patch = null } = {}) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: "block",
     ...(geo ? { permissions: ["geolocation"], geolocation: { latitude: -37.8136, longitude: 144.9631 } } : {}) });
   const page = await ctx.newPage();
   page.on("pageerror", (e) => errs.push(e.message));
   await page.clock.setFixedTime(at);
   if (sample) await page.addInitScript(sampleOn);
-  await page.route("**/spots/feed.json", (r) => (feed ? r.fulfill({ contentType: "application/json", body: FEED }) : r.fulfill({ status: 404, body: "" })));
+  const body = patch ? JSON.stringify(patch(JSON.parse(FEED))) : FEED;
+  await page.route("**/spots/feed.json", (r) => (feed ? r.fulfill({ contentType: "application/json", body }) : r.fulfill({ status: 404, body: "" })));
   await page.route(/^https:\/\/(cdn\.eventfinda|media\.timeout|cdn\.concreteplayground)/, (r) => r.fulfill({ status: 404, body: "" }));
   await page.goto(base, { waitUntil: "load" });
   if (tab !== "today") await page.click(`.tab[data-tab="${tab}"]`);
@@ -247,7 +248,12 @@ await page.click("#find");
 await page.waitForSelector(".region", { timeout: 10000 });
 ok("Near shows top-rated places around the place typed, by kind", (await page.textContent(".region")).includes("Top-rated near") && (await page.textContent(".region h3")) === "Fitzroy" && (await page.locator("#results .res-head").count()) === 3);
 ok(`every place shown is rated ★ 4.5 or more by at least 1,000 people (${await page.locator(".result").count()} shown)`, (await page.locator(".result").count()) > 0 && await ratingsOK() && await countsOK());
-ok("distances are walks from the place you're going", (await page.textContent(".result .meta >> nth=1")).includes("walk from Fitzroy"));
+ok("a 15-minute drive is the default, and distances are drives from the place you're going", (await page.locator('[data-nrange="d15"][aria-pressed=true]').count()) === 1 && (await page.textContent(".result .meta >> nth=1")).includes("drive from Fitzroy") && (await page.textContent(".region")).includes("within a 15 min drive"));
+await page.click('[data-nrange="w1"]');
+await page.click("#find");
+await page.waitForFunction(() => document.querySelector(".region")?.textContent.includes("1 km walk"), null, { timeout: 10000 });
+ok("a walk instead shows walks from the place you're going", (await page.locator(".result").count()) === 0 || (await page.textContent(".result .meta >> nth=1")).includes("walk from Fitzroy"));
+await page.click('[data-nrange="d15"]');
 await page.click('[data-nrev="300"]');
 await page.click("#find");
 await page.waitForFunction(() => document.querySelectorAll(".result").length > 0, null, { timeout: 10000 });
@@ -264,6 +270,25 @@ await page.click("#sheet [data-evnear]");
 await page.waitForSelector(".region", { timeout: 10000 });
 ok("an event's Top-rated near here opens Near for its venue", (await page.inputValue("#near-q")) === "Queen Victoria Market, Queen St, Melbourne 3000" && (await page.textContent(".region h3")) === "Queen Victoria Market");
 await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/spots-near.png` : "/tmp/spots-near.png", fullPage: true });
+
+// 14. Weather: a dry, mild afternoon suggests the outdoors; Nature finds parks and trails even with no listed hours
+const dry = (f) => ({ ...f, weather: [{ date: FEED_DAY, rain: 10, max: 21, code: 2, wind: 18, sunset: "20:13" }],
+  hourly: [13, 14, 15, 16, 17].map((h) => ({ t: `${FEED_DAY}T${h}:00`, rain: 5, code: 2, temp: 20 })) });
+page = await newPage({ at: new Date(2026, 10, 15, 14, 0), sample: true, tab: "today", patch: dry });
+await page.waitForSelector("[data-idea]");
+ok("a dry Sunday afternoon offers a walk in a park first", (await page.getAttribute("[data-idea] >> nth=0", "data-idea")) === "nature" && (await page.textContent("[data-idea] >> nth=0")).includes("and dry"));
+ok("the moment line shows the next 3 hours", (await page.textContent(".moment")).includes("5% rain next 3 h"));
+await page.click('[data-idea="nature"]');
+await page.waitForSelector(".result", { timeout: 10000 });
+ok("Walk in a park searches Nature for 3 hours and finds parks, some with no set hours",
+  (await page.locator('.kinds [data-kind="nature"][aria-pressed=true]').count()) === 1 && (await page.locator('[data-min="180"][aria-pressed=true]').count()) === 1
+  && (await page.locator('.result[data-kind="nature"]').count()) > 0 && /No set hours|Open 24 hours/.test(await page.textContent("#results")));
+await page.click("#mode-late");
+ok("Late night doesn't offer Nature or Beach", (await page.locator('.kinds [data-kind="nature"], .kinds [data-kind="beach"]').count()) === 0);
+
+page = await newPage({ at: new Date(2026, 10, 15, 10, 30), sample: true, tab: "today" });
+await page.waitForSelector("[data-idea]");
+ok("a rainy morning offers nothing outdoors", !(await page.$$eval("[data-idea]", (bs) => bs.map((b) => b.dataset.idea))).some((id) => ["nature", "trail", "beach", "sunset", "outAbout"].includes(id)));
 
 page = await newPage({ at: new Date(2026, 10, 20, 19, 0), sample: true, tab: "today" });
 await page.waitForSelector("[data-idea]");

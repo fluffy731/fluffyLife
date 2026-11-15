@@ -21,6 +21,35 @@ export function clock(hhmm) {
 export const holidayOn = (feed, day) => (feed && Array.isArray(feed.holidays) ? feed.holidays.find((h) => h.date === day)?.name || null : null);
 export const weatherOn = (feed, day) => (feed && Array.isArray(feed.weather) ? feed.weather.find((w) => w.date === day) || null : null);
 
+// ---------- weather ----------
+// WMO codes: 0 clear, 1 mostly clear, 2 partly cloudy, 3 overcast, 45/48 fog, 51–67 drizzle and rain, 71–77 snow,
+// 80–82 showers, 85–86 snow showers, 95–99 storms.
+const wetCode = (c) => c != null && ((c >= 51 && c <= 67) || c >= 71);
+export function skyIcon(code, rain = 0, max = null) {
+  if (code == null) return rain >= 60 ? "🌧" : rain >= 30 ? "🌦" : max >= 30 ? "🔥" : "☀️";
+  return code >= 95 ? "⛈" : wetCode(code) ? "🌧" : code >= 45 ? "🌫" : code === 3 ? "☁️" : code === 2 ? "⛅" : code === 1 ? "🌤" : "☀️";
+}
+// good: dry (under 30% rain, sunny or cloudy), 14° or warmer, not very windy (under 45 km/h). wet: 50% rain or more, or
+// raining. mixed: anything between. beachy: good, 24° or warmer and calmer (under 35 km/h). hot: 30° or more.
+export function weatherState(w) {
+  if (!w || (w.rain == null && w.code == null)) return { ...(w || {}), state: null, beachy: false, hot: false };
+  const wet = (w.rain ?? 0) >= 50 || wetCode(w.code);
+  const good = !wet && (w.rain ?? 0) < 30 && (w.code == null || w.code <= 3) && (w.max == null || w.max >= 14) && (w.wind == null || w.wind < 45);
+  return { ...w, state: wet ? "wet" : good ? "good" : "mixed", beachy: good && (w.max ?? 0) >= 24 && (w.wind == null || w.wind < 35), hot: (w.max ?? 0) >= 30 };
+}
+const hourOf = (at) => `${iso(at)}T${String(at.getHours()).padStart(2, "0")}:00`;
+// The next few hours (the feed's hourly forecast; the day's figures when there's none), with the day's top
+// temperature, wind and sunset.
+export function weatherNow(feed, at, { hours = 3 } = {}) {
+  const d = weatherOn(feed, iso(at));
+  const hs = feed && Array.isArray(feed.hourly) ? feed.hourly.filter((h) => h.t >= hourOf(at)).slice(0, hours) : [];
+  if (!hs.length) return weatherState(d ? { rain: d.rain, code: d.code ?? null, max: d.max, wind: d.wind ?? null, sunset: d.sunset ?? null, hourly: false } : null);
+  return weatherState({ rain: Math.max(...hs.map((h) => h.rain ?? 0)), code: hs[0].code, temp: hs[0].temp, max: d?.max ?? hs[0].temp,
+    wind: d?.wind ?? null, sunset: d?.sunset ?? null, hourly: true });
+}
+// Minutes of daylight left: to sunset when known, else a rough 7 pm.
+export const daylightLeft = (w, at) => (w && w.sunset ? toMin(w.sunset) : 19 * 60) - (at.getHours() * 60 + at.getMinutes());
+
 // A public holiday counts as a Sunday.
 export function dayType(at, feed) {
   if (holidayOn(feed, iso(at))) return "sunday";
@@ -58,9 +87,11 @@ function group(e, day) {
   if (startOn(e, day)) return 3;
   return 4;
 }
-export function rank(list, day, { rain = null } = {}) {
+export function rank(list, day, { rain = null, good = false } = {}) {
   const wet = rain != null && rain >= 60;
-  const key = (e) => [group(e, day), wet && e.outdoor ? 1 : 0, e.free ? 0 : 1, startOn(e, day) ? toMin(startOn(e, day)) : 9999];
+  // Rain likely: outdoor last among equals. A good day: outdoor first.
+  const sky = (e) => (wet && e.outdoor ? 1 : good && !e.outdoor ? 1 : 0);
+  const key = (e) => [group(e, day), sky(e), e.free ? 0 : 1, startOn(e, day) ? toMin(startOn(e, day)) : 9999];
   return [...list].sort((a, b) => {
     const ka = key(a), kb = key(b);
     for (let i = 0; i < ka.length; i++) if (ka[i] !== kb[i]) return ka[i] - kb[i];
@@ -90,7 +121,8 @@ const matches = (e, filter) => !filter || (filter === "free" ? !!e.free : e.cat 
 export function onToday(feed, at, { filter = null } = {}) {
   const day = iso(at);
   const list = (feed && Array.isArray(feed.events) ? feed.events : []).filter((e) => isOnDay(e, day) && stillOn(e, day, at) && matches(e, filter));
-  return rank(list, day, { rain: weatherOn(feed, day)?.rain ?? null });
+  const w = weatherNow(feed, at);
+  return rank(list, day, { rain: w.state === "wet" ? 100 : weatherOn(feed, day)?.rain ?? null, good: w.state === "good" });
 }
 
 // Monday to Friday: this weekend. Saturday and Sunday: tomorrow.
@@ -98,12 +130,14 @@ export function nextList(feed, at) {
   const day = iso(at), w = at.getDay(), all = feed && Array.isArray(feed.events) ? feed.events : [];
   if (w === 6 || w === 0) {
     const tmr = addDays(day, 1);
-    return { title: "Tomorrow", day: tmr, events: rank(all.filter((e) => isOnDay(e, tmr)), tmr, { rain: weatherOn(feed, tmr)?.rain ?? null }) };
+    const wt = weatherOn(feed, tmr);
+    return { title: "Tomorrow", day: tmr, events: rank(all.filter((e) => isOnDay(e, tmr)), tmr, { rain: wt?.rain ?? null, good: weatherState(wt).state === "good" }) };
   }
   const sat = addDays(day, 6 - w), sun = addDays(sat, 1);
   const rain = Math.max(weatherOn(feed, sat)?.rain ?? 0, weatherOn(feed, sun)?.rain ?? 0);
   const list = all.filter((e) => (!e.to || e.to >= sat) && (e.weekend === sat || isOnDay(e, sat) || isOnDay(e, sun)));
-  return { title: "This weekend", day: sat, events: rank(list, sat, { rain }) };
+  const good = [sat, sun].every((d) => weatherState(weatherOn(feed, d)).state === "good");
+  return { title: "This weekend", day: sat, events: rank(list, sat, { rain, good }) };
 }
 
 // The short line under an event's title. withDay names the day (for the weekend and tomorrow lists).
@@ -146,7 +180,13 @@ export const IDEAS = {
   lateEats: { emoji: "🌙", label: "Late-night eats", sub: "Still open · 30 min drive", preset: P("late", { lateKinds: ["eat", "dessert"], late: 30 }) },
   lateBar: { emoji: "🍸", label: "Bar still open", sub: "Still open · 30 min drive", preset: P("late", { lateKinds: ["drink"], late: 30 }) },
   tomorrow: { emoji: "🗺️", label: "Plan tomorrow", sub: "A day trip somewhere new", preset: P("tomorrow", { where: "surprise", pace: "relaxed", start: "09:00" }) },
+  // Good weather
+  nature: { emoji: "🌳", label: "Walk in a park", sub: "Parks, gardens and trails · 3 h", preset: P("now", { kinds: ["nature"], minutes: 180 }) },
+  trail: { emoji: "🥾", label: "Trail or bushwalk", sub: "A longer walk · half day", preset: P("now", { kinds: ["nature"], minutes: 240 }) },
+  beach: { emoji: "🏖️", label: "Beach", sub: "Bay and surf beaches · 3 h", preset: P("now", { kinds: ["beach"], minutes: 180 }) },
+  sunset: { emoji: "🌅", label: "Sunset walk", sub: "A park or the beach · 2 h", preset: P("now", { kinds: ["nature", "beach"], minutes: 120 }) },
 };
+const OUTDOOR_IDEAS = new Set(["nature", "trail", "beach", "sunset", "outAbout"]);
 const EV = { market: "Markets", festival: "Festivals", comedy: "Comedy", music: "Live music", free: "Free things" };
 const EV_EMOJI = { market: "🛍️", festival: "🎉", comedy: "🎤", music: "🎵", free: "🆓" };
 
@@ -162,17 +202,38 @@ const TABLE = {
     afternoon: ["outAbout", "dessert", "ev:festival"], evening: ["dinner", "ev:comedy", "ev:music", "tomorrow"], late: ["lateEats", "lateBar"] },
 };
 
-// Up to three ideas for this moment. Rain (60% or more) swaps outdoor ideas for indoor ones; 30° or hotter puts
-// gelato first; an events idea shows only when the feed has some on; Plan tomorrow only before a weekend or holiday day.
+// Up to three ideas for this moment, for the weather of the next few hours (weatherNow):
+//  - good: out and about becomes a trail (weekend mornings), the beach (warm and calm) or a walk in a park, and a
+//    gallery becomes a park; in the evening a sunset walk while there's daylight; outdoor ideas need 90 min of daylight.
+//  - wet: out and about becomes a gallery and something fun indoors; nothing outdoors.
+//  - 30° or hotter: the beach first when it's calm enough, gelato next.
+// An events idea shows only when the feed has some on; Plan tomorrow only before a weekend or holiday day.
 // saved: the saved events (model.upcomingEvents); one on today, not yet started, puts "Near <venue>" first.
 export function ideasFor(at, feed, { max = 3, saved = [] } = {}) {
   const day = iso(at), tmr = addDays(day, 1), part = partOf(at), type = dayType(at, feed);
-  const wx = weatherOn(feed, day), wxT = weatherOn(feed, tmr);
-  const wet = (wx?.rain ?? 0) >= 60, hot = (wx?.max ?? 0) >= 30;
+  const w = weatherNow(feed, at), wxT = weatherOn(feed, tmr);
+  const wet = w.state === "wet", good = w.state === "good", hot = w.hot, light = daylightLeft(w, at);
+  const weekend = type === "saturday" || type === "sunday";
   const tmrFree = [0, 6].includes(dateOf(tmr).getDay()) || !!holidayOn(feed, tmr);
   let ids = [...TABLE[type][part]];
   if (wet) ids = ids.flatMap((id) => (id === "outAbout" ? ["museum", "fun"] : [id]));
-  if (hot && ["lunch", "afternoon", "evening"].includes(part)) ids = ["dessert", ...ids.filter((id) => id !== "dessert")];
+  if (good) {
+    const outing = part === "morning" && weekend ? ["trail", "nature"] : w.beachy ? ["beach", "nature"] : ["nature"];
+    ids = ids.flatMap((id) => (id === "outAbout" ? outing : id === "museum" ? ["nature"] : [id]));
+    if (part === "evening" && light >= 30 && light <= 180) ids.splice(1, 0, "sunset");
+  }
+  if (hot && ["lunch", "afternoon", "evening"].includes(part)) {
+    ids = ids.filter((id) => id !== "dessert");
+    ids = w.beachy ? ["beach", "dessert", ...ids.filter((id) => id !== "beach")] : ["dessert", ...ids];
+  }
+  // Outdoors only in the dry, and in daylight: 90 minutes of it for a walk or the beach, 30 for a sunset walk.
+  const fits = (id) => {
+    if (!OUTDOOR_IDEAS.has(id)) return true;
+    if (wet) return false;
+    if (id === "outAbout") return true;
+    return id === "sunset" ? light >= 30 : light >= 90;
+  };
+  ids = ids.filter(fits);
   if (tmrFree && part === "evening" && !ids.includes("tomorrow")) ids.push("tomorrow");
   if (!tmrFree) ids = ids.filter((id) => id !== "tomorrow");
 
@@ -193,7 +254,11 @@ export function ideasFor(at, feed, { max = 3, saved = [] } = {}) {
       continue;
     }
     const idea = { id, ...IDEAS[id], preset: { ...IDEAS[id].preset } };
-    if (id === "dessert" && hot) { idea.label = "Gelato weather"; idea.sub = `${wx.max}° today · open now`; }
+    const sky = `${skyIcon(w.code, w.rain, w.max)} ${w.max ?? "?"}°`;
+    if (id === "dessert" && hot) { idea.label = "Gelato weather"; idea.sub = `${w.max}° today · open now`; }
+    if ((id === "nature" || id === "trail" || id === "beach") && good) idea.sub = `${sky} and dry · ${id === "trail" ? "half day" : "3 h"}`;
+    if (id === "sunset") idea.sub = `Sunset ${clock(w.sunset || "19:00")} · a park or the beach`;
+    if ((id === "museum" || id === "fun") && wet) idea.sub = `${skyIcon(w.code, w.rain)} Rain likely · indoors`;
     if (id === "drinks" && type === "friday") idea.label = "Friday drinks";
     if (id === "tomorrow" && (wxT?.rain ?? 0) >= 60) { idea.preset.where = "town"; idea.sub = `Around town · ${wxT.rain}% rain tomorrow`; }
     if (id === "tomorrow" && holidayOn(feed, tmr)) idea.sub = `${holidayOn(feed, tmr)} · ${idea.preset.where === "town" ? "around town" : "a day trip"}`;
@@ -202,11 +267,12 @@ export function ideasFor(at, feed, { max = 3, saved = [] } = {}) {
   return out;
 }
 
-// The line under the date: "Sunday morning · 🌧 92% · 17°", with the holiday's name when there is one.
+// The line under the date: "Sunday morning · 🌧 92% rain · 17°" (the next 3 hours' rain when the feed has hours,
+// then the day's top), "windy" from 40 km/h, and the holiday's name when there is one.
 export function momentLine(at, feed) {
-  const day = iso(at), wx = weatherOn(feed, day), hol = holidayOn(feed, day);
+  const day = iso(at), w = weatherNow(feed, at), hol = holidayOn(feed, day);
   const name = at.toLocaleDateString("en-AU", { weekday: "long" });
   const bits = [hol ? `${hol} · ${PART_NAME[partOf(at)]}` : `${name} ${PART_NAME[partOf(at)]}`];
-  if (wx) bits.push(`${wx.rain >= 60 ? "🌧" : wx.rain >= 30 ? "🌦" : wx.max >= 30 ? "🔥" : "☀️"} ${wx.rain ?? "?"}% rain · ${wx.max ?? "?"}°`);
+  if (w.state) bits.push(`${skyIcon(w.code, w.rain, w.max)} ${w.rain ?? "?"}% rain${w.hourly ? " next 3 h" : ""} · ${w.max ?? "?"}°${(w.wind ?? 0) >= 40 ? " · windy" : ""}`);
   return bits.join(" · ");
 }

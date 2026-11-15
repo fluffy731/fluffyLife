@@ -4,8 +4,10 @@
   --page: #f4f1fa; --dots: #e2dcef; --card: #ffffff; --soft: #ece7f6; --ink: #1b1035; --muted: #5e5578; --hair: #d9d1e8;
   --line: #1b1035; --shadow: #1b1035;
   --eat: #ff6b35; --drink: #ff3d7f; --coffee: #8b5cf6; --sights: #2e6bff; --activities: #7bc300; --dessert: #8b5cf6;
+  --nature: #1fa45a; --beach: #14b8d4;
   --stamp: #e63946; --gold: #ffc93c;
   --on-eat: #1b1035; --on-drink: #1b1035; --on-coffee: #ffffff; --on-sights: #ffffff; --on-activities: #1b1035; --on-dessert: #ffffff;
+  --on-nature: #ffffff; --on-beach: #1b1035;
   --on-stamp: #ffffff; --on-gold: #1b1035;
   --pop: 4px 4px 0 var(--shadow); --pop-sm: 2px 2px 0 var(--shadow);
   --round: ui-rounded, "SF Pro Rounded", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
@@ -35,6 +37,8 @@
 [data-kind="sights"] { --k: var(--sights); --on-k: var(--on-sights); }
 [data-kind="activities"] { --k: var(--activities); --on-k: var(--on-activities); }
 [data-kind="dessert"] { --k: var(--dessert); --on-k: var(--on-dessert); }
+[data-kind="nature"] { --k: var(--nature); --on-k: var(--on-nature); }
+[data-kind="beach"] { --k: var(--beach); --on-k: var(--on-beach); }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }

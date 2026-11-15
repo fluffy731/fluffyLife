@@ -237,3 +237,8 @@ test("sample locate is the same spot for the same words, near the CBD", async ()
   assert.ok(haversineKm(CBD, a) < 9);
   assert.equal(a.sample, true);
 });
+
+test("toPlace without a kind: parks and gardens are Nature, beaches are Beach, a theme park isn't Nature", () => {
+  const k = (primaryType) => toPlace({ id: "x", displayName: "X", location: { lat: -37.8, lng: 145 }, primaryType }).kind;
+  assert.deepEqual(["park", "botanical_garden", "hiking_area", "beach", "amusement_park", "museum"].map(k), ["nature", "nature", "nature", "beach", "sights", "sights"]);
+});

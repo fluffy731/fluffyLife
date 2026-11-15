@@ -12,7 +12,12 @@ export const KINDS = [
   { id: "sights", label: "Sights", visit: 60, query: "tourist attraction", priced: false },
   { id: "activities", label: "Activities", visit: 90, query: "things to do", priced: false },
   { id: "dessert", label: "Dessert", visit: 30, query: "dessert", priced: true },
+  // Outdoors, for good weather. Several searches each; parks and beaches often list no hours, and count as open.
+  // day: not offered at night (Late night leaves them out).
+  { id: "nature", label: "Nature", visit: 90, query: "park", queries: ["park", "walking trail"], priced: false, alwaysOpen: true, day: true },
+  { id: "beach", label: "Beach", visit: 120, query: "beach", queries: ["beach"], priced: false, alwaysOpen: true, day: true },
 ];
+export const queriesOf = (k) => kindOf(k).queries || [kindOf(k).query];
 export const kindOf = (id) => KINDS.find((k) => k.id === id) || KINDS[0];
 
 const rad = (d) => (d * Math.PI) / 180;
@@ -191,6 +196,9 @@ export function dayHours(hours, day) {
 // Place: { id, name, kind, type, address, area, lat, lng, rating, ratingCount, price, priceRange, hours, off,
 //          photo: { url, author, authorUrl } | null, mapsUrl, summary: { text, disclosure } | null, reviews: [], sample? }
 
+// Minutes it stays open from `at`; a park or beach with no listed hours counts as open all day.
+export const openLeft = (p, at) => minutesLeft(p.hours, at, p.off) ?? (!p.hours && kindOf(p.kind).alwaysOpen ? 24 * 60 : null);
+
 // Bayesian rating: a few perfect reviews don't beat hundreds of good ones. Unknown rating counts as 3.5.
 export function score(p) {
   if (!Number.isFinite(p.rating)) return 3.5;
@@ -211,7 +219,7 @@ const uniq = (list) => { const seen = new Set(); return list.filter((p) => !seen
 export const visitFor = (kind, total) => Math.min(kindOf(kind).visit, Math.floor(total / 2));
 
 const nowChecks = (p, { at, minutes, priceMax, kind }) => {
-  const visit = visitFor(p.kind || kind, minutes), left = minutesLeft(p.hours, at, p.off);
+  const visit = visitFor(p.kind || kind, minutes), left = openLeft(p, at);
   return { open: left != null && left > 0, budget: fitsBudget(p, priceMax), near: p.travel <= driveBudget(minutes, visit), long: left != null && left >= visit + p.travel };
 };
 
@@ -252,13 +260,28 @@ export function pickLate(places, { from, at, maxMinutes, priceMax = null }) {
 // ---------- Near a place: well-reviewed places around somewhere you're going ----------
 // Google gives each place its average rating and how many reviews it has (not how many are five-star), so
 // "great reviews" means an average of at least minRating from at least minReviews people.
-export const NEAR = { radii: [0.5, 1, 2], reviews: [300, 1000, 2000], ratings: [4.3, 4.5, 4.7], kinds: ["eat", "drink", "coffee"] };
+// How far: a short walk, or a short drive (drive minutes as the travel model counts them, parking included, so
+// a 15-minute drive reaches about 4 km by day, less at peak, more at night).
+export const NEAR = {
+  ranges: [
+    { id: "w500", mode: "walk", km: 0.5, label: "500 m walk", short: "🚶 500 m" },
+    { id: "w1", mode: "walk", km: 1, label: "1 km walk", short: "🚶 1 km" },
+    { id: "d10", mode: "drive", minutes: 10, label: "10 min drive", short: "🚗 10 min" },
+    { id: "d15", mode: "drive", minutes: 15, label: "15 min drive", short: "🚗 15 min" },
+    { id: "d20", mode: "drive", minutes: 20, label: "20 min drive", short: "🚗 20 min" },
+  ],
+  reviews: [300, 1000, 2000], ratings: [4.3, 4.5, 4.7], kinds: ["eat", "drink", "coffee"],
+};
+export const nearRange = (id) => NEAR.ranges.find((r) => r.id === id) || NEAR.ranges.find((r) => r.id === "d15");
+// The search radius for a range at a given time.
+export const rangeKm = (range, at = new Date()) => (range.mode === "walk" ? range.km : Math.max(0.5, reachKm(range.minutes, { mode: "drive", at })));
 
-export function pickNear(places, { center, radiusKm = 1, minRating = 4.5, minReviews = 1000, priceMax = null, max = 6 }) {
+export function pickNear(places, { center, range = "d15", at = new Date(), minRating = 4.5, minReviews = 1000, priceMax = null, max = 6 }) {
+  const r = typeof range === "string" ? nearRange(range) : range;
   const near = uniq(places).filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)).map((p) => {
     const km = haversineKm(center, p);
-    return { ...p, km: Math.round(km * 10) / 10, travel: travelMinutes(km, { mode: "walk" }) };
-  }).filter((p) => p.km <= radiusKm && fitsBudget(p, priceMax));
+    return { ...p, km: Math.round(km * 10) / 10, travel: travelMinutes(km, { mode: r.mode, at }) };
+  }).filter((p) => (r.mode === "walk" ? p.km <= r.km : p.travel <= r.minutes) && fitsBudget(p, priceMax));
   const rated = (p, r, n) => (p.rating ?? 0) >= r && (p.ratingCount ?? 0) >= n;
   const good = near.filter((p) => rated(p, minRating, minReviews))
     .sort((a, b) => b.rating - a.rating || b.ratingCount - a.ratingCount || a.km - b.km);
@@ -278,6 +301,18 @@ const BASE = [
 ];
 export const DAY_SLOTS = { relaxed: BASE, full: [...BASE, slot("dinner", "Dinner", "18:30", ["eat"], "dinner restaurant", 75)] };
 
+// Tomorrow's slots for its weather (see today.js weatherState): a good day puts the afternoon outdoors (the beach on
+// a warm, calm day), a wet day keeps the morning and afternoon indoors.
+export function daySlots(pace, state = null, { beachy = false } = {}) {
+  const base = DAY_SLOTS[pace] || DAY_SLOTS.relaxed;
+  if (state === "good") return base.map((s) => (s.id === "afternoon"
+    ? (beachy ? slot("afternoon", "Afternoon at the beach", "14:30", ["beach"], "beach", 120) : slot("afternoon", "Afternoon outdoors", "14:30", ["nature"], "park walking trail", 90))
+    : s));
+  if (state === "wet") return base.map((s) => (s.id === "morning" ? slot("morning", "Morning indoors", "10:30", ["sights"], "museum gallery", 90)
+    : s.id === "afternoon" ? slot("afternoon", "Afternoon indoors", "14:30", ["activities"], "indoor activities", 90) : s));
+  return base;
+}
+
 export const tomorrow = (now) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
 const hhmm = (s) => { const [h, m] = String(s).split(":").map(Number); return (h || 0) * 60 + (m || 0); };
@@ -294,7 +329,7 @@ export function buildDayPlan(slots, candidatesBySlotId, { start, day, startTime 
   return slots.map((s, i) => {
     const at = times[i];
     const ok = uniq(candidatesBySlotId[s.id] || []).filter((p) => !used.has(p.id) && fitsBudget(p, priceMax)
-      && (minutesLeft(p.hours, at, p.off) ?? 0) >= s.visit)
+      && (openLeft(p, at) ?? 0) >= s.visit)
       .map((p) => annotate(p, here, { mode: "drive", at }))
       .sort((a, b) => (score(b) - 0.03 * b.travel) - (score(a) - 0.03 * a.travel));
     const place = ok[0] || null;

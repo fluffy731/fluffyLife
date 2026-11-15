@@ -2,8 +2,10 @@
 import {
   KINDS, kindOf, reachKm, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, buildDayPlan, tomorrow,
   travelMinutes, haversineKm, fmtMinutes, hoursLabel, minutesLeft, dayHours, priceSymbols, priceRangeLabel, mapsUrl,
-  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop, NEAR, pickNear, upcomingEvents,
+  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop, NEAR, nearRange, rangeKm, pickNear, upcomingEvents,
+  queriesOf, openLeft, daySlots,
 } from "./model.js";
+import { iso, weatherOn, weatherState, skyIcon } from "./today.js";
 import { REGIONS, surpriseRegion } from "./regions.js";
 import { $, EMOJI, esc, fmtCount, toast, openSheet, closeSheet, sheetBar } from "./ui.js";
 
@@ -22,9 +24,9 @@ const EMPTY = {
 };
 
 const chip = (attr, val, label, on) => `<button class="chip" type="button" ${attr}="${esc(val)}" aria-pressed="${on}">${label}</button>`;
-const kindChips = (set) => `<div class="chips kinds">${KINDS.map((k) => `<button class="chip" type="button" data-kind="${k.id}" aria-pressed="${set.has(k.id)}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>`;
+// Late night leaves out the daytime kinds (Nature, Beach).
+const kindChips = (set, { late = false } = {}) => `<div class="chips kinds">${KINDS.filter((k) => !late || !k.day).map((k) => `<button class="chip" type="button" data-kind="${k.id}" aria-pressed="${set.has(k.id)}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>`;
 const fmtN = (n) => n.toLocaleString("en-AU");
-const RADIUS_LABEL = { 0.5: "500 m", 1: "1 km", 2: "2 km" };
 // Places to look around: today's and coming saved events, then saved places.
 function nearPicks(app) {
   const today = new Date(), iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -43,7 +45,7 @@ function controls(u, app) {
     <p class="label"><label for="near-q">Going to</label></p>
     <input id="near-q" class="near-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="A venue, address or suburb" value="${esc(n.q)}">
     ${picks.length ? `<div class="chips scroll" style="margin-top:8px">${picks.map((x) => chip("data-nearpick", x.key, esc(x.label), n.q === x.q)).join("")}</div>` : ""}
-    <p class="label">Within</p><div class="chips">${NEAR.radii.map((r) => chip("data-nradius", r, `${RADIUS_LABEL[r]} walk`, n.radius === r)).join("")}</div>
+    <p class="label">Within</p><div class="chips">${NEAR.ranges.map((r) => chip("data-nrange", r.id, `<span aria-label="${r.label}">${r.short}</span>`, n.range === r.id)).join("")}</div>
     <p class="label">Rated</p><div class="chips">${NEAR.ratings.map((r) => chip("data-nrate", r, `★ ${r}+`, n.minRating === r)).join("")}</div>
     <p class="label">Reviews</p><div class="chips">${NEAR.reviews.map((r) => chip("data-nrev", r, `${fmtN(r)}+`, n.minReviews === r)).join("")}</div>
     <p class="label">What</p>${kindChips(n.kinds)}
@@ -60,7 +62,7 @@ function controls(u, app) {
     return `
     <p class="label">Night drive</p><div class="chips">${[15, 30, 45].map((m) => chip("data-late", m, `${m} min`, u.late === m)).join("")}</div>
     <p class="hint">The roads are clear at night: ${u.late} min reaches about ${Math.round(reachKm(u.late, { at }))} km.</p>
-    <p class="label">What</p>${kindChips(u.lateKinds)}
+    <p class="label">What</p>${kindChips(u.lateKinds, { late: true })}
     ${budget(u)}`;
   }
   const region = REGIONS.find((r) => r.id === u.where);
@@ -120,7 +122,7 @@ async function onClick(app, e) {
   if (d("[data-start]")) { u.start = d("[data-start]").dataset.start; return refreshControls(app); }
   if (d("[data-pace]")) { u.pace = d("[data-pace]").dataset.pace; return refreshControls(app); }
   if (d("[data-price]")) { const v = d("[data-price]").dataset.price; u.price = v === "any" ? null : +v; return refreshControls(app); }
-  if (d("[data-nradius]")) { u.near.radius = +d("[data-nradius]").dataset.nradius; return refreshControls(app); }
+  if (d("[data-nrange]")) { u.near.range = d("[data-nrange]").dataset.nrange; return refreshControls(app); }
   if (d("[data-nrate]")) { u.near.minRating = +d("[data-nrate]").dataset.nrate; return refreshControls(app); }
   if (d("[data-nrev]")) { u.near.minReviews = +d("[data-nrev]").dataset.nrev; return refreshControls(app); }
   if (d("[data-nearpick]")) {
@@ -191,7 +193,10 @@ async function find(app) {
 async function findNow(provider, pos, now, u) {
   const kinds = [...u.kinds].map(kindOf);
   const radius = Math.max(1, reachKm(driveBudget(u.minutes, Math.min(...kinds.map((k) => visitFor(k.id, u.minutes)))), { mode: u.travel, at: now }));
-  const lists = await Promise.all(kinds.map((k) => provider.search({ query: k.query, kind: k.id, center: pos, radiusKm: radius, openNow: true, priceMax: u.price, max: 12 })));
+  // Each kind's searches (Nature asks for parks and for walking trails); parks and beaches often list no hours, so
+  // Google's open-now filter would drop them: Spots checks the hours itself.
+  const lists = await Promise.all(kinds.flatMap((k) => queriesOf(k.id).map((q) => provider.search({ query: q, kind: k.id, center: pos, radiusKm: radius,
+    openNow: !k.alwaysOpen, priceMax: u.price, max: 12 }))));
   const opts = { from: pos, at: now, minutes: u.minutes, mode: u.travel, priceMax: u.price };
   const places = pickNow(lists.flat(), opts);
   const why = places.length ? null : whyEmpty(lists.flat(), opts);
@@ -215,11 +220,13 @@ async function findTomorrow(app, provider, pos, now, u) {
   else if (u.where !== "town") region = REGIONS.find((r) => r.id === u.where) || null;
   if (region) { app.state = noteRegion(app.state, region.id); app.persist(); }
   const center = region ? { lat: region.lat, lng: region.lng } : pos;
-  const slots = DAY_SLOTS[u.pace];
+  // Tomorrow's weather picks the slots: an afternoon outdoors on a good day, indoor stops on a wet one.
+  const wt = weatherState(weatherOn(app.feed, iso(day)));
+  const slots = daySlots(u.pace, wt.state, { beachy: wt.beachy });
   const lists = await Promise.all(slots.map((s) => provider.search({ query: region ? `${s.query} ${region.name}` : s.query, kind: s.kinds[0],
     center, radiusKm: region ? 15 : 10, openNow: false, priceMax: u.price, max: 10 })));
   const plan = buildDayPlan(slots, Object.fromEntries(slots.map((s, i) => [s.id, lists[i]])), { start: pos, day, startTime: u.start, priceMax: u.price });
-  return { type: "day", region, day, plan, from: pos };
+  return { type: "day", region, day, plan, from: pos, weather: wt.state ? wt : null };
 }
 
 // Near here: from a place (which has a position) or an event venue (looked up by name and address).
@@ -238,11 +245,11 @@ async function findNear(provider, u) {
     if (!loc) throw new Error(`Couldn't find "${n.q.trim()}". Try a suburb or a fuller address.`);
     n.target = { ...loc, q: n.q };
   }
-  const t = n.target, kinds = [...n.kinds];
-  const lists = await Promise.all(kinds.map((k) => provider.search({ query: kindOf(k).query, kind: k, center: t, radiusKm: n.radius, openNow: false,
-    priceMax: u.price, max: 20, minRating: n.minRating })));
-  const groups = kinds.map((k, i) => ({ kind: k, ...pickNear(lists[i], { center: t, radiusKm: n.radius, minRating: n.minRating, minReviews: n.minReviews, priceMax: u.price }) }));
-  return { type: "near", at: new Date(), target: t, label: n.label && n.label !== n.q ? n.label : t.name, groups, radius: n.radius, minRating: n.minRating, minReviews: n.minReviews };
+  const t = n.target, kinds = [...n.kinds], range = nearRange(n.range), at = new Date();
+  const lists = await Promise.all(kinds.map(async (k) => (await Promise.all(queriesOf(k).map((q) => provider.search({ query: q, kind: k, center: t,
+    radiusKm: rangeKm(range, at), openNow: false, priceMax: u.price, max: 20, minRating: n.minRating })))).flat()));
+  const groups = kinds.map((k, i) => ({ kind: k, ...pickNear(lists[i], { center: t, range, at, minRating: n.minRating, minReviews: n.minReviews, priceMax: u.price }) }));
+  return { type: "near", at, target: t, label: n.label && n.label !== n.q ? n.label : t.name, groups, range, minRating: n.minRating, minReviews: n.minReviews };
 }
 
 // ---------- Showing results ----------
@@ -260,18 +267,20 @@ export function photoBlock(p, i, big) {
   return `<div class="pic" data-kind="${k.id}">${tag}${tile}</div>`;
 }
 
+// A park or beach with no listed hours: say so rather than "Hours unknown".
+const hoursText = (p, at) => (!p.hours && kindOf(p.kind).alwaysOpen ? "No set hours" : hoursLabel(p.hours, at, p.off));
 const ratingText = (p) => (p.rating != null ? `<b>★ ${p.rating.toFixed(1)}</b> (${fmtCount(p.ratingCount)})` : "★ No rating yet");
 const travelText = (p, mode, from) => (p.travel != null ? `<span class="travel">${fmtMinutes(p.travel)} ${mode === "walk" ? "walk" : "drive"}</span>${from ? ` from ${esc(from)}` : ""} · ${p.km} km` : "");
 
 function card(app, p, i, at, mode, from) {
-  const k = kindOf(p.kind), saved = isSaved(app.state, p.id), left = minutesLeft(p.hours, at, p.off), range = priceRangeLabel(p.priceRange);
+  const k = kindOf(p.kind), saved = isSaved(app.state, p.id), left = openLeft(p, at), range = priceRangeLabel(p.priceRange);
   return `<article class="card result in" data-kind="${k.id}" style="animation-delay:${Math.min(i, 6) * 40}ms">
     ${photoBlock(p, i, false)}
     <div class="body">
       <button class="open-place" type="button" data-open="${esc(p.id)}">
         <div class="row1"><h3>${esc(p.name)}</h3>${p.price != null ? `<span class="price">${priceSymbols(p.price)}</span>` : ""}</div>
         <p class="meta">${ratingText(p)} · ${esc(p.area || k.label)}</p>
-        <p class="meta"><span class="hours${left > 0 ? " open" : ""}">${esc(hoursLabel(p.hours, at, p.off))}</span>${p.travel != null ? " · " + travelText(p, mode, from) : ""}</p>
+        <p class="meta"><span class="hours${left > 0 ? " open" : ""}">${esc(hoursText(p, at))}</span>${p.travel != null ? " · " + travelText(p, mode, from) : ""}</p>
         ${range ? `<p class="range">${esc(range)} per person</p>` : ""}
       </button>
       <div class="acts">
@@ -290,10 +299,10 @@ function renderResults(app) {
   if (r.type === "near") {
     const bar = `★ ${r.minRating}+ from ${fmtN(r.minReviews)}+ reviews`;
     res.innerHTML = `<div class="card region"><p class="eyebrow">Top-rated near</p><h3>${esc(r.label)}</h3>
-      <p>${esc([r.target.address || r.target.area, `within a ${RADIUS_LABEL[r.radius]} walk`, bar].filter(Boolean).join(" · "))}</p></div>`
+      <p>${esc([r.target.address || r.target.area, `within a ${r.range.label}`, bar].filter(Boolean).join(" · "))}</p></div>`
       + r.groups.map((g) => `<div class="res-head"><h3>${EMOJI[g.kind]} ${esc(kindOf(g.kind).label)}</h3><span>${g.places.length ? `${g.places.length}${g.more ? ` of ${g.places.length + g.more}` : ""} found` : ""}</span></div>`
-        + (g.places.length ? g.places.map((p, i) => card(app, p, i, r.at, "walk", r.label)).join("")
-          : `<div class="empty">None ${bar.toLowerCase()} within a ${RADIUS_LABEL[r.radius]} walk.${g.almost ? ` ${g.almost} more with ${fmtN(Math.floor(r.minReviews / 3))}+ reviews: try fewer reviews.` : r.radius < 2 ? " Try a longer walk." : ""}</div>`)).join("")
+        + (g.places.length ? g.places.map((p, i) => card(app, p, i, r.at, r.range.mode, r.label)).join("")
+          : `<div class="empty">None ${bar.toLowerCase()} within a ${r.range.label}.${g.almost ? ` ${g.almost} more with ${fmtN(Math.floor(r.minReviews / 3))}+ reviews: try fewer reviews.` : r.range.id !== NEAR.ranges.at(-1).id ? ` Try a ${r.range.mode === "walk" ? "short drive" : "longer drive"}.` : ""}</div>`)).join("")
       + attrib;
     return;
   }
@@ -305,8 +314,9 @@ function renderResults(app) {
   const dayName = r.day.toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "short" });
   const first = r.plan.find((s) => s.place);
   const away = r.region ? fmtMinutes(travelMinutes(haversineKm(r.from, r.region), { at: r.plan[0].at })) : "";
+  const w = r.weather, wLine = w ? `${skyIcon(w.code, w.rain, w.max)} ${w.max ?? "?"}° · ${w.rain ?? "?"}% rain${w.state === "good" ? " · an afternoon outdoors" : w.state === "wet" ? " · indoor stops" : ""}` : "";
   let html = `<div class="card region"><p class="eyebrow">Tomorrow · ${esc(dayName)}</p><h3>${esc(r.region ? r.region.name : "Around town")}</h3>
-    <p>${esc(r.region ? r.region.blurb : "Places within about 10 km of you.")}</p>${r.region ? `<p>${away} from you</p>` : ""}</div><div class="stop-wrap">`;
+    <p>${esc(r.region ? r.region.blurb : "Places within about 10 km of you.")}</p>${r.region ? `<p>${away} from you</p>` : ""}${wLine ? `<p>${esc(wLine)}</p>` : ""}</div><div class="stop-wrap">`;
   r.plan.forEach((s, i) => {
     if (i > 0) html += `<div class="leg">${s.place && s.travel != null ? `${fmtMinutes(s.travel)} drive` : ""}</div>`;
     else html += `<div class="leg">${first && s.place ? `${fmtMinutes(s.travel)} drive from you` : ""}</div>`;
@@ -366,7 +376,7 @@ function sheetHTML(app, p, state) {
     <p class="meta">${p.rating != null ? `<b>★ ${p.rating.toFixed(1)}</b> · ${fmtCount(p.ratingCount)} reviews` : "No rating yet"}</p>
     <section><h4>What people say</h4>${say}${p.reviews && p.reviews.length || p.summary ? `<p class="disclosure"><a href="${esc(mapsUrl(p))}" target="_blank" rel="noopener">All reviews on Google</a></p>` : ""}</section>
     <section><h4>Hours</h4><dl class="kv">
-      <dt>Now</dt><dd>${esc(hoursLabel(p.hours, now, p.off))}</dd>
+      <dt>Now</dt><dd>${esc(hoursText(p, now))}</dd>
       ${p.hours ? `<dt>Today</dt><dd>${esc(dayHours(p.hours, now.getDay()))}</dd><dt>Tomorrow</dt><dd>${esc(dayHours(p.hours, tmr))}</dd>` : ""}
     </dl></section>
     ${p.travel != null ? `<section><h4>Getting there</h4><p class="meta">${travelText(p, app.lastResult && app.lastResult.travel)}</p></section>` : ""}

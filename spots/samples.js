@@ -9,6 +9,8 @@ const NOUNS = {
   sights: ["lookout", "gallery", "garden", "museum", "heritage walk", "pier"],
   activities: ["mini golf", "climbing gym", "arcade", "cinema", "bowling alley", "escape room"],
   dessert: ["gelato bar", "dessert café", "patisserie", "waffle bar"],
+  nature: ["park", "botanic garden", "walking trail", "nature reserve", "lake walk", "bushland trail"],
+  beach: ["beach", "bay beach", "foreshore", "surf beach"],
 };
 const RANGES = [null, [10, 20], [20, 40], [40, 80], [80, null]];
 
@@ -23,13 +25,14 @@ const split = () => ({ periods: [0, 1, 2, 3, 4, 5, 6].flatMap((d) => [
 const allDay = () => ({ periods: [{ open: { day: 0, hour: 0, minute: 0 }, close: null }] });
 
 function hoursFor(kind, i) {
-  if (i % 9 === 8) return null; // some places don't publish hours
+  if (i % 9 === 8 || ((kind === "nature" || kind === "beach") && i % 2 === 0)) return null; // some places don't publish hours (parks and beaches often)
   switch (kind) {
     case "coffee": return every(7, 0, 15, 0);
     case "eat": return i % 7 === 3 ? allDay() : i % 4 === 1 ? every(17, 0, 3, 0) : split();
     case "drink": return i % 3 === 0 ? every(16, 0, 3, 0) : every(16, 0, 1, 0);
     case "sights": return every(9, 0, 17, 0);
     case "activities": return every(10, 0, 22, 0);
+    case "nature": case "beach": return allDay();
     default: return i % 3 === 0 ? every(12, 0, 1, 0) : every(12, 0, 23, 0); // dessert
   }
 }

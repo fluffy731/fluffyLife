@@ -1,5 +1,5 @@
 // Small DOM helpers shared by the Spots screens.
-export const EMOJI = { eat: "🍜", drink: "🍸", coffee: "☕", sights: "🏛️", activities: "🎳", dessert: "🍨" };
+export const EMOJI = { eat: "🍜", drink: "🍸", coffee: "☕", sights: "🏛️", activities: "🎳", dessert: "🍨", nature: "🌳", beach: "🏖️" };
 export const $ = (sel, root = document) => root.querySelector(sel);
 export const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 export const fmtCount = (n) => Number(n || 0).toLocaleString("en-AU");

@@ -12,6 +12,8 @@ const text = (x) => (typeof x === "string" ? x : x && typeof x.text === "string"
 const numOr = (x) => { const n = Number(x); return x == null || x === "" || !Number.isFinite(n) ? null : n; };
 
 const TYPE_KIND = [
+  [/^beach$/, "beach"],
+  [/^(park|national_park|state_park|city_park|dog_park|hiking_area|botanical_garden|garden|nature_preserve|wildlife_refuge|woods|lake)$/, "nature"],
   [/bar|pub|night_club|winery|brewery|wine/, "drink"],
   [/cafe|coffee/, "coffee"],
   [/ice_cream|dessert|bakery|confectionery|chocolate|donut/, "dessert"],
