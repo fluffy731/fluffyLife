@@ -10,9 +10,12 @@ import { validateYue } from "../lib/validate-yue.js";
 import { sylHTML, bridgeHTML } from "../cards/yue.js";
 
 const HAN = /\p{Script=Han}/u;
-const KANA = /[぀-ヿ]/;
-// A lyric line has Chinese characters; Japanese (kana) lines don't count.
-export const isLyric = (line) => HAN.test(String(line ?? "")) && !KANA.test(String(line ?? ""));
+// Kana, not the middle dot ・ that Chinese text also uses in foreign names.
+const KANA = /[\u3041-\u30fa\u30fc-\u30ff]/;
+// Credit lines that Chinese lyric files carry (作詞：…, 作曲 : …, 编曲：…).
+const CREDIT = /^\s*(作[詞词曲]|[編编]曲|填[詞词]|[監监]製|[監监]制|製作|制作|主唱|原唱|[詞词曲])\s*[:：]/;
+// A lyric line has Chinese characters; Japanese (kana) lines and credit lines don't count.
+export const isLyric = (line) => { const l = String(line ?? ""); return HAN.test(l) && !KANA.test(l) && !CREDIT.test(l); };
 
 // ---------- the Claude request ----------
 const RULES = `You help a native Korean speaker study Cantopop lyrics. She is a beginner in Cantonese and can't read Chinese characters yet, so every explanation is for her: write ko and note in natural, plain Korean.
@@ -74,34 +77,43 @@ export const checkLines = (lines, readings) => lines.map((l) => ({
 }));
 
 // The dictionary is built at deploy (dict/yue.json) and cached by the service worker after Browse first loads
-// it. Loaded once per session; if it can't be fetched, this translation is checked without it.
+// it. Loaded once per session, starting when translating starts (L.prefetch) so it downloads alongside the
+// Claude call. If it can't be fetched, or isn't ready a few seconds after the reply, the translation is
+// checked without it and saved at once: the paid reply is never held up waiting for it.
 let readingsLoad = null;
 const loadReadings = () => (readingsLoad ??= fetch(new URL("../dict/yue.json", import.meta.url))
   .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
   .then((j) => charReadings(j.rows))
   .catch(() => { readingsLoad = null; return null; }));
+const WAIT_MS = 4000;
+const readingsSoon = () => Promise.race([loadReadings(), new Promise((ok) => setTimeout(() => ok(null), WAIT_MS))]);
 
 // ---------- study cards ----------
 const sameJp = (a, b) => normLine(a).toLowerCase() === normLine(b).toLowerCase();
 // The id of a card the app already has for this grammar point or word, or null. A word matches on its
-// characters and reading, so 好 hou3 (like) from a song is not taken for the app's 好 hou2 (good).
+// characters and reading, so 好 hou3 (like) from a song is not taken for the app's 好 hou2 (good). A word
+// marked ? matches on its characters alone: the app's checked card beats a suspect reading.
 export function findStudyId({ kind, entry, items }) {
   if (kind === "grammar") {
     if (entry.appId && items.some((i) => i.id === entry.appId)) return entry.appId;
     return items.find((i) => i.form && normLine(i.form) === normLine(entry.form))?.id ?? null;
   }
-  return items.find((i) => !i.form && i.zh === entry.zh && sameJp(i.jp, entry.jp))?.id ?? null;
+  const words = items.filter((i) => !i.form && i.zh === entry.zh);
+  return (words.find((i) => sameJp(i.jp, entry.jp)) ?? (entry.unsure ? words[0] : null))?.id ?? null;
 }
 
 export function studyItem({ kind, entry, line, song, items, unit, id }) {
   const existing = findStudyId({ kind, entry, items });
   if (existing) return { id: existing, item: null };
   const tag = `♪ ${song.title}${song.artist ? ` – ${song.artist}` : ""}`;
+  // A ? on the point or its line stays with the card: the vocab card shows the app's ? badge (check), and a
+  // grammar card, which has no badge, says so in its note.
+  const unsure = !!(entry.unsure || line.unsure);
   const item = kind === "grammar"
     ? { id, kind: "grammar", tier: unit.tier, unit: unit.unit, form: entry.form, formJp: entry.formJp, ko: entry.ko, en: entry.en,
-      note: entry.note ? `${entry.note} · ${tag}` : tag, ex: [{ zh: line.zh, jp: line.jp, ko: line.ko }] }
+      note: [entry.note, tag, unsure ? `? ${T.unsure}` : ""].filter(Boolean).join(" · "), ex: [{ zh: line.zh, jp: line.jp, ko: line.ko }] }
     : { id, kind: "vocab", tier: unit.tier, unit: unit.unit, zh: entry.zh, jp: entry.jp, ko: entry.ko, en: entry.en, pos: entry.pos || "n",
-      exZh: line.zh, exJp: line.jp, exKo: line.ko, note: tag };
+      exZh: line.zh, exJp: line.jp, exKo: line.ko, note: tag, check: unsure };
   if (validateYue(item, kind === "word" ? "vocab" : "grammar").length) throw new Error("invalid item");
   return { id, item };
 }
@@ -130,7 +142,7 @@ const T = {
   loading: "불러오는 중…",
   addSong: "노래 추가", importList: "목록 가져오기",
   emptyTitle: "아직 노래가 없어요", emptyBody: "즐겨 듣는 광동어 노래를 추가하거나 목록을 가져오세요.",
-  batchLabel: (n, ticked) => (ticked ? `${n}곡 번역하기` : `번역 안 된 ${n}곡 모두 번역하기`),
+  batchLabel: (n, ticked) => (ticked ? `${n}곡 번역하기` : n > 1 ? `번역 안 된 ${n}곡 모두 번역하기` : "번역 안 된 1곡 번역하기"),
   about: (usd) => `(약 ${usd})`,
   keepOpen: "끝날 때까지 이 화면을 켜 두세요. 화면이 잠기거나 다른 앱으로 가면 아이폰이 앱을 멈춰요. 한 곡이 끝날 때마다 바로 저장돼요.",
   stop: "이 곡까지만 하고 멈추기", stopping: "이 곡이 끝나면 멈춰요…",
@@ -185,26 +197,31 @@ const T = {
 };
 
 const flag = (o, esc) => (o.unsure ? `<span class="check" title="${esc(T.unsure)}">?</span>` : "");
+// A line's 한글 spelling for the find box, worked out once per line rather than on every keystroke.
+const spelt = new WeakMap();
+const hangulOf = (l) => { if (!spelt.has(l)) spelt.set(l, l.jp ? hangul(l.jp) : ""); return spelt.get(l); };
 
 export const yueSongs = {
   isLyric, missing: "noChinese", lineKey: (l) => l.zh,
-  searchText: (l) => [l.ko, l.en, l.jp, l.jp && hangul(l.jp)],
+  searchText: (l) => [l.ko, l.en, l.jp, hangulOf(l)],
   keyName: "yue.songs.apiKey",
   dbName: "fluffy-songs-yue",
   systemText, buildRequest, parseAnalysis, findStudyId, studyItem,
-  afterTranslate: async (lines) => checkLines(lines, await loadReadings()),
+  prefetch: () => { loadReadings(); },
+  afterTranslate: async (lines) => checkLines(lines, await readingsSoon()),
 
   // Sound first: tone-coloured 한글, then Jyutping, the characters and the Korean meaning.
-  lineHTML: (zh, e, { esc, say }) => `<div class="k hg">${sylHTML(e.jp, esc)} ${say(zh)}</div>
+  // A backup from elsewhere can lack Jyutping: those spots stay empty rather than break the page.
+  lineHTML: (zh, e, { esc, say }) => `<div class="k hg">${sylHTML(e.jp ?? "", esc)} ${say(zh)}</div>
       <div class="rr">${esc(e.jp)}${flag(e, esc)}</div>
       <div class="zh" lang="zh-Hant">${esc(zh)}</div>
       <div class="en">${esc(e.ko)}</div>`,
-  grammarHTML: (g, { esc }) => `<b class="hg">${sylHTML(g.formJp, esc)}</b> <span lang="zh-Hant">${esc(g.form)}</span> · ${esc(g.ko)}${flag(g, esc)}<div class="muted">${esc(g.note)}</div>`,
+  grammarHTML: (g, { esc }) => `<b class="hg">${sylHTML(g.formJp ?? "", esc)}</b> <span lang="zh-Hant">${esc(g.form)}</span> · ${esc(g.ko)}${flag(g, esc)}<div class="muted">${esc(g.note)}</div>`,
   wordHTML: (w, view) => {
     const { esc, say, t } = view;
-    return `<b class="hg">${sylHTML(w.jp, esc)}</b> <span class="hj" lang="zh-Hant">${esc(w.zh)}</span> ${say(w.zh)} · ${esc(w.ko)} <span class="muted small">${esc(t.posName(w.pos))}</span>${flag(w, esc)}${bridgeHTML(w.zh, w.jp, view)}`;
+    return `<b class="hg">${sylHTML(w.jp ?? "", esc)}</b> <span class="hj" lang="zh-Hant">${esc(w.zh)}</span> ${say(w.zh)} · ${esc(w.ko)} <span class="muted small">${esc(t.posName(w.pos))}</span>${flag(w, esc)}${bridgeHTML(w.zh ?? "", w.jp ?? "", view)}`;
   },
-  chipHTML: (g, { esc }) => `${esc(hangul(g.formJp))} <span lang="zh-Hant">${esc(g.form)}</span>`,
+  chipHTML: (g, { esc }) => `${esc(hangul(g.formJp ?? ""))} <span lang="zh-Hant">${esc(g.form)}</span>`,
   sumNote: (a, { esc }) => (a.lines.some((l) => l.unsure || l.grammar.some((g) => g.unsure) || l.words.some((w) => w.unsure)) ? `<div class="muted">${esc(T.unsureNote)}</div>` : ""),
 
   t: T,

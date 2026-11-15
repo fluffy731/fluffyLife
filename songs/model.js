@@ -31,7 +31,7 @@ export function uniqueLines(lines, isLyric = hasHangul) {
   }
   return out;
 }
-export const uniqueHangulLines = (lines) => uniqueLines(lines, hasHangul);
+export const uniqueHangulLines = (lines) => uniqueLines(lines, hasHangul);   // Korean shorthands, kept for the Korean tests
 // The distinct lines to translate in a lyrics text.
 export const lyricLines = (lyrics, isLyric = hasHangul) => uniqueLines(splitLyrics(lyrics ?? "", isLyric), isLyric);
 

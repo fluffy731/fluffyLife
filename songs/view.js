@@ -235,6 +235,7 @@ export function createSongs(c, L) {
     if (!todo.length) { song.status = "error"; song.error = L.missing; await save(song); ui.msg = L.missing; return false; }
     const m = model();
     if (ask && !confirm(T.confirmTranslate(SONG_MODELS[m].label, usd(estimateCost(m, song.lyrics.length, todo.length, sysChars()))))) return false;
+    L.prefetch?.();                       // Cantonese: start loading the dictionary alongside the call
     try {
       const r = await translateSong({ apiKey: key(), model: m, lines: todo, grammar: grammarList(), lang: L });
       // The Cantonese profile checks each line's Jyutping against the dictionary here (marks it ?).

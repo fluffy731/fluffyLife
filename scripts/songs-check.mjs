@@ -469,10 +469,11 @@ let backupText = null;
   st = await stateOf(page, "yue.v1");
   const card = (st.custom || [])[0];
   ok("yue: a new word becomes a Cantonese card with the line as its example", st.custom?.length === 1 && card.zh === "掛住" && card.jp === "gwaa3 zyu6" && card.exZh === "我好掛住你" && card.exKo === "네가 너무 보고 싶어" && inADay(st.progress[card.id]));
+  ok("yue: the card keeps the line's ? (check)", card?.check === true);
   ok("yue: the buttons now say 복습에 있음", (await page.locator(".song-line.item.open .in-reviews").count()) === 2);
   await tabTo(page, "browse");
   await page.fill("#q", "掛住");
-  ok("yue: the new card is in Browse", (await page.textContent("#browse-list")).includes("掛住"));
+  ok("yue: the new card is in Browse, with its ?", (await page.textContent("#browse-list")).includes("掛住") && (await page.locator("#browse-list .check").count()) >= 1);
 
   // Backup: the song with its ? marks, no key.
   await tabTo(page, "settings");

@@ -175,3 +175,43 @@ test("line display leads with tone-coloured 한글 and shows ? on an unsure line
   assert.match(html, /잘 지내\?/);
   assert.doesNotMatch(yueSongs.lineHTML("你", { jp: "nei5", ko: "너" }, { esc, say: () => "" }), /class="check"/);
 });
+
+test("a ? stays with the card: a flagged word or line makes a vocab card with the ? badge, and a grammar note says so", () => {
+  const unit = { tier: "a1", unit: 4 };
+  const word = { zh: "掛住", jp: "gwaa3 zyu6", ko: "보고 싶다", en: "to miss", pos: "v" };
+  assert.equal(studyItem({ kind: "word", entry: word, line: LINE, song: SONG, items: ITEMS, unit, id: "u1" }).item.check, false);
+  assert.equal(studyItem({ kind: "word", entry: { ...word, unsure: true }, line: LINE, song: SONG, items: ITEMS, unit, id: "u2" }).item.check, true);
+  assert.equal(studyItem({ kind: "word", entry: word, line: { ...LINE, unsure: true }, song: SONG, items: ITEMS, unit, id: "u3" }).item.check, true);
+  const g = studyItem({ kind: "grammar", entry: { form: "好", formJp: "hou2", appId: null, ko: "아주", en: "very", note: "n", unsure: true }, line: LINE, song: SONG, items: ITEMS, unit, id: "u4" });
+  assert.match(g.item.note, /^n · ♪ 노래 – 가수 · \? Jyutping이 사전과 다를 수 있어요$/);
+  assert.deepEqual(validateYue(g.item, "grammar"), []);
+});
+
+test("a flagged word the app already teaches schedules the app's checked card, not a copy with the suspect reading", () => {
+  const entry = { zh: "好", jp: "hou1", ko: "좋다", en: "good", pos: "adj", unsure: true };
+  assert.equal(findStudyId({ kind: "word", entry, items: ITEMS }), "v-hou2");
+  assert.deepEqual(studyItem({ kind: "word", entry, line: LINE, song: SONG, items: ITEMS, unit: { tier: "a1", unit: 4 }, id: "u5" }), { id: "v-hou2", item: null });
+  assert.equal(findStudyId({ kind: "word", entry: { ...entry, unsure: false }, items: ITEMS }), null);   // unflagged: its own reading
+});
+
+test("credit lines are not lyrics; the middle dot in a foreign name doesn't make a line Japanese", () => {
+  for (const l of ["作詞：某人", "作曲 : 某人", "编曲：某人", "填詞: 某人", "監製：某人", "词：某人"]) assert.equal(isLyric(l), false, l);
+  assert.equal(isLyric("我作曲俾你聽"), true);
+  assert.equal(isLyric("約翰・史密斯"), true);
+  assert.equal(pickLyrics([{ lyrics: "作詞：某人\nOh baby", instrumental: false }], yueSongs).reason, "noChinese");
+});
+
+test("renderers draw a line with no Jyutping (a backup from elsewhere) instead of throwing", () => {
+  const view = { esc: (s) => String(s ?? ""), say: () => "", t: { posName: (p) => p, bridgeTitle: "", cantoneseOnly: "", loanword: "" } };
+  assert.doesNotThrow(() => yueSongs.lineHTML("你好", { ko: "안녕" }, view));
+  assert.doesNotThrow(() => yueSongs.grammarHTML({ form: "嗎", ko: "", note: "" }, view));
+  assert.doesNotThrow(() => yueSongs.wordHTML({ zh: "你", ko: "너", pos: "n" }, view));
+  assert.doesNotThrow(() => yueSongs.chipHTML({ form: "嗎" }, view));
+  assert.deepEqual(yueSongs.searchText({ ko: "안녕", en: "hi" }), ["안녕", "hi", undefined, ""]);
+});
+
+test("the batch button doesn't say 모두 for one song", () => {
+  assert.equal(yueSongs.t.batchLabel(1, false), "번역 안 된 1곡 번역하기");
+  assert.equal(yueSongs.t.batchLabel(3, false), "번역 안 된 3곡 모두 번역하기");
+  assert.equal(yueSongs.t.batchLabel(2, true), "2곡 번역하기");
+});
