@@ -1,9 +1,9 @@
-# Temporary: recon of TMDB's real responses for Films (this session can't reach TMDB). Removed before merge.
+# Temporary: the first real Films build, run from the branch before merge (this session can't reach TMDB). Removed before merge.
 name: Films probe
 on:
   push:
     branches: ["claude/zen-knuth-idjcig"]
-    paths: ["scripts/films-probe.mjs", ".github/workflows/films-probe.yml"]
+    paths: ["scripts/build-films.mjs", "films/model.js", ".github/workflows/films-probe.yml"]
 permissions:
   contents: read
 jobs:
@@ -14,6 +14,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
-      - run: node scripts/films-probe.mjs
+      - run: node scripts/build-films.mjs --probe
         env:
           TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
