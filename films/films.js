@@ -1,6 +1,6 @@
 // Films: the screens. Renders films/feed.json (built weekly on GitHub Actions by scripts/build-films.mjs) on the
 // Metro line look (../metro.css, data-line="film"). The ranking logic is in model.js; what the phone keeps, store.js.
-import { PLACES, ERAS, NAMED_ERAS, shelfLists, genreChips, erasWithFilms, rankMap, surprise, moreLike, search } from "./model.js";
+import { PLACES, ERAS, NAMED_ERAS, shelfLists, genreChips, erasWithFilms, rankMap, surprise, moreLike, search, browseRows } from "./model.js";
 import { load, save, toggleWant, toggleSeen, backupText, restore } from "./store.js";
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -61,9 +61,8 @@ function browse(el) {
   const f = shelf(), all = films();
   const chips = genreChips(all, f);
   if (f.genre !== "all" && !chips.some((c) => c.genre === f.genre)) chips.unshift({ genre: f.genre, count: 0 });
-  const lists = shelfLists(all, feed.stats, f);
-  let rows = Object.keys(LISTS).map((k) => row(k, LISTS[k], lists[k])).join("");
-  if (f.genre === "all") rows += chips.slice(0, 6).map((c) => row(`genre:${c.genre}`, c.genre, shelfLists(all, feed.stats, { ...f, genre: c.genre }).rated)).join("");
+  // Each film shows in one row only (model.js browseRows); All opens the full list.
+  const rows = browseRows(all, feed.stats, f).map((r) => row(r.key, LISTS[r.key] || r.key.slice(6), r.list)).join("");
   el.innerHTML = `<div class="chips" id="place-chips">${chip("place", "all", "All", f.place === "all")}${PLACES.map((p) =>
       chip("place", p.id, `${p.name}${p.local ? ` <span lang="${p.lang}">${p.local}</span>` : ""}`, f.place === p.id)).join("")}</div>`
     + eraLine(f)
@@ -219,6 +218,17 @@ document.addEventListener("change", (e) => {
   persist();
 });
 
+// Surprise me and Another suggest each film once per visit: they work through the whole shelf (Seen films never)
+// before starting again, and a fresh start never begins with the film on screen.
+const suggested = new Set();
+function suggest(current = null) {
+  const skip = (extra) => new Set([...seenSet(), ...extra, ...(current ? [current] : [])]);
+  let pick = surprise(films(), feed.stats, shelf(), skip(suggested));
+  if (!pick && suggested.size) { suggested.clear(); pick = surprise(films(), feed.stats, shelf(), skip([])); }
+  if (pick) suggested.add(pick.id);
+  return pick;
+}
+
 // ---------- the film sheet ----------
 // The titles stack on a station sign, as a trilingual Seoul station sign stacks 한글, 漢字 and English; the line's
 // rule draws across and the details rise in beneath it.
@@ -277,7 +287,7 @@ function sheetAct(act) {
   if (act === "want") toggleWant(state, f, at);
   if (act === "seen") toggleSeen(state, f, at);
   if (act === "another") {
-    const pick = surprise(films(), feed.stats, shelf(), new Set([...seenSet(), id]));
+    const pick = suggest(id);
     return pick ? openFilm(pick.id, { fromSurprise: true }) : toast("No other films here you haven't seen");
   }
   persist();
@@ -347,7 +357,7 @@ document.addEventListener("click", (e) => {
     persist(); applyTheme(); return render();
   }
   if (el.id === "surprise") {
-    const pick = surprise(films(), feed.stats, shelf(), seenSet());
+    const pick = suggest();
     return pick ? openFilm(pick.id, { fromSurprise: true }) : toast("You've seen everything here");
   }
 });

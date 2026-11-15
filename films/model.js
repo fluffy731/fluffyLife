@@ -177,3 +177,24 @@ export function search(films, q, limit = 50) {
   }
   return hits.sort((a, b) => a.rank - b.rank || b.x.votes - a.x.votes || a.x.id - b.x.id).slice(0, limit).map((h) => h.x);
 }
+
+// ---------- Browse: each film once ----------
+// The rows Browse shows, in display order: Best rated, Most popular, Crowd-pleasers, Popular right now, then the
+// biggest genres (when no genre is chosen). A film shows in one row only. Rows claim films in this order: Best rated,
+// Crowd-pleasers (which, by definition, are also among the most rated), Most popular, Popular right now, genres. Only
+// the films a row shows (its first `perRow`) count as shown; the full lists behind All stay complete.
+export function browseRows(films, stats, f, { perRow = 20, genreRows = 6 } = {}) {
+  const lists = shelfLists(films, stats, f);
+  const rows = [{ key: "rated", list: lists.rated }, { key: "popular", list: lists.popular }, { key: "crowd", list: lists.crowd }, { key: "now", list: lists.now }];
+  if (f.genre === "all") {
+    for (const c of genreChips(films, f).slice(0, genreRows)) rows.push({ key: `genre:${c.genre}`, list: shelfLists(films, stats, { ...f, genre: c.genre }).rated });
+  }
+  const claim = ["rated", "crowd", "popular", "now"];
+  const order = [...claim.map((k) => rows.find((r) => r.key === k)), ...rows.filter((r) => r.key.startsWith("genre:"))];
+  const shown = new Set();
+  for (const r of order) {
+    r.list = r.list.filter((x) => !shown.has(x.id)).slice(0, perRow);
+    for (const x of r.list) shown.add(x.id);
+  }
+  return rows.filter((r) => r.list.length);
+}

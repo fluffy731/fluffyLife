@@ -276,6 +276,29 @@ await page.waitForFunction(() => document.querySelector("#film").open);
 ok("with the list loaded, a missing film is 'no longer in this week's list'", (await sheetText(page)).includes("No longer in this week's list"));
 await page.context().close();
 
+// 8. No film suggested twice
+for (const settings of [{}, { place: "HK" }, { place: "all", era: "2000s" }]) {
+  page = await newPage({ init: setStore({ settings }) });
+  const shown = await idsIn(page, "section.row-list");
+  ok(`Browse shows each film once (${JSON.stringify(settings)})`, shown.length > 0 && new Set(shown).size === shown.length);
+  await page.context().close();
+}
+page = await newPage({ init: setStore({ settings: { place: "KR" } }) });
+const krCount = FEED.films.filter((f) => f.places.includes("KR")).length;
+await page.click("#surprise");
+await page.waitForFunction(() => document.querySelector("#film").open);
+const drawn = [await page.$eval("#film", (el) => Number(el.dataset.id))];
+for (let i = 1; i < krCount; i++) {
+  await page.click('#film [data-act="another"]');
+  await page.waitForFunction((n) => document.querySelector("#film").dataset.id && Number(document.querySelector("#film").dataset.id) !== n, drawn[drawn.length - 1]);
+  drawn.push(await page.$eval("#film", (el) => Number(el.dataset.id)));
+}
+ok(`Surprise me and Another suggest every Korean film once before repeating (${new Set(drawn).size}/${krCount})`, new Set(drawn).size === krCount);
+await page.click('#film [data-act="another"]');
+await page.waitForTimeout(250);
+ok("…then start again, never with the film on screen", (await page.$eval("#film", (el) => Number(el.dataset.id))) !== drawn[drawn.length - 1]);
+await page.context().close();
+
 ok("no page errors", errs.length === 0);
 if (errs.length) console.log(errs.join("\n"));
 console.log(out.join("\n"));

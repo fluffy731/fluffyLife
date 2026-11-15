@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   PLACES, ERAS, NAMED_ERAS, GENRES, placesOf, eraOf, placeStats, weightedRating,
-  inShelf, shelfLists, interleave, rankMap, genreChips, erasWithFilms, surprise, moreLike, fold, search,
+  inShelf, shelfLists, interleave, rankMap, genreChips, erasWithFilms, surprise, moreLike, fold, search, browseRows,
 } from "../films/model.js";
 
 // A valid Film; tests override what they need.
@@ -187,4 +187,32 @@ test("search puts title matches before people matches, then more votes", () => {
   const byCast = film({ title: "Hard Boiled", cast: [{ id: 1, name: "Chow Yun-fat" }], votes: 9000 });
   const byTitle = film({ title: "Chow's Kitchen", votes: 10 });
   assert.deepEqual(search([byCast, byTitle], "chow").map((x) => x.id), [byTitle.id, byCast.id]);
+});
+
+// ---------- Browse shows each film once ----------
+
+test("browseRows shows each film once across the rows", () => {
+  // A hit that is both top-rated and most-voted, crowd-pleasers that are also the most-voted, and genres.
+  const films = [
+    ...Array.from({ length: 30 }, (_, i) => film({ rating: 7 + (i % 10) / 20, votes: 100 + i * 10, pop: i, genres: ["Drama", "Crime"] })),
+    film({ rating: 9, votes: 99000, pop: 500, genres: ["Crime", "Drama"] }),
+    ...[[5, 9000], [4.8, 8000], [4.6, 7000], [4.4, 6000]].map(([rating, votes]) => film({ rating, votes, pop: 300, genres: ["Comedy"] })),
+  ];
+  const rows = browseRows(films, flat, HK);
+  const ids = rows.flatMap((r) => r.list.map((x) => x.id));
+  assert.equal(new Set(ids).size, ids.length, "no film twice");
+  assert.deepEqual(rows.map((r) => r.key).slice(0, 3), ["rated", "popular", "crowd"], "the lists keep their order");
+  assert.equal(rows[0].list[0].rating, 9, "the hit stays at the top of Best rated");
+  assert.equal(rows.find((r) => r.key === "crowd").list.length, 4, "crowd-pleasers keep their films, though they're also the most-rated");
+  assert.ok(rows.every((r) => r.list.length > 0 && r.list.length <= 20), "rows that end up empty are left out");
+});
+
+test("browseRows: a film past a row's first 20 can show in a later row; genre rows only with no genre chosen", () => {
+  const films = Array.from({ length: 40 }, (_, i) => film({ rating: 8 - i / 100, votes: 40 - i, pop: i, genres: ["Drama"] }));
+  const rows = browseRows(films, flat, HK);
+  assert.equal(rows[0].list.length, 20);
+  const popular = rows.find((r) => r.key === "popular");
+  assert.ok(popular && popular.list.every((x) => !rows[0].list.includes(x)), "Most popular shows the next films, not Best rated's");
+  assert.ok(rows.some((r) => r.key === "genre:Drama") || rows.flatMap((r) => r.list).length === 40, "genre rows fill in when films are left");
+  assert.ok(!browseRows(films, flat, { ...HK, genre: "Drama" }).some((r) => r.key.startsWith("genre:")));
 });
