@@ -229,7 +229,7 @@ test("run keeps the old feed when the new one is thin", async () => {
 test("run logs no plots and never the key", async () => {
   const lines = [];
   await run({ key: KEY, fetch: fakeTMDB({ "/3/movie/843": [{ status: 500 }, { status: 500 }, { status: 500 }, { status: 500 }] }).fetch,
-    now: NOW, ...tmp(), thinFloor: 1, log: (l) => lines.push(String(l)) });
+    now: NOW, ...tmp(), thinFloor: 1, backoff: 0, log: (l) => lines.push(String(l)) });
   const out = lines.join("\n");
   assert.ok(!out.includes(KEY), "the key never reaches the log");
   for (const d of Object.values(details)) if (d.overview) assert.ok(!out.includes(d.overview.slice(0, 30)));
