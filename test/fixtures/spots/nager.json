@@ -1,0 +1,5 @@
+[{"date":"2026-01-01","localName":"New Year's Day","name":"New Year's Day","countryCode":"AU","fixed":false,"global":true,"counties":null,"types":["Public"]},
+{"date":"2026-03-02","localName":"Labour Day","name":"Labour Day","countryCode":"AU","fixed":false,"global":false,"counties":["AU-WA"],"types":["Public"]},
+{"date":"2026-03-09","localName":"Labour Day","name":"Labour Day","countryCode":"AU","fixed":false,"global":false,"counties":["AU-VIC","AU-TAS"],"types":["Public"]},
+{"date":"2026-11-03","localName":"Melbourne Cup","name":"Melbourne Cup","countryCode":"AU","fixed":false,"global":false,"counties":["AU-VIC"],"types":["Public"]},
+{"date":"2026-12-25","localName":"Christmas Day","name":"Christmas Day","countryCode":"AU","fixed":false,"global":true,"counties":null,"types":["Public"]}]
