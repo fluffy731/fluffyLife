@@ -1,0 +1,19 @@
+# Temporary: recon of TMDB's real responses for Films (this session can't reach TMDB). Removed before merge.
+name: Films probe
+on:
+  push:
+    branches: ["claude/zen-knuth-idjcig"]
+    paths: ["scripts/films-probe.mjs", ".github/workflows/films-probe.yml"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node scripts/films-probe.mjs
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
