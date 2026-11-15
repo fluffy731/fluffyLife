@@ -134,3 +134,46 @@ export function genreChips(films, f) {
 export function erasWithFilms(films, f) {
   return new Set(films.filter((x) => inShelf(x, { ...f, era: "all" })).map((x) => x.era));
 }
+
+// ---------- Surprise me, More like this, search ----------
+
+// One unseen film from the shelf, weighted towards films high on either list (rand is injectable for tests).
+export function surprise(films, stats, f, seen, rand = Math.random) {
+  const { rated, popular } = shelfLists(films, stats, f);
+  const pos = (list) => new Map(list.map((x, i) => [x.id, i]));
+  const r = pos(rated), p = pos(popular), worst = Math.max(rated.length, popular.length);
+  const pool = films.filter((x) => inShelf(x, f) && !seen.has(x.id))
+    .map((x) => ({ x, w: 1 / Math.sqrt(1 + Math.min(r.get(x.id) ?? worst, p.get(x.id) ?? worst)) }))
+    .sort((a, b) => b.w - a.w || a.x.id - b.x.id);
+  if (!pool.length) return null;
+  let pick = rand() * pool.reduce((t, c) => t + c.w, 0);
+  for (const c of pool) if ((pick -= c.w) < 0) return c.x;
+  return pool[pool.length - 1].x;
+}
+
+// Films that share the director (+3), each lead actor (+2), or place, genre and era together (+1).
+export function moreLike(film, films, n = 10) {
+  const cast = new Set(film.cast.map((c) => c.id));
+  const score = (x) => (film.director && x.director?.id === film.director.id ? 3 : 0)
+    + 2 * x.cast.filter((c) => cast.has(c.id)).length
+    + (x.era === film.era && x.places.some((p) => film.places.includes(p)) && x.genres.some((g) => film.genres.includes(g)) ? 1 : 0);
+  return films.filter((x) => x.id !== film.id).map((x) => ({ x, s: score(x) })).filter((c) => c.s > 0)
+    .sort((a, b) => b.s - a.s || b.x.votes - a.x.votes || a.x.id - b.x.id).slice(0, n).map((c) => c.x);
+}
+
+// Case and accents folded away for matching (Amélie → amelie). Chinese and Hangul still match as typed.
+export const fold = (s) => (s || "").normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase().trim();
+
+export function search(films, q, limit = 50) {
+  const k = fold(q);
+  if (!k) return [];
+  const hits = [];
+  for (const x of films) {
+    const titles = [fold(x.title), fold(x.original)];
+    const people = [x.director?.name, ...x.cast.map((c) => c.name)].map(fold);
+    if (titles.some((t) => t.startsWith(k))) hits.push({ x, rank: 0 });
+    else if (titles.some((t) => t.includes(k))) hits.push({ x, rank: 1 });
+    else if (people.some((t) => t.includes(k))) hits.push({ x, rank: 2 });
+  }
+  return hits.sort((a, b) => a.rank - b.rank || b.x.votes - a.x.votes || a.x.id - b.x.id).slice(0, limit).map((h) => h.x);
+}

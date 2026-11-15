@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   PLACES, ERAS, NAMED_ERAS, GENRES, placesOf, eraOf, placeStats, weightedRating,
-  inShelf, shelfLists, interleave, rankMap, genreChips, erasWithFilms,
+  inShelf, shelfLists, interleave, rankMap, genreChips, erasWithFilms, surprise, moreLike, fold, search,
 } from "../films/model.js";
 
 // A valid Film; tests override what they need.
@@ -137,4 +137,54 @@ test("rankMap ranks a co-production in each place", () => {
   const ranks = rankMap([x, y, z], flat);
   assert.deepEqual(ranks.get(y.id), { HK: { rated: 1, popular: 1 }, CN: { rated: 2, popular: 2 } });
   assert.deepEqual(ranks.get(x.id), { HK: { rated: 2, popular: 2 } });
+});
+
+// ---------- Surprise me, More like this, search ----------
+
+// A repeatable stand-in for Math.random.
+const seeded = (seed) => () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+
+test("surprise never picks a seen film", () => {
+  const films = Array.from({ length: 12 }, (_, i) => film({ rating: 5 + i / 4, votes: 100 * (i + 1) }));
+  const seen = new Set(films.slice(6).map((x) => x.id));
+  const rand = seeded(42);
+  for (let i = 0; i < 200; i++) assert.ok(!seen.has(surprise(films, flat, HK, seen, rand).id));
+  assert.equal(surprise(films, flat, HK, new Set(films.map((x) => x.id))), null);
+});
+
+test("surprise favours high-ranked films", () => {
+  const top = film({ rating: 9, votes: 9000 });
+  const films = [film({ rating: 5, votes: 10 }), top, film({ rating: 6, votes: 50 })];
+  assert.equal(surprise(films, flat, HK, new Set(), () => 0).id, top.id);
+});
+
+test("moreLike prefers the same director, then cast", () => {
+  const base = film({ director: { id: 1, name: "Andrew Lau" }, cast: [{ id: 10, name: "Tony Leung" }], genres: ["Crime"] });
+  const sameDirector = film({ director: { id: 1, name: "Andrew Lau" }, cast: [], genres: ["Comedy"], year: 1985, votes: 5 });
+  const sameActor = film({ director: { id: 2, name: "Other" }, cast: [{ id: 10, name: "Tony Leung" }], genres: ["Comedy"], year: 1985, votes: 9000 });
+  const sameShelf = film({ director: { id: 3, name: "Other" }, cast: [], genres: ["Crime"] });
+  const unrelated = film({ places: ["KR"], director: { id: 4, name: "Other" }, cast: [], genres: ["Horror"], year: 1975 });
+  const out = moreLike(base, [base, unrelated, sameShelf, sameActor, sameDirector]);
+  assert.deepEqual(out.map((x) => x.id), [sameDirector.id, sameActor.id, sameShelf.id]);
+});
+
+test("search folds case and accents, keeps CJK", () => {
+  const amelie = film({ title: "Amélie", original: "Le Fabuleux Destin d'Amélie Poulain", places: ["EN"] });
+  const ia = film({ title: "Infernal Affairs", original: "無間道", cast: [{ id: 5, name: "Tony Leung Chiu-wai" }] });
+  const mom = film({ title: "Memories of Murder", original: "살인의 추억", places: ["KR"] });
+  const films = [amelie, ia, mom];
+  assert.equal(fold("  Amélie "), "amelie");
+  assert.deepEqual(search(films, "amelie").map((x) => x.id), [amelie.id]);
+  assert.deepEqual(search(films, "  INFERNAL ").map((x) => x.id), [ia.id]);
+  assert.deepEqual(search(films, "無間").map((x) => x.id), [ia.id]);
+  assert.deepEqual(search(films, "살인").map((x) => x.id), [mom.id]);
+  assert.deepEqual(search(films, "tony leung").map((x) => x.id), [ia.id]);
+  assert.deepEqual(search(films, ""), []);
+  assert.deepEqual(search(films, "   "), []);
+});
+
+test("search puts title matches before people matches, then more votes", () => {
+  const byCast = film({ title: "Hard Boiled", cast: [{ id: 1, name: "Chow Yun-fat" }], votes: 9000 });
+  const byTitle = film({ title: "Chow's Kitchen", votes: 10 });
+  assert.deepEqual(search([byCast, byTitle], "chow").map((x) => x.id), [byTitle.id, byCast.id]);
 });
