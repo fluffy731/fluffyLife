@@ -1,0 +1,17 @@
+# Temporary: recon for Spots phase 2 (which event sources answer from GitHub). Removed before merge.
+name: Spots source probe
+on:
+  push:
+    branches: ["claude/beautiful-ptolemy-fwg101"]
+    paths: ["scripts/spots-probe.mjs", ".github/workflows/spots-probe.yml"]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: node scripts/spots-probe.mjs
