@@ -2,10 +2,10 @@
 import {
   KINDS, kindOf, reachKm, driveBudget, pickNow, lateStart, pickLate, DAY_SLOTS, buildDayPlan, tomorrow,
   travelMinutes, haversineKm, fmtMinutes, hoursLabel, minutesLeft, dayHours, priceSymbols, priceRangeLabel, mapsUrl,
-  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop,
+  savePlace, unsave, isSaved, noteRegion, visitFor, whyEmpty, swapStop, NEAR, pickNear, upcomingEvents,
 } from "./model.js";
 import { REGIONS, surpriseRegion } from "./regions.js";
-import { $, EMOJI, esc, fmtCount, toast, openSheet, sheetBar } from "./ui.js";
+import { $, EMOJI, esc, fmtCount, toast, openSheet, closeSheet, sheetBar } from "./ui.js";
 
 const MINUTES = [[60, "1 h"], [120, "2 h"], [180, "3 h"], [240, "Half day"]];
 const PRICES = [["any", "Any"], ["1", "$"], ["2", "$$"], ["3", "$$$"], ["4", "$$$$"]];
@@ -23,9 +23,33 @@ const EMPTY = {
 
 const chip = (attr, val, label, on) => `<button class="chip" type="button" ${attr}="${esc(val)}" aria-pressed="${on}">${label}</button>`;
 const kindChips = (set) => `<div class="chips kinds">${KINDS.map((k) => `<button class="chip" type="button" data-kind="${k.id}" aria-pressed="${set.has(k.id)}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>`;
+const fmtN = (n) => n.toLocaleString("en-AU");
+const RADIUS_LABEL = { 0.5: "500 m", 1: "1 km", 2: "2 km" };
+// Places to look around: today's and coming saved events, then saved places.
+function nearPicks(app) {
+  const today = new Date(), iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const evs = upcomingEvents(app.state, iso).filter((x) => x.venue || x.area).slice(0, 3)
+    .map((x) => ({ key: `e:${x.id}`, label: x.venue || x.area, q: [x.venue, x.address || x.area].filter(Boolean).join(", ") }));
+  const places = app.state.saved.filter((x) => Number.isFinite(x.lat)).slice(0, 4)
+    .map((x) => ({ key: `p:${x.id}`, label: x.name, q: x.name, target: { name: x.name, lat: x.lat, lng: x.lng, area: x.area } }));
+  return [...evs, ...places];
+}
 const budget = (u) => `<p class="label">Budget</p><div class="chips">${PRICES.map(([v, l]) => chip("data-price", v, l, String(u.price ?? "any") === v)).join("")}</div>`;
 
-function controls(u) {
+function controls(u, app) {
+  if (u.mode === "near") {
+    const n = u.near, picks = app ? nearPicks(app) : [];
+    return `
+    <p class="label"><label for="near-q">Going to</label></p>
+    <input id="near-q" class="near-q" type="search" enterkeyhint="search" autocomplete="off" placeholder="A venue, address or suburb" value="${esc(n.q)}">
+    ${picks.length ? `<div class="chips scroll" style="margin-top:8px">${picks.map((x) => chip("data-nearpick", x.key, esc(x.label), n.q === x.q)).join("")}</div>` : ""}
+    <p class="label">Within</p><div class="chips">${NEAR.radii.map((r) => chip("data-nradius", r, `${RADIUS_LABEL[r]} walk`, n.radius === r)).join("")}</div>
+    <p class="label">Rated</p><div class="chips">${NEAR.ratings.map((r) => chip("data-nrate", r, `★ ${r}+`, n.minRating === r)).join("")}</div>
+    <p class="label">Reviews</p><div class="chips">${NEAR.reviews.map((r) => chip("data-nrev", r, `${fmtN(r)}+`, n.minReviews === r)).join("")}</div>
+    <p class="label">What</p>${kindChips(n.kinds)}
+    ${budget(u)}
+    <p class="hint">Google gives each place its average rating and its number of reviews, so this means an average of ★ ${n.minRating} or more from at least ${fmtN(n.minReviews)} people.</p>`;
+  }
   if (u.mode === "now") return `
     <p class="label">Time I have</p><div class="chips">${MINUTES.map(([m, l]) => chip("data-min", m, l, u.minutes === m)).join("")}</div>
     <p class="label">Getting there</p><div class="chips">${chip("data-travel", "drive", "🚗 Drive", u.travel === "drive")}${chip("data-travel", "walk", "🚶 Walk", u.travel === "walk")}</div>
@@ -50,7 +74,7 @@ function controls(u) {
 }
 
 const modeBtn = (u, id, label, sub) => `<button class="mode" type="button" id="mode-${id}" data-mode="${id}" aria-pressed="${u.mode === id}">${label}<small>${sub}</small></button>`;
-const findLabel = (u) => (u.mode === "tomorrow" ? "Plan my day" : "Find places");
+const findLabel = (u) => (u.mode === "tomorrow" ? "Plan my day" : u.mode === "near" ? "Find top-rated places" : "Find places");
 
 export function renderExplore(app) {
   const s = app.state.settings, u = app.ui, ready = s.sample || !!s.key;
@@ -63,18 +87,23 @@ export function renderExplore(app) {
       <div class="row"><button class="btn primary" type="button" id="setup-google">Set up Google</button><button class="btn" type="button" id="setup-sample">Try with sample places</button></div>
     </div>`}
     <div${ready ? "" : " hidden"}>
-      <div class="modes" role="group" aria-label="Mode">${modeBtn(u, "now", "Now", "short on time")}${modeBtn(u, "late", "Late night", "still open")}${modeBtn(u, "tomorrow", "Tomorrow", "full day")}</div>
-      <div id="controls">${controls(u)}</div>
+      <div class="modes" role="group" aria-label="Mode">${modeBtn(u, "now", "Now", "short on time")}${modeBtn(u, "late", "Late night", "still open")}${modeBtn(u, "tomorrow", "Tomorrow", "full day")}${modeBtn(u, "near", "Near", "top-rated")}</div>
+      <div id="controls">${controls(u, app)}</div>
       <button class="btn primary find" type="button" id="find">${findLabel(u)}</button>
       <p class="where-note" id="where-note">${app.pos ? (app.pos.fallback ? "Using Melbourne CBD (location is off)" : "Near you") : ""}</p>
     </div>
     <div class="results" id="results"></div>`;
-  if (!v.dataset.bound) { v.addEventListener("click", (e) => onClick(app, e)); v.dataset.bound = "1"; }
+  if (!v.dataset.bound) {
+    v.addEventListener("click", (e) => onClick(app, e));
+    v.addEventListener("input", (e) => { if (e.target.id === "near-q") { app.ui.near.q = e.target.value; app.ui.near.target = null; } });
+    v.addEventListener("keydown", (e) => { if (e.target.id === "near-q" && e.key === "Enter") { e.preventDefault(); e.target.blur(); find(app); } });
+    v.dataset.bound = "1";
+  }
   renderResults(app);
 }
 
 function refreshControls(app) {
-  $("#controls").innerHTML = controls(app.ui);
+  $("#controls").innerHTML = controls(app.ui, app);
   document.querySelectorAll("#v-explore .mode").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === app.ui.mode)));
   $("#find").textContent = findLabel(app.ui);
 }
@@ -91,8 +120,16 @@ async function onClick(app, e) {
   if (d("[data-start]")) { u.start = d("[data-start]").dataset.start; return refreshControls(app); }
   if (d("[data-pace]")) { u.pace = d("[data-pace]").dataset.pace; return refreshControls(app); }
   if (d("[data-price]")) { const v = d("[data-price]").dataset.price; u.price = v === "any" ? null : +v; return refreshControls(app); }
+  if (d("[data-nradius]")) { u.near.radius = +d("[data-nradius]").dataset.nradius; return refreshControls(app); }
+  if (d("[data-nrate]")) { u.near.minRating = +d("[data-nrate]").dataset.nrate; return refreshControls(app); }
+  if (d("[data-nrev]")) { u.near.minReviews = +d("[data-nrev]").dataset.nrev; return refreshControls(app); }
+  if (d("[data-nearpick]")) {
+    const x = nearPicks(app).find((p) => p.key === d("[data-nearpick]").dataset.nearpick);
+    if (x) { u.near.q = x.q; u.near.label = x.label; u.near.target = x.target ? { ...x.target, q: x.q } : null; }
+    return refreshControls(app);
+  }
   if (d(".kinds [data-kind]")) {
-    const set = u.mode === "late" ? u.lateKinds : u.kinds, k = d("[data-kind]").dataset.kind;
+    const set = u.mode === "late" ? u.lateKinds : u.mode === "near" ? u.near.kinds : u.kinds, k = d("[data-kind]").dataset.kind;
     if (set.has(k)) { if (set.size > 1) set.delete(k); else toast("Pick at least one kind"); } else set.add(k);
     return refreshControls(app);
   }
@@ -100,11 +137,30 @@ async function onClick(app, e) {
   if (d("[data-open]")) return openPlace(app, d("[data-open]").dataset.open);
   if (d('[data-act="save"]')) return toggleSave(app, d('[data-act="save"]').dataset.id);
   if (d('[data-act="checkin"]')) return app.checkIn(app.places.get(d('[data-act="checkin"]').dataset.id));
+  if (d('[data-act="near"]')) { const p = app.places.get(d('[data-act="near"]').dataset.id); if (p) nearFrom(app, p); return; }
   if (d("[data-swap]")) return swap(app, +d("[data-swap]").dataset.swap);
   if (d("#save-day")) return saveDay(app);
 }
 
 // ---------- Searching ----------
+
+// An idea from Today: set the controls it names, open Explore and search (or show the setup card when there's
+// no key and no sample places).
+export function runPreset(app, p) {
+  const u = app.ui;
+  u.mode = p.mode;
+  if (p.near) Object.assign(u.near, { q: p.near.q, label: p.near.label || p.near.q, target: p.near.target ? { ...p.near.target, q: p.near.q } : null });
+  if (p.kinds) u.kinds = new Set(p.kinds);
+  if (p.minutes) u.minutes = p.minutes;
+  if (p.lateKinds) u.lateKinds = new Set(p.lateKinds);
+  if (p.late) u.late = p.late;
+  if (p.where) u.where = p.where;
+  if (p.pace) u.pace = p.pace;
+  if (p.start) u.start = p.start;
+  app.show("explore");
+  const s = app.state.settings;
+  if (s.sample || s.key) return find(app);
+}
 
 async function find(app) {
   const btn = $("#find"), res = $("#results"), u = app.ui;
@@ -113,13 +169,17 @@ async function find(app) {
   try {
     const provider = await app.getProvider();
     if (!provider) return renderExplore(app);
-    const pos = await app.locate();
-    $("#where-note").textContent = pos.fallback ? "Using Melbourne CBD (location is off)" : "Near you";
-    const now = new Date();
-    const r = u.mode === "now" ? await findNow(provider, pos, now, u) : u.mode === "late" ? await findLate(provider, pos, now, u) : await findTomorrow(app, provider, pos, now, u);
+    let r;
+    if (u.mode === "near") { $("#where-note").textContent = ""; r = await findNear(provider, u); }
+    else {
+      const pos = await app.locate();
+      $("#where-note").textContent = pos.fallback ? "Using Melbourne CBD (location is off)" : "Near you";
+      const now = new Date();
+      r = u.mode === "now" ? await findNow(provider, pos, now, u) : u.mode === "late" ? await findLate(provider, pos, now, u) : await findTomorrow(app, provider, pos, now, u);
+    }
     r.source = provider.label;
     app.lastResult = r;
-    for (const p of r.places || r.plan.flatMap((s) => [s.place, ...s.alternatives]).filter(Boolean)) app.places.set(p.id, p);
+    for (const p of r.places || (r.groups ? r.groups.flatMap((g) => g.places) : r.plan.flatMap((s) => [s.place, ...s.alternatives]).filter(Boolean))) app.places.set(p.id, p);
     renderResults(app);
   } catch (err) {
     res.innerHTML = `<div class="error"><b>Couldn't search.</b> ${esc(err.message || err)}</div>`;
@@ -162,6 +222,29 @@ async function findTomorrow(app, provider, pos, now, u) {
   return { type: "day", region, day, plan, from: pos };
 }
 
+// Near here: from a place (which has a position) or an event venue (looked up by name and address).
+export function nearFrom(app, p) {
+  const target = Number.isFinite(p.lat) && Number.isFinite(p.lng) ? { name: p.name, lat: p.lat, lng: p.lng, area: p.area } : null;
+  const q = p.q || [p.name, p.area].filter(Boolean).join(", ");
+  closeSheet();
+  return runPreset(app, { mode: "near", near: { q, label: p.label || p.name, target } });
+}
+
+async function findNear(provider, u) {
+  const n = u.near;
+  if (!n.q.trim() && !n.target) throw new Error("Type where you're going first.");
+  if (!n.target || n.target.q !== n.q) {
+    const loc = await provider.locate(n.q.trim());
+    if (!loc) throw new Error(`Couldn't find "${n.q.trim()}". Try a suburb or a fuller address.`);
+    n.target = { ...loc, q: n.q };
+  }
+  const t = n.target, kinds = [...n.kinds];
+  const lists = await Promise.all(kinds.map((k) => provider.search({ query: kindOf(k).query, kind: k, center: t, radiusKm: n.radius, openNow: false,
+    priceMax: u.price, max: 20, minRating: n.minRating })));
+  const groups = kinds.map((k, i) => ({ kind: k, ...pickNear(lists[i], { center: t, radiusKm: n.radius, minRating: n.minRating, minReviews: n.minReviews, priceMax: u.price }) }));
+  return { type: "near", at: new Date(), target: t, label: n.label && n.label !== n.q ? n.label : t.name, groups, radius: n.radius, minRating: n.minRating, minReviews: n.minReviews };
+}
+
 // ---------- Showing results ----------
 
 // The kind tile is always there; a photo covers it and removes itself if it fails, uncovering the tile.
@@ -178,9 +261,9 @@ export function photoBlock(p, i, big) {
 }
 
 const ratingText = (p) => (p.rating != null ? `<b>★ ${p.rating.toFixed(1)}</b> (${fmtCount(p.ratingCount)})` : "★ No rating yet");
-const travelText = (p, mode) => (p.travel != null ? `<span class="travel">${fmtMinutes(p.travel)} ${mode === "walk" ? "walk" : "drive"}</span> · ${p.km} km` : "");
+const travelText = (p, mode, from) => (p.travel != null ? `<span class="travel">${fmtMinutes(p.travel)} ${mode === "walk" ? "walk" : "drive"}</span>${from ? ` from ${esc(from)}` : ""} · ${p.km} km` : "");
 
-function card(app, p, i, at, mode) {
+function card(app, p, i, at, mode, from) {
   const k = kindOf(p.kind), saved = isSaved(app.state, p.id), left = minutesLeft(p.hours, at, p.off), range = priceRangeLabel(p.priceRange);
   return `<article class="card result in" data-kind="${k.id}" style="animation-delay:${Math.min(i, 6) * 40}ms">
     ${photoBlock(p, i, false)}
@@ -188,7 +271,7 @@ function card(app, p, i, at, mode) {
       <button class="open-place" type="button" data-open="${esc(p.id)}">
         <div class="row1"><h3>${esc(p.name)}</h3>${p.price != null ? `<span class="price">${priceSymbols(p.price)}</span>` : ""}</div>
         <p class="meta">${ratingText(p)} · ${esc(p.area || k.label)}</p>
-        <p class="meta"><span class="hours${left > 0 ? " open" : ""}">${esc(hoursLabel(p.hours, at, p.off))}</span>${p.travel != null ? " · " + travelText(p, mode) : ""}</p>
+        <p class="meta"><span class="hours${left > 0 ? " open" : ""}">${esc(hoursLabel(p.hours, at, p.off))}</span>${p.travel != null ? " · " + travelText(p, mode, from) : ""}</p>
         ${range ? `<p class="range">${esc(range)} per person</p>` : ""}
       </button>
       <div class="acts">
@@ -204,6 +287,16 @@ function renderResults(app) {
   const res = $("#results"), r = app.lastResult;
   if (!res || !r) return;
   const attrib = `<p class="attrib">${esc(r.source)}</p>`;
+  if (r.type === "near") {
+    const bar = `★ ${r.minRating}+ from ${fmtN(r.minReviews)}+ reviews`;
+    res.innerHTML = `<div class="card region"><p class="eyebrow">Top-rated near</p><h3>${esc(r.label)}</h3>
+      <p>${esc([r.target.address || r.target.area, `within a ${RADIUS_LABEL[r.radius]} walk`, bar].filter(Boolean).join(" · "))}</p></div>`
+      + r.groups.map((g) => `<div class="res-head"><h3>${EMOJI[g.kind]} ${esc(kindOf(g.kind).label)}</h3><span>${g.places.length ? `${g.places.length}${g.more ? ` of ${g.places.length + g.more}` : ""} found` : ""}</span></div>`
+        + (g.places.length ? g.places.map((p, i) => card(app, p, i, r.at, "walk", r.label)).join("")
+          : `<div class="empty">None ${bar.toLowerCase()} within a ${RADIUS_LABEL[r.radius]} walk.${g.almost ? ` ${g.almost} more with ${fmtN(Math.floor(r.minReviews / 3))}+ reviews: try fewer reviews.` : r.radius < 2 ? " Try a longer walk." : ""}</div>`)).join("")
+      + attrib;
+    return;
+  }
   if (r.type === "list") {
     res.innerHTML = `<div class="res-head"><h3>${esc(r.head)}</h3><span>${esc(r.sub)}</span></div>`
       + (r.places.length ? r.places.map((p, i) => card(app, p, i, r.at, r.travel)).join("") : `<div class="empty">${EMPTY[r.mode === "late" ? "late" : r.why || "none"]}</div>`) + attrib;
@@ -281,6 +374,7 @@ function sheetHTML(app, p, state) {
       <button class="btn${saved ? " hot" : ""}" type="button" data-act="save" data-id="${esc(p.id)}">${saved ? "♥ Saved" : "♡ Save"}</button>
       <a class="btn maps" href="${esc(mapsUrl(p))}" target="_blank" rel="noopener">Google Maps</a>
       <button class="btn red" type="button" data-act="checkin" data-id="${esc(p.id)}">Check in</button>
+      <button class="btn" type="button" data-act="near" data-id="${esc(p.id)}">★ Top-rated near here</button>
     </div>
     <p class="attrib">${esc(p.sample ? "Sample data" : "Google Maps")}</p>`;
 }
@@ -292,9 +386,10 @@ export async function openPlace(app, id, fallback) {
   const d = openSheet(sheetHTML(app, p, "loading"));
   if (!d.dataset.bound) {
     d.addEventListener("click", (e) => {
-      const s = e.target.closest('[data-act="save"]'), c = e.target.closest('[data-act="checkin"]');
+      const s = e.target.closest('[data-act="save"]'), c = e.target.closest('[data-act="checkin"]'), n = e.target.closest('[data-act="near"]');
       if (s) toggleSave(app, s.dataset.id);
       if (c) app.checkIn(app.places.get(c.dataset.id));
+      if (n && app.places.get(n.dataset.id)) nearFrom(app, app.places.get(n.dataset.id));
     });
     d.dataset.bound = "1";
   }

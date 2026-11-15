@@ -3,6 +3,7 @@ import { load, save, staleSaved, CBD } from "./model.js";
 import { sampleProvider } from "./samples.js";
 import { loadGoogle, googleProvider, testConnection, loadedKey } from "./places.js";
 import { renderExplore } from "./explore.js";
+import { renderToday } from "./todayview.js";
 import { renderSaved, renderPassport, openCheckIn, backupNow, restoreFrom } from "./stampbook.js";
 import { $, esc, toast, closeSheet } from "./ui.js";
 
@@ -12,8 +13,10 @@ const FIELD_NAMES = { photo: "Photos", price: "Price level", priceRange: "Price 
 const app = {
   state: load(localStorage),
   ui: { mode: "now", minutes: 120, travel: "drive", kinds: new Set(["eat"]), price: null, late: 30,
-    lateKinds: new Set(["eat", "drink", "dessert"]), where: "town", start: "09:00", pace: "relaxed", savedKind: "all" },
-  pos: null, places: new Map(), lastResult: null, freshStamp: null, tab: "explore",
+    lateKinds: new Set(["eat", "drink", "dessert"]), where: "town", start: "09:00", pace: "relaxed", savedKind: "all", todayFilter: null, showAll: {},
+    near: { q: "", label: "", target: null, radius: 1, minRating: 4.5, minReviews: 1000, kinds: new Set(["eat", "drink", "coffee"]) } },
+  pos: null, places: new Map(), lastResult: null, freshStamp: null, tab: "today",
+  feed: null, feedAt: 0, feedState: "none",
   persist() { save(localStorage, this.state); },
 
   async getProvider() {
@@ -22,6 +25,20 @@ const app = {
     if (!s.key) return null;
     if (!this._google) this._google = googleProvider(await loadGoogle(s.key));
     return this._google;
+  },
+
+  // Today's events, openings, weather and holidays: built hourly by GitHub (scripts/build-spots.mjs). The service
+  // worker keeps the last copy for offline use. Fetched again after 30 minutes.
+  async loadFeed(force = false) {
+    if (!force && this.feed && Date.now() - this.feedAt < 30 * 60e3) return this.feed;
+    try {
+      const r = await fetch("./feed.json", { cache: "no-cache" });
+      if (!r.ok) throw new Error(String(r.status));
+      const f = await r.json();
+      if (!f || !Array.isArray(f.events)) throw new Error("bad feed");
+      this.feed = f; this.feedAt = Date.now(); this.feedState = "ok";
+    } catch { this.feedState = this.feed ? "ok" : "missing"; }
+    return this.feed;
   },
 
   // Where you are, or Melbourne CBD when location is off or doesn't answer within 8 seconds.
@@ -42,8 +59,9 @@ const app = {
 
   show(tab) {
     this.tab = tab;
-    for (const v of ["explore", "saved", "passport", "settings"]) $(`#v-${v}`).hidden = v !== tab;
-    document.querySelectorAll(".tab").forEach((b) => (b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+    for (const v of ["today", "explore", "saved", "passport", "settings"]) $(`#v-${v}`).hidden = v !== tab;
+    document.querySelectorAll(".tab, .gear").forEach((b) => (b.dataset.tab === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+    if (tab === "today") renderToday(this);
     if (tab === "explore") renderExplore(this);
     if (tab === "saved") renderSaved(this);
     if (tab === "passport") renderPassport(this);
@@ -121,7 +139,7 @@ function renderSettings(app) {
 
 document.addEventListener("click", async (e) => {
   const t = e.target;
-  const tab = t.closest(".tab");
+  const tab = t.closest(".tab, .gear");
   if (tab) return app.show(tab.dataset.tab);
   if (t.closest("#fab")) return app.checkIn(null);
   const sheet = $("#sheet");
@@ -181,6 +199,6 @@ async function refreshStale() {
 
 applyTheme();
 tickClock(); setInterval(tickClock, 30e3);
-app.show("explore");
+app.show("today");
 setTimeout(refreshStale, 3000);
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js").catch(() => {});

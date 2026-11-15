@@ -19,22 +19,23 @@
 <body>
 <header class="mast">
   <div class="brand"><span class="mark" aria-hidden="true"></span><h1>Spots</h1></div>
-  <p class="clock" id="clock"></p>
+  <div class="mast-r"><p class="clock" id="clock"></p><button type="button" class="gear" data-tab="settings" id="settings-btn" aria-label="Settings">⚙</button></div>
 </header>
 
 <main class="main">
-  <section class="view" id="v-explore" aria-label="Explore"></section>
+  <section class="view" id="v-today" aria-label="Today"></section>
+  <section class="view" id="v-explore" aria-label="Explore" hidden></section>
   <section class="view" id="v-saved" aria-label="Saved" hidden></section>
   <section class="view" id="v-passport" aria-label="Passport" hidden></section>
   <section class="view" id="v-settings" aria-label="Settings" hidden></section>
 </main>
 
 <nav class="tabbar" aria-label="Sections">
-  <button type="button" class="tab" data-tab="explore" aria-current="page"><span class="ic" aria-hidden="true">✦</span>Explore</button>
-  <button type="button" class="tab" data-tab="saved"><span class="ic" aria-hidden="true">♥</span>Saved</button>
+  <button type="button" class="tab" data-tab="today" aria-current="page"><span class="ic" aria-hidden="true">☀</span>Today</button>
+  <button type="button" class="tab" data-tab="explore"><span class="ic" aria-hidden="true">✦</span>Explore</button>
   <button type="button" class="fab" id="fab" aria-label="Check in"><span>Check<br>in</span></button>
+  <button type="button" class="tab" data-tab="saved"><span class="ic" aria-hidden="true">♥</span>Saved</button>
   <button type="button" class="tab" data-tab="passport"><span class="ic" aria-hidden="true">◎</span>Passport</button>
-  <button type="button" class="tab" data-tab="settings" id="settings-btn"><span class="ic" aria-hidden="true">⚙</span>Settings</button>
 </nav>
 
 <dialog id="sheet" class="sheet" aria-label="Details"></dialog>

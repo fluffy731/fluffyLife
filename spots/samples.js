@@ -1,6 +1,6 @@
 // Sample places for trying the app without a Google key, and for the tests. Deterministic: the same search
 // gives the same places. Every name starts with "Sample" and every place is marked sample: true.
-import { kindOf } from "./model.js";
+import { kindOf, CBD } from "./model.js";
 
 const NOUNS = {
   eat: ["noodle bar", "bistro", "dumpling house", "pizzeria", "ramen shop", "taqueria", "grill", "Thai kitchen", "diner", "pho house", "tapas bar", "curry house"],
@@ -57,6 +57,13 @@ export function sampleProvider() {
       const tag = seed(`${query}|${kind}|${center.lat.toFixed(3)}|${center.lng.toFixed(3)}`).toString(36);
       const r = rng(seed(tag));
       return Array.from({ length: Math.min(max, 12) }, (_, i) => makePlace(kind, i, r, center, Math.min(radiusKm, 50), tag));
+    },
+    // A made-up spot within about 8 km of the CBD, always the same for the same words.
+    async locate(query) {
+      const r = rng(seed(`where|${query.toLowerCase().trim()}`));
+      const d = 1 + r() * 7, a = r() * 2 * Math.PI;
+      return { id: `sample-where-${seed(query).toString(36)}`, name: query.trim(), address: "Sample address", area: "Sample area", sample: true,
+        lat: Math.round((CBD.lat + (d * Math.cos(a)) / 111.2) * 1e5) / 1e5, lng: Math.round((CBD.lng + (d * Math.sin(a)) / 88.2) * 1e5) / 1e5 };
     },
     async details(p) {
       return { ...p,

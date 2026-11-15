@@ -1,8 +1,10 @@
 // Saved places, checking in (the stamp), the Passport, and backup and restore.
-import { KINDS, kindOf, haversineKm, travelMinutes, fmtMinutes, mapsUrl, unsave, addStamp, passportStats, backupJSON, mergeBackup } from "./model.js";
+import { KINDS, kindOf, haversineKm, travelMinutes, fmtMinutes, mapsUrl, unsave, addStamp, passportStats, backupJSON, mergeBackup, upcomingEvents, unsaveEvent } from "./model.js";
 import { putPhoto, getPhoto, delPhoto, thumb, photosAsDataURLs, dataURLToBlob } from "./db.js";
 import { $, EMOJI, esc, toast, openSheet, closeSheet, sheetBar } from "./ui.js";
-import { openPlace } from "./explore.js";
+import { openPlace, nearFrom } from "./explore.js";
+import { iso, addDays, clock, weekdayOf, catOf, kindForCat } from "./today.js";
+import { openEvent, eventMaps, venueOf } from "./todayview.js";
 
 const MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const stampDate = (iso) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${MON[m - 1]} ${String(y).slice(2)}`; };
@@ -17,27 +19,52 @@ const byDistance = (app, list) => (app.pos ? [...list].sort((a, b) => haversineK
 
 // ---------- Saved ----------
 
+const MON3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const dayName = (day, today) => (day <= today ? "Today" : day === addDays(today, 1) ? "Tomorrow" : `${weekdayOf(day)} ${+day.slice(8)} ${MON3[+day.slice(5, 7) - 1]}`);
+function eventLine(x, today) {
+  const when = dayName(x.day, today) + (x.time && x.day >= today ? ` · ${clock(x.time)}` : x.to > x.day && x.to > today ? ` · until ${+x.to.slice(8)} ${MON3[+x.to.slice(5, 7) - 1]}` : "");
+  return [when, x.venue || x.area].filter(Boolean).join(" · ");
+}
+// A saved event as the event sheet wants it, from the feed when it's still there, or else from what was saved.
+const asEvent = (app, x) => (app.feed?.events || []).find((e) => e.id === x.id)
+  || { id: x.id, src: "", title: x.title, url: x.url, venue: x.venue, address: x.address, area: x.area, cat: x.cat, from: x.day, to: x.to, next: x.time ? `${x.day}T${x.time}` : null, days: [x.day], blurb: "", image: null };
+
 export function renderSaved(app) {
   const v = $("#v-saved"), u = app.ui;
   const present = KINDS.filter((k) => app.state.saved.some((s) => s.kind === k.id));
   if (u.savedKind !== "all" && !present.some((k) => k.id === u.savedKind)) u.savedKind = "all";
   const list = byDistance(app, app.state.saved.filter((s) => u.savedKind === "all" || s.kind === u.savedKind));
+  const today = iso(new Date()), evs = upcomingEvents(app.state, today);
   v.innerHTML = `<h2 class="title">Saved</h2>
+    ${evs.length ? `<h3 class="sub-h">Coming up</h3>${evs.map((x) => `<div class="card saved-row" data-kind="${kindForCat(x.cat)}">
+        <span class="badge" aria-hidden="true">${catOf(x)[0]}</span>
+        <button class="open-place" type="button" data-eopen="${esc(x.id)}"><b>${esc(x.title)}</b><small>${esc(eventLine(x, today))}</small></button>
+        <div class="row-acts">
+          <button class="icon-btn" type="button" data-enear="${esc(x.id)}" aria-label="Top-rated places near ${esc(x.venue || x.title)}">★</button>
+          <a class="icon-btn" href="${esc(eventMaps(x))}" target="_blank" rel="noopener" aria-label="Open ${esc(x.title)} in Google Maps">↗</a>
+          <button class="icon-btn" type="button" data-edel="${esc(x.id)}" aria-label="Remove ${esc(x.title)}">✕</button>
+        </div></div>`).join("")}<h3 class="sub-h">Places</h3>` : ""}
     ${present.length > 1 ? `<div class="chips scroll" style="margin-bottom:12px"><button class="chip" type="button" data-skind="all" aria-pressed="${u.savedKind === "all"}">All</button>${present.map((k) => `<button class="chip" type="button" data-kind="${k.id}" data-skind="${k.id}" aria-pressed="${u.savedKind === k.id}">${EMOJI[k.id]} ${k.label}</button>`).join("")}</div>` : ""}
     ${list.length ? list.map((s) => `<div class="card saved-row" data-kind="${s.kind}">
         <span class="badge" aria-hidden="true">${EMOJI[s.kind]}</span>
         <button class="open-place" type="button" data-sopen="${esc(s.id)}"><b>${esc(s.name)}</b><small>${esc(s.area || kindOf(s.kind).label)}${distLine(app, s)}</small></button>
         <div class="row-acts">
+          <button class="icon-btn" type="button" data-snear="${esc(s.id)}" aria-label="Top-rated places near ${esc(s.name)}"${Number.isFinite(s.lat) ? "" : " hidden"}>★</button>
           <a class="icon-btn" href="${esc(mapsUrl(s))}" target="_blank" rel="noopener" aria-label="Open ${esc(s.name)} in Google Maps">↗</a>
           <button class="icon-btn" type="button" data-scheck="${esc(s.id)}" aria-label="Check in at ${esc(s.name)}">◎</button>
           <button class="icon-btn" type="button" data-sdel="${esc(s.id)}" aria-label="Remove ${esc(s.name)}">✕</button>
         </div></div>`).join("")
-      : `<div class="empty">Nothing saved yet. Tap Save on any place in Explore.</div>`}
+      : `<div class="empty">${evs.length ? "No places saved yet." : "Nothing saved yet. Tap Save on a place in Explore, or on an event in Today."}</div>`}
     ${app.pos ? "" : list.length ? `<p class="hint">Find something in Explore to sort these by distance.</p>` : ""}
     ${list.length ? `<p class="attrib">${list.every((x) => x.sample) ? "Sample data" : "Place names from Google Maps"}</p>` : ""}`;
   if (!v.dataset.bound) {
     v.addEventListener("click", (e) => {
       const t = e.target, get = (a) => app.state.saved.find((s) => s.id === t.closest(`[${a}]`).getAttribute(a));
+      const ev = (a) => app.state.events.find((x) => x.id === t.closest(`[${a}]`).getAttribute(a));
+      if (t.closest("[data-edel]")) { const x = ev("data-edel"); app.state = unsaveEvent(app.state, x.id); app.persist(); toast(`Removed ${x.title}`); return renderSaved(app); }
+      if (t.closest("[data-enear]")) return nearFrom(app, venueOf(ev("data-enear")));
+      if (t.closest("[data-snear]")) return nearFrom(app, get("data-snear"));
+      if (t.closest("[data-eopen]")) { const x = ev("data-eopen"); return openEvent(app, asEvent(app, x), x.day); }
       if (t.closest("[data-skind]")) { app.ui.savedKind = t.closest("[data-skind]").dataset.skind; return renderSaved(app); }
       if (t.closest("[data-sdel]")) { const s = get("data-sdel"); app.state = unsave(app.state, s.id); app.persist(); toast(`Removed ${s.name}`); return renderSaved(app); }
       if (t.closest("[data-scheck]")) return openCheckIn(app, get("data-scheck"));
@@ -52,11 +79,15 @@ export function renderSaved(app) {
 export function openCheckIn(app, pre) {
   const seen = new Set(), cands = [];
   const r = app.lastResult, found = r ? (r.places || r.plan.map((s) => s.place)).filter(Boolean) : [];
-  for (const p of [pre, ...byDistance(app, app.state.saved), ...byDistance(app, found)]) if (p && p.id && !seen.has(p.id) && cands.length < 8) { seen.add(p.id); cands.push(p); }
+  // Saved events on today come straight after the place you tapped: you're probably there.
+  const today = iso(new Date());
+  // The stamp's area is the suburb (Passport counts suburbs), not the venue.
+  const onNow = upcomingEvents(app.state, today).filter((x) => x.day <= today).map((x) => ({ id: x.id, name: x.title, area: x.area, kind: kindForCat(x.cat) }));
+  for (const p of [pre, ...onNow, ...byDistance(app, app.state.saved), ...byDistance(app, found)]) if (p && p.id && !seen.has(p.id) && cands.length < 8) { seen.add(p.id); cands.push(p); }
   const st = { sel: cands[0] ? cands[0].id : "other", rating: 4, kind: "eat", file: null };
   const d = openSheet(`${sheetBar}
     <h2>Check in</h2>
-    <p class="hint">Where are you? Saved places first, then places you just found.</p>
+    <p class="hint">Where are you? Today's saved events and saved places first, then places you just found.</p>
     <div class="cands" id="cands">
       ${cands.map((p) => `<button class="cand" type="button" data-cand="${esc(p.id)}" data-kind="${kindOf(p.kind).id}" aria-pressed="${p.id === st.sel}"><span class="badge" aria-hidden="true">${EMOJI[kindOf(p.kind).id]}</span><span>${esc(p.name)}<small>${esc(p.area || kindOf(p.kind).label)}</small></span></button>`).join("")}
       <button class="cand" type="button" data-cand="other" aria-pressed="${st.sel === "other"}"><span class="badge" aria-hidden="true" style="background:var(--soft)">✎</span><span>Somewhere else<small>Type the name</small></span></button>
@@ -179,7 +210,7 @@ async function openStamp(app, s) {
       ${s.rating ? `<dt>Rating</dt><dd>${"★".repeat(s.rating)}${"☆".repeat(5 - s.rating)}</dd>` : ""}
       ${s.note ? `<dt>Note</dt><dd>${esc(s.note)}</dd>` : ""}</dl>
     <div class="acts">
-      <a class="btn maps" href="${esc(mapsUrl({ id: s.placeId, name: s.name, area: s.area, sample: !s.placeId || s.placeId.startsWith("sample-") }))}" target="_blank" rel="noopener">Google Maps</a>
+      <a class="btn maps" href="${esc(mapsUrl({ id: s.placeId, name: s.name, area: s.area, sample: !s.placeId || /^(sample-|wom:|ef:)/.test(s.placeId) }))}" target="_blank" rel="noopener">Google Maps</a>
       <button class="btn" type="button" id="st-del">Delete stamp</button>
     </div>`);
   if (s.photoId) {

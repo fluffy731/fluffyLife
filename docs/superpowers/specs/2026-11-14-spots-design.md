@@ -158,7 +158,7 @@ Times are shown as "about 25 min". The same model, run backwards, gives the sear
 | Phase | Delivers |
 |---|---|
 | **1. Find and stamp** (this build) | The three modes, budget, results with photo, price, rating, review summary, hours, drive time and Maps link; place sheet; Saved; Check in with stamp; Passport; Settings with key setup, sample mode, backup and restore; offline shell; tests |
-| **2. New places and map** | The once-a-day feed of new openings from free Melbourne food and what's-on sites (`scripts/build-spots.mjs`), matched to Google places on the phone; a map of saved, visited and new places |
+| **2. New places and map** (re-scoped 15 November as **Today**, map left for later: see `2026-11-15-spots-today-design.md`) | The once-a-day feed of new openings from free Melbourne food and what's-on sites (`scripts/build-spots.mjs`), matched to Google places on the phone; a map of saved, visited and new places |
 | **3. Overseas** | Trips tab taking over Travel's planner and packing list (migrated from Travel's backup), stamps by city and country, trip recap image |
 | **4. Extras** | Suburbs lighting up, collections, year in review, rain-aware picks (Open-Meteo), a daily Shortcuts nudge |
 
