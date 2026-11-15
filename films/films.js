@@ -1,7 +1,7 @@
 // Films: the screens. Renders films/feed.json (built weekly on GitHub Actions by scripts/build-films.mjs) on the
 // Metro line look (../metro.css, data-line="film"). The ranking logic is in model.js; what the phone keeps, store.js.
 import { PLACES, ERAS, NAMED_ERAS, shelfLists, genreChips, erasWithFilms, rankMap, surprise, moreLike, search } from "./model.js";
-import { load, save, toggleWant, toggleSeen } from "./store.js";
+import { load, save, toggleWant, toggleSeen, backupText, restore } from "./store.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -18,7 +18,8 @@ let grid = null;            // { list: "rated"|"popular"|"crowd", genre: string|
 // ---------- helpers ----------
 export const posterURL = (path, w = 185) => (path ? `https://image.tmdb.org/t/p/w${w}${path}` : null);
 const shelf = () => ({ place: state.settings.place, era: state.settings.era, genre: state.settings.genre });
-const films = () => feed?.films || [];
+// The catalogue as Browse sees it: without Seen films when Settings says so.
+const films = () => { const all = feed?.films || []; return state.settings.hideSeen ? all.filter((f) => !state.seen[f.id]) : all; };
 const seenSet = () => new Set(Object.keys(state.seen).map(Number));
 const isZh = (f) => f.lang === "zh" || f.lang === "cn";
 const langOf = (f) => (isZh(f) ? (f.country === "CN" ? "zh-Hans" : "zh-Hant") : f.lang === "ko" ? "ko" : "en");
@@ -131,7 +132,7 @@ const SCREENS = {
   browse,
   search: searchScreen,
   watchlist: watchlistScreen,
-  settings(el) { el.innerHTML = `<h2>Settings</h2>`; },
+  settings: settingsScreen,
 };
 
 function render() {
@@ -172,6 +173,48 @@ function applyTheme() {
   if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
   else delete document.documentElement.dataset.theme;
 }
+
+const THEME_NAMES = { auto: "Phone", light: "Light", dark: "Dark" };
+function settingsScreen(el) {
+  const built = feed ? new Date(feed.built).toLocaleDateString("en-AU", { day: "numeric", month: "long", timeZone: "Australia/Melbourne" }) : "";
+  el.innerHTML = `<h2>Settings</h2><div class="list">`
+    + `<button class="btn theme-btn" data-theme>Theme: ${THEME_NAMES[state.settings.theme] || "Phone"}</button>`
+    + `<label class="item check-row"><input type="checkbox" id="hide-seen"${state.settings.hideSeen ? " checked" : ""}><span>Hide films I've seen<small>From the shelves, the lists and Surprise me</small></span></label></div>`
+    + `<h2>Your watchlist</h2><div class="actions"><button class="btn" data-act="backup">Back up</button><button class="btn" data-act="restore">Restore</button></div>`
+    + `<p class="note">Your watchlist and Seen list stay on this phone. Back them up now and then: iPhone can clear a website's storage, and the file moves them to a new phone.</p>`
+    + `<h2>About the films</h2>`
+    + `<p class="note">${feed ? `Catalogue built ${built} · ${fmt(feed.films.length)} films` : NO_FEED}</p>`
+    + `<p class="note">The best-rated and most-rated Hong Kong, Chinese, Korean and English-language films of each decade on TMDB, rebuilt every week. Best rated weighs each film's rating by how many people rated it; Most popular is how many people rated it; Crowd-pleasers are popular films rated below their shelf's middle. Every list is ranked within its place, so Hollywood never buries the rest. Mainland audiences mostly rate on Douban, so Chinese numbers are a rough guide.</p>`
+    + `<div class="tmdb-credit"><img src="./tmdb.svg" alt="TMDB" onerror="this.remove()"><p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p></div>`;
+}
+
+// Back up: the share sheet (Save to Files) on iPhone, where a download from a home-screen app is unreliable.
+function backup() {
+  const name = `films-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  const file = new File([backupText(state)], name, { type: "application/json" });
+  if (navigator.canShare?.({ files: [file] })) { navigator.share({ files: [file], title: name }).catch(() => {}); return; }
+  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(file), download: name });
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+}
+
+$("#file").addEventListener("change", async (e) => {
+  const file = e.target.files?.[0];
+  e.target.value = "";
+  if (!file) return;
+  try {
+    const { added } = restore(state, await file.text());
+    persist();
+    render();
+    toast(added === 1 ? "Added 1 film" : `Added ${added} films`);
+  } catch (err) { toast(err.message); }
+});
+
+document.addEventListener("change", (e) => {
+  if (e.target.id !== "hide-seen") return;
+  state.settings.hideSeen = e.target.checked;
+  persist();
+});
 
 // ---------- the film sheet ----------
 // The titles stack on a station sign, as a trilingual Seoul station sign stacks 한글, 漢字 and English; the line's
@@ -276,7 +319,7 @@ function setFilter(key, val) {
 }
 
 document.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-tab],[data-more],[data-place],[data-era],[data-genre],[data-all],[data-sort],[data-back],[data-film],[data-act],#surprise");
+  const el = e.target.closest("[data-tab],[data-more],[data-place],[data-era],[data-genre],[data-all],[data-sort],[data-back],[data-film],[data-act],button[data-theme],#surprise");
   if (!el || el.disabled) return;
   const d = el.dataset;
   if (d.more !== undefined) return openSheet($("#more"));
@@ -293,6 +336,13 @@ document.addEventListener("click", (e) => {
   if (d.back !== undefined) { grid = null; return render(); }
   if (d.film) return openFilm(Number(d.film));
   if (d.act && el.closest("#film")) return sheetAct(d.act);
+  if (d.act === "backup") { closeMore(); return backup(); }
+  if (d.act === "restore") return $("#file").click();
+  if (el.matches("button[data-theme]")) {
+    const order = ["auto", "light", "dark"];
+    state.settings.theme = order[(order.indexOf(state.settings.theme) + 1) % 3];
+    persist(); applyTheme(); return render();
+  }
   if (el.id === "surprise") {
     const pick = surprise(films(), feed.stats, shelf(), seenSet());
     return pick ? openFilm(pick.id, { fromSurprise: true }) : toast("You've seen everything here");

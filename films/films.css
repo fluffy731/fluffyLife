@@ -114,3 +114,13 @@
 .row-t b.zh-t { color: var(--hanja); font-family: var(--font-han); }
 .row-t .meta { font-size: 13px; display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 #q { width: 100%; margin-bottom: 12px; }
+
+/* ---------- Settings ---------- */
+.theme-btn { width: 100%; }
+.check-row { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.check-row span { display: flex; flex-direction: column; font-weight: 600; }
+.check-row small { font-size: 13px; font-weight: 400; color: var(--muted); }
+.note { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 10px 0 0; }
+.tmdb-credit { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 14px; border: 1px solid var(--hair); border-radius: 12px; background: var(--surface); }
+.tmdb-credit img { width: 64px; height: auto; flex: none; }
+.tmdb-credit p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); }

@@ -191,6 +191,33 @@ await page.waitForFunction(() => document.querySelector("#film").open);
 ok("offline: its sheet says it's no longer in the list", (await sheetText(page)).includes("No longer in this week's list"));
 await page.context().close();
 
+// 6. Settings, backup and restore
+const snap = (id) => { const f = FEED.films.find((x) => x.id === id); return { id, title: f.title, original: f.original, year: f.year, era: f.era, places: f.places, genres: f.genres, director: f.director, cast: f.cast, poster: f.poster, at: "2026-11-10T00:00:00Z" }; };
+const openSettings = async (page) => { await page.click("#tabs [data-more]"); await page.click('#more [data-tab="settings"]'); await page.waitForSelector("#hide-seen"); };
+page = await newPage({ init: setStore({ settings: { place: "HK" }, seen: { 10775: snap(10775) }, want: { 843: snap(843) } }) });
+await openSettings(page);
+const settingsText = await page.textContent("#view");
+ok("attribution and catalogue date", settingsText.includes("This product uses the TMDB API but is not endorsed or certified by TMDB") && /Catalogue built 15 November · \d+ films/.test(settingsText));
+await page.click("button[data-theme]");
+await page.click("button[data-theme]");
+ok("theme cycles phone, light, dark", (await page.evaluate(() => document.documentElement.dataset.theme)) === "dark" && /Theme: Dark/.test(await page.textContent("#view")));
+await page.click("button[data-theme]");
+ok("and back to the phone's", (await page.evaluate(() => document.documentElement.dataset.theme)) === undefined);
+await page.check("#hide-seen");
+await page.click('#tabs [data-tab="browse"]');
+ok("hide seen: a seen film leaves Browse", (await page.$$('#view [data-film="10775"]')).length === 0 && (await page.$$('#view [data-film="843"]')).length > 0);
+await openSettings(page);
+await page.setInputFiles("#file", { name: "films-backup.json", mimeType: "application/json",
+  buffer: Buffer.from(JSON.stringify({ app: "films", version: 1, saved: "2026-11-14T00:00:00Z", want: { 843: snap(843), 9470: snap(9470) }, seen: {} })) });
+await page.waitForFunction(() => document.querySelector("#toast").classList.contains("on"));
+ok("restore merges and says how many", (await page.textContent("#toast")) === "Added 1 film" && (await page.textContent("#want-badge")) === "2 to watch");
+await page.setInputFiles("#file", { name: "other.json", mimeType: "application/json", buffer: Buffer.from('{"app":"stocks-watchlist","watch":[]}') });
+await page.waitForFunction(() => document.querySelector("#toast").textContent.includes("not a Films"));
+ok("a foreign file is refused", (await page.textContent("#toast")) === "This file is not a Films backup." && (await page.textContent("#want-badge")) === "2 to watch");
+ok("Settings has Back up and Restore", (await page.$$('#view [data-act="backup"]')).length === 1 && (await page.$$('#view [data-act="restore"]')).length === 1);
+ok("no pictographs in Settings", (await pictographs(page)).length === 0);
+await page.context().close();
+
 ok("no page errors", errs.length === 0);
 if (errs.length) console.log(errs.join("\n"));
 console.log(out.join("\n"));
