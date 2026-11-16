@@ -1,0 +1,162 @@
+# Korean slang and new words with English meanings, written for fluffyLife (November 2026).
+# Columns: word, part of speech, label (slang | vulgar slang | derogatory slang), English meaning, example, example in English.
+# Merged into dict/ko.json by scripts/build-dict.mjs. One row per word; keep examples short and everyday.
+대박	감	slang	awesome!; a huge hit	이 영화 진짜 대박이다.	This movie is seriously awesome.
+헐	감	slang	OMG; what?! (shock or disbelief)	헐, 진짜? 걔가 그랬어?	OMG, really? They did that?
+짱	n	slang	the best; awesome	이 집 떡볶이 짱이야.	This place's tteokbokki is the best.
+쩐다	adj	slang	amazing; insane (very good or extreme)	노래 실력 쩐다.	Their singing is insane.
+오지다	adj	slang	awesome; amazing	오늘 날씨 오지네.	The weather today is amazing.
+미쳤다	adj	slang	insane; incredible (praise: lit. "it's crazy")	이 케이크 맛 미쳤다.	This cake tastes incredible.
+꿀잼	n	slang	super fun ("honey fun")	그 예능 완전 꿀잼이야.	That variety show is super fun.
+노잼	n	slang	boring; no fun	오늘 수업 노잼이었어.	Today's class was boring.
+핵노잼	n	slang	extremely boring	그 영화 핵노잼이었어.	That film was so boring.
+꿀팁	n	slang	great tip; life hack	자취 꿀팁 좀 알려 줘.	Give me some tips for living on my own.
+꿀템	n	slang	great buy; must-have item	이 텀블러 진짜 꿀템이야.	This tumbler is a real must-have.
+꿀빨다	v	slang	to have it easy; to coast	너 요즘 회사에서 꿀빨지?	You're coasting at work these days, aren't you?
+개이득	n	slang	a huge win; total bargain	하나 사면 하나 공짜래. 개이득!	Buy one, get one free. Total win!
+개꿀	n	slang	sweet deal; awesome	오늘 수업 휴강이래. 개꿀!	Today's class is cancelled. Sweet!
+갑분싸	구	slang	the mood suddenly turns awkward	그 농담 때문에 갑분싸 됐어.	That joke made everything awkward.
+인싸	n	slang	popular, sociable person (insider)	걔는 학교에서 완전 인싸야.	They're really popular at school.
+핵인싸	n	slang	extremely popular person	우리 언니는 회사에서 핵인싸야.	My sister is super popular at work.
+아싸	n	slang	loner; outsider	나는 대학교 때 아싸였어.	I was a loner at university.
+멘붕	n	slang	mental breakdown; total panic	시험지 보고 멘붕 왔어.	I panicked when I saw the exam.
+현타	n	slang	reality check; sudden disillusionment	월급날 통장 보고 현타 왔어.	Checking my account on payday was a reality check.
+깜놀	n	slang	a startle; "that made me jump"	문 열자마자 깜놀했어.	I jumped as soon as I opened the door.
+갑툭튀	n	slang	popping up out of nowhere	고양이가 갑툭튀해서 놀랐어.	A cat popped out of nowhere and scared me.
+소확행	n	slang	small but certain happiness	퇴근 후 맥주 한 잔이 내 소확행이야.	A beer after work is my little happiness.
+워라밸	n	slang	work-life balance	이 회사는 워라밸이 좋아.	This company has good work-life balance.
+혼밥	n	slang	eating alone	요즘 혼밥하는 사람 많아.	Lots of people eat alone these days.
+혼술	n	slang	drinking alone	오늘은 집에서 혼술할래.	I'll have a drink at home by myself tonight.
+먹방	n	slang	eating show (mukbang)	요즘 먹방 보면서 밥 먹어.	I watch mukbang while I eat these days.
+치맥	n	slang	fried chicken and beer	금요일엔 치맥이지!	Friday means chicken and beer!
+소맥	n	slang	soju mixed with beer	소맥 한 잔 말아 줄게.	I'll mix you a somaek.
+불금	n	slang	Friday night out ("fiery Friday")	불금인데 어디 가?	It's Friday night. Where are you going?
+칼퇴	n	slang	leaving work right on time	오늘은 꼭 칼퇴할 거야.	I'm definitely leaving on the dot today.
+월급루팡	n	slang	slacker who just collects a salary	그 사람은 완전 월급루팡이야.	That person does nothing but collect a salary.
+꼰대	n	slang	preachy, condescending older person	우리 부장님은 좀 꼰대야.	Our manager is a bit of a know-it-all boomer.
+라떼는	구	slang	"back in my day" (pun on 나 때는)	라떼는 말이야, 걸어서 학교 갔어.	Back in my day, we walked to school.
+사이다	n	slang	satisfying, refreshing moment (like a fizzy drink)	그 대사 완전 사이다였어.	That line was so satisfying.
+고구마	n	slang	frustrating, stifling situation (like dry sweet potato)	주인공이 너무 고구마야.	The main character is so frustrating.
+썸	n	slang	a "something": flirting before dating	우리 요즘 썸 타는 중이야.	We're in a "something" phase.
+썸타다	v	slang	to be in the flirting stage	걔랑 썸타는 거 아니야?	Aren't you two flirting?
+밀당	n	slang	push and pull; playing hard to get	밀당하지 말고 솔직하게 말해.	Stop playing games and be honest.
+금사빠	n	slang	someone who falls in love too easily	나는 완전 금사빠야.	I fall in love way too easily.
+모솔	n	slang	someone who has never dated	나 아직 모솔이야.	I've still never dated anyone.
+남사친	n	slang	male friend (just a friend)	걔는 그냥 남사친이야.	He's just a guy friend.
+여사친	n	slang	female friend (just a friend)	여사친이랑 영화 봤어.	I saw a film with a girl friend.
+찐친	n	slang	real, close friend	우리는 10년 된 찐친이야.	We've been close friends for ten years.
+찐	n	slang	the real thing; genuine	이거 찐 맛집이다.	This is a genuinely good restaurant.
+자만추	n	slang	meeting someone naturally (not set up)	소개팅보다 자만추가 좋아.	I prefer meeting people naturally to blind dates.
+엄친아	n	slang	"mum's friend's son": the perfect guy you're compared with	걔는 공부도 잘하고 완전 엄친아야.	He's good at everything, a total golden boy.
+엄친딸	n	slang	"mum's friend's daughter": the perfect girl you're compared with	그 선배는 엄친딸 그 자체야.	That senior is the perfect girl, no question.
+훈남	n	slang	warm, good-looking guy	새로 온 선생님 훈남이야.	The new teacher is a handsome guy.
+훈녀	n	slang	warm, good-looking girl	그 배우 완전 훈녀다.	That actress is so lovely.
+얼짱	n	slang	someone with a great face	고등학교 때 얼짱이었대.	They say she was the prettiest in high school.
+몸짱	n	slang	someone with a great body	운동해서 몸짱 될 거야.	I'm going to work out and get in great shape.
+쌩얼	n	slang	face without makeup	오늘은 쌩얼로 나왔어.	I came out without makeup today.
+꾸안꾸	n	slang	effortlessly stylish (dressed up, looks natural)	오늘 패션 꾸안꾸 느낌이다.	Your outfit today has that effortless look.
+츤데레	n	slang	cold outside, sweet inside (tsundere)	우리 아빠는 츤데레야.	My dad acts tough but is a softie.
+덕후	n	slang	geek; superfan; otaku	그는 영화 덕후야.	He's a film geek.
+덕질	n	slang	fan activity: obsessing over an idol or hobby	요즘 아이돌 덕질하느라 바빠.	I'm busy fangirling over an idol these days.
+입덕	n	slang	becoming a fan	이 무대 보고 입덕했어.	I became a fan after this performance.
+탈덕	n	slang	quitting being a fan	실망해서 탈덕했어.	I was disappointed, so I stopped being a fan.
+성덕	n	slang	fan who got to meet or work with their idol	사인 받았어! 나 성덕이야.	I got an autograph! My fan dreams came true.
+최애	n	slang	favourite (bias)	너 최애 멤버가 누구야?	Who's your favourite member?
+차애	n	slang	second favourite	내 차애는 막내야.	My second favourite is the youngest.
+본방사수	n	slang	watching the live broadcast without fail	오늘 밤 본방사수 해야지.	I have to watch it live tonight.
+스포	n	slang	spoiler	스포하지 마!	No spoilers!
+극혐	n	slang	extreme disgust; "I hate it"	바퀴벌레 진짜 극혐이야.	I absolutely hate cockroaches.
+노답	n	slang	hopeless; no solution	이 상황 완전 노답이야.	This situation is hopeless.
+레알	adv	slang	for real; seriously	레알 맛있어.	It's seriously delicious.
+ㄹㅇ	adv	slang	for real (texting: 리얼)	ㄹㅇ 웃기다.	That's really funny.
+ㅇㅈ	감	slang	agreed; fair (texting: 인정)	ㅇㅈ, 네 말이 맞아.	Agreed, you're right.
+ㅋㅋ	감	slang	lol; haha (texting)	ㅋㅋ 너무 웃겨.	Lol, so funny.
+ㅎㅎ	감	slang	hehe (texting, softer laugh)	고마워 ㅎㅎ	Thanks hehe.
+ㅠㅠ	감	slang	crying face (sad or touched, texting)	보고 싶어 ㅠㅠ	I miss you T_T
+ㅇㅋ	감	slang	OK (texting)	ㅇㅋ, 이따 봐.	OK, see you later.
+ㄱㄱ	감	slang	let's go (texting: 고고)	밥 먹으러 ㄱㄱ	Let's go eat.
+ㄴㄴ	감	slang	no no; nope (texting)	ㄴㄴ 괜찮아.	Nah, it's fine.
+ㄱㅅ	감	slang	thanks (texting: 감사)	ㄱㅅㄱㅅ	Thanks, thanks.
+ㅊㅋ	감	slang	congrats (texting: 축하)	합격 ㅊㅋㅊㅋ!	Congrats on passing!
+ㅈㅅ	감	slang	sorry (texting: 죄송)	늦어서 ㅈㅅ	Sorry I'm late.
+넵	감	slang	yes! (eager, polite, at work)	넵, 바로 보내 드리겠습니다.	Yes, I'll send it right away.
+킹받다	v	slang	to be super annoyed	그 말투 진짜 킹받네.	That tone is so annoying.
+빡치다	v	vulgar slang	to be pissed off	버스 놓쳐서 빡쳤어.	I was pissed off that I missed the bus.
+짱나	구	slang	so annoying (짜증 나)	아 짱나, 또 비 와.	Ugh, so annoying, it's raining again.
+빡세다	adj	slang	tough; intense; demanding	이번 주 일정 빡세다.	This week's schedule is intense.
+쪽팔리다	adj	slang	embarrassing; to feel embarrassed	넘어져서 너무 쪽팔렸어.	I fell over and it was so embarrassing.
+실화냐	구	slang	"Is this for real?"	이 가격 실화냐?	Is this price for real?
+어쩔티비	구	slang	"So what? Go watch TV" (dismissive comeback)	어쩔티비, 나 바빠.	Whatever, I'm busy.
+별다줄	구	slang	"they abbreviate everything"	이것까지 줄여? 별다줄이다.	You shorten even that? You abbreviate everything.
+안물안궁	구	slang	"didn't ask, don't care"	네 연애사는 안물안궁이야.	I didn't ask about your love life.
+할말하않	구	slang	"I have a lot to say, but I won't"	그 사람에 대해선 할말하않.	About that person, I'll keep quiet.
+답정너	n	slang	someone fishing for a set answer	답정너처럼 굴지 마.	Don't fish for the answer you want.
+지못미	구	slang	"sorry I couldn't protect you"	지못미, 내 사진 이상하게 나왔어.	Sorry, I took a bad photo of you.
+갓생	n	slang	productive, model life ("god life")	올해는 갓생 살 거야.	This year I'm going to live productively.
+국룰	n	slang	unwritten rule everyone follows	라면엔 김치가 국룰이지.	Kimchi with ramyeon is the unwritten rule.
+얼죽아	n	slang	iced Americano even if you freeze	나는 겨울에도 얼죽아야.	I drink iced Americano even in winter.
+아아	n	slang	iced Americano (아이스 아메리카노)	아아 한 잔 주세요.	One iced Americano, please.
+뜨아	n	slang	hot Americano (뜨거운 아메리카노)	추우니까 뜨아 마실래.	It's cold, so I'll have a hot Americano.
+내돈내산	n	slang	bought with my own money (not sponsored)	내돈내산 후기예요.	This is an honest review; I paid for it.
+플렉스	n	slang	flexing; showing off by spending	월급 받고 플렉스했어.	I got paid and splurged.
+탕진잼	n	slang	the fun of splurging small amounts	다이소에서 탕진잼 즐겼어.	I had fun splurging at Daiso.
+손절	n	slang	cutting someone off (from stock "stop-loss")	그 친구랑은 손절했어.	I cut that friend off.
+읽씹	n	slang	reading a message and ignoring it (left on read)	내 문자 읽씹했어?	Did you leave my message on read?
+안읽씹	n	slang	ignoring a message without even reading it	걔가 계속 안읽씹해.	They keep ignoring my messages unread.
+금수저	n	slang	born with a silver spoon (gold spoon)	그는 금수저로 태어났어.	He was born into money.
+흙수저	n	slang	born poor ("dirt spoon")	흙수저라서 열심히 일해야 해.	I was born poor, so I have to work hard.
+헬조선	n	slang	"Hell Joseon": Korea as a harsh place to live	헬조선이라는 말 들어 봤어?	Have you heard the phrase "Hell Joseon"?
+영끌	n	slang	scraping together every last won (to buy property)	영끌해서 집을 샀어.	I scraped together everything to buy a home.
+존버	n	vulgar slang	hanging on stubbornly; holding	주식 존버 중이야.	I'm holding on to my stocks.
+떡상	n	slang	skyrocketing (price, popularity)	그 주식 떡상했어.	That stock skyrocketed.
+떡락	n	slang	plummeting	코인이 떡락했어.	The coin crashed.
+가즈아	감	slang	"Let's gooo!" (hype)	이번엔 꼭 오른다, 가즈아!	It's going up this time, let's go!
+주린이	n	slang	beginner stock investor	나는 아직 주린이야.	I'm still a beginner investor.
+사바사	구	slang	depends on the person	그건 사바사야.	That depends on the person.
+케바케	구	slang	case by case	그건 케바케지.	That's case by case.
+복세편살	구	slang	"live easy in a complicated world"	복세편살하자.	Let's just take life easy.
+낄끼빠빠	구	slang	know when to join in and when to step back	낄끼빠빠 좀 해.	Read the room.
+알잘딱깔센	구	slang	do it well, neatly and sensibly without being told	알잘딱깔센하게 부탁해.	Just handle it smartly, please.
+스불재	n	slang	a disaster you brought on yourself	야식 먹고 체했어. 스불재지.	I got indigestion from late-night food. My own fault.
+뇌절	n	slang	overdoing a joke until it's not funny	그만해, 뇌절이야.	Stop, you're overdoing it.
+억까	n	slang	unreasonable hate; criticising for no reason	그건 완전 억까야.	That's just hating for no reason.
+쌉가능	구	slang	totally possible	내일까지? 쌉가능.	By tomorrow? Totally doable.
+오운완	구	slang	"today's workout done"	오늘도 오운완!	Workout done for today!
+중꺾마	구	slang	"what matters is a heart that doesn't break"	포기하지 마, 중꺾마!	Don't give up; keep your spirit!
+만반잘부	구	slang	"nice to meet you, let's get along"	만반잘부! 잘 지내 보자.	Nice to meet you! Let's get along.
+점메추	구	slang	lunch menu suggestions, please	점메추 좀 해 줘.	Suggest something for lunch.
+반모	n	slang	switching to casual speech (반말 모드)	우리 반모할까?	Shall we talk casually?
+생파	n	slang	birthday party (생일 파티)	주말에 생파 하자.	Let's have a birthday party this weekend.
+생선	n	slang	birthday present (생일 선물)	생선 뭐 받고 싶어?	What do you want for your birthday?
+비번	n	slang	password (비밀번호)	와이파이 비번이 뭐야?	What's the Wi-Fi password?
+프사	n	slang	profile picture (프로필 사진)	프사 바꿨네?	You changed your profile picture?
+셀카	n	slang	selfie	같이 셀카 찍자.	Let's take a selfie together.
+인증샷	n	slang	proof photo	맛집 인증샷 올렸어.	I posted a photo to prove I went to the restaurant.
+단톡방	n	slang	group chat	단톡방에 공지 올렸어.	I posted the notice in the group chat.
+갠톡	n	slang	private chat; direct message	갠톡으로 보내 줘.	Send it to me privately.
+짤	n	slang	meme picture; image	웃긴 짤 하나 보내 줄게.	I'll send you a funny meme.
+움짤	n	slang	animated GIF	이 움짤 너무 귀여워.	This GIF is so cute.
+드립	n	slang	quip; ad-lib joke	드립 치지 마.	Stop with the jokes.
+아재개그	n	slang	dad joke	삼촌이 또 아재개그 해.	My uncle's making dad jokes again.
+띵작	n	slang	masterpiece (명작 written to look like 띵작)	이 드라마 띵작이야.	This drama is a masterpiece.
+댕댕이	n	slang	doggy (멍멍이 written to look like 댕댕이)	우리 댕댕이 귀엽지?	Isn't our doggy cute?
+커엽다	adj	slang	cute (귀엽다 written to look like 커엽다)	아기 고양이 너무 커엽다.	The kitten is so cute.
+관종	n	slang	attention seeker	걔는 좀 관종이야.	They're a bit of an attention seeker.
+진지충	n	derogatory slang	someone who is always too serious	농담인데 진지충처럼 굴지 마.	It's a joke; don't be so serious.
+찐따	n	derogatory slang	loser; social misfit	그런 말로 사람을 찐따라고 하면 안 돼.	You shouldn't call people losers like that.
+갑질	n	slang	abuse of power over someone below you	손님 갑질이 심각해.	Customers abusing staff is a serious problem.
+짝퉁	n	slang	fake; knock-off	이 가방 짝퉁이야.	This bag is a knock-off.
+뻥	n	slang	a lie; exaggeration	뻥치지 마.	Don't lie.
+구라	n	vulgar slang	a lie; BS	그거 다 구라야.	That's all BS.
+노가다	n	slang	hard manual labour; tedious grind	이 작업 완전 노가다다.	This task is a total grind.
+존맛	n	vulgar slang	insanely delicious	이 집 짬뽕 존맛이야.	This place's jjamppong is insanely good.
+존맛탱	n	vulgar slang	insanely delicious	이 케이크 존맛탱!	This cake is ridiculously good!
+존잘	n	vulgar slang	super good-looking (guy)	그 배우 존잘이다.	That actor is super handsome.
+존예	n	vulgar slang	super pretty	오늘 너 존예다.	You look super pretty today.
+존나	adv	vulgar slang	f***ing; really (crude intensifier)	존나 피곤해.	I'm f***ing tired.
+개-	접두	slang	really; super (intensifier: 개좋아, 개웃겨)	이 노래 개좋아.	This song is so good.
+핵-	접두	slang	super; extremely ("nuclear": 핵인싸, 핵노잼)	오늘 핵피곤해.	I'm super tired today.
+꿀-	접두	slang	sweet; great ("honey": 꿀잼, 꿀팁)	이번 알바는 꿀알바야.	This part-time job is a sweet gig.
+-각	접미	slang	signs point to; it's time for (치킨각)	오늘 비 오니까 파전각이다.	It's raining, so it's a pajeon kind of day.
+-린이	접미	slang	beginner at something (주린이, 요린이)	나는 요린이라서 라면만 끓여.	I'm a cooking beginner, so I only make ramyeon.
+-충	접미	derogatory slang	"bug": a derogatory label for a type of person	-충이 붙은 말은 듣는 사람을 깎아내려.	Words ending in -충 belittle the person.

@@ -7,8 +7,13 @@
 //   4. 표준국어대사전 (stdict), the Institute's standard dictionary (CC BY-SA 2.0 KR): everyday Sino-Korean
 //      words (no specialist field, no names) with their hanja and a Korean definition. Its examples are
 //      left out: some are quoted from publications and are not openly licensed.
+// Slang and new words are added on top, each labelled "(slang)", "(vulgar slang)", "(derogatory slang)" or
+// "(new word)": scripts/data/slang-ko.tsv (written for this app, English meanings and examples) and
+// scripts/data/urimalsaem-slang.tsv (extracted from 우리말샘, the Institute's open dictionary, CC BY-SA 2.0 KR).
+// Wiktionary senses tagged slang get the same labels.
 // The Institute's XML comes from github.com/spellcheck-ko/korean-dict-nikl (the "download all" files):
 //   node scripts/build-dict.mjs ko [wiktionary.jsonl|URL] [--nikl=DIR] [--kengdic=TSV|URL|none]
+//   node scripts/build-dict.mjs slang <nikl-dir>   (rewrites scripts/data/urimalsaem-slang.tsv; needs opendict/ and stdict/)
 // Row: [word, hanja, pos, pronunciation, glosses, exampleKo, exampleEn]
 import { createReadStream, createWriteStream, mkdirSync, existsSync } from "node:fs";
 import { createInterface } from "node:readline";
@@ -24,14 +29,17 @@ const clip = (s, n) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 const HAN = /\p{Script=Han}/u;
 const byWord = (a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
 
+// A Wiktionary sense's register tags → the label shown before its gloss.
+export const senseLabel = (tags = []) => (tags.includes("vulgar") ? "vulgar slang" : tags.includes("derogatory") ? "derogatory slang"
+  : tags.includes("slang") || tags.includes("Internet") ? "slang" : tags.includes("neologism") ? "new word" : "");
 export function convertEntry(e) {
   if (!e || e.lang_code !== "ko" || SKIP.has(e.pos) || !e.word) return null;
   const glosses = [];
   let exKo = "", exEn = "";
   for (const s of e.senses || []) {
     if (s.tags?.includes("form-of") || s.form_of) continue;
-    const g = (s.glosses || [])[0];
-    if (g && !glosses.includes(g)) glosses.push(clip(g.trim(), 90));
+    const label = senseLabel(s.tags), g = (s.glosses || [])[0];
+    if (g && !glosses.includes(g)) glosses.push(clip((label ? `(${label}) ` : "") + g.trim(), 90));
     if (!exKo) for (const x of s.examples || []) {
       if (x.text && (x.english || x.translation) && x.text.length <= 80) { exKo = x.text.trim(); exEn = clip((x.english || x.translation).trim(), 120); break; }
     }
@@ -54,7 +62,8 @@ export function convertEntry(e) {
 // ---------- National Institute of Korean Language XML (krdict: LMF, stdict: RSS-style items) ----------
 const ENT = { lt: "<", gt: ">", amp: "&", quot: '"', apos: "'" };
 const unxml = (s) => s.replace(/&(#x[0-9a-f]+|#\d+|\w+);/gi, (m, e) => (e[0] === "#" ? String.fromCodePoint(e[1] === "x" || e[1] === "X" ? parseInt(e.slice(2), 16) : Number(e.slice(1))) : ENT[e] ?? m));
-const tidy = (s) => unxml(s).replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+// Some krdict text is escaped twice ("&amp;quot;"), so entities are decoded twice.
+const tidy = (s) => unxml(unxml(s)).replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 const feat = (xml, att) => { const m = xml.match(new RegExp(`<feat att="${att}" val="([^"]*)"`)); return m ? tidy(m[1]) : ""; };
 const NIKL_POS = { 명사: "n", "의존 명사": "n", 동사: "v", "보조 동사": "v", 형용사: "adj", "보조 형용사": "adj", 부사: "adv", 대명사: "pron", 수사: "num", 관형사: "det", 감탄사: "감", 조사: "조사", 어미: "어미" };
 const UNIT_POS = { 관용구: "관용구", 속담: "속담", 구: "구", "문법‧표현": "표현" };
@@ -173,6 +182,86 @@ export function mergeKengdic(rows) {
   return [...by.values()];
 }
 
+// ---------- Slang and new words ----------
+export const LABELLED = /\((slang|vulgar slang|derogatory slang|new word)\)/;
+// 우리말샘 (opendict) <item>: one sense of one word. Newer entries have higher target codes (갑분싸 1382514).
+export function parseOpendict(xml) {
+  const sense = xml.split("<relation_info>")[0];
+  const word = (cdata(xml, "word")[0] || "").replace(/\d+$/, "").replace(/\^/g, " ").replace(/(?<=\S)-(?=\S)/g, "");
+  if (!word) return null;
+  const hanja = cdata(xml, "original_language").join("");
+  return {
+    word, code: Number(cdata(xml, "target_code")[0]) || 0, unit: cdata(xml, "word_unit")[0] || "",
+    wordType: cdata(xml, "word_type")[0] || "", type: cdata(sense.split("<senseInfo>")[1] || "", "type")[0] || "",
+    pos: cdata(sense, "pos")[0] || "", cats: cdata(sense, "cat"),
+    hanja: HAN.test(hanja) && !/[가-힣A-Za-z]/.test(hanja) ? hanja : "",
+    def: (cdata(sense, "definition")[0] || "").replace(/\s*⇒\s*규범 표기는[^.]*\.?/g, "").replace(/\.$/, ""),
+    years: [...xml.matchAll(/<source>(?:<!\[CDATA\[)?[^<\]]*?((?:19|20)\d\d)년/g)].map((m) => Number(m[1])),
+  };
+}
+// Which senses count, and their label:
+//   slang / derogatory slang: marked as such by the dictionary (속되게 이르는 말, 낮잡아 이르는 말, 은어). Trade
+//     jargon (심마니들의 은어, ginseng hunters') is left out; students', young people's and internet jargon stays.
+//   new word: coined since 2000 (code 1,300,000 and up, first quoted after 1999), not a standard-dictionary word.
+//   slang: a new figurative sense of a standard word (고구마 "a frustrating situation").
+// Everyday words only: no specialist field or name (any <cat>), no dialect, archaic or North Korean sense.
+const JARGON_OK = /^(학생|청소년|젊은|누리꾼|네티즌|인터넷|군대|군인|어린이)/;
+export function opendictLabel(p, standard = new Set()) {
+  if (!p || p.unit !== "어휘" || p.type !== "일반어" || p.cats.length || !/^[가-힣]+$/.test(p.word) || !p.def) return "";
+  if (/속되게 이르는 말/.test(p.def)) return "slang";
+  if (/낮잡아 이르는 말/.test(p.def)) return "derogatory slang";
+  // "학생들의 은어로, …" or "은어로, …" (as slang), not "은어로 담근 젓" (made with sweetfish, also 은어).
+  const jargon = p.def.match(/^(?:([가-힣 ]+?)들의 )?은어로,/);
+  if (jargon) return !jargon[1] || JARGON_OK.test(jargon[1]) ? "slang" : "";
+  if (p.code < 1300000 || !p.years.length || Math.min(...p.years) < 2000 || /^우리나라의? 성\(姓\)/.test(p.def)) return "";
+  if (standard.has(p.word)) return /비유(적으로|하여)|빗대어/.test(p.def) ? "slang" : "";
+  // Coined, not merely newly listed: a shortening, a figurative or "so-called" sense, or a short loan or
+  // hybrid word (갑분싸, 국룰, 혼밥). A four-character idiom new to 우리말샘 is old, so it is not a new word.
+  const n = p.word.length;
+  if (p.wordType === "한자어" && n === 4 && /뜻으로/.test(p.def)) return "";
+  return /줄여|준말|이르는 말|비유(적으로|하여)|뜻으로/.test(p.def) || (/혼종어|외래어/.test(p.wordType) && n <= 4) || n <= 2 ? "new word" : "";
+}
+const RANK = ["new word", "slang", "derogatory slang", "vulgar slang"];
+// Senses → one row per word: [word, pos, label, definition, hanja], the strongest label, definitions joined.
+export function opendictSlang(parsed, standard = new Set()) {
+  const by = new Map();
+  for (const p of parsed) {
+    const label = opendictLabel(p, standard);
+    if (!label) continue;
+    const prev = by.get(p.word);
+    if (!prev) { by.set(p.word, [p.word, niklPos(p.pos, "단어", p.word), label, p.def, p.wordType === "한자어" ? p.hanja : ""]); continue; }
+    if (RANK.indexOf(label) > RANK.indexOf(prev[2])) prev[2] = label;
+    if (!prev[3].includes(p.def)) prev[3] = `${prev[3]}; ${p.def}`;
+  }
+  return [...by.values()].map((r) => [r[0], r[1], r[2], clip(r[3], 80), r[4]]).sort(byWord);
+}
+// The two slang files → dictionary rows. slang-ko.tsv: word, pos, label, English, example, example in English.
+// urimalsaem-slang.tsv: word, pos, label, Korean definition, hanja. Lines starting with # are comments.
+export function slangRows(text, kind) {
+  const rows = [];
+  for (const line of text.split("\n")) {
+    if (!line.trim() || line.startsWith("#")) continue;
+    const c = line.split("\t");
+    if (kind === "curated" && c.length >= 6) rows.push([c[0], "", c[1], "", `(${c[2]}) ${c[3]}`, c[4], c[5]]);
+    if (kind === "urimalsaem" && c.length >= 4) rows.push([c[0], c[4] || "", c[1], "", `(${c[2]}) ${c[3]}`, "", ""]);
+  }
+  return rows;
+}
+// Slang goes on top of the merged dictionary as extra rows (고구마 keeps "sweet potato" and gains "frustrating").
+// The hand-written list always goes in. A 우리말샘 row is skipped when the word already has a labelled row,
+// or, for a new word, when another source already explains the word.
+export function addSlang(rows, curated = [], urimalsaem = []) {
+  const words = new Set(rows.map((r) => r[0])), labelled = new Set(rows.filter((r) => LABELLED.test(r[4])).map((r) => r[0]));
+  const out = [...rows], seen = new Set();
+  for (const r of curated) if (!seen.has(r[0])) { seen.add(r[0]); labelled.add(r[0]); out.push(r); }
+  for (const r of urimalsaem) {
+    if (labelled.has(r[0]) || (r[4].startsWith("(new word)") && words.has(r[0]))) continue;
+    labelled.add(r[0]); out.push(r);
+  }
+  return out.sort(byWord);
+}
+export const SLANG_FILES = { curated: new URL("./data/slang-ko.tsv", import.meta.url).pathname, urimalsaem: new URL("./data/urimalsaem-slang.tsv", import.meta.url).pathname };
+
 // ---------- merge ----------
 // Sources in order of trust. A row from a later source is dropped when its word is already in, unless
 // it carries hanja the earlier rows do not have (a different word spelt the same: 사과 沙果 / 謝過).
@@ -197,7 +286,7 @@ async function lines(src) {
 }
 const xmlFiles = (dir) => (existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(".xml")).sort().map((f) => join2(dir, f)) : []);
 
-export async function build(src = SOURCE, out = "dict/ko.json", { nikl = "", kengdic = "" } = {}) {
+export async function build(src = SOURCE, out = "dict/ko.json", { nikl = "", kengdic = "", slang = null } = {}) {
   const wikt = [], kr = [], st = [], kg = [], used = ["Wiktionary (kaikki.org), CC BY-SA 4.0"];
   for await (const line of await lines(src)) {
     if (!line.trim()) continue;
@@ -223,9 +312,13 @@ export async function build(src = SOURCE, out = "dict/ko.json", { nikl = "", ken
       if (kg.length) used.push("Kengdic (Joe Speigle), MPL 2.0 / LGPL");
     } catch (e) { console.warn(`::warning::Kengdic not read: ${e.message}`); }
   }
-  const rows = mergeSources([wikt, kr, mergeKengdic(kg), st], fill);
-  if (!rows.length) throw new Error("no dictionary entries from any source"); // keep last week's file
-  console.log(`ko sources: Wiktionary ${wikt.length}, krdict ${kr.length}, Kengdic ${kg.length}, stdict ${st.length} → ${rows.length} rows`);
+  const base = mergeSources([wikt, kr, mergeKengdic(kg), st], fill);
+  if (!base.length) throw new Error("no dictionary entries from any source"); // keep last week's file
+  const read = (f) => (f && existsSync(f) ? readFileSync(f, "utf8") : "");
+  const sc = slangRows(read(slang?.curated), "curated"), su = slangRows(read(slang?.urimalsaem), "urimalsaem");
+  const rows = addSlang(base, sc, su);
+  if (su.length) used.push("우리말샘 (National Institute of Korean Language), CC BY-SA 2.0 KR");
+  console.log(`ko sources: Wiktionary ${wikt.length}, krdict ${kr.length}, Kengdic ${kg.length}, stdict ${st.length} → ${base.length} rows; slang ${sc.length} + 우리말샘 ${su.length} → ${rows.length} rows`);
   return writeRows(rows, out, used.join("; "));
 }
 
@@ -291,6 +384,26 @@ export async function buildEn(src = EN_SOURCE, out = "dict/en.json") {
   return writeRows(rows, out, "Wiktionary (kaikki.org), CC BY-SA 4.0", (a, b) => a[0].toLowerCase().localeCompare(b[0].toLowerCase()));
 }
 
+// Rewrites scripts/data/urimalsaem-slang.tsv from the Institute's XML (opendict/ for 우리말샘, stdict/ to tell
+// new words from standard ones). Run by hand when 우리말샘 has grown; the deploy only reads the result.
+export async function buildSlang(dir, out = SLANG_FILES.urimalsaem) {
+  const standard = new Set();
+  for (const f of xmlFiles(join2(dir, "stdict"))) for (const m of readFileSync(f, "utf8").matchAll(/<item>[\s\S]*?<\/item>/g)) { const p = parseStdict(m[0]); if (p) standard.add(p.word); }
+  const parsed = [];
+  for (const f of xmlFiles(join2(dir, "opendict"))) for (const m of readFileSync(f, "utf8").matchAll(/<item>[\s\S]*?<\/item>/g)) {
+    const p = parseOpendict(m[0]); if (p && opendictLabel(p, standard)) parsed.push(p);
+  }
+  if (!standard.size || !parsed.length) throw new Error(`no stdict/ or opendict/ XML under ${dir}`);
+  const rows = opendictSlang(parsed, standard);
+  const head = `# Slang and new words from 우리말샘 (opendict.korean.go.kr), National Institute of Korean Language, CC BY-SA 2.0 KR.\n`
+    + `# Extracted ${new Date().toISOString().slice(0, 10)} by \`node scripts/build-dict.mjs slang <nikl-dir>\`. Do not edit by hand.\n`
+    + `# Columns: word, part of speech, label, Korean definition, hanja.\n`;
+  mkdirSync(out.replace(/\/[^/]+$/, ""), { recursive: true });
+  const { writeFileSync } = await import("node:fs");
+  writeFileSync(out, head + rows.map((r) => r.join("\t")).join("\n") + "\n");
+  return rows.length;
+}
+
 async function writeRows(rows, out, source, cmp = (a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)) {
   rows.sort(cmp);
   mkdirSync(out.replace(/\/[^/]+$/, ""), { recursive: true });
@@ -302,11 +415,12 @@ async function writeRows(rows, out, source, cmp = (a, b) => (a[0] < b[0] ? -1 : 
   return rows.length;
 }
 
-// CLI: node scripts/build-dict.mjs ko [src] [--nikl=DIR] [--kengdic=TSV|URL|none] | yue <dir-with-cedict-and-canto-files> | en [src]
+// CLI: node scripts/build-dict.mjs ko [src] [--nikl=DIR] [--kengdic=TSV|URL|none] | slang <nikl-dir> | yue <dir-with-cedict-and-canto-files> | en [src]
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = process.argv.slice(2), flag = (k) => args.find((a) => a.startsWith(`--${k}=`))?.slice(k.length + 3);
   const [mode = "ko", arg] = args.filter((a) => !a.startsWith("--"));
-  if (mode === "ko") console.log(`dict/ko.json: ${await build(arg || SOURCE, "dict/ko.json", { nikl: flag("nikl") || "", kengdic: flag("kengdic") ?? KENGDIC })} entries`);
+  if (mode === "ko") console.log(`dict/ko.json: ${await build(arg || SOURCE, "dict/ko.json", { nikl: flag("nikl") || "", kengdic: flag("kengdic") ?? KENGDIC, slang: SLANG_FILES })} entries`);
+  if (mode === "slang") console.log(`${SLANG_FILES.urimalsaem}: ${await buildSlang(arg)} words`);
   if (mode === "yue") console.log(`dict/yue.json: ${await buildYue(arg, JSON.parse(readFileSync("dict/ko.json", "utf8")).rows)} entries`);
   if (mode === "en") console.log(`dict/en.json: ${await buildEn(arg || EN_SOURCE)} entries`);
 }

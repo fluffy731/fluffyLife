@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdtempSync } from "node:fs";
+import { readFileSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { convertEntry, build } from "../scripts/build-dict.mjs";
@@ -206,4 +206,96 @@ test("Korean dictionary rows: Korean definitions marked lang=ko; no empty part-o
   assert.match(dictKo.rowHTML(ko), /lang="ko">적극적으로/);
   assert.doesNotMatch(dictKo.rowHTML(["휴정의", "", "", "", "recessional", "", ""]), /pill/);
   assert.match(dictKo.rowHTML(en), /<span class="pill">n<\/span>/);
+});
+
+// ---------- Korean slang and new words ----------
+import { senseLabel, parseOpendict, opendictLabel, opendictSlang, slangRows, addSlang, LABELLED, SLANG_FILES } from "../scripts/build-dict.mjs";
+
+const odParsed = xmlParts("opendict/0000001.xml", /<item>[\s\S]*?<\/item>/g).map(parseOpendict);
+const STANDARD = new Set(["고구마", "꼰대", "골칫덩이", "엄살쟁이", "ㄱ"]);
+const od = (code) => odParsed.find((p) => p.code === code);
+
+test("Wiktionary: a sense tagged slang, vulgar, derogatory or neologism gets a label", () => {
+  assert.equal(senseLabel(["Internet", "slang"]), "slang");
+  assert.equal(senseLabel(["vulgar", "slang"]), "vulgar slang");
+  assert.equal(senseLabel(["derogatory"]), "derogatory slang");
+  assert.equal(senseLabel(["neologism"]), "new word");
+  assert.equal(senseLabel(["colloquial"]), "");
+  const r = convertEntry({ word: "고구마", lang_code: "ko", pos: "noun", senses: [{ glosses: ["sweet potato"] }, { glosses: ["something frustrating"], tags: ["slang"] }] });
+  assert.equal(r[4], "sweet potato; (slang) something frustrating");
+});
+
+test("우리말샘: labels slang, derogatory and coined words; leaves out jargon, names, fields and old senses", () => {
+  const label = (code) => opendictLabel(od(code), STANDARD);
+  assert.equal(label(90703), "slang", "골칫덩이: 속되게 이르는 말");
+  assert.equal(label(225044), "derogatory slang", "엄살쟁이: 낮잡아 이르는 말");
+  assert.equal(label(518498), "slang", "꼰대: 학생들의 은어");
+  assert.equal(label(424164), "", "뺑코: thieves' jargon");
+  assert.equal(label(1382514), "new word", "갑분싸");
+  assert.equal(label(1462753), "new word", "국룰");
+  assert.equal(label(1368128), "new word", "혼밥");
+  assert.equal(label(1368969), "slang", "고구마: a new figurative sense of a standard word");
+  assert.equal(label(444566), "", "고구마: the root vegetable");
+  assert.equal(label(449066), "", "ㄱ: a field (언어)");
+  assert.equal(label(1526869), "", "팽씨: a surname");
+  assert.equal(label(1313131), "", "세척법: newly listed, not coined");
+  const fake = { word: "은어젓", code: 100, unit: "어휘", type: "일반어", cats: [], def: "은어로 담근 젓", years: [] };
+  assert.equal(opendictLabel(fake), "", "은어 the fish, not 은어 slang");
+  assert.equal(opendictLabel({ ...fake, word: "고무신", def: "‘정부’를 속되게 이르는 말", type: "방언" }), "", "dialect");
+});
+
+test("우리말샘: one row per word, strongest label, senses joined, headword marks removed", () => {
+  const rows = opendictSlang(odParsed, STANDARD);
+  assert.deepEqual(rows.find((r) => r[0] === "꼰대"), ["꼰대", "n", "slang", "은어로, ‘늙은이’를 이르는 말; 학생들의 은어로, ‘선생님’을 이르는 말", ""]);
+  assert.deepEqual(rows.find((r) => r[0] === "국룰"), ["국룰", "n", "new word", "국민 대다수가 널리 받아들이는 규칙", ""], "국-룰 → 국룰");
+  assert.deepEqual(rows.map((r) => r[0]), ["갑분싸", "고구마", "골칫덩이", "국룰", "꼰대", "노잼", "엄살쟁이", "혼밥"]);
+});
+
+test("slang files → rows: English list and 우리말샘 list, comments skipped", () => {
+  assert.deepEqual(slangRows("# comment\n대박\t감\tslang\tawesome!\t대박이다.\tAwesome.\n", "curated"), [["대박", "", "감", "", "(slang) awesome!", "대박이다.", "Awesome."]]);
+  assert.deepEqual(slangRows("# c\n이대남\tn\tnew word\t이십 대 남성을 이르는 말\t二代男\n", "urimalsaem"), [["이대남", "二代男", "n", "", "(new word) 이십 대 남성을 이르는 말", "", ""]]);
+});
+
+test("addSlang: extra rows on top; 우리말샘 skipped where a label or (for a new word) an entry exists", () => {
+  const base = [["고구마", "", "n", "", "sweet potato", "", ""], ["혼밥", "", "n", "", "eating alone", "", ""], ["대박", "", "n", "", "(slang) awesome", "", ""]];
+  const rows = addSlang(base,
+    [["썸", "", "n", "", "(slang) a \"something\"", "", ""], ["썸", "", "n", "", "(slang) duplicate", "", ""]],
+    [["고구마", "", "n", "", "(slang) 답답한 상황", "", ""], ["혼밥", "", "n", "", "(new word) 혼자 먹는 밥", "", ""], ["대박", "", "n", "", "(slang) 크게 이루어짐", "", ""], ["썸", "", "n", "", "(new word) …", "", ""], ["국룰", "", "n", "", "(new word) 국민 규칙", "", ""]]);
+  assert.deepEqual(rows.map((r) => `${r[0]} ${r[4]}`), ["고구마 sweet potato", "고구마 (slang) 답답한 상황", "국룰 (new word) 국민 규칙", "대박 (slang) awesome", "썸 (slang) a \"something\"", "혼밥 eating alone"]);
+});
+
+test("build: slang and new words merged, labelled and credited", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "dict-")), cur = join(dir, "slang.tsv"), um = join(dir, "um.tsv");
+  writeFileSync(cur, "# test\n썸\tn\tslang\ta \"something\": flirting before dating\t우리 썸 타?\tAre we a thing?\n");
+  writeFileSync(um, opendictSlang(odParsed, STANDARD).map((r) => r.join("\t")).join("\n"));
+  const n = await build(FIX, join(dir, "ko.json"), { nikl: NIKL, kengdic: KENG, slang: { curated: cur, urimalsaem: um } });
+  const j = JSON.parse(readFileSync(join(dir, "ko.json"), "utf8"));
+  assert.equal(n, 17 + 1 + 8);
+  assert.match(j.source, /우리말샘/);
+  assert.deepEqual(j.rows.find((r) => r[0] === "썸"), ["썸", "", "n", "", "(slang) a \"something\": flirting before dating", "우리 썸 타?", "Are we a thing?"]);
+  assert.equal(j.rows.filter((r) => LABELLED.test(r[4])).length, 9);
+  const words = j.rows.map((r) => r[0]);
+  assert.deepEqual(words, [...words].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0)));
+});
+
+test("krdict text escaped twice still reads as plain quotes", () => {
+  const xml = `<LexicalEntry att="id" val="1"><feat att="lexicalUnit" val="단어" /><feat att="partOfSpeech" val="접사" /><Lemma><feat att="writtenForm" val="개-" /></Lemma>
+    <Sense att="id" val="1"><feat att="definition" val="x" /><Equivalent><feat att="language" val="영어" /><feat att="lemma" val="gae-" /><feat att="definition" val="A prefix used to mean &amp;quot;wild&amp;quot;." /></Equivalent></Sense></LexicalEntry>`;
+  assert.equal(convertKrdict(xml)[4], 'A prefix used to mean "wild"');
+});
+
+test("slang data files: well formed, labelled, one row per word", () => {
+  const LABELS = new Set(["slang", "vulgar slang", "derogatory slang", "new word"]);
+  const lines = (f) => readFileSync(f, "utf8").split("\n").filter((l) => l.trim() && !l.startsWith("#")).map((l) => l.split("\t"));
+  const cur = lines(SLANG_FILES.curated), um = lines(SLANG_FILES.urimalsaem);
+  assert.ok(cur.length >= 150 && um.length >= 5000, `${cur.length} curated, ${um.length} 우리말샘`);
+  for (const c of cur) {
+    assert.equal(c.length, 6, c.join("|"));
+    assert.ok(LABELS.has(c[2]) && c[2] !== "new word", c[0]);
+    assert.ok(c[3] && c[5], `${c[0]}: English meaning and example translation`);
+    assert.ok(c[4].includes(c[0].replace(/-/g, "")[0]), `${c[0]}: the example uses the word`);
+  }
+  for (const c of um) { assert.equal(c.length, 5, c.join("|")); assert.ok(LABELS.has(c[2]) && c[3], c[0]); }
+  for (const list of [cur, um]) assert.equal(new Set(list.map((c) => c[0])).size, list.length, "duplicate word");
+  assert.match(readFileSync(SLANG_FILES.urimalsaem, "utf8"), /^# Slang and new words from 우리말샘.*CC BY-SA 2\.0 KR/);
 });
