@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en-AU" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Card effects · PureLift Cosmetic</title>
+<meta name="description" content="PureLift design reference: eleven card effects. 卡片效果设计参考。">
+<!-- Design reference, not part of the public site: keep it out of search engines. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" href="img/logo-mark.png" type="image/png">
+<script>
+(function () {
+  var l = "en";
+  try {
+    var q = new URLSearchParams(location.search).get("lang");
+    var saved = localStorage.getItem("purelift-lang");
+    l = q || saved || ((navigator.language || "").toLowerCase().indexOf("zh") === 0 ? "zh" : "en");
+  } catch (e) {}
+  l = l === "zh" ? "zh" : "en";
+  document.documentElement.setAttribute("data-lang", l);
+  document.documentElement.lang = l === "zh" ? "zh-Hans" : "en-AU";
+})();
+</script>
+<link rel="preload" as="font" type="font/woff2" href="fonts/noto-sans-latin-400-normal.woff2" crossorigin>
+<link rel="stylesheet" href="purelift.css">
+<link rel="stylesheet" href="cards.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chev" viewBox="0 0 8 14"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3z"/></g></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></g></symbol>
+</svg>
+
+<a class="skip" href="#main"><span lang="en">Skip to content</span><span lang="zh-Hans">跳到正文</span></a>
+
+<header class="header" id="top">
+  <div class="header-row">
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="drawer">
+      <span class="bars" aria-hidden="true"></span>
+      <span class="sr-only"><span lang="en">Menu</span><span lang="zh-Hans">菜单</span></span>
+    </button>
+    <a class="logo" href="./"><img src="img/logo-horizontal.png" alt="PureLift Cosmetic" width="421" height="120"></a>
+    <nav class="gnav" aria-label="Main">
+      <a class="gnav-campaign" href="#e1"><span lang="en">Card effects</span><span lang="zh-Hans">卡片效果</span></a>
+      <a href="./"><span lang="en">Home</span><span lang="zh-Hans">首页</span></a>
+    </nav>
+    <div class="lang">
+      <button class="lang-btn" type="button" aria-expanded="false" aria-controls="lang-menu"><svg aria-hidden="true"><use href="#i-globe"/></svg>Language</button>
+      <ul class="lang-menu" id="lang-menu" hidden>
+        <li><button type="button" data-set-lang="en">English</button></li>
+        <li><button type="button" data-set-lang="zh">简体中文</button></li>
+      </ul>
+    </div>
+    <a class="btn-book" href="./"><span lang="en">Back to site</span><span lang="zh-Hans">返回网站</span></a>
+    <a class="btn-book-sp" href="./"><svg aria-hidden="true"><use href="#i-cal"/></svg><span lang="en">Site</span><span lang="zh-Hans">网站</span></a>
+  </div>
+</header>
+
+<div class="drawer" id="drawer" hidden>
+  <div class="drawer-panel">
+    <nav class="drawer-nav" aria-label="Menu">
+      <a href="./"><span lang="en">Home</span><span lang="zh-Hans">首页</span></a>
+    </nav>
+    <div class="drawer-lang" role="group" aria-label="Language">
+      <button type="button" data-set-lang="en">English</button>
+      <button type="button" data-set-lang="zh">简体中文</button>
+    </div>
+  </div>
+</div>
+
+<main id="main">
+  <div class="wrap" style="padding: 40px 0 72px">
+    <p class="label label-left">Design reference</p>
+    <h1 class="h2 h2-left" style="margin-bottom: 14px"><span lang="en">Card effects</span><span lang="zh-Hans">卡片效果</span></h1>
+    <p class="lead" style="max-width: 760px"><span lang="en">Eleven card looks, each built to the brief. Move the pointer over the cards. Live pages use the frosted glass, spotlight, glowing dividers, tilt and halo; the rest are here to look at, and are switched on by adding a class (<code>fx-…</code>).</span><span lang="zh-Hans">十一种卡片效果，均按需求制作。请把鼠标移到卡片上试试。网站正式页面使用了毛玻璃、聚光灯、发光分割线、3D 倾斜和光晕；其余效果仅供查看，加上对应的类名（<code>fx-…</code>）即可启用。</span></p>
+
+    <!-- 1 -->
+    <section class="fx-demo" id="e1">
+      <h2><span class="no">01</span><span lang="en">Frosted glass</span><span lang="zh-Hans">毛玻璃</span></h2>
+      <p class="fx-spec"><span lang="en">20px background blur, white at 15%, a thin translucent white edge, and soft coloured blobs behind so the blur has something to show.</span><span lang="zh-Hans">背景模糊 20px，白色 15% 透明度，加一圈白色半透明细边；卡片背后放几团柔和彩色光斑，让模糊有东西可透。</span></p>
+      <div class="fx-stage fx-stage-blobs">
+        <div class="fx-row">
+          <div class="fx-card fx-frost"><h3><span lang="en">Frosted card</span><span lang="zh-Hans">毛玻璃卡片</span></h3><p><span lang="en">The colour behind it softens and glows through.</span><span lang="zh-Hans">背后的颜色被柔化，透出微光。</span></p></div>
+          <div class="fx-card fx-frost"><h3><span lang="en">Another card</span><span lang="zh-Hans">另一张卡片</span></h3><p><span lang="en">Same recipe: blur(20px), rgba(255,255,255,.15).</span><span lang="zh-Hans">同一配方：blur(20px)，rgba(255,255,255,.15)。</span></p></div>
+          <div class="fx-card fx-frost"><h3><span lang="en">Edge light</span><span lang="zh-Hans">边缘微光</span></h3><p><span lang="en">1px border at 35% white.</span><span lang="zh-Hans">1px 白色 35% 透明边框。</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="fx-demo" id="e2">
+      <h2><span class="no">02</span><span lang="en">Liquid glass</span><span lang="zh-Hans">液态玻璃</span></h2>
+      <p class="fx-spec"><span lang="en">Thick glass: the rim bends and slightly magnifies what is behind it like a lens, the middle stays clear, and a thin highlight runs along the edge. The bending works in Chrome and Edge; Safari and Firefox show the same thick, lit-edge glass without the bending.</span><span lang="zh-Hans">厚玻璃质感：边缘像透镜一样把背后的内容轻微弯折、放大，中间保持清晰，边上有一道细高光。弯折效果在 Chrome 和 Edge 中可见；Safari 和 Firefox 显示同样的厚玻璃与边缘高光，但没有弯折。</span></p>
+      <div class="fx-stage fx-stage-photo">
+        <div class="fx-liquid"><h3 style="font-size:20px;font-weight:700;margin-bottom:6px"><span lang="en">Liquid glass</span><span lang="zh-Hans">液态玻璃</span></h3><p style="font-size:14px;line-height:1.8"><span lang="en">Look at the lettering and the chair at the edge.</span><span lang="zh-Hans">请看边缘处的文字和椅子。</span></p></div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="fx-demo" id="e3">
+      <h2><span class="no">03</span><span lang="en">Holographic</span><span lang="zh-Hans">全息卡片</span></h2>
+      <p class="fx-spec"><span lang="en">A rainbow sheen that changes angle and colour with the pointer, with a layer of fine glitter. Only for achievement badges and membership cards. The badges below use facts from the clinic's own material; the card is a sample, not an offer.</span><span lang="zh-Hans">卡片表面的彩虹色反光随鼠标位置改变角度和颜色，叠加细闪颗粒；只用在成就徽章和会员卡上。下面的徽章使用诊所自己资料中的事实；卡片仅为示例，不是真实优惠。</span></p>
+      <div class="fx-stage fx-stage-dark">
+        <div class="fx-row">
+          <div class="fx-holo fx-badge"><div class="fx-holo-body"><strong>13</strong><span lang="en">years of nursing</span><span lang="zh-Hans">年护理经验</span></div></div>
+          <div class="fx-holo fx-badge"><div class="fx-holo-body"><strong>EN · 中文</strong><span lang="en">Two languages</span><span lang="zh-Hans">双语服务</span></div></div>
+          <div class="fx-holo fx-badge"><div class="fx-holo-body"><strong>RN</strong><span lang="en">Founded by nurses</span><span lang="zh-Hans">护士创立</span></div></div>
+          <div class="fx-holo fx-memcard"><div class="fx-holo-body fx-mem-name">PURELIFT</div><div class="fx-holo-body fx-mem-sample"><span lang="en">SAMPLE CARD · NOT AN OFFER</span><span lang="zh-Hans">示例卡 · 非真实优惠</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="fx-demo" id="e4">
+      <h2><span class="no">04</span><span lang="en">Brushed metal</span><span lang="zh-Hans">拉丝金属</span></h2>
+      <p class="fx-spec"><span lang="en">Dark grey metal with fine horizontal brushing, one diagonal highlight, and pressed-in (debossed) text.</span><span lang="zh-Hans">深灰金属底色，表面横向细密拉丝纹理，加一道斜向高光，文字为压印效果。</span></p>
+      <div class="fx-stage" style="background:#e4d4cb">
+        <div class="fx-row">
+          <div class="fx-card fx-metal"><h3><span lang="en">Pressed text</span><span lang="zh-Hans">压印文字</span></h3><p><span lang="en">Engraved into the metal, not printed on it.</span><span lang="zh-Hans">像刻进金属里，而不是印在上面。</span></p></div>
+          <div class="fx-card fx-metal"><h3><span lang="en">Brushed grain</span><span lang="zh-Hans">拉丝纹理</span></h3><p><span lang="en">Fine lines run across the card.</span><span lang="zh-Hans">细纹横向贯穿卡片。</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="fx-demo" id="e5">
+      <h2><span class="no">05</span><span lang="en">Gradient border</span><span lang="zh-Hans">渐变描边</span></h2>
+      <p class="fx-spec"><span lang="en">A 2px gradient border from the brand colour fading to transparent, on the one recommended card. The others keep a plain grey edge. Sample cards only: the clinic has no price list to show.</span><span lang="zh-Hans">推荐的那张卡加 2px 渐变边框，从品牌色过渡到透明；其他卡片保持普通灰边。仅为示例卡：诊所目前没有价目表可展示。</span></p>
+      <div class="fx-stage" style="background:#f3ebe6">
+        <div class="fx-row">
+          <div class="fx-card fx-plain"><h3><span lang="en">Sample card</span><span lang="zh-Hans">示例卡</span></h3><p><span lang="en">Plain grey edge.</span><span lang="zh-Hans">普通灰边。</span></p></div>
+          <div class="fx-card fx-grad"><h3><span lang="en">Recommended sample</span><span lang="zh-Hans">推荐示例卡</span></h3><p><span lang="en">Gradient edge, brand colour to clear.</span><span lang="zh-Hans">渐变边框，品牌色到透明。</span></p></div>
+          <div class="fx-card fx-plain"><h3><span lang="en">Sample card</span><span lang="zh-Hans">示例卡</span></h3><p><span lang="en">Plain grey edge.</span><span lang="zh-Hans">普通灰边。</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="fx-demo" id="e6">
+      <h2><span class="no">06</span><span lang="en">Flowing border</span><span lang="zh-Hans">流光边框</span></h2>
+      <p class="fx-spec"><span lang="en">A gradient ring that turns steadily around the card, one revolution every 8 seconds, with no flicker.</span><span lang="zh-Hans">卡片边框用一圈渐变色，沿边框匀速旋转，8 秒转一圈，不闪烁。</span></p>
+      <div class="fx-stage fx-stage-dark">
+        <div class="fx-row">
+          <div class="fx-card fx-flow"><h3><span lang="en">Flowing border</span><span lang="zh-Hans">流光边框</span></h3><p><span lang="en">8s linear, endless.</span><span lang="zh-Hans">8 秒匀速，循环不停。</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="fx-demo" id="e7">
+      <h2><span class="no">07</span><span lang="en">Marquee border</span><span lang="zh-Hans">跑马灯描边</span></h2>
+      <p class="fx-spec"><span lang="en">The border stays dark grey; one short bright run, a tenth of the border's length, travels around it in a loop.</span><span lang="zh-Hans">边框保持暗灰色，只有一小段亮光沿边框循环绕行，亮的那段约占边框长度的十分之一。</span></p>
+      <div class="fx-stage fx-stage-dark">
+        <div class="fx-row">
+          <div class="fx-card fx-marquee"><h3><span lang="en">Marquee border</span><span lang="zh-Hans">跑马灯描边</span></h3><p><span lang="en">10% lit, 90% dark.</span><span lang="zh-Hans">亮 10%，暗 90%。</span></p></div>
+          <div class="fx-card fx-marquee" style="border-radius:32px"><h3><span lang="en">Rounder corners</span><span lang="zh-Hans">更圆的角</span></h3><p><span lang="en">The run follows the curve.</span><span lang="zh-Hans">亮光顺着圆角绕行。</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="fx-demo" id="e8">
+      <h2><span class="no">08</span><span lang="en">Spotlight</span><span lang="zh-Hans">聚光灯卡片</span></h2>
+      <p class="fx-spec"><span lang="en">As the pointer moves over a card, a soft round light follows it, and the part of the border nearest the pointer brightens. Every card in the row has it, so the border glows on the neighbours too.</span><span lang="zh-Hans">鼠标在卡片上移动时，鼠标位置亮起一团柔和圆形光，边框靠近鼠标的部分也跟着变亮；一排卡片都有这个效果，相邻卡片的边框也会跟着发亮。</span></p>
+      <div class="fx-stage fx-stage-dark">
+        <div class="fx-row">
+          <div class="fx-card fx-plain fx-spot"><h3><span lang="en">Card one</span><span lang="zh-Hans">卡片一</span></h3><p><span lang="en">Move across the row.</span><span lang="zh-Hans">从左到右划过这一排。</span></p></div>
+          <div class="fx-card fx-plain fx-spot"><h3><span lang="en">Card two</span><span lang="zh-Hans">卡片二</span></h3><p><span lang="en">The light follows the pointer.</span><span lang="zh-Hans">光跟着鼠标走。</span></p></div>
+          <div class="fx-card fx-plain fx-spot"><h3><span lang="en">Card three</span><span lang="zh-Hans">卡片三</span></h3><p><span lang="en">The border brightens near it.</span><span lang="zh-Hans">靠近鼠标的边框变亮。</span></p></div>
+          <div class="fx-card fx-plain fx-spot"><h3><span lang="en">Card four</span><span lang="zh-Hans">卡片四</span></h3><p><span lang="en">Even before you enter.</span><span lang="zh-Hans">还没进入就开始发亮。</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="fx-demo" id="e9">
+      <h2><span class="no">09</span><span lang="en">Halo</span><span lang="zh-Hans">光晕</span></h2>
+      <p class="fx-spec"><span lang="en">On a dark page, a large blurred pool of the brand colour sits behind the card and shows past its edges, so the card seems to float on light.</span><span lang="zh-Hans">深色页面上，卡片背后放一团品牌色大范围模糊光晕，从卡片边缘透出来，像卡片浮在光上。</span></p>
+      <div class="fx-stage fx-stage-dark" style="padding: 64px 40px">
+        <div class="fx-row">
+          <div class="fx-card fx-halo" style="background:#171b2c;border-radius:20px"><h3><span lang="en">Halo, bronze</span><span lang="zh-Hans">光晕（古铜）</span></h3><p><span lang="en">The logo's own colour.</span><span lang="zh-Hans">取自标志本身的颜色。</span></p></div>
+          <div class="fx-card fx-halo" style="background:#171b2c;border-radius:20px;--halo:111,150,214"><h3><span lang="en">Halo, steel blue</span><span lang="zh-Hans">光晕（钢蓝）</span></h3><p><span lang="en">The site's second colour.</span><span lang="zh-Hans">网站的第二品牌色。</span></p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="fx-demo" id="e10">
+      <h2><span class="no">10</span><span lang="en">Glowing divider</span><span lang="zh-Hans">发光分割线</span></h2>
+      <p class="fx-spec"><span lang="en">Bright in the middle, fading to nothing at both ends, with a soft glow of the same colour, in place of a plain grey line. Used on the live pages in the news list, FAQ, focus list and footer.</span><span lang="zh-Hans">分割线中间亮、两端渐隐到透明，中间带一点同色柔光，代替普通灰线。正式页面的新闻列表、常见问题、关注领域和页脚已使用。</span></p>
+      <div class="fx-stage" style="background:#f3ebe6">
+        <p><span lang="en">Above the line</span><span lang="zh-Hans">线的上方</span></p>
+        <hr class="fx-divider">
+        <p><span lang="en">Below the line</span><span lang="zh-Hans">线的下方</span></p>
+      </div>
+      <div class="fx-stage fx-stage-dark" style="margin-top:14px">
+        <p><span lang="en">On a dark page</span><span lang="zh-Hans">深色页面上</span></p>
+        <hr class="fx-divider">
+        <p><span lang="en">The glow is lighter bronze</span><span lang="zh-Hans">光是浅古铜色</span></p>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section class="fx-demo" id="e11">
+      <h2><span class="no">11</span><span lang="en">3D tilt</span><span lang="zh-Hans">3D 倾斜</span></h2>
+      <p class="fx-spec"><span lang="en">The card tilts toward the pointer by up to 8° (the brief's limit is 10°), a highlight moves with the tilt, and it settles back smoothly when the pointer leaves.</span><span lang="zh-Hans">卡片随鼠标位置做 3D 倾斜，最大 8°（需求上限 10°），表面高光跟着倾斜方向移动，鼠标离开后平滑回正。</span></p>
+      <div class="fx-stage fx-stage-blobs">
+        <div class="fx-row">
+          <div class="fx-card fx-frost fx-tilt"><h3><span lang="en">Tilt me</span><span lang="zh-Hans">试试倾斜</span></h3><p><span lang="en">Move to a corner.</span><span lang="zh-Hans">移到卡片的角上。</span></p></div>
+          <div class="fx-card fx-frost fx-tilt"><h3><span lang="en">Highlight</span><span lang="zh-Hans">高光</span></h3><p><span lang="en">It travels with the tilt.</span><span lang="zh-Hans">跟着倾斜移动。</span></p></div>
+          <div class="fx-card fx-frost fx-tilt fx-spot"><h3><span lang="en">Tilt + spotlight</span><span lang="zh-Hans">倾斜 + 聚光灯</span></h3><p><span lang="en">They combine.</span><span lang="zh-Hans">两种效果可叠加。</span></p></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-bottom">
+    <img class="footer-logo" src="img/logo.png" alt="PureLift Cosmetic" width="559" height="600" loading="lazy">
+    <p class="footer-copy">© <span data-year>2026</span> PureLift Cosmetic · <span lang="en">Design reference</span><span lang="zh-Hans">设计参考页</span></p>
+  </div>
+</footer>
+
+<script type="module" src="effects.js"></script>
+</body>
+</html>

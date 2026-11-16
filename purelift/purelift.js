@@ -2,6 +2,7 @@
 import { initCommon, currentLang } from "./common.js";
 import { ARTICLES } from "./kb/index.js";
 import { CATEGORIES, publicArticles, articleHref, escapeHtml } from "./kb-view.js";
+import { initCards } from "./cards.js";
 
 initCommon();
 
@@ -51,3 +52,8 @@ document.addEventListener("click", (e) => {
   const link = e.target.closest("[data-kb-link]");
   if (link) filter(link.dataset.kbLink);
 });
+
+// Card effects on the calm rows: spotlight on every card in a row, a gentle tilt on the knowledge cards and figures.
+for (const el of document.querySelectorAll(".kb-card a, .stat, .teach li, .pillars li")) el.classList.add("fx-spot");
+for (const el of document.querySelectorAll(".kb-card a, .stat")) el.classList.add("fx-tilt");
+initCards();

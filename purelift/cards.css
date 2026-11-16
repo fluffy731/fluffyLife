@@ -1,0 +1,149 @@
+/* PureLift card effects: eleven opt-in looks. effects.html shows each one; cards.js adds the parts that need
+   the pointer or a measured size (spotlight, tilt, holographic sheen, liquid-glass refraction, marquee).
+     1 .fx-frost     frosted glass        2 .fx-liquid   liquid glass       3 .fx-holo    holographic (badges only)
+     4 .fx-metal     brushed metal        5 .fx-grad     gradient border    6 .fx-flow    flowing border, 8 s a turn
+     7 .fx-marquee   marquee border       8 .fx-spot     spotlight          9 .fx-halo    halo on a dark page
+    10 .fx-divider   glowing divider     11 .fx-tilt     3D tilt, 8° (the brief's cap is 10°)
+   Live pages use 1 (see the glass block in purelift.css), 8, 10, 11 and 9. All motion stops for visitors who ask
+   for reduced motion, and the pointer effects only run with a mouse. */
+
+@property --fx-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+@property --fx-ha { syntax: "<angle>"; inherits: false; initial-value: 115deg; }
+
+:root {
+  --fx-brand: #ad9476;          /* bronze from the logo */
+  --fx-brand-2: #4a6385;        /* steel blue */
+  --fx-glow-rgb: 160, 127, 85;  /* divider colour on light pages */
+}
+
+.fx-layer { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+/* a border drawn as a ring: used by the gradient, flowing and spotlight borders */
+.fx-ring { -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+
+/* The stages the demos sit on */
+.fx-stage { position: relative; isolation: isolate; overflow: hidden; border-radius: 28px; padding: 44px 28px; background: #d9c6bd; }
+.fx-stage-blobs::before { content: ""; position: absolute; inset: 0; z-index: -1; background:
+  radial-gradient(34% 46% at 14% 24%, #ff8fbd, transparent 72%),
+  radial-gradient(32% 44% at 80% 18%, #7fb8ff, transparent 72%),
+  radial-gradient(34% 46% at 64% 86%, #ffc860, transparent 72%),
+  radial-gradient(30% 42% at 26% 88%, #8fe6b8, transparent 72%),
+  radial-gradient(28% 40% at 52% 44%, #c3a1ff, transparent 72%); }
+.fx-stage-dark { background: #0e1220; color: #e8eaf0; }
+.fx-stage-photo { background: center / cover url("img/waiting.jpg"); min-height: 360px; }
+.fx-stage-photo::before { content: "PURELIFT  ·  NURSING  ·  WARMTH  ·  PURELIFT"; position: absolute; left: -20px; right: -20px; top: 18%; z-index: -1; font: 700 54px/1.15 var(--font); letter-spacing: .12em; color: rgba(255, 255, 255, .85); white-space: nowrap; text-shadow: 0 2px 0 rgba(43, 43, 51, .35); }
+
+/* 1 Frosted glass: 20px blur, white at 15%, a thin translucent white edge, soft colour behind */
+.fx-frost { background: rgba(255, 255, 255, .15); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, .35); border-radius: 24px; box-shadow: 0 8px 32px rgba(31, 38, 80, .18); }
+
+/* 2 Liquid glass: thick glass whose rim bends and magnifies what is behind it (Chrome and Edge, via an SVG
+   displacement map made in cards.js); everywhere else it keeps the thick, lit-edge look without the bending. */
+.fx-liquid { position: relative; border-radius: 30px; background: rgba(255, 255, 255, .07); -webkit-backdrop-filter: blur(2px) saturate(1.5) brightness(1.06); backdrop-filter: blur(2px) saturate(1.5) brightness(1.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), inset 2px 3px 2px -2px rgba(255, 255, 255, .95), inset -2px -3px 2px -2px rgba(255, 255, 255, .55), inset 0 0 26px rgba(255, 255, 255, .16), 0 22px 44px -16px rgba(31, 43, 71, .5); }
+.fx-liquid::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; padding: 1.5px; background: linear-gradient(135deg, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 24%, rgba(255, 255, 255, 0) 76%, rgba(255, 255, 255, .5));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+
+/* 3 Holographic: a rainbow sheen whose angle and colour follow the pointer, plus fine glitter. For achievement badges
+   and membership cards only. */
+.fx-holo { position: relative; isolation: isolate; overflow: hidden; border-radius: 18px; color: #fff; background: linear-gradient(135deg, #171c30, #2a3150 55%, #171c30); box-shadow: 0 16px 36px -14px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .14);
+  --hx: 50%; --hy: 50%; --fx-ha: 115deg; --hr: 0deg; transition: --fx-ha .5s ease; }
+.fx-holo .fx-holo-sheen { background: linear-gradient(var(--fx-ha), #ff6ec7 0%, #ffd86e 20%, #6effa8 40%, #6ec8ff 60%, #b58cff 80%, #ff6ec7 100%); background-size: 240% 240%; background-position: var(--hx) var(--hy); mix-blend-mode: color-dodge; opacity: .42; filter: hue-rotate(var(--hr)); transition: background-position .5s ease, filter .5s ease; }
+.fx-holo .fx-holo-glitter { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' seed='9' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 11 -6.4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E"); background-size: 150px 150px; background-position: calc(var(--hx) * -1) calc(var(--hy) * -1); mix-blend-mode: screen; opacity: .45; transition: background-position .5s ease; }
+.fx-holo .fx-holo-glint { background: radial-gradient(circle at var(--hx) var(--hy), rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 38%); mix-blend-mode: overlay; }
+.fx-holo-body { position: relative; z-index: 2; display: grid; gap: 4px; justify-items: center; text-align: center; text-shadow: 0 1px 3px rgba(0, 0, 0, .55); }
+
+/* 4 Brushed metal: dark grey, fine horizontal grain, a diagonal highlight, pressed-in text */
+.fx-metal { position: relative; border-radius: 16px; color: #dde0e5; border: 1px solid rgba(255, 255, 255, .12);
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0) 26%, rgba(255, 255, 255, .24) 40%, rgba(255, 255, 255, .05) 49%, rgba(255, 255, 255, 0) 58%), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='b' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.004 0.85' numOctaves='3' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .9 -.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%28%23b%29'/%3E%3C/svg%3E"), linear-gradient(180deg, #3b3e44, #282b30);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 -1px 0 rgba(0, 0, 0, .55), 0 14px 30px -12px rgba(0, 0, 0, .6); }
+.fx-metal :is(h1, h2, h3, h4, p, span, li, dt, dd) { text-shadow: 0 -1px 0 rgba(0, 0, 0, .8), 0 1px 0 rgba(255, 255, 255, .22); }
+.fx-metal h3 { color: #f0f2f5; }
+
+/* 5 Gradient border: 2px, from the brand colour to transparent. Everything else keeps a plain grey edge. */
+.fx-plain { border: 1px solid rgba(110, 110, 125, .4); border-radius: 18px; }
+.fx-grad { position: relative; border-radius: 18px; }
+.fx-grad::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none; background: linear-gradient(135deg, var(--fx-brand-2), rgba(74, 99, 133, 0) 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+
+/* 6 Flowing border: a gradient ring that turns steadily, one revolution every 8 seconds, no flicker */
+.fx-flow { position: relative; border-radius: 18px; }
+.fx-flow::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none; background: conic-gradient(from var(--fx-angle), #ad9476, #4a6385, #7fb8ff, #ff8fbd, #ad9476); animation: fx-spin 8s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+@keyframes fx-spin { to { --fx-angle: 360deg; } }
+
+/* 7 Marquee border: a dark grey border with one short bright run (a tenth of the border) circling it */
+.fx-marquee { position: relative; border: 1px solid #4a4d55; border-radius: 18px; }
+.fx-marquee-svg { position: absolute; left: -1px; top: -1px; overflow: visible; pointer-events: none; }
+.fx-marquee-svg rect { fill: none; stroke: #fff; stroke-width: 2; stroke-dasharray: 10 90; animation: fx-march 6s linear infinite; filter: drop-shadow(0 0 4px rgba(255, 255, 255, .85)); }
+@keyframes fx-march { to { stroke-dashoffset: -100; } }
+
+/* 8 Spotlight: a soft round light under the pointer, and the border brightens near it. One pointer drives a
+   whole row of cards, so the border glows on the neighbours too. */
+/* the glow layers sit between the card's own background and its text (isolation + z-index -1), so the text is never washed out */
+.fx-spot, .fx-tilt { isolation: isolate; }
+.fx-spot .fx-layer, .fx-tilt .fx-glare { z-index: -1; }
+.fx-spot { position: relative; --mx: 50%; --my: 50%; --spot-o: 0; --spot-b: 0; }
+.fx-spot .fx-spot-glow { background: radial-gradient(circle 170px at var(--mx) var(--my), rgba(255, 255, 255, .55), rgba(255, 255, 255, 0) 72%); opacity: var(--spot-o); transition: opacity .35s ease; }
+.fx-spot .fx-spot-edge { padding: 1px; background: radial-gradient(circle 190px at var(--mx) var(--my), rgba(255, 255, 255, 1), rgba(255, 255, 255, 0) 72%); opacity: var(--spot-b); transition: opacity .35s ease;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.fx-stage-dark .fx-spot .fx-spot-glow { background: radial-gradient(circle 170px at var(--mx) var(--my), rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 72%); }
+
+/* 9 Halo: on a dark page, a large blurred pool of the brand colour behind the card, showing past its edges */
+.fx-halo { position: relative; isolation: isolate; --halo: 201, 164, 106; }
+.fx-halo::before { content: ""; position: absolute; inset: -16%; z-index: -1; border-radius: inherit; background: radial-gradient(closest-side, rgba(var(--halo), .95), rgba(var(--halo), 0)); filter: blur(34px); opacity: .85; pointer-events: none; }
+
+/* 10 Glowing divider: bright in the middle, fading to nothing at both ends, with a soft glow of the same colour.
+   One element draws both the 1px line and the glow around it. */
+.fx-divider, :is(.news li:not(:last-child), .faq details:not(:last-child), .focus > div:not(:last-child), .partners-box li:not(:last-child), .update h3, .person-name, .article .art-summary, .footer li > a)::after {
+  --g: var(--fx-glow-rgb);
+}
+.fx-divider { position: relative; height: 7px; margin: 26px 0; border: 0; background: none; overflow: visible; }
+.fx-divider::after,
+:is(.news li:not(:last-child), .faq details:not(:last-child), .focus > div:not(:last-child), .partners-box li:not(:last-child), .update h3, .person-name, .article .art-summary, .footer li > a)::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 7px; pointer-events: none;
+  background: linear-gradient(90deg, rgba(var(--g), 0), rgba(var(--g), 1) 50%, rgba(var(--g), 0)) center / 100% 1px no-repeat, radial-gradient(ellipse 50% 50% at 50% 50%, rgba(var(--g), .55), rgba(var(--g), 0));
+}
+.fx-divider::after { bottom: 0; }
+.footer li > a::after { --g: 212, 185, 140; }
+.fx-stage-dark .fx-divider { --fx-glow-rgb: 212, 185, 140; }
+.footer li > a::before { z-index: 1; }
+
+/* 11 3D tilt: follows the pointer by up to 8° (the brief's cap is 10°); a highlight moves with the tilt;
+   it settles back smoothly when the pointer leaves */
+.fx-tilt { transform: perspective(900px) rotateX(0deg) rotateY(0deg); transition: transform .5s cubic-bezier(.2, .8, .2, 1); --gx: 50%; --gy: 50%; --glare: 0; }
+.fx-tilt.is-tilting { transition: transform .08s linear; will-change: transform; }
+.fx-tilt .fx-glare { background: radial-gradient(circle at var(--gx) var(--gy), rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 55%); opacity: var(--glare); transition: opacity .3s ease; }
+.kb-card a.fx-tilt:hover, .stat.fx-tilt:hover { transform: perspective(900px) rotateX(0deg) rotateY(0deg); }
+
+/* Halo on the live dark band: the focus circles float on a pool of bronze light */
+.menu-band .menu-circle { position: relative; isolation: isolate; --halo: 214, 185, 140; }
+.menu-band .menu-circle::before { content: ""; position: absolute; inset: -14%; z-index: -1; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--halo), .8), rgba(var(--halo), 0)); filter: blur(18px); opacity: .75; pointer-events: none; transition: opacity .3s ease; }
+.menu-list a:hover .menu-circle::before { opacity: 1; }
+
+/* Gallery page layout */
+.fx-demo { margin: 0 0 56px; }
+.fx-demo > h2 { font-size: 22px; font-weight: 700; letter-spacing: .06em; margin-bottom: 4px; }
+.fx-demo > h2 .no { font: 700 14px var(--num); color: var(--accent-ink); margin-right: 10px; letter-spacing: .1em; }
+.fx-spec { font-size: 13.5px; line-height: 1.8; color: var(--muted); margin-bottom: 14px; max-width: 760px; }
+.fx-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; align-items: stretch; }
+.fx-card { padding: 22px 22px 20px; min-height: 140px; display: flex; flex-direction: column; justify-content: center; }
+.fx-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+.fx-card p { font-size: 13.5px; line-height: 1.8; }
+.fx-stage-dark .fx-card p { color: #c5c9d4; }
+.fx-badge { padding: 20px; text-align: center; min-height: 150px; display: grid; place-content: center; gap: 4px; }
+.fx-badge strong { font: 700 38px/1 var(--num); letter-spacing: .02em; }
+.fx-badge span { font-size: 13px; letter-spacing: .08em; }
+.fx-memcard { aspect-ratio: 1.586; padding: 20px 22px; display: flex; flex-direction: column; justify-content: space-between; }
+.fx-memcard .fx-mem-name { font: 700 16px var(--num); letter-spacing: .24em; }
+.fx-memcard .fx-mem-sample { font-size: 12px; letter-spacing: .1em; opacity: .85; }
+.fx-demo .fx-liquid { width: min(340px, 100%); height: 210px; padding: 24px 26px; display: flex; flex-direction: column; justify-content: center; color: #1d2230; background: rgba(255, 255, 255, .44); text-shadow: 0 0 10px rgba(255, 255, 255, .95); margin-left: 36%; font-weight: 500; }
+@media (max-width: 760px) { .fx-demo .fx-liquid { margin-left: 0; } }
+.fx-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
+
+/* Calm, still versions for visitors who ask for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .fx-flow::before { animation: none; }
+  .fx-marquee-svg rect { animation: none; stroke-dashoffset: 0; }
+  .fx-tilt, .fx-tilt.is-tilting { transform: none !important; transition: none; }
+}
+@media (hover: none) { .fx-spot .fx-spot-glow, .fx-spot .fx-spot-edge { display: none; } }
+@media (max-width: 760px) { .fx-stage { padding: 28px 16px; } .fx-stage-photo::before { font-size: 34px; } .fx-demo > h2 { font-size: 19px; } }

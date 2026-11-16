@@ -16,6 +16,26 @@ The layout, buttons and sections follow the reference clinic site the owner chos
 
 The look is layered. `body::before` (in the "Frosted glass" block at the end of `purelift.css`) fixes soft light colour behind the page, kept at least as light as the wall colour so text keeps its contrast. A few sections (hero, first visit, updates, clinic, areas of focus) sit on a pre-blurred photo (`img/bg-*.jpg`, a few KB each, made from the clinic's photos). The panels on top are translucent white with a backdrop blur, a bright edge and a soft shadow. Cards inside a frosted band skip their own blur to keep scrolling smooth on phones. The tokens (`--glass`, `--glass-blur` and friends) are at the top of that block. Where `backdrop-filter` isn't supported, or the visitor asks for reduced transparency or more contrast, the panels become nearly opaque and everything else stays the same.
 
+## Card effects
+
+`cards.css` and `cards.js` hold eleven opt-in card looks, switched on by adding a class. `effects.html` shows all of them with their numbers (a design reference: `noindex`, not linked from anywhere, sample cards only). Open it with a mouse; the hover effects need one.
+
+| Class | Look | On the live pages |
+|---|---|---|
+| `fx-frost` | Frosted glass: 20px blur, white at 15%, 1px translucent white edge, coloured blobs behind | Yes: the default glass (`--glass` in `purelift.css`) |
+| `fx-liquid` | Liquid glass: the rim bends and magnifies the backdrop (an SVG displacement map, Chrome and Edge only), middle clear, thin edge highlight | Gallery |
+| `fx-holo` | Holographic sheen that follows the pointer, plus glitter. Badges and membership cards only | Gallery |
+| `fx-metal` | Brushed dark-grey metal, diagonal highlight, pressed-in text | Gallery |
+| `fx-grad` | 2px gradient border, brand colour to transparent | Gallery |
+| `fx-flow` | Gradient border turning once every 8 s | Gallery |
+| `fx-marquee` | Dark border with a lit run a tenth of its length circling | Gallery |
+| `fx-spot` | Spotlight under the pointer; the border brightens near it, across the whole row | Yes: knowledge cards, figures, teaching steps, principles |
+| `fx-halo` | Brand-colour glow behind a card on a dark page | Yes: the focus circles on the navy band |
+| `fx-divider` | Glowing line, bright in the middle, fading at the ends | Yes: replaces the grey lines in the news list, FAQ, focus list, partners list, headings and footer |
+| `fx-tilt` | 3D tilt, up to 8° (cap 10°), moving highlight, eases back | Yes: knowledge cards and figures |
+
+Only the calm ones are on the live pages: the others (holographic, metal, flowing and marquee borders) are loud for a clinic that promises unhurried, honest care. The holographic and gradient demos use sample cards: the clinic has no price list or membership, so none is invented. Spotlight, tilt and holographic only run with a mouse; flowing and marquee borders, tilt and the sheen stop for visitors who ask for reduced motion. `test/purelift.test.js` checks the numbers (20px, 15%, 8 s, a tenth lit, the tilt cap).
+
 ## Two languages
 
 Every piece of text is written twice, side by side:
@@ -45,4 +65,5 @@ Unknown facts are wrapped in `<span class="ph">[…]</span>` and shown in yellow
 5. Remove `class="draft"` from `<body>` in both HTML files: the yellow banner and highlights disappear.
 6. Delete the `<meta name="robots" content="noindex, nofollow">` line in both HTML files so search engines can list the site.
 7. Check the copy and images against the advertising rules that apply to the clinic. In Australia: the TGA's rules on prescription-only medicines, and AHPRA's guidelines for advertising cosmetic procedures (testimonials, before-and-after photos, discounts and time-limited offers are restricted). This matters most for the care pricing, the council and training updates, the photos, and the five held articles.
-8. Run `npm test`.
+8. Decide whether `effects.html` stays: it is a design reference with sample cards. Delete it (and its entry in `test/purelift.test.js`) if it should not be public once the site is live.
+9. Run `npm test`.
