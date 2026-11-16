@@ -1,0 +1,674 @@
+{
+ "id": "aha-peels",
+ "category": "treatment",
+ "review": false,
+ "pages": "29-32",
+ "zh": {
+  "title": "果酸焕肤：了解皮肤更新、适用问题与恢复护理",
+  "summary": "果酸焕肤属于化学焕肤的一种，通过可控的表层剥脱，帮助改善部分粗糙、粉刺、肤色不均及细纹表现。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "果酸焕肤属于化学焕肤的一种，是将经过配方设计的酸类制剂作用于皮肤，通过可控的表层剥脱，帮助改善部分粗糙、粉刺、肤色不均及细纹表现。"
+   },
+   {
+    "t": "p",
+    "text": "它并不是把皮肤“换一层”，也不等于酸度越强、脱皮越多，效果越好。**治疗应根据皮肤问题、耐受程度及恢复能力选择，而不是单纯追求高浓度。**"
+   },
+   {
+    "t": "h",
+    "text": "一、什么是果酸？"
+   },
+   {
+    "t": "p",
+    "text": "果酸通常指**α-羟基酸（Alpha Hydroxy Acids，简称 AHA）**，是一组具有相似化学结构的酸类，包括："
+   },
+   {
+    "t": "table",
+    "head": [
+     "常见成分",
+     "英文名称",
+     "基本特点"
+    ],
+    "rows": [
+     [
+      "甘醇酸／羟基乙酸",
+      "Glycolic Acid",
+      "分子较小，是常见的焕肤成分"
+     ],
+     [
+      "乳酸",
+      "Lactic Acid",
+      "常用于焕肤及保湿相关配方"
+     ],
+     [
+      "杏仁酸",
+      "Mandelic Acid",
+      "分子较大，部分配方用于较温和的表层护理"
+     ],
+     [
+      "柠檬酸、苹果酸等",
+      "Citric Acid、Malic Acid",
+      "可见于复合酸或其他护肤配方"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "虽然“果酸”这个名称与天然来源有关，但临床产品具有特定的纯度、浓度和配方。**天然来源不代表没有刺激性，也不应使用果汁或自制混合物代替专业产品。**"
+   },
+   {
+    "t": "p",
+    "text": "水杨酸属于另一类常用焕肤成分，通常归为 BHA，不能与 AHA 完全等同。"
+   },
+   {
+    "t": "h",
+    "text": "二、果酸焕肤如何发挥作用？"
+   },
+   {
+    "t": "p",
+    "text": "果酸可降低角质细胞之间的黏附，使表层细胞较容易脱落。专业焕肤通过控制作用强度和深度，产生一定程度的表皮损伤与后续更新。"
+   },
+   {
+    "t": "p",
+    "text": "具体作用取决于酸的种类、浓度、pH、配方、接触时间及皮肤状态。较强的处理可能带来更明显损伤，因此也增加恢复负担和并发症风险。"
+   },
+   {
+    "t": "p",
+    "text": "治疗后的光滑感，可能与表层更新及保湿状态有关，不能直接理解为深层胶原大量增加。"
+   },
+   {
+    "t": "h",
+    "text": "三、可能帮助改善哪些问题？"
+   },
+   {
+    "t": "h3",
+    "text": "粗糙与纹理不均"
+   },
+   {
+    "t": "p",
+    "text": "表层角化异常或干燥可能让皮肤触感粗糙。适当的表浅焕肤可能改善部分纹理，但需要先区分是否存在湿疹、刺激性皮炎等问题。"
+   },
+   {
+    "t": "h3",
+    "text": "部分粉刺与毛囊堵塞"
+   },
+   {
+    "t": "p",
+    "text": "部分焕肤方案可作为粉刺或痤疮管理的一部分，但不能替代所有痤疮治疗。明显炎症、结节、感染或瘢痕风险，需要先接受评估。"
+   },
+   {
+    "t": "h3",
+    "text": "部分肤色不均和表浅色素沉着"
+   },
+   {
+    "t": "p",
+    "text": "焕肤可能改善部分表浅色素表现，但不同斑点的成因和深度不同，不能保证消除所有色斑。黄褐斑尤其需要长期管理，也可能因不当刺激而加重。"
+   },
+   {
+    "t": "h3",
+    "text": "部分细纹"
+   },
+   {
+    "t": "p",
+    "text": "表浅焕肤可能减轻部分细纹外观，但不能纠正明显组织下垂，也不能填补深层凹陷或消除所有皱纹。"
+   },
+   {
+    "t": "h",
+    "text": "四、专业焕肤与日常“刷酸”有什么区别？"
+   },
+   {
+    "t": "table",
+    "head": [
+     "比较项目",
+     "日常酸类护肤",
+     "专业果酸焕肤"
+    ],
+    "rows": [
+     [
+      "使用目的",
+      "规律的日常护理",
+      "针对具体问题进行分次处理"
+     ],
+     [
+      "配方与强度",
+      "按居家使用要求设计",
+      "根据产品与治疗方案选择"
+     ],
+     [
+      "过程控制",
+      "遵循产品说明",
+      "需评估皮肤反应并按系统要求终止作用"
+     ],
+     [
+      "恢复护理",
+      "关注刺激与耐受",
+      "另需考虑表皮恢复及并发症观察"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "不能把专业产品当作居家精华，也不能自行延长作用时间，以追求“更彻底”的脱皮。"
+   },
+   {
+    "t": "h",
+    "text": "五、为什么不能只看浓度？"
+   },
+   {
+    "t": "p",
+    "text": "相同百分比的酸类产品，实际作用可能不同。"
+   },
+   {
+    "t": "p",
+    "text": "影响因素包括："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**pH 与游离酸情况**：会影响酸的活性及刺激性。",
+     "**酸的种类与配方**：单一酸、复合酸及不同载体不能简单比较。",
+     "**接触时间与使用方式**：需要按对应产品控制。",
+     "**皮肤状态**：近期去角质、剃毛、晒伤或屏障受损，都可能改变反应。",
+     "**治疗部位**：不同区域的耐受与愈合情况存在差异。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "因此，“更高浓度”不自动代表更适合，也不代表效果更持久。"
+   },
+   {
+    "t": "h",
+    "text": "六、脱皮越多，效果越好吗？"
+   },
+   {
+    "t": "p",
+    "text": "**不是。脱皮程度不是疗效评分。**"
+   },
+   {
+    "t": "p",
+    "text": "部分表浅焕肤可能仅出现轻微干燥或细小脱屑，也可能没有明显肉眼脱皮。反之，大量脱皮、持续灼痛或结痂，不应被当作“做得更到位”。"
+   },
+   {
+    "t": "p",
+    "text": "治疗目标应是适度改善，并让皮肤安全恢复，而不是制造最大程度的损伤。"
+   },
+   {
+    "t": "h",
+    "text": "七、哪些情况需要先评估或暂缓？"
+   },
+   {
+    "t": "p",
+    "text": "治疗前应告知"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "湿疹、玫瑰痤疮或其他皮肤病正在发作。",
+     "晒伤、伤口、感染或近期明显过敏。",
+     "唇疱疹及其他疱疹病史。",
+     "炎症后色素沉着或异常瘢痕史。",
+     "近期激光、微针、脱毛、焕肤或其他操作。",
+     "当前使用的 A 醇、处方维 A 酸、酸类和痤疮药物。",
+     "怀孕、备孕、哺乳及其他重要健康情况。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "肤色较深或容易留下色沉的人，并非一定不能接受焕肤，但需要更谨慎地选择方案和控制炎症。"
+   },
+   {
+    "t": "p",
+    "text": "停用或恢复药物的时间，应由治疗者结合具体情况安排，不宜统一套用固定天数。"
+   },
+   {
+    "t": "h",
+    "text": "八、治疗时是什么感觉？"
+   },
+   {
+    "t": "p",
+    "text": "可能出现刺痛、温热或灼热感。治疗者需要观察反应，并按具体产品要求结束处理；部分果酸系统需要中和。"
+   },
+   {
+    "t": "p",
+    "text": "不应以忍受疼痛作为完成治疗的条件。若出现明显或持续加重的灼痛，应立即告知治疗者。"
+   },
+   {
+    "t": "h",
+    "text": "九、风险有哪些？"
+   },
+   {
+    "t": "p",
+    "text": "可能出现暂时泛红、紧绷、干燥、刺痛及脱屑，也可能发生："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "过度刺激或化学灼伤。",
+     "炎症后色素沉着，或色素减退。",
+     "持续红斑。",
+     "疱疹复发或感染。",
+     "愈合延迟及瘢痕。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "风险与处理深度、皮肤情况、操作者经验及护理有关。化学焕肤并非没有恢复期，也不能保证所有人都不出现色沉。"
+   },
+   {
+    "t": "h",
+    "text": "十、焕肤后怎样护理？"
+   },
+   {
+    "t": "h3",
+    "text": "温和清洁与保湿"
+   },
+   {
+    "t": "p",
+    "text": "按治疗者说明清洁，避免热水、磨砂、洁面刷和用力揉搓。使用适合恢复阶段的保湿产品，不自行叠加多种“修复精华”。"
+   },
+   {
+    "t": "h3",
+    "text": "暂停刺激性成分"
+   },
+   {
+    "t": "p",
+    "text": "A 醇、其他酸类、低 pH 的 VC 及去角质产品，应按皮肤恢复情况逐步恢复。没有刺痛并不一定代表屏障已经完全恢复。"
+   },
+   {
+    "t": "h3",
+    "text": "不抠抓、不撕皮"
+   },
+   {
+    "t": "p",
+    "text": "让脱屑自然脱落。强行去皮可能增加损伤、感染、色沉和瘢痕风险。"
+   },
+   {
+    "t": "h3",
+    "text": "做好防晒"
+   },
+   {
+    "t": "p",
+    "text": "AHA 可增加皮肤对日晒的敏感性。FDA 提醒，相关影响可能持续至停用后一周。焕肤后的防晒安排还应结合具体处理深度及恢复状态。"
+   },
+   {
+    "t": "p",
+    "text": "应避免主动暴晒，结合遮阳、帽子及衣物保护；防晒产品的使用时间和选择，按治疗者说明执行。"
+   },
+   {
+    "t": "h3",
+    "text": "避免过早叠加其他操作"
+   },
+   {
+    "t": "p",
+    "text": "化妆、脱毛、桑拿、游泳及其他美容治疗的恢复时间，应根据皮肤状态确定，不宜为加快效果而连续刺激皮肤。"
+   },
+   {
+    "t": "h",
+    "text": "十一、哪些症状需要及时复查？"
+   },
+   {
+    "t": "p",
+    "text": "出现持续加重的疼痛、明显肿胀、水疱、渗液、扩散性红肿或发热，应及时联系治疗者或就医。"
+   },
+   {
+    "t": "p",
+    "text": "颜色异常加深、局部发白或愈合明显延迟，也需要评估。**这些表现不能一概解释为正常“排毒”或必要的换肤过程。**"
+   },
+   {
+    "t": "h",
+    "text": "十二、需要做几次？效果能维持多久？"
+   },
+   {
+    "t": "p",
+    "text": "部分问题可能需要分次处理，但次数、间隔和强度应根据目标与恢复情况调整。"
+   },
+   {
+    "t": "p",
+    "text": "治疗后短期的光滑感，不等于长期改善已经完成。色素和纹理变化通常需要持续观察，而日晒、痤疮及其他原有因素仍可能影响结果。"
+   },
+   {
+    "t": "p",
+    "text": "复评时，应结合相似光线和角度的照片、皮肤状态及实际困扰，决定是否继续，而不是单纯增加浓度或缩短间隔。"
+   },
+   {
+    "t": "p",
+    "text": "**果酸焕肤的合理目标，是在控制损伤和风险的前提下，改善适合处理的皮肤问题。温和清洁、保湿、防晒及原有皮肤疾病的管理，仍是长期护理的基础。**"
+   }
+  ]
+ },
+ "en": {
+  "title": "AHA peels: understanding skin renewal, suitable concerns and recovery care",
+  "summary": "An AHA peel is a type of chemical peel that uses controlled exfoliation of the surface layer to help improve some roughness, comedones, uneven skin tone and fine lines.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "An alpha hydroxy acid (AHA) peel, often called a fruit acid peel, is a type of chemical peel in which a specially formulated acid preparation is applied to the skin. Through controlled exfoliation of the surface layer, it helps improve some roughness, comedones, uneven skin tone and fine lines."
+   },
+   {
+    "t": "p",
+    "text": "It does not ‘replace a layer’ of skin, and stronger acid or more peeling does not mean a better result. **Treatment should be chosen according to the skin concern, tolerance and capacity to recover, rather than simply aiming for a high concentration.**"
+   },
+   {
+    "t": "h",
+    "text": "1. What are fruit acids?"
+   },
+   {
+    "t": "p",
+    "text": "Fruit acids usually means **α-hydroxy acids (alpha hydroxy acids, AHAs)**, a group of acids with a similar chemical structure. They include:"
+   },
+   {
+    "t": "table",
+    "head": [
+     "Common ingredient",
+     "English name",
+     "Key features"
+    ],
+    "rows": [
+     [
+      "Glycolic acid (hydroxyacetic acid)",
+      "Glycolic Acid",
+      "Small molecule; a common peel ingredient"
+     ],
+     [
+      "Lactic acid",
+      "Lactic Acid",
+      "Often used in peel and moisturising formulations"
+     ],
+     [
+      "Mandelic acid",
+      "Mandelic Acid",
+      "Larger molecule; some formulations are used for gentler surface treatments"
+     ],
+     [
+      "Citric acid, malic acid and others",
+      "Citric Acid, Malic Acid",
+      "Found in combination-acid and other skincare formulations"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Although the name ‘fruit acid’ relates to natural sources, clinical products have a specific purity, concentration and formulation. **A natural source does not mean a product is non-irritating, and fruit juice or home-made mixtures should not be used in place of professional products.**"
+   },
+   {
+    "t": "p",
+    "text": "Salicylic acid belongs to another commonly used group of peel ingredients, usually classed as a beta hydroxy acid (BHA), and cannot be treated as fully equivalent to AHAs."
+   },
+   {
+    "t": "h",
+    "text": "2. How does an AHA peel work?"
+   },
+   {
+    "t": "p",
+    "text": "AHAs can reduce the adhesion between cells in the outermost layer of the skin, so surface cells shed more easily. A professional peel controls the strength and depth of action to produce a certain degree of injury to the epidermis, followed by renewal."
+   },
+   {
+    "t": "p",
+    "text": "The specific effect depends on the type of acid, concentration, pH, formulation, contact time and skin condition. A stronger treatment may cause more obvious injury, and so also increases the recovery burden and the risk of complications."
+   },
+   {
+    "t": "p",
+    "text": "The smooth feel after treatment may relate to surface renewal and hydration, and should not be taken to mean a large increase in deep collagen."
+   },
+   {
+    "t": "h",
+    "text": "3. Which concerns might it help improve?"
+   },
+   {
+    "t": "h3",
+    "text": "Roughness and uneven texture"
+   },
+   {
+    "t": "p",
+    "text": "Abnormal keratinisation of the surface layer, or dryness, can make skin feel rough. An appropriate superficial peel may improve some texture, but it is important first to check whether eczema, irritant dermatitis or similar problems are present."
+   },
+   {
+    "t": "h3",
+    "text": "Some comedones and blocked follicles"
+   },
+   {
+    "t": "p",
+    "text": "Some peel programs can form part of the management of comedones or acne, but they cannot replace all acne treatment. Marked inflammation, nodules, infection or a risk of scarring need assessment first."
+   },
+   {
+    "t": "h3",
+    "text": "Some uneven skin tone and superficial pigmentation"
+   },
+   {
+    "t": "p",
+    "text": "A peel may improve some superficial pigmentation, but different spots have different causes and depths, so clearing all pigmentation cannot be guaranteed. Melasma in particular needs long-term management, and it may also worsen with inappropriate irritation."
+   },
+   {
+    "t": "h3",
+    "text": "Some fine lines"
+   },
+   {
+    "t": "p",
+    "text": "A superficial peel may soften the appearance of some fine lines, but it cannot correct marked tissue sagging, fill deep hollows or remove all wrinkles."
+   },
+   {
+    "t": "h",
+    "text": "4. How does a professional peel differ from everyday at-home ‘acid’ use?"
+   },
+   {
+    "t": "table",
+    "head": [
+     "Comparison",
+     "Everyday acid skincare",
+     "Professional AHA peel"
+    ],
+    "rows": [
+     [
+      "Purpose",
+      "Regular daily care",
+      "Treating a specific concern over a series of sessions"
+     ],
+     [
+      "Formulation and strength",
+      "Designed to the requirements for home use",
+      "Chosen according to the product and treatment plan"
+     ],
+     [
+      "Process control",
+      "Follow the product instructions",
+      "Skin response must be assessed and the action stopped as the system requires"
+     ],
+     [
+      "Recovery care",
+      "Watch for irritation and tolerance",
+      "Also needs attention to epidermal recovery and monitoring for complications"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Professional products should not be used as an at-home serum, and contact time should not be extended on your own to get ‘more thorough’ peeling."
+   },
+   {
+    "t": "h",
+    "text": "5. Why can’t you judge by concentration alone?"
+   },
+   {
+    "t": "p",
+    "text": "Acid products with the same percentage may act differently in practice."
+   },
+   {
+    "t": "p",
+    "text": "Factors that affect this include:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**pH and free acid**: affect the acid’s activity and how irritating it is.",
+     "**Type of acid and formulation**: single acids, combination acids and different vehicles cannot simply be compared.",
+     "**Contact time and method of use**: need to be controlled according to the specific product.",
+     "**Skin condition**: recent exfoliation, shaving, sunburn or a damaged barrier may all change the reaction.",
+     "**Treatment area**: tolerance and healing differ between areas."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "So a ‘higher concentration’ does not automatically mean more suitable, nor does it mean longer-lasting results."
+   },
+   {
+    "t": "h",
+    "text": "6. Does more peeling mean better results?"
+   },
+   {
+    "t": "p",
+    "text": "**No. The amount of peeling is not a score of effectiveness.**"
+   },
+   {
+    "t": "p",
+    "text": "Some superficial peels may cause only mild dryness or fine flaking, or no visible peeling at all. Conversely, heavy peeling, persistent burning pain or crusting should not be seen as a sign the treatment was ‘done more thoroughly’."
+   },
+   {
+    "t": "p",
+    "text": "The goal of treatment should be moderate improvement with safe recovery of the skin, not the greatest possible injury."
+   },
+   {
+    "t": "h",
+    "text": "7. When is assessment or postponement needed first?"
+   },
+   {
+    "t": "p",
+    "text": "Before treatment, tell the practitioner about:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "A current flare of eczema, rosacea or another skin condition.",
+     "Sunburn, wounds, infection or a recent significant allergy.",
+     "A history of cold sores or other herpes infections.",
+     "A history of post-inflammatory hyperpigmentation or abnormal scarring.",
+     "Recent laser, microneedling, hair removal, peels or other procedures.",
+     "Current use of retinol, prescription tretinoin, acids and acne medicines.",
+     "Pregnancy, trying to conceive, breastfeeding and other important health conditions."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "People with darker skin, or who tend to develop pigmentation, are not necessarily unable to have a peel, but the program needs to be chosen more carefully and inflammation needs to be controlled."
+   },
+   {
+    "t": "p",
+    "text": "When to stop or restart medicines should be arranged by the practitioner for the individual situation, rather than applying a fixed number of days to everyone."
+   },
+   {
+    "t": "h",
+    "text": "8. What does treatment feel like?"
+   },
+   {
+    "t": "p",
+    "text": "You may feel stinging, warmth or a burning sensation. The practitioner needs to watch the reaction and end the application as the specific product requires; some AHA systems need to be neutralised."
+   },
+   {
+    "t": "p",
+    "text": "Putting up with pain should not be a condition of completing treatment. If there is marked or worsening burning pain, tell the practitioner straight away."
+   },
+   {
+    "t": "h",
+    "text": "9. What are the risks?"
+   },
+   {
+    "t": "p",
+    "text": "Temporary redness, tightness, dryness, stinging and flaking may occur, and the following may also happen:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Excessive irritation or chemical burns.",
+     "Post-inflammatory hyperpigmentation, or loss of pigment (hypopigmentation).",
+     "Persistent redness (erythema).",
+     "Recurrence of herpes, or infection.",
+     "Delayed healing and scarring."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Risks relate to treatment depth, skin condition, the operator’s experience and aftercare. A chemical peel does involve a recovery period, and it cannot be guaranteed that no one will develop pigmentation."
+   },
+   {
+    "t": "h",
+    "text": "10. How should I care for my skin after a peel?"
+   },
+   {
+    "t": "h3",
+    "text": "Gentle cleansing and moisturising"
+   },
+   {
+    "t": "p",
+    "text": "Cleanse as the practitioner instructs, avoiding hot water, scrubs, cleansing brushes and vigorous rubbing. Use a moisturiser suited to the recovery stage, and don’t layer several ‘repair serums’ on your own."
+   },
+   {
+    "t": "h3",
+    "text": "Pause irritating ingredients"
+   },
+   {
+    "t": "p",
+    "text": "Retinol, other acids, low-pH vitamin C and exfoliating products should be reintroduced gradually according to how the skin recovers. An absence of stinging does not necessarily mean the barrier has fully recovered."
+   },
+   {
+    "t": "h3",
+    "text": "Don’t pick or pull off peeling skin"
+   },
+   {
+    "t": "p",
+    "text": "Let flakes come off naturally. Forcibly removing peeling skin may increase the risk of injury, infection, pigmentation and scarring."
+   },
+   {
+    "t": "h3",
+    "text": "Protect your skin from the sun"
+   },
+   {
+    "t": "p",
+    "text": "AHAs can increase the skin’s sensitivity to the sun. The US Food and Drug Administration (FDA) advises that this effect may last for up to a week after stopping use. Sun protection after a peel should also take into account the treatment depth and recovery."
+   },
+   {
+    "t": "p",
+    "text": "Avoid deliberate sun exposure and use shade, hats and clothing for protection; follow the practitioner’s instructions on when to use sunscreen products and which to choose."
+   },
+   {
+    "t": "h3",
+    "text": "Avoid adding other procedures too soon"
+   },
+   {
+    "t": "p",
+    "text": "When to resume makeup, hair removal, saunas, swimming and other cosmetic treatments should be decided by the skin’s condition; it is not advisable to keep irritating the skin to speed up results."
+   },
+   {
+    "t": "h",
+    "text": "11. Which symptoms need prompt review?"
+   },
+   {
+    "t": "p",
+    "text": "If you have worsening pain, marked swelling, blisters, oozing, spreading redness and swelling, or fever, contact the practitioner or seek medical care promptly."
+   },
+   {
+    "t": "p",
+    "text": "Abnormal darkening, local whitening or clearly delayed healing also need assessment. **These signs should not simply be explained away as normal ‘detox’ or a necessary part of skin renewal.**"
+   },
+   {
+    "t": "h",
+    "text": "12. How many sessions are needed? How long do results last?"
+   },
+   {
+    "t": "p",
+    "text": "Some concerns may need a series of treatments, but the number, interval and strength should be adjusted according to the goal and how the skin recovers."
+   },
+   {
+    "t": "p",
+    "text": "Short-term smoothness after treatment does not mean long-term improvement is complete. Changes in pigmentation and texture usually need ongoing observation, and sun exposure, acne and other existing factors may still affect the results."
+   },
+   {
+    "t": "p",
+    "text": "At review, decide whether to continue based on photos taken in similar lighting and from similar angles, skin condition and the actual concern, rather than simply increasing the concentration or shortening the interval."
+   },
+   {
+    "t": "p",
+    "text": "**The reasonable goal of an AHA peel is to improve suitable skin concerns while keeping injury and risk under control. Gentle cleansing, moisturising, sun protection and management of existing skin conditions remain the foundation of long-term care.**"
+   }
+  ]
+ }
+}

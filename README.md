@@ -263,6 +263,10 @@ Something good to watch in a free evening: Hong Kong, Chinese, Korean and Englis
 - **Checks:** `node --test test/films*.test.js`; `node scripts/films-check.mjs` (the app against a feed built from the TMDB-shaped samples in `test/fixtures/films/`, whose plots are our own); `node scripts/build-films.mjs --probe` builds into the cache folder and prints the summary.
 - **Code:** places, eras, rankings, Surprise me, More like this and search in `films/model.js` (`test/films-model.test.js`), shared with the build; the build in `scripts/build-films.mjs` (`test/films-build.test.js`); the phone's watchlist and backup in `films/store.js` (`test/films-store.test.js`); the screens in `films/films.js` and `films/films.css` on `metro.css`. Design: `docs/superpowers/specs/2026-11-15-films-design.md`.
 
+# PureLift Cosmetic (`/purelift/`, unlisted draft)
+
+A website for PureLift Cosmetic, an aesthetic clinic founded by nurses, in English and Simplified Chinese (a Language button switches them; `?lang=zh` links straight to Chinese). Its layout and buttons follow a reference clinic site the owner chose, in colours taken from the clinic's photo. It carries the clinic's own philosophy, seven commitments, team, clinical-teaching and partner notices, recent updates, and a knowledge base of 17 articles (12 shown, 5 held back for a TGA advertising check; `?review=1` shows them). Frosted-glass styling (soft colour and blurred photos behind translucent panels, with opaque fallbacks). Plain HTML and CSS with self-hosted fonts and a little JavaScript. It is a draft: yellow-highlighted text is a placeholder, and the page asks search engines not to index it. Like the other unlisted apps it is left off the home page, but the address opens for anyone who has it. `purelift/README.md` explains the files, the two-language markup, the article format (`node scripts/purelift-kb.mjs` rebuilds the card index) and has the launch checklist; `node --test test/purelift.test.js` checks links, images, the English/Chinese pairing and every article.
+
 # Development
 
 No build step. Serve the folder with any static server to try it locally.

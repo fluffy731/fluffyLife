@@ -1,0 +1,876 @@
+{
+ "id": "botulinum-toxin",
+ "category": "treatment",
+ "review": true,
+ "pages": "23-27",
+ "zh": {
+  "title": "肉毒素：了解神经调节作用、医疗用途与安全性",
+  "summary": "肉毒素是一种处方药物，不是填充材料，也不是适合所有皱纹、肌肉紧张或疼痛问题的通用治疗。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "肉毒素（Botulinum toxin，也称肉毒毒素）是一类具有神经调节作用的物质。医疗制剂经过特定的生产、纯化及质量控制，以严格规定的剂量用于相应适应证。"
+   },
+   {
+    "t": "p",
+    "text": "常见的医疗制剂为 A 型肉毒毒素。它通过暂时减少特定神经末梢释放乙酰胆碱，降低目标肌肉的收缩活动，或影响部分腺体分泌。"
+   },
+   {
+    "t": "p",
+    "text": "**肉毒素是一种处方药物，不是填充材料，也不是适合所有皱纹、肌肉紧张或疼痛问题的通用治疗。**"
+   },
+   {
+    "t": "h",
+    "text": "一、肉毒素如何影响肌肉？"
+   },
+   {
+    "t": "p",
+    "text": "正常情况下，神经末梢释放乙酰胆碱，将信号传递给肌肉，使肌肉收缩。"
+   },
+   {
+    "t": "p",
+    "text": "A 型肉毒毒素进入相应神经末梢后，作用于参与递质释放的蛋白，减少乙酰胆碱释放，使神经传递给目标肌肉的信号暂时减弱。"
+   },
+   {
+    "t": "p",
+    "text": "这一过程："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "不等于切断神经。",
+     "不以永久破坏肌肉为治疗目标。",
+     "不会直接补充组织容量。",
+     "作用通常会随着神经末梢功能恢复而减弱。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "具体表现与制剂、用途、剂量和个体情况有关。"
+   },
+   {
+    "t": "h",
+    "text": "二、为什么它可以影响出汗？"
+   },
+   {
+    "t": "p",
+    "text": "乙酰胆碱不仅参与肌肉活动，也参与部分汗腺分泌的调节。因此，肉毒素在特定条件下可以减少局部汗液分泌。"
+   },
+   {
+    "t": "p",
+    "text": "但多汗可能存在不同原因。突然发生、夜间明显、遍及全身或伴随其他症状的出汗，应先评估疾病、药物及其他因素，不能只根据出汗多少决定治疗。"
+   },
+   {
+    "t": "h",
+    "text": "三、医疗用途与美容用途有什么关系？"
+   },
+   {
+    "t": "p",
+    "text": "肉毒素在多个医学领域有应用，例如部分肌张力障碍、痉挛状态、慢性偏头痛、严重腋下多汗，以及某些膀胱功能问题。"
+   },
+   {
+    "t": "p",
+    "text": "在美容相关用途方面，部分制剂可用于特定面部表情纹。"
+   },
+   {
+    "t": "p",
+    "text": "**批准用途具有产品和地区差异。**某种制剂在某个国家获准用于一个部位，不代表所有品牌、所有地区或所有患者都适用。未列入对应产品批准说明的使用，属于需要另行评估的情况，不能仅因临床上有人使用就视为已获批准。"
+   },
+   {
+    "t": "h",
+    "text": "四、动态纹与静态纹为什么需要区分？"
+   },
+   {
+    "t": "p",
+    "text": "皱纹并非只有一种形成机制。"
+   },
+   {
+    "t": "table",
+    "head": [
+     "类型",
+     "常见表现",
+     "相关因素"
+    ],
+    "rows": [
+     [
+      "动态纹，也称表情纹",
+      "抬眉、皱眉或微笑时明显",
+      "肌肉收缩使皮肤反复折叠"
+     ],
+     [
+      "静态纹",
+      "面部放松时仍存在",
+      "长期折叠、日晒、皮肤老化及组织结构变化"
+     ],
+     [
+      "混合表现",
+      "活动时加深，放松时仍可见",
+      "肌肉活动与皮肤、深层组织变化共同作用"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "减少相关肌肉收缩，可能减轻部分动态纹，但已经形成的静态纹未必消失。"
+   },
+   {
+    "t": "p",
+    "text": "面部外观还受到脂肪分布、骨骼、韧带、皮肤弹性和容量变化影响。肉毒素不能恢复这些结构，也不能代替所有其他治疗或日常护理。"
+   },
+   {
+    "t": "h",
+    "text": "五、为什么不同部位需要关注不同功能？"
+   },
+   {
+    "t": "p",
+    "text": "面部肌肉相互配合，既参与表情，也承担保护眼睛、口唇闭合和进食等功能。"
+   },
+   {
+    "t": "table",
+    "head": [
+     "区域",
+     "评估时需要关注的功能"
+    ],
+    "rows": [
+     [
+      "额部与眉部",
+      "抬眉能力、眉位及是否依赖额肌帮助睁眼"
+     ],
+     [
+      "眼周",
+      "闭眼、眨眼及原有干眼或眼睑问题"
+     ],
+     [
+      "口周与下半脸",
+      "微笑、发音、饮水和口唇闭合"
+     ],
+     [
+      "咬肌区域",
+      "咀嚼、咬合、原有疼痛及下颌功能"
+     ],
+     [
+      "颈部",
+      "吞咽、颈部力量及既往神经肌肉问题"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "同样的肌肉活动，在不同人身上可能有不同意义。例如，一些人会依靠额部肌肉代偿性抬眉。若只关注额纹而忽略这一点，可能影响眉位或增加眼部沉重感。"
+   },
+   {
+    "t": "p",
+    "text": "因此，评估不应只看静态照片，还需要观察自然表情、肌肉力量及原有不对称。"
+   },
+   {
+    "t": "h",
+    "text": "六、关于咬肌：并不是所有“脸宽”都来自肌肉"
+   },
+   {
+    "t": "p",
+    "text": "下半脸宽度可能与咬肌、骨骼、脂肪及其他结构有关，不能仅凭外观判断为咬肌肥大。"
+   },
+   {
+    "t": "p",
+    "text": "咬肌活动减少后，部分人可能出现随时间发展的肌肉体积变化，但也需要考虑："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "咀嚼力量下降或疲劳。",
+     "微笑变化或不对称。",
+     "局部轮廓不规则。",
+     "原有凹陷或松弛更加明显。",
+     "其他咀嚼肌参与方式的变化。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "咬肌体积、磨牙、颞下颌关节问题和面部疼痛，也不是同一个诊断。减少肌肉力量，不代表一定能解决磨牙原因或所有关节疼痛。"
+   },
+   {
+    "t": "p",
+    "text": "长期重复治疗对咀嚼系统及骨骼的影响，仍存在研究不确定性。部分小型研究观察到下颌局部骨量变化，另一项较新的随机研究在其特定方案和 12 个月观察期内未发现骨密度负面影响。两者不能简单合并为“必然损伤骨骼”或“长期绝对安全”。"
+   },
+   {
+    "t": "h3",
+    "text": "缓解部分与肌肉紧张或过度活动相关的肩颈疼痛"
+   },
+   {
+    "t": "p",
+    "text": "肉毒素通过暂时减少目标肌肉的收缩，可能帮助部分患者减轻与肌肉持续紧张或过度活动相关的肩颈疼痛。是否适用，需要先明确疼痛原因，并评估肌肉功能。对于一般肩颈痛，现有研究提示短期缓解可能有限，不能保证长期改善，也不能替代康复及其他必要治疗。"
+   },
+   {
+    "t": "h",
+    "text": "七、不同品牌的单位为什么不能直接换算？"
+   },
+   {
+    "t": "p",
+    "text": "肉毒素的“单位”是生物活性单位，通过对应产品的特定测定体系确定，并非像毫克一样可跨产品直接比较。"
+   },
+   {
+    "t": "p",
+    "text": "**不同制剂的单位不可直接互换，不应自行套用固定换算比例。**"
+   },
+   {
+    "t": "p",
+    "text": "因此，仅凭单位数或每单位费用，无法完整判断方案是否合理。产品、适应证、肌肉功能、预期目标及风险，都需要纳入评估。"
+   },
+   {
+    "t": "h",
+    "text": "八、起效、稳定与恢复是同一件事吗？"
+   },
+   {
+    "t": "p",
+    "text": "不是。"
+   },
+   {
+    "t": "p",
+    "text": "**起效**是开始观察到目标功能变化；**稳定效果**是作用逐渐充分、适合复评的阶段；**恢复**则是之后作用逐步减弱的过程。"
+   },
+   {
+    "t": "p",
+    "text": "肌肉活动变化与外观变化也未必同步。例如，若外观涉及肌肉体积，通常不能用刚注射后的照片判断。"
+   },
+   {
+    "t": "p",
+    "text": "美容用途的作用一般以数月计算，但持续时间受到产品、部位及个人情况影响，不能统一承诺。"
+   },
+   {
+    "t": "p",
+    "text": "过早复评或追加，可能在原有效果尚未充分出现时增加不必要的作用。"
+   },
+   {
+    "t": "h",
+    "text": "九、剂量越大，持续越久、效果越好吗？"
+   },
+   {
+    "t": "p",
+    "text": "不能这样理解。"
+   },
+   {
+    "t": "p",
+    "text": "治疗需要在目标效果与正常功能之间取得平衡。过度削弱肌肉可能导致表情变化、局部无力或功能问题，增加剂量也不保证按比例延长效果。"
+   },
+   {
+    "t": "p",
+    "text": "同样，单位数较少也不自动代表安全。产品选择、部位、个体解剖和治疗计划都很重要。"
+   },
+   {
+    "t": "p",
+    "text": "合理方案应依据临床评估，而不是预先为所有人安排相同单位数或固定追加。"
+   },
+   {
+    "t": "h",
+    "text": "十、重复治疗会产生“耐药”吗？"
+   },
+   {
+    "t": "p",
+    "text": "少数人可能形成中和抗体，影响药物的生物活性，但并不是所有效果减弱都由抗体造成。"
+   },
+   {
+    "t": "p",
+    "text": "一项针对某种 A 型肉毒毒素、汇总多项注册研究的分析显示，中和抗体形成率较低。该结果不能直接代表所有制剂、用途或长期使用方式。"
+   },
+   {
+    "t": "p",
+    "text": "如果效果与以往不同，还需要评估："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "治疗目标是否改变。",
+     "产品、剂量或部位是否不同。",
+     "是否仍处于适合观察的时间。",
+     "原有肌肉或组织状态是否变化。",
+     "预期是否超出药物能够实现的范围。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "不应仅凭一次效果不满意，就自行认定“耐药”，或在不同机构之间短期反复追加。"
+   },
+   {
+    "t": "h",
+    "text": "十一、停止治疗后会怎样？"
+   },
+   {
+    "t": "p",
+    "text": "通常，药物作用会逐渐减弱，相关肌肉活动向恢复方向变化。但恢复速度和程度存在差异，不能保证所有人在固定时间回到完全相同的状态。"
+   },
+   {
+    "t": "p",
+    "text": "同时，自然衰老、日晒和组织变化仍在发生。因此，停止后的外观不能简单解释为“反弹”，也不能保证永远保持治疗前的样子。"
+   },
+   {
+    "t": "p",
+    "text": "是否继续，应基于当时的需求、效果、风险和个人选择重新决定。"
+   },
+   {
+    "t": "h",
+    "text": "十二、有哪些常见和较少见的不良反应？"
+   },
+   {
+    "t": "h3",
+    "text": "注射相关反应"
+   },
+   {
+    "t": "p",
+    "text": "可能出现疼痛、瘀青、泛红、肿胀或触痛，也可能出现头痛等不适。"
+   },
+   {
+    "t": "h3",
+    "text": "不希望出现的局部功能变化"
+   },
+   {
+    "t": "p",
+    "text": "根据治疗部位不同，可能包括："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "眉位变化、眼睑下垂或眼部沉重感。",
+     "干眼、闭眼不全或复视。",
+     "微笑不对称、口唇活动或发音变化。",
+     "咀嚼疲劳或力量下降。",
+     "颈部无力、吞咽问题。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "这些反应的持续时间不同，部分需要进一步治疗或专科评估，不能一概建议“等待就好”。"
+   },
+   {
+    "t": "h3",
+    "text": "过敏及其他反应"
+   },
+   {
+    "t": "p",
+    "text": "还需要考虑对活性成分、辅料、消毒剂或其他相关物质的反应。具体禁忌和警示应按所用产品核对。"
+   },
+   {
+    "t": "h",
+    "text": "十三、什么是远距离作用扩散？"
+   },
+   {
+    "t": "p",
+    "text": "在罕见情况下，可能出现远离注射部位的作用，产生类似肉毒中毒的症状，包括全身无力、眼睑下垂、复视、说话异常、吞咽困难和呼吸问题。"
+   },
+   {
+    "t": "p",
+    "text": "症状可能在注射后数小时至数周出现。已有神经肌肉、吞咽或呼吸问题的人，需要特别评估相关风险。"
+   },
+   {
+    "t": "warn",
+    "text": "**呼吸困难、明显吞咽困难或疑似严重过敏时，应立即拨打 000。**就医时应告知近期接受过肉毒素注射，包括日期、部位及已知产品信息。"
+   },
+   {
+    "t": "h",
+    "text": "十四、治疗前需要提供哪些信息？"
+   },
+   {
+    "t": "p",
+    "text": "应告知处方者和治疗者："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "神经肌肉疾病、肌无力及相关家族或个人病史。",
+     "吞咽、呼吸、眼部或面部功能问题。",
+     "治疗区域感染。",
+     "既往过敏及肉毒素不良反应。",
+     "怀孕、备孕或哺乳情况。",
+     "所有药物、补充剂及近期其他治疗。",
+     "近期肉毒素治疗的产品、部位和日期。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "某些抗生素、肌肉松弛药或其他影响神经肌肉传递的药物，可能改变风险，需要逐一核对。妊娠期应避免非必要的美容用途；其他情况应由医生结合具体需求评估。"
+   },
+   {
+    "t": "p",
+    "text": "不要为了治疗自行停用抗凝药、抗血小板药或其他处方药。"
+   },
+   {
+    "t": "h",
+    "text": "十五、治疗后为什么还需要随访？"
+   },
+   {
+    "t": "p",
+    "text": "随访不仅用于判断外观变化，也用于检查是否出现不希望的功能影响。"
+   },
+   {
+    "t": "p",
+    "text": "评估可比较相同光线、角度及表情条件下的记录，并结合日常活动感受。原本就存在的不对称，应在治疗前记录，避免把所有差异都归因于治疗。"
+   },
+   {
+    "t": "p",
+    "text": "若出现新的眼部症状、明显无力或其他功能变化，应及时联系治疗者，不要自行按摩、用药或寻找其他机构立即“修正”。"
+   },
+   {
+    "t": "p",
+    "text": "肉毒素也没有类似透明质酸填充剂的酶溶解方式。出现问题后的处理取决于症状与原因，不能保证立即逆转。"
+   },
+   {
+    "t": "h",
+    "text": "十六、怎样看待“预防性治疗”？"
+   },
+   {
+    "t": "p",
+    "text": "不能仅因达到某个年龄，就认定必须开始治疗。"
+   },
+   {
+    "t": "p",
+    "text": "即使减少反复肌肉收缩可能影响部分纹路表现，也不能据此保证不出现静态纹，或阻止其他层次的衰老。对没有明显困扰的人，选择不治疗同样合理。"
+   },
+   {
+    "t": "p",
+    "text": "**评估的重点应是具体问题、功能影响、预期变化和风险，而不是年龄焦虑、固定套餐或单位数。**"
+   },
+   {
+    "t": "p",
+    "text": "肉毒素具有明确药理作用，也有重要使用限制。充分知情应包括预期获益、可能无效、常见及严重风险、替代方案、不治疗的选择，以及出现问题后的处理安排。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般医疗知识科普，不构成具体产品推荐、处方或个体化治疗建议。不同制剂的适应证、禁忌和安全信息，应以当地产品说明为依据。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Botulinum toxin: understanding its neuromodulating action, medical uses and safety",
+  "summary": "Botulinum toxin is a prescription-only medicine, not a filler, and not a one-size-fits-all treatment for every wrinkle, muscle tension or pain problem.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "Botulinum toxin is a class of substances with a neuromodulating action. Medical preparations go through specific manufacturing, purification and quality control, and are used at strictly specified doses for the relevant indications."
+   },
+   {
+    "t": "p",
+    "text": "The medical preparation in common use is botulinum toxin type A. It temporarily reduces the release of acetylcholine from specific nerve endings, which lowers the contractile activity of the target muscle or affects secretion from some glands."
+   },
+   {
+    "t": "p",
+    "text": "**Botulinum toxin is a prescription-only medicine. It is not a filler, and it is not a one-size-fits-all treatment for every wrinkle, muscle tension or pain problem.**"
+   },
+   {
+    "t": "h",
+    "text": "1. How does botulinum toxin affect muscles?"
+   },
+   {
+    "t": "p",
+    "text": "Normally, nerve endings release acetylcholine, which passes the signal on to the muscle and makes it contract."
+   },
+   {
+    "t": "p",
+    "text": "After botulinum toxin type A enters the relevant nerve endings, it acts on proteins involved in releasing the neurotransmitter. This reduces acetylcholine release, so the signal the nerve sends to the target muscle is temporarily weakened."
+   },
+   {
+    "t": "p",
+    "text": "This process:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Is not the same as cutting the nerve.",
+     "Does not aim to permanently destroy the muscle.",
+     "Does not directly restore tissue volume.",
+     "Usually wears off as the nerve endings regain their function."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "How it shows in practice depends on the preparation, the use, the dose and the individual."
+   },
+   {
+    "t": "h",
+    "text": "2. Why can it affect sweating?"
+   },
+   {
+    "t": "p",
+    "text": "Acetylcholine is involved not only in muscle activity but also in regulating secretion from some sweat glands. For this reason, under specific conditions botulinum toxin can reduce local sweating."
+   },
+   {
+    "t": "p",
+    "text": "However, excessive sweating can have different causes. Sweating that starts suddenly, is worse at night, affects the whole body or comes with other symptoms should first be assessed for illness, medicines and other factors. Treatment should not be decided on the amount of sweating alone."
+   },
+   {
+    "t": "h",
+    "text": "3. How do medical uses relate to cosmetic uses?"
+   },
+   {
+    "t": "p",
+    "text": "Botulinum toxin is used in several areas of medicine, for example some forms of dystonia, spasticity, chronic migraine, severe underarm sweating and certain bladder function problems."
+   },
+   {
+    "t": "p",
+    "text": "For cosmetic purposes, some preparations can be used for specific facial expression lines."
+   },
+   {
+    "t": "p",
+    "text": "**Approved uses differ between products and regions.** A preparation being approved for one area in one country does not mean the same applies to all brands, all regions or all patients. Use that is not listed in the product's approved information is a situation that needs separate assessment; it cannot be treated as approved just because some clinicians use it."
+   },
+   {
+    "t": "h",
+    "text": "4. Why distinguish dynamic lines from static lines?"
+   },
+   {
+    "t": "p",
+    "text": "Wrinkles do not form through just one mechanism."
+   },
+   {
+    "t": "table",
+    "head": [
+     "Type",
+     "Common appearance",
+     "Related factors"
+    ],
+    "rows": [
+     [
+      "Dynamic lines, also called expression lines",
+      "Noticeable when raising the eyebrows, frowning or smiling",
+      "Muscle contraction repeatedly folds the skin"
+     ],
+     [
+      "Static lines",
+      "Still present when the face is relaxed",
+      "Long-term folding, sun exposure, skin ageing and changes in tissue structure"
+     ],
+     [
+      "Mixed pattern",
+      "Deepen with movement and are still visible at rest",
+      "Muscle activity acting together with changes in the skin and deeper tissues"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Reducing contraction of the relevant muscles may soften some dynamic lines, but static lines that have already formed will not necessarily disappear."
+   },
+   {
+    "t": "p",
+    "text": "Facial appearance is also affected by fat distribution, bone, ligaments, skin elasticity and changes in volume. Botulinum toxin cannot restore these structures, and it cannot replace all other treatments or daily care."
+   },
+   {
+    "t": "h",
+    "text": "5. Why do different areas call for attention to different functions?"
+   },
+   {
+    "t": "p",
+    "text": "Facial muscles work together. They take part in expression and also carry out functions such as protecting the eyes, closing the lips and eating."
+   },
+   {
+    "t": "table",
+    "head": [
+     "Area",
+     "Functions to consider during assessment"
+    ],
+    "rows": [
+     [
+      "Forehead and brows",
+      "Ability to raise the brows, brow position, and whether the forehead muscle is relied on to help open the eyes"
+     ],
+     [
+      "Around the eyes",
+      "Closing the eyes, blinking, and any existing dry eye or eyelid problems"
+     ],
+     [
+      "Around the mouth and lower face",
+      "Smiling, speech, drinking and lip closure"
+     ],
+     [
+      "Masseter (jaw muscle) area",
+      "Chewing, bite, any existing pain and jaw function"
+     ],
+     [
+      "Neck",
+      "Swallowing, neck strength and any past neuromuscular problems"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "The same muscle activity can mean different things in different people. For example, some people rely on the forehead muscle to lift their brows as compensation. Focusing only on forehead lines and overlooking this may affect brow position or make the eyes feel heavier."
+   },
+   {
+    "t": "p",
+    "text": "For this reason, assessment should not rely on still photos alone; it also needs to look at natural expressions, muscle strength and any existing asymmetry."
+   },
+   {
+    "t": "h",
+    "text": "6. About the masseter: not every \"wide face\" comes from muscle"
+   },
+   {
+    "t": "p",
+    "text": "The width of the lower face may relate to the masseter, bone, fat and other structures. It cannot be judged to be masseter enlargement from appearance alone."
+   },
+   {
+    "t": "p",
+    "text": "When masseter activity is reduced, some people may develop changes in muscle size over time, but the following also need to be considered:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Reduced chewing strength or fatigue.",
+     "Changes in the smile, or asymmetry.",
+     "Irregular local contours.",
+     "Existing hollowing or laxity becoming more noticeable.",
+     "Changes in how other chewing muscles are used."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Masseter size, teeth grinding, temporomandibular joint problems and facial pain are also not the same diagnosis. Reducing muscle strength does not necessarily resolve the cause of grinding or all joint pain."
+   },
+   {
+    "t": "p",
+    "text": "The effects of long-term repeated treatment on the chewing system and bone remain uncertain in research. Some small studies observed local changes in jaw bone mass, while a newer randomised study found no negative effect on bone density within its specific protocol and 12-month observation period. The two cannot simply be combined into \"it inevitably damages bone\" or \"it is absolutely safe in the long term\"."
+   },
+   {
+    "t": "h3",
+    "text": "Relieving some shoulder and neck pain related to muscle tension or overactivity"
+   },
+   {
+    "t": "p",
+    "text": "By temporarily reducing contraction of the target muscles, botulinum toxin may help some patients reduce shoulder and neck pain related to ongoing muscle tension or overactivity. Whether it is suitable requires first identifying the cause of the pain and assessing muscle function. For general shoulder and neck pain, current research suggests short-term relief may be limited; it cannot guarantee long-term improvement, and it cannot replace rehabilitation or other necessary treatment."
+   },
+   {
+    "t": "h",
+    "text": "7. Why can't units be converted directly between brands?"
+   },
+   {
+    "t": "p",
+    "text": "A botulinum toxin \"unit\" is a unit of biological activity, determined by the specific assay system for that product. Unlike milligrams, units cannot be compared directly across products."
+   },
+   {
+    "t": "p",
+    "text": "**Units from different preparations are not directly interchangeable, and you should not apply a fixed conversion ratio yourself.**"
+   },
+   {
+    "t": "p",
+    "text": "So the number of units or the cost per unit alone cannot fully show whether a treatment plan is reasonable. The product, indication, muscle function, intended goals and risks all need to be part of the assessment."
+   },
+   {
+    "t": "h",
+    "text": "8. Are onset, stable effect and recovery the same thing?"
+   },
+   {
+    "t": "p",
+    "text": "No."
+   },
+   {
+    "t": "p",
+    "text": "**Onset** is when a change in the target function first becomes noticeable; **stable effect** is the stage when the action has gradually become full and is suitable for review; **recovery** is the later process in which the effect gradually wears off."
+   },
+   {
+    "t": "p",
+    "text": "Changes in muscle activity and changes in appearance do not necessarily happen at the same time. For example, if the appearance involves muscle size, photos taken soon after injection usually cannot be used to judge it."
+   },
+   {
+    "t": "p",
+    "text": "For cosmetic uses the effect generally lasts a matter of months, but how long it lasts depends on the product, the area and the individual, so no uniform promise can be made."
+   },
+   {
+    "t": "p",
+    "text": "Reviewing or adding more too early may add unnecessary effect before the original effect has fully developed."
+   },
+   {
+    "t": "h",
+    "text": "9. Does a bigger dose last longer and work better?"
+   },
+   {
+    "t": "p",
+    "text": "It should not be understood that way."
+   },
+   {
+    "t": "p",
+    "text": "Treatment needs to balance the intended effect with normal function. Weakening a muscle too much may cause changes in expression, local weakness or functional problems, and increasing the dose does not guarantee a proportionally longer effect."
+   },
+   {
+    "t": "p",
+    "text": "Likewise, a smaller number of units does not automatically mean it is safe. Product choice, area, individual anatomy and the treatment plan all matter."
+   },
+   {
+    "t": "p",
+    "text": "A reasonable plan should be based on clinical assessment, not on setting the same number of units or fixed top-ups for everyone in advance."
+   },
+   {
+    "t": "h",
+    "text": "10. Can repeated treatment lead to \"resistance\"?"
+   },
+   {
+    "t": "p",
+    "text": "A small number of people may develop neutralising antibodies that affect the medicine's biological activity, but not every reduction in effect is caused by antibodies."
+   },
+   {
+    "t": "p",
+    "text": "An analysis that pooled several registration studies of one botulinum toxin type A product found a low rate of neutralising antibody formation. This result cannot be taken to represent all preparations, uses or patterns of long-term use."
+   },
+   {
+    "t": "p",
+    "text": "If the effect is different from before, the following also need to be assessed:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Whether the treatment goal has changed.",
+     "Whether the product, dose or area was different.",
+     "Whether it is still within the appropriate time to observe the effect.",
+     "Whether the underlying muscle or tissue condition has changed.",
+     "Whether expectations go beyond what the medicine can achieve."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "One unsatisfactory result alone is not a reason to decide for yourself that you have \"resistance\", or to have repeated top-ups at different clinics within a short time."
+   },
+   {
+    "t": "h",
+    "text": "11. What happens after stopping treatment?"
+   },
+   {
+    "t": "p",
+    "text": "Usually the medicine's effect gradually wears off and activity in the relevant muscles moves back towards recovery. But the speed and extent of recovery vary, and there is no guarantee that everyone will return to exactly the same state within a fixed time."
+   },
+   {
+    "t": "p",
+    "text": "At the same time, natural ageing, sun exposure and tissue changes continue. So appearance after stopping cannot simply be explained as a \"rebound\", and there is also no guarantee that you will always look as you did before treatment."
+   },
+   {
+    "t": "p",
+    "text": "Whether to continue should be decided afresh, based on your needs, results, risks and personal choice at that time."
+   },
+   {
+    "t": "h",
+    "text": "12. What are the common and less common adverse effects?"
+   },
+   {
+    "t": "h3",
+    "text": "Injection-related reactions"
+   },
+   {
+    "t": "p",
+    "text": "Pain, bruising, redness, swelling or tenderness may occur, as may discomfort such as headache."
+   },
+   {
+    "t": "h3",
+    "text": "Unwanted local changes in function"
+   },
+   {
+    "t": "p",
+    "text": "Depending on the area treated, these may include:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Changes in brow position, a drooping eyelid or a heavy feeling around the eyes.",
+     "Dry eye, incomplete eye closure or double vision.",
+     "An uneven smile, or changes in lip movement or speech.",
+     "Chewing fatigue or reduced strength.",
+     "Neck weakness or swallowing problems."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "These reactions last for different lengths of time. Some need further treatment or specialist assessment, so \"just wait\" cannot be the advice in every case."
+   },
+   {
+    "t": "h3",
+    "text": "Allergic and other reactions"
+   },
+   {
+    "t": "p",
+    "text": "Reactions to the active ingredient, excipients, disinfectants or other related substances also need to be considered. Specific contraindications and warnings should be checked against the product being used."
+   },
+   {
+    "t": "h",
+    "text": "13. What is distant spread of effect?"
+   },
+   {
+    "t": "p",
+    "text": "In rare cases, effects may occur away from the injection site, producing symptoms similar to botulism, including generalised weakness, drooping eyelids, double vision, abnormal speech, difficulty swallowing and breathing problems."
+   },
+   {
+    "t": "p",
+    "text": "Symptoms may appear from hours to weeks after injection. People who already have neuromuscular, swallowing or breathing problems need a particular assessment of these risks."
+   },
+   {
+    "t": "warn",
+    "text": "**If you have difficulty breathing, marked difficulty swallowing or a suspected severe allergic reaction, call 000 immediately.** When you seek care, say that you have recently had botulinum toxin injections, including the date, the area and any known product details."
+   },
+   {
+    "t": "h",
+    "text": "14. What information should you give before treatment?"
+   },
+   {
+    "t": "p",
+    "text": "Tell the prescriber and the treating practitioner about:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Neuromuscular disease, muscle weakness, and any related family or personal history.",
+     "Problems with swallowing, breathing, or eye or facial function.",
+     "Infection in the treatment area.",
+     "Past allergies and any previous adverse reactions to botulinum toxin.",
+     "Pregnancy, planning a pregnancy or breastfeeding.",
+     "All medicines, supplements and other recent treatments.",
+     "The product, area and date of any recent botulinum toxin treatment."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Certain antibiotics, muscle relaxants or other medicines that affect neuromuscular transmission may change the risk and need to be checked one by one. Non-essential cosmetic use should be avoided during pregnancy; other situations should be assessed by a doctor based on the specific need."
+   },
+   {
+    "t": "p",
+    "text": "Do not stop anticoagulants, antiplatelet medicines or other prescription medicines on your own for the sake of treatment."
+   },
+   {
+    "t": "h",
+    "text": "15. Why is follow-up still needed after treatment?"
+   },
+   {
+    "t": "p",
+    "text": "Follow-up is not only for judging changes in appearance; it is also for checking whether any unwanted effects on function have occurred."
+   },
+   {
+    "t": "p",
+    "text": "Assessment can compare records taken under the same lighting, angle and expression, together with how daily activities feel. Any asymmetry that was already present should be recorded before treatment, so that not every difference is put down to the treatment."
+   },
+   {
+    "t": "p",
+    "text": "If new eye symptoms, marked weakness or other changes in function appear, contact the treating practitioner promptly. Do not massage the area, take medicines on your own, or go straight to another clinic for a \"correction\"."
+   },
+   {
+    "t": "p",
+    "text": "Botulinum toxin also has no enzyme that can dissolve it, unlike hyaluronic acid fillers. How a problem is managed depends on the symptoms and the cause, and immediate reversal cannot be guaranteed."
+   },
+   {
+    "t": "h",
+    "text": "16. How should \"preventive treatment\" be viewed?"
+   },
+   {
+    "t": "p",
+    "text": "Reaching a certain age is not, on its own, a reason to decide that treatment must begin."
+   },
+   {
+    "t": "p",
+    "text": "Even if reducing repeated muscle contraction may affect how some lines appear, this cannot guarantee that static lines will not develop, or stop ageing at other levels. For people who are not noticeably bothered, choosing not to treat is equally reasonable."
+   },
+   {
+    "t": "p",
+    "text": "**Assessment should focus on the specific concern, effects on function, expected changes and risks, not on age anxiety, fixed packages or numbers of units.**"
+   },
+   {
+    "t": "p",
+    "text": "Botulinum toxin has clear pharmacological effects and also important limits on its use. Being fully informed should include the expected benefits, the possibility that it will not work, common and serious risks, alternatives, the option of not having treatment, and the arrangements for managing any problems."
+   },
+   {
+    "t": "note",
+    "text": "This article is for general medical education only and is not a specific product recommendation, a prescription or individual treatment advice. The indications, contraindications and safety information for each preparation should be based on the local product information."
+   }
+  ]
+ }
+}

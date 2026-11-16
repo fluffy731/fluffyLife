@@ -1,0 +1,154 @@
+{
+ "id": "facial-ageing",
+ "category": "concern",
+ "review": false,
+ "pages": "34",
+ "zh": {
+  "title": "面部衰老为什么是多层次的过程？",
+  "summary": "面部衰老不只是皮肤表面出现细纹或松弛，而是多种结构随着时间发生变化的综合过程。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "面部衰老不只是皮肤表面出现细纹或松弛，而是皮肤、脂肪、支持组织、肌肉和骨骼等结构随着时间发生变化的综合过程。每个人变化的开始时间、速度和表现都不同，因此相似的外观困扰，背后的原因也可能不一样。"
+   },
+   {
+    "t": "h",
+    "text": "从皮肤表面到深层结构"
+   },
+   {
+    "t": "h3",
+    "text": "表皮与皮肤屏障"
+   },
+   {
+    "t": "p",
+    "text": "表皮是皮肤最外层，承担屏障功能。随着年龄、日晒和环境因素的影响，皮肤可能逐渐变得干燥、粗糙，肤色也可能出现不均。屏障状态和角质层含水量会影响皮肤的触感与光泽，但保湿主要改善表面舒适度，并不能改变深层组织结构。"
+   },
+   {
+    "t": "h3",
+    "text": "真皮与支持纤维"
+   },
+   {
+    "t": "p",
+    "text": "真皮含有胶原纤维、弹性纤维、血管和其他基质成分。胶原为皮肤提供强度，弹性纤维则参与皮肤的伸展与回弹。随着年龄增长，胶原的合成和分解会发生变化；长期紫外线暴露、吸烟等因素也可能加速光老化，使皮肤出现细纹、粗糙和弹性变化。"
+   },
+   {
+    "t": "h3",
+    "text": "皮下脂肪与支持组织"
+   },
+   {
+    "t": "p",
+    "text": "面部脂肪并不是一整块均匀的组织，而是分布在不同区域。随着时间推移，脂肪的体积、分布及其与周围支持组织的关系可能发生变化，影响面部的阴影、饱满度和轮廓。韧带等结构也参与面部组织的支持。"
+   },
+   {
+    "t": "h3",
+    "text": "肌肉与骨骼"
+   },
+   {
+    "t": "p",
+    "text": "面部肌肉参与表情，并影响皮肤的动态折叠。骨骼是面部深层支撑的一部分，也会随年龄产生变化。皮肤、脂肪、支持组织、肌肉和骨骼的变化可能同时发生，但不同人的表现并不相同。"
+   },
+   {
+    "t": "h",
+    "text": "为什么同一张脸会同时出现多种变化？"
+   },
+   {
+    "t": "p",
+    "text": "例如，面部某处出现凹陷，可能与脂肪分布、骨骼支撑、皮肤厚度或光线形成的阴影有关；细纹则可能与表情活动、皮肤干燥和光老化共同相关。仅凭一张照片，通常无法准确判断单一原因。"
+   },
+   {
+    "t": "p",
+    "text": "自然老化与外界因素也会相互影响。遗传和时间会影响皮肤变化，而日晒、吸烟等因素可能加重部分光老化表现。日常防晒有助于减少紫外线造成的皮肤损伤，但无法阻止所有自然老化过程。"
+   },
+   {
+    "t": "h",
+    "text": "了解层次，有助于建立合理预期"
+   },
+   {
+    "t": "p",
+    "text": "不同问题对应的护理与医疗评估方向可能不同。保湿可以改善干燥感，防晒有助于减少紫外线暴露；涉及色素、瘢痕、肌肉活动或深层轮廓的问题，则需要先明确具体原因，再讨论适合的选择。"
+   },
+   {
+    "t": "p",
+    "text": "没有一种护理或治疗能同时改变所有层次，也没有必要把每一种年龄相关变化都视为需要处理的问题。理解自己的主要困扰、可改善的范围和潜在风险，是作出选择的重要一步。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不构成个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "Why is facial ageing a multi-layered process?",
+  "summary": "Facial ageing is not just fine lines or laxity on the skin’s surface, but a combined process in which many structures change over time.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "Facial ageing is not just fine lines or laxity appearing on the surface of the skin. It is a combined process in which structures such as the skin, fat, supporting tissues, muscles and bones change over time. The age at which changes begin, how fast they happen and how they show differ from person to person, so similar concerns about appearance may have different underlying causes."
+   },
+   {
+    "t": "h",
+    "text": "From the skin’s surface to deeper structures"
+   },
+   {
+    "t": "h3",
+    "text": "Epidermis and skin barrier"
+   },
+   {
+    "t": "p",
+    "text": "The epidermis is the outermost layer of the skin and provides the barrier function. With age, sun exposure and environmental factors, skin may gradually become drier and rougher, and skin tone may become uneven. The state of the barrier and the water content of the stratum corneum affect how the skin feels and its radiance, but moisturising mainly improves surface comfort and cannot change the structure of deeper tissues."
+   },
+   {
+    "t": "h3",
+    "text": "Dermis and supporting fibres"
+   },
+   {
+    "t": "p",
+    "text": "The dermis contains collagen fibres, elastic fibres, blood vessels and other matrix components. Collagen gives the skin strength, while elastic fibres help the skin stretch and spring back. With age, the production and breakdown of collagen change; long-term ultraviolet (UV) exposure, smoking and other factors may also speed up photoageing, leading to fine lines, roughness and changes in elasticity."
+   },
+   {
+    "t": "h3",
+    "text": "Subcutaneous fat and supporting tissues"
+   },
+   {
+    "t": "p",
+    "text": "Facial fat is not one even, continuous block of tissue; it is distributed in different areas. Over time, the volume and distribution of fat, and its relationship with the surrounding supporting tissues, may change, affecting shadows, fullness and contours of the face. Structures such as ligaments also help support facial tissues."
+   },
+   {
+    "t": "h3",
+    "text": "Muscles and bones"
+   },
+   {
+    "t": "p",
+    "text": "Facial muscles produce expressions and influence the dynamic folding of the skin. Bone is part of the face’s deep support and also changes with age. Changes in skin, fat, supporting tissues, muscles and bones may happen at the same time, but they show differently in different people."
+   },
+   {
+    "t": "h",
+    "text": "Why can one face show several kinds of change at once?"
+   },
+   {
+    "t": "p",
+    "text": "For example, a hollow in part of the face may relate to fat distribution, bony support, skin thickness or shadows created by lighting; fine lines may be linked to a combination of expression, dry skin and photoageing. A single photo is usually not enough to pinpoint one cause accurately."
+   },
+   {
+    "t": "p",
+    "text": "Natural ageing and external factors also influence each other. Genetics and time affect how the skin changes, while sun exposure, smoking and other factors may worsen some signs of photoageing. Daily sun protection helps reduce skin damage caused by UV radiation, but it cannot stop all natural ageing processes."
+   },
+   {
+    "t": "h",
+    "text": "Understanding the layers helps set realistic expectations"
+   },
+   {
+    "t": "p",
+    "text": "Different concerns may call for different care and medical assessment. Moisturising can improve dryness and sun protection helps reduce UV exposure; concerns involving pigmentation, scarring, muscle activity or deeper contours need the specific cause identified first, before suitable options are discussed."
+   },
+   {
+    "t": "p",
+    "text": "No single form of care or treatment can change all the layers at once, and there is no need to treat every age-related change as a problem that must be dealt with. Understanding your main concern, the scope for improvement and the potential risks is an important step in making a choice."
+   },
+   {
+    "t": "note",
+    "text": "This article is general skin health education only and does not constitute individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}

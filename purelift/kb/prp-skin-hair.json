@@ -1,0 +1,956 @@
+{
+ "id": "prp-skin-hair",
+ "category": "treatment",
+ "review": true,
+ "pages": "19-23",
+ "zh": {
+  "title": "PRP 富血小板血浆：了解皮肤与毛发治疗的原理、证据和局限",
+  "summary": "PRP 的核心是利用自体血液中的部分成分，影响局部组织的生物学反应。",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "PRP 是 **Platelet-Rich Plasma** 的缩写，中文称为**富血小板血浆**。它通常通过采集本人静脉血，再使用专用系统进行分离，制备出含有较高浓度血小板的血浆。"
+   },
+   {
+    "t": "p",
+    "text": "在皮肤与毛发领域，PRP 被研究用于雄激素性脱发、部分皮肤老化表现，以及某些瘢痕的联合治疗。"
+   },
+   {
+    "t": "p",
+    "text": "**PRP 的核心是利用自体血液中的部分成分，影响局部组织的生物学反应。它不是干细胞治疗，也不能保证再生毛囊、逆转衰老或获得永久效果。**"
+   },
+   {
+    "t": "h",
+    "text": "一、血浆、血小板与 PRP 是什么关系？"
+   },
+   {
+    "t": "p",
+    "text": "血液主要由血浆和血细胞组成。血细胞包括红细胞、白细胞和血小板。"
+   },
+   {
+    "t": "table",
+    "head": [
+     "血液成分",
+     "主要作用"
+    ],
+    "rows": [
+     [
+      "血浆",
+      "液体部分，含有水分、蛋白质及多种可溶性物质"
+     ],
+     [
+      "红细胞",
+      "主要参与氧气运输"
+     ],
+     [
+      "白细胞",
+      "参与免疫和炎症反应"
+     ],
+     [
+      "血小板",
+      "参与止血，并释放与组织修复相关的信号物质"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "PRP 的制备目的，是分离并集中部分血小板，而不是把未经处理的全血直接用于治疗。最终制备物可能同时包含不同数量的白细胞、红细胞及血浆蛋白，因此 PRP 并不是成分完全一致的标准化溶液。"
+   },
+   {
+    "t": "h",
+    "text": "二、PRP 为什么可能影响组织修复？"
+   },
+   {
+    "t": "p",
+    "text": "血小板受到激活后，会释放参与细胞信号传递的多种物质，包括："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**血小板源性生长因子（PDGF）**：参与细胞迁移和组织修复相关过程。",
+     "**转化生长因子 β（TGF-β）**：参与细胞外基质代谢及组织重塑。",
+     "**血管内皮生长因子（VEGF）**：参与血管相关反应。",
+     "**表皮生长因子（EGF）等其他信号物质**：参与细胞活动与组织反应。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "这些作用构成了研究 PRP 的生物学基础。但局部组织的反应复杂，受到剂量、疾病状态和周围环境等因素影响。"
+   },
+   {
+    "t": "p",
+    "text": "生长因子并不是越多越好，也不能仅凭含有生长因子，就推断一定能够增加胶原或促进毛发生长。实验机制与患者实际获得的改善，需要分别评价。"
+   },
+   {
+    "t": "h",
+    "text": "三、PRP 是怎样制备和使用的？"
+   },
+   {
+    "t": "p",
+    "text": "一般过程包括以下几个阶段。"
+   },
+   {
+    "t": "h3",
+    "text": "治疗前评估"
+   },
+   {
+    "t": "p",
+    "text": "先明确希望改善的问题，并了解病史、药物、过敏及既往治疗情况。毛发治疗尤其需要先确定脱发类型。"
+   },
+   {
+    "t": "h3",
+    "text": "采集静脉血"
+   },
+   {
+    "t": "p",
+    "text": "按制备系统和治疗方案采集所需血液。采血量不是评价治疗效果的直接标准。"
+   },
+   {
+    "t": "h3",
+    "text": "离心分离"
+   },
+   {
+    "t": "p",
+    "text": "使用专用设备和耗材，按照对应系统的要求处理血液，获得用于治疗的血浆组分。"
+   },
+   {
+    "t": "h3",
+    "text": "局部应用"
+   },
+   {
+    "t": "p",
+    "text": "根据治疗目标，可能采用局部注射，或在特定方案中与微针、激光等操作联合。"
+   },
+   {
+    "t": "h3",
+    "text": "护理与随访"
+   },
+   {
+    "t": "p",
+    "text": "记录恢复过程，并在适当时间用照片、检查或量化指标评价变化，决定是否继续治疗。"
+   },
+   {
+    "t": "p",
+    "text": "**PRP 单独注射、微针联合 PRP、激光联合 PRP，是不同的治疗方式，不能把其中一种的研究效果直接套用于另一种。**"
+   },
+   {
+    "t": "h",
+    "text": "四、为什么不同 PRP 治疗的效果可能不同？"
+   },
+   {
+    "t": "p",
+    "text": "“PRP”是一个范围较广的名称。不同系统和方案可在以下方面存在差异："
+   },
+   {
+    "t": "table",
+    "head": [
+     "影响因素",
+     "为什么重要"
+    ],
+    "rows": [
+     [
+      "血小板浓度与总量",
+      "影响实际递送的成分，但不是越高越好"
+     ],
+     [
+      "白细胞含量",
+      "可能改变局部炎症反应"
+     ],
+     [
+      "红细胞残留",
+      "可影响制备物组成及局部反应"
+     ],
+     [
+      "抗凝剂及添加成分",
+      "需要考虑适用性与安全性"
+     ],
+     [
+      "激活方式",
+      "可能影响相关物质的释放过程"
+     ],
+     [
+      "制备、保存与使用时间",
+      "影响质量与污染控制"
+     ],
+     [
+      "使用方式和疗程",
+      "会影响组织接触、恢复及结果"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "因此，“双次离心”“高倍浓缩”或某种颜色，并不能单独证明治疗更有效。比较方案时，应关注完整流程和临床证据。"
+   },
+   {
+    "t": "h",
+    "text": "五、PRP 用于面部皮肤，有哪些合理预期？"
+   },
+   {
+    "t": "p",
+    "text": "面部研究主要涉及皮肤纹理、细纹及光老化外观，但证据仍存在不确定性。"
+   },
+   {
+    "t": "p",
+    "text": "一项随机半脸对照研究最终分析了 19 名参与者。参与者对 PRP 侧的纹理和皱纹改善评价较好，但盲法皮肤科医生的照片评分未发现显著优势。**个人感受与客观评价并不总是一致。**"
+   },
+   {
+    "t": "p",
+    "text": "这意味着，部分人可能感受到肤质变化，但不能承诺："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "明显提拉或纠正面部下垂。",
+     "消除所有皱纹、毛孔或色斑。",
+     "恢复流失的脂肪、骨骼或韧带结构。",
+     "获得与手术或容量型填充相同的效果。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "治疗后立即出现的饱满、红润，也可能与注射液体、局部血流变化及肿胀有关，不能直接理解为胶原已经增加。"
+   },
+   {
+    "t": "h",
+    "text": "六、PRP 对痘坑和瘢痕有什么作用？"
+   },
+   {
+    "t": "p",
+    "text": "部分研究评估了 PRP 与微针联合治疗凹陷性痤疮瘢痕。研究提供了一些改善依据，但不同瘢痕类型、操作方法和评价方式，会影响结果。"
+   },
+   {
+    "t": "p",
+    "text": "需要注意："
+   },
+   {
+    "t": "p",
+    "text": "**联合方案有改善，不代表全部来自 PRP。**微针本身也可能产生作用，需要与合适的对照比较，才能判断 PRP 的额外贡献。"
+   },
+   {
+    "t": "p",
+    "text": "痘坑的形态和深度不同，部分存在深层牵拉或明显组织缺损，可能需要其他针对性处理。PRP 不能保证将所有瘢痕恢复为正常皮肤。"
+   },
+   {
+    "t": "p",
+    "text": "若仍有活动性痤疮，也应先评估炎症控制，避免只关注已经形成的痘坑。"
+   },
+   {
+    "t": "h",
+    "text": "七、PRP 用于头皮，主要研究哪类脱发？"
+   },
+   {
+    "t": "p",
+    "text": "现有毛发研究主要集中在**雄激素性脱发，即男性或女性型脱发**。"
+   },
+   {
+    "t": "p",
+    "text": "这类脱发常涉及毛囊逐渐微小化：毛发变细、生长期缩短，发量外观逐渐下降。PRP 的研究目标，是观察局部信号是否能够影响仍存活毛囊的活动。"
+   },
+   {
+    "t": "p",
+    "text": "部分随机对照研究观察到毛发密度改善，提示 PRP 可能成为部分患者的辅助选择。"
+   },
+   {
+    "t": "p",
+    "text": "但结果并不完全一致。另一项对照研究中，PRP 区域与安慰剂区域的密度均有所增加，说明治疗前后的变化不能全部归因于 PRP。"
+   },
+   {
+    "t": "p",
+    "text": "PRP 不是毛囊移植，也没有充分依据证明能在没有毛囊的区域创造新毛囊。对长期光滑脱发区、瘢痕性脱发或其他类型的脱发，不能沿用雄激素性脱发的研究预期。"
+   },
+   {
+    "t": "h",
+    "text": "八、为什么生发治疗前必须先诊断？"
+   },
+   {
+    "t": "p",
+    "text": "掉发可能涉及多种原因，处理方式也不同。"
+   },
+   {
+    "t": "table",
+    "head": [
+     "常见情况",
+     "可能需要了解的线索"
+    ],
+    "rows": [
+     [
+      "雄激素性脱发",
+      "发际线或头顶逐渐稀疏、毛发变细、家族史"
+     ],
+     [
+      "休止期脱发",
+      "近期疾病、分娩、明显压力、体重变化或药物"
+     ],
+     [
+      "缺铁、甲状腺问题等",
+      "根据症状和病史决定是否需要检查"
+     ],
+     [
+      "斑秃",
+      "局部成片或其他特征性脱发"
+     ],
+     [
+      "瘢痕性脱发",
+      "疼痛、灼热、炎症、鳞屑或毛囊开口减少"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "检查可能包括头皮观察、皮肤镜评估，以及按需要安排的化验，而不是每个人都做同一套检查。"
+   },
+   {
+    "t": "p",
+    "text": "突然大量掉发、成片脱发或伴随明显头皮症状时，应优先确定原因。PRP 不能替代对潜在疾病的治疗。准确诊断也是选择毛发治疗的基础。"
+   },
+   {
+    "t": "h",
+    "text": "九、PRP 能替代其他脱发治疗吗？"
+   },
+   {
+    "t": "p",
+    "text": "不一定。"
+   },
+   {
+    "t": "p",
+    "text": "雄激素性脱发往往需要长期管理。是否使用局部或口服药物、PRP、毛发移植或其他方式，应结合诊断、年龄、健康状况和个人目标讨论。"
+   },
+   {
+    "t": "p",
+    "text": "PRP 可能作为辅助方案，但不能自动替代其他有证据支持的治疗。若同时使用多种方法，观察到改善时也应谨慎判断各自贡献。"
+   },
+   {
+    "t": "h",
+    "text": "十、需要几次？多久能判断是否有效？"
+   },
+   {
+    "t": "p",
+    "text": "目前没有适用于所有制备系统、治疗部位和患者的统一最佳疗程。"
+   },
+   {
+    "t": "p",
+    "text": "部分毛发研究采用数次、间隔约一个月的治疗，但研究方案不等于每个人都需要相同次数，也不代表长期维持治疗一定有额外获益。"
+   },
+   {
+    "t": "p",
+    "text": "毛发需要以数月观察。比较时应尽量固定："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "光线、相机角度和拍摄距离。",
+     "头发长度、干湿状态和分缝位置。",
+     "是否使用遮盖粉或造型产品。",
+     "同期使用的药物及其他治疗。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "必要时可结合毛发密度、粗细或皮肤镜记录。面部肤质则应在肿胀消退后，以相似条件评估。"
+   },
+   {
+    "t": "p",
+    "text": "在开始前，应约定复评时间及继续治疗的依据。如果没有可确认的获益，不应仅因已经开始疗程就持续重复。"
+   },
+   {
+    "t": "h",
+    "text": "十一、自体来源意味着没有风险吗？"
+   },
+   {
+    "t": "p",
+    "text": "不是。"
+   },
+   {
+    "t": "p",
+    "text": "使用自身血液可减少某些外来材料相关问题，但采血、制备和注射仍可能造成不适或并发症。"
+   },
+   {
+    "t": "p",
+    "text": "常见反应包括疼痛、瘀青、肿胀、泛红和触痛；采血或治疗时也可能出现头晕、恶心或晕厥。面部研究曾报告多种局部反应，不能因为研究中未出现严重事件，就认定罕见风险不存在。"
+   },
+   {
+    "t": "p",
+    "text": "还需要考虑感染、出血，以及对麻醉剂、消毒剂或添加成分的反应。"
+   },
+   {
+    "t": "p",
+    "text": "面部 PRP 注射已有血管阻塞和不可逆视力损害的病例报告。病例报告不能给出可靠发生率，但足以说明：**自体材料也不能消除严重注射风险。**"
+   },
+   {
+    "t": "h",
+    "text": "十二、为什么血液处理与感染控制特别重要？"
+   },
+   {
+    "t": "p",
+    "text": "PRP 涉及血液采集、样本处理和重新应用，每一步都需要防止混淆和污染，包括："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "正确核对身份和标识样本。",
+     "使用适合用途的设备与耗材。",
+     "规范无菌操作和手卫生。",
+     "避免多人之间共用针具或造成交叉污染。",
+     "安全处理锐器和血液废物。",
+     "保留可追溯的治疗记录。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "CDC 曾调查与不规范 PRP 微针服务有关的疑似 HIV 传播事件。该事件说明，“自己的血”并不能抵消操作流程中的交叉污染风险。"
+   },
+   {
+    "t": "h",
+    "text": "十三、治疗前应告知哪些健康情况？"
+   },
+   {
+    "t": "p",
+    "text": "应提供完整病史，尤其包括："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "贫血、血小板异常、凝血问题或出血倾向。",
+     "当前感染、发热及治疗区域皮肤病。",
+     "免疫系统疾病、免疫抑制治疗或肿瘤病史。",
+     "妊娠、备孕或哺乳情况。",
+     "对采血、麻醉、消毒剂或其他成分的不良反应。",
+     "正在使用的药物及补充剂。"
+    ]
+   },
+   {
+    "t": "p",
+    "text": "是否需要血液检查，应依据病史与评估决定。"
+   },
+   {
+    "t": "p",
+    "text": "不要自行停用抗凝药、抗血小板药或其他处方药。任何调整都应与负责相关治疗的医生讨论。"
+   },
+   {
+    "t": "h",
+    "text": "十四、治疗后怎样护理？"
+   },
+   {
+    "t": "p",
+    "text": "恢复安排取决于部位，以及是否联合微针、激光等操作，没有适用于所有方案的固定护理时间表。"
+   },
+   {
+    "t": "p",
+    "text": "一般应按治疗者说明保持清洁，避免抓挠和反复按压，并确认何时可以洗头、化妆、运动及恢复活性护肤品。不要自行加入所谓“修复精华”或其他未经确认的产品。"
+   },
+   {
+    "t": "p",
+    "text": "出现以下情况应及时就医："
+   },
+   {
+    "t": "ul",
+    "items": [
+     "红肿、疼痛持续加重。",
+     "局部明显发烫、流脓或伴发热。",
+     "异常皮肤变白、灰暗或花斑样变色。",
+     "视力变化、眼痛或异常剧烈疼痛。"
+    ]
+   },
+   {
+    "t": "warn",
+    "text": "**突发视力下降、说话困难或肢体无力时，应立即拨打 000，不要等待常规复查。**"
+   },
+   {
+    "t": "h",
+    "text": "十五、怎样理解 PRP 的价值？"
+   },
+   {
+    "t": "p",
+    "text": "评估 PRP 时，值得关注的不是“生长因子有多少”或“是否天然”，而是："
+   },
+   {
+    "t": "p",
+    "text": "**诊断是否明确、证据是否适用于当前问题、如何衡量改善，以及潜在获益是否值得承担风险和费用。**"
+   },
+   {
+    "t": "p",
+    "text": "PRP 在部分毛发及皮肤应用中具有研究潜力，但仍存在方案差异、效果不一致和长期证据不足等问题。合理的治疗应包括充分知情、规范操作、客观记录和定期复评，也包括在不适合或无明显获益时选择其他方案或不治疗。"
+   },
+   {
+    "t": "note",
+    "text": "本文仅供一般皮肤健康科普，不代替个体化诊断或治疗建议。"
+   }
+  ]
+ },
+ "en": {
+  "title": "PRP (platelet-rich plasma): understanding the principles, evidence and limitations of skin and hair treatments",
+  "summary": "At its core, PRP uses some components of a person's own blood to influence biological responses in local tissue.",
+  "blocks": [
+   {
+    "t": "p",
+    "text": "PRP stands for **platelet-rich plasma**. It is usually made by drawing some of the person's own venous blood and then separating it in a dedicated system to produce plasma with a higher concentration of platelets."
+   },
+   {
+    "t": "p",
+    "text": "In skin and hair care, PRP has been studied for androgenetic alopecia, some signs of skin ageing, and as part of combination treatment for certain scars."
+   },
+   {
+    "t": "p",
+    "text": "**At its core, PRP uses some components of a person's own blood to influence biological responses in local tissue. It is not a stem cell treatment, and it cannot guarantee regrowth of hair follicles, reversal of ageing or permanent results.**"
+   },
+   {
+    "t": "h",
+    "text": "1. How are plasma, platelets and PRP related?"
+   },
+   {
+    "t": "p",
+    "text": "Blood is made up mainly of plasma and blood cells. Blood cells include red blood cells, white blood cells and platelets."
+   },
+   {
+    "t": "table",
+    "head": [
+     "Blood component",
+     "Main role"
+    ],
+    "rows": [
+     [
+      "Plasma",
+      "The liquid part, containing water, proteins and many dissolved substances"
+     ],
+     [
+      "Red blood cells",
+      "Mainly involved in carrying oxygen"
+     ],
+     [
+      "White blood cells",
+      "Involved in immune and inflammatory responses"
+     ],
+     [
+      "Platelets",
+      "Involved in stopping bleeding, and release signalling substances related to tissue repair"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "The aim of preparing PRP is to separate and concentrate some of the platelets, rather than using untreated whole blood directly for treatment. The final preparation may also contain varying amounts of white blood cells, red blood cells and plasma proteins, so PRP is not a standardised solution with an identical composition."
+   },
+   {
+    "t": "h",
+    "text": "2. Why might PRP affect tissue repair?"
+   },
+   {
+    "t": "p",
+    "text": "When platelets are activated, they release a range of substances involved in cell signalling, including:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "**Platelet-derived growth factor (PDGF)**: involved in cell migration and processes related to tissue repair.",
+     "**Transforming growth factor beta (TGF-β)**: involved in extracellular matrix metabolism and tissue remodelling.",
+     "**Vascular endothelial growth factor (VEGF)**: involved in blood-vessel-related responses.",
+     "**Epidermal growth factor (EGF) and other signalling substances**: involved in cell activity and tissue responses."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "These actions form the biological basis for research into PRP. However, local tissue responses are complex and are influenced by factors such as dose, the state of the condition and the surrounding environment."
+   },
+   {
+    "t": "p",
+    "text": "More growth factors are not necessarily better, and the presence of growth factors alone does not mean that PRP will definitely increase collagen or promote hair growth. Laboratory mechanisms and the improvement patients actually experience need to be evaluated separately."
+   },
+   {
+    "t": "h",
+    "text": "3. How is PRP prepared and used?"
+   },
+   {
+    "t": "p",
+    "text": "The process generally involves the following stages."
+   },
+   {
+    "t": "h3",
+    "text": "Pre-treatment assessment"
+   },
+   {
+    "t": "p",
+    "text": "First, clarify the concern to be improved and review medical history, medicines, allergies and previous treatments. For hair treatment in particular, the type of hair loss needs to be identified first."
+   },
+   {
+    "t": "h3",
+    "text": "Drawing venous blood"
+   },
+   {
+    "t": "p",
+    "text": "The required blood is collected according to the preparation system and treatment plan. The volume of blood drawn is not a direct measure of how effective the treatment will be."
+   },
+   {
+    "t": "h3",
+    "text": "Centrifugation"
+   },
+   {
+    "t": "p",
+    "text": "The blood is processed with dedicated equipment and consumables, according to the requirements of the relevant system, to obtain the plasma fraction used for treatment."
+   },
+   {
+    "t": "h3",
+    "text": "Local application"
+   },
+   {
+    "t": "p",
+    "text": "Depending on the treatment goal, PRP may be injected locally or, in certain protocols, combined with procedures such as microneedling or laser."
+   },
+   {
+    "t": "h3",
+    "text": "Aftercare and follow-up"
+   },
+   {
+    "t": "p",
+    "text": "Recovery is recorded, and changes are evaluated at appropriate times using photos, examination or quantitative measures to decide whether to continue treatment."
+   },
+   {
+    "t": "p",
+    "text": "**PRP injection alone, microneedling combined with PRP and laser combined with PRP are different treatments; research results for one cannot be applied directly to another.**"
+   },
+   {
+    "t": "h",
+    "text": "4. Why might the results of different PRP treatments differ?"
+   },
+   {
+    "t": "p",
+    "text": "“PRP” is a broad term. Different systems and protocols can differ in the following ways:"
+   },
+   {
+    "t": "table",
+    "head": [
+     "Factor",
+     "Why it matters"
+    ],
+    "rows": [
+     [
+      "Platelet concentration and total amount",
+      "Affects what is actually delivered, but higher is not necessarily better"
+     ],
+     [
+      "White blood cell content",
+      "May change the local inflammatory response"
+     ],
+     [
+      "Residual red blood cells",
+      "May affect the composition of the preparation and the local response"
+     ],
+     [
+      "Anticoagulants and additives",
+      "Suitability and safety need to be considered"
+     ],
+     [
+      "Activation method",
+      "May affect how related substances are released"
+     ],
+     [
+      "Preparation, storage and time to use",
+      "Affects quality and contamination control"
+     ],
+     [
+      "Method of use and course of treatment",
+      "Affects tissue contact, recovery and results"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "So “double spin”, “high concentration” or a particular colour cannot on its own prove that a treatment is more effective. When comparing protocols, look at the whole process and the clinical evidence."
+   },
+   {
+    "t": "h",
+    "text": "5. What are reasonable expectations for PRP on facial skin?"
+   },
+   {
+    "t": "p",
+    "text": "Facial studies mainly cover skin texture, fine lines and the appearance of photoageing, but the evidence remains uncertain."
+   },
+   {
+    "t": "p",
+    "text": "One randomised split-face controlled study analysed 19 participants in the end. Participants rated the improvement in texture and wrinkles on the PRP side more favourably, but blinded dermatologists' photo ratings found no significant advantage. **Personal perception and objective assessment do not always agree.**"
+   },
+   {
+    "t": "p",
+    "text": "This means some people may notice changes in skin quality, but the following cannot be promised:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Noticeable lifting or correction of facial sagging.",
+     "Removal of all wrinkles, pores or pigment spots.",
+     "Restoration of lost fat, bone or ligament structure.",
+     "Results equivalent to surgery or volumising fillers."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Fullness and a rosy look straight after treatment may also be related to the injected fluid, local changes in blood flow and swelling, and should not be taken to mean that collagen has already increased."
+   },
+   {
+    "t": "h",
+    "text": "6. What can PRP do for acne pitting and scars?"
+   },
+   {
+    "t": "p",
+    "text": "Some studies have assessed PRP combined with microneedling for depressed acne scars. The studies provide some evidence of improvement, but results are affected by scar type, technique and how outcomes are assessed."
+   },
+   {
+    "t": "p",
+    "text": "Points to note:"
+   },
+   {
+    "t": "p",
+    "text": "**Improvement with a combined treatment does not mean all of it comes from PRP.** Microneedling itself may also have an effect; comparison with an appropriate control is needed to judge what PRP adds."
+   },
+   {
+    "t": "p",
+    "text": "Acne pits vary in shape and depth. Some involve deep tethering or significant tissue loss and may need other targeted treatment. PRP cannot guarantee that every scar will return to normal skin."
+   },
+   {
+    "t": "p",
+    "text": "If acne is still active, inflammation control should be assessed first, rather than focusing only on pits that have already formed."
+   },
+   {
+    "t": "h",
+    "text": "7. When used on the scalp, which type of hair loss has mainly been studied?"
+   },
+   {
+    "t": "p",
+    "text": "Current hair research focuses mainly on **androgenetic alopecia, that is, male- or female-pattern hair loss**."
+   },
+   {
+    "t": "p",
+    "text": "This type of hair loss often involves gradual miniaturisation of hair follicles: hairs become finer, the growth phase shortens, and the hair looks progressively thinner. Research on PRP aims to see whether local signals can influence the activity of follicles that are still alive."
+   },
+   {
+    "t": "p",
+    "text": "Some randomised controlled studies have observed improved hair density, suggesting PRP may be an adjunctive option for some patients."
+   },
+   {
+    "t": "p",
+    "text": "But the results are not entirely consistent. In another controlled study, density increased in both the PRP area and the placebo area, showing that changes from before to after treatment cannot all be attributed to PRP."
+   },
+   {
+    "t": "p",
+    "text": "PRP is not a hair transplant, and there is insufficient evidence that it can create new follicles in areas without follicles. For long-standing smooth bald areas, scarring alopecia or other types of hair loss, the research expectations for androgenetic alopecia cannot be applied."
+   },
+   {
+    "t": "h",
+    "text": "8. Why must hair loss be diagnosed before treatment to regrow hair?"
+   },
+   {
+    "t": "p",
+    "text": "Hair shedding can have many causes, and they are managed differently."
+   },
+   {
+    "t": "table",
+    "head": [
+     "Common condition",
+     "Clues that may need to be explored"
+    ],
+    "rows": [
+     [
+      "Androgenetic alopecia",
+      "Gradual thinning at the hairline or crown, finer hairs, family history"
+     ],
+     [
+      "Telogen effluvium",
+      "Recent illness, childbirth, significant stress, weight change or medicines"
+     ],
+     [
+      "Iron deficiency, thyroid problems, etc.",
+      "Whether tests are needed depends on symptoms and history"
+     ],
+     [
+      "Alopecia areata",
+      "Patchy hair loss or other characteristic hair loss"
+     ],
+     [
+      "Scarring alopecia",
+      "Pain, burning, inflammation, scaling or fewer follicle openings"
+     ]
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Examination may include looking at the scalp, dermoscopy and laboratory tests arranged as needed, rather than the same set of tests for everyone."
+   },
+   {
+    "t": "p",
+    "text": "When there is sudden heavy shedding, patchy hair loss or obvious scalp symptoms, the cause should be identified first. PRP cannot replace treatment of an underlying condition. An accurate diagnosis is also the basis for choosing any hair treatment."
+   },
+   {
+    "t": "h",
+    "text": "9. Can PRP replace other hair-loss treatments?"
+   },
+   {
+    "t": "p",
+    "text": "Not necessarily."
+   },
+   {
+    "t": "p",
+    "text": "Androgenetic alopecia often needs long-term management. Whether to use topical or oral medicines, PRP, hair transplantation or other approaches should be discussed in light of the diagnosis, age, health and personal goals."
+   },
+   {
+    "t": "p",
+    "text": "PRP may serve as an adjunct, but it does not automatically replace other evidence-based treatments. If several approaches are used together, the contribution of each should be judged cautiously when improvement is seen."
+   },
+   {
+    "t": "h",
+    "text": "10. How many sessions are needed, and how long before you can tell whether it works?"
+   },
+   {
+    "t": "p",
+    "text": "There is currently no single optimal course that applies to all preparation systems, treatment areas and patients."
+   },
+   {
+    "t": "p",
+    "text": "Some hair studies used several treatments about a month apart, but a study protocol does not mean everyone needs the same number of sessions, nor that long-term maintenance treatment will necessarily bring extra benefit."
+   },
+   {
+    "t": "p",
+    "text": "Hair needs to be observed over months. When comparing, try to keep the following consistent:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Lighting, camera angle and shooting distance.",
+     "Hair length, whether it is wet or dry, and the parting position.",
+     "Whether concealing powder or styling products are used.",
+     "Medicines and other treatments used during the same period."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Where needed, records of hair density, thickness or dermoscopy can also be used. Facial skin quality should be assessed under similar conditions after swelling has settled."
+   },
+   {
+    "t": "p",
+    "text": "Before starting, agree on when to reassess and the basis for continuing treatment. If there is no confirmable benefit, treatment should not keep being repeated just because a course has already begun."
+   },
+   {
+    "t": "h",
+    "text": "11. Does coming from your own body mean there is no risk?"
+   },
+   {
+    "t": "p",
+    "text": "No."
+   },
+   {
+    "t": "p",
+    "text": "Using your own blood may reduce some problems associated with foreign materials, but blood collection, preparation and injection can still cause discomfort or complications."
+   },
+   {
+    "t": "p",
+    "text": "Common reactions include pain, bruising, swelling, redness and tenderness; dizziness, nausea or fainting may also occur during blood collection or treatment. Facial studies have reported a range of local reactions, and the absence of serious events in studies does not mean that rare risks do not exist."
+   },
+   {
+    "t": "p",
+    "text": "Infection, bleeding and reactions to anaesthetics, disinfectants or additives also need to be considered."
+   },
+   {
+    "t": "p",
+    "text": "There are case reports of blood vessel blockage and irreversible vision damage after facial PRP injection. Case reports cannot give a reliable rate of occurrence, but they are enough to show that **even material from your own body cannot eliminate serious injection risks.**"
+   },
+   {
+    "t": "h",
+    "text": "12. Why are blood handling and infection control especially important?"
+   },
+   {
+    "t": "p",
+    "text": "PRP involves collecting blood, processing the sample and reapplying it, and every step needs to prevent mix-ups and contamination, including:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Correctly checking identity and labelling samples.",
+     "Using equipment and consumables suitable for the purpose.",
+     "Following proper aseptic technique and hand hygiene.",
+     "Avoiding sharing needles between people or causing cross-contamination.",
+     "Safely disposing of sharps and blood waste.",
+     "Keeping traceable treatment records."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "The US Centers for Disease Control and Prevention (CDC) has investigated suspected HIV transmission linked to substandard PRP microneedling services. This incident shows that “your own blood” does not cancel out the risk of cross-contamination in the procedure."
+   },
+   {
+    "t": "h",
+    "text": "13. What health conditions should you disclose before treatment?"
+   },
+   {
+    "t": "p",
+    "text": "Provide a complete medical history, especially including:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Anaemia, platelet disorders, clotting problems or a tendency to bleed.",
+     "Current infection, fever, or skin disease in the treatment area.",
+     "Immune system disorders, immunosuppressive treatment or a history of tumours.",
+     "Pregnancy, planning a pregnancy or breastfeeding.",
+     "Adverse reactions to blood collection, anaesthetics, disinfectants or other ingredients.",
+     "Medicines and supplements you are currently using."
+    ]
+   },
+   {
+    "t": "p",
+    "text": "Whether blood tests are needed should be decided on the basis of medical history and assessment."
+   },
+   {
+    "t": "p",
+    "text": "Do not stop anticoagulants, antiplatelet medicines or other prescription medicines on your own. Any adjustment should be discussed with the doctor responsible for the relevant treatment."
+   },
+   {
+    "t": "h",
+    "text": "14. How should you care for the area after treatment?"
+   },
+   {
+    "t": "p",
+    "text": "Recovery arrangements depend on the area treated and whether procedures such as microneedling or laser were combined; there is no fixed aftercare timetable that suits every protocol."
+   },
+   {
+    "t": "p",
+    "text": "In general, follow the practitioner's instructions to keep the area clean, avoid scratching and repeated pressing, and check when you can wash your hair, wear make-up, exercise and resume active skincare products. Do not add so-called “repair serums” or other unconfirmed products on your own."
+   },
+   {
+    "t": "p",
+    "text": "Seek medical care promptly if any of the following occur:"
+   },
+   {
+    "t": "ul",
+    "items": [
+     "Redness, swelling or pain that keeps getting worse.",
+     "Marked local heat, pus, or fever.",
+     "Unusual whitening, greying or mottled discolouration of the skin.",
+     "Changes in vision, eye pain or unusually severe pain."
+    ]
+   },
+   {
+    "t": "warn",
+    "text": "**If sudden loss of vision, difficulty speaking or limb weakness occurs, call 000 immediately; do not wait for a routine follow-up.**"
+   },
+   {
+    "t": "h",
+    "text": "15. How should the value of PRP be understood?"
+   },
+   {
+    "t": "p",
+    "text": "When evaluating PRP, what deserves attention is not “how many growth factors it contains” or “whether it is natural”, but:"
+   },
+   {
+    "t": "p",
+    "text": "**Whether the diagnosis is clear, whether the evidence applies to the current problem, how improvement will be measured, and whether the potential benefit is worth the risks and costs.**"
+   },
+   {
+    "t": "p",
+    "text": "PRP shows research potential in some hair and skin applications, but issues remain, including differences between protocols, inconsistent results and insufficient long-term evidence. Appropriate treatment should include being fully informed, standardised procedures, objective records and regular reassessment, and it also includes choosing another option, or no treatment, when PRP is not suitable or shows no clear benefit."
+   },
+   {
+    "t": "note",
+    "text": "This article is general skin-health information only and does not replace individual diagnosis or treatment advice."
+   }
+  ]
+ }
+}
