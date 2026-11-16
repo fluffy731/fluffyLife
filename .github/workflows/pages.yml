@@ -64,7 +64,13 @@ jobs:
         continue-on-error: true
         run: |
           fresh() { [ -s "$1" ] && [ -n "$(find "$1" -mtime -7)" ]; }
-          fresh dict/ko.json || node scripts/build-dict.mjs ko
+          if ! fresh dict/ko.json; then
+            # 국립국어원 dictionaries (한국어기초사전 + 표준국어대사전 XML, about 1 GB) from the spellcheck-ko mirror,
+            # and Kengdic (fetched by the script). A failed or slow download only leaves that source out this week.
+            timeout 600 git clone -q --depth 1 --filter=blob:none --sparse https://github.com/spellcheck-ko/korean-dict-nikl.git /tmp/nikl \
+              && timeout 600 git -C /tmp/nikl sparse-checkout set krdict stdict || echo "::warning::국립국어원 dictionaries not downloaded"
+            node scripts/build-dict.mjs ko --nikl=/tmp/nikl
+          fi
           if ! fresh dict/yue.json; then
             mkdir -p /tmp/canto && cd /tmp/canto
             curl -sSfL -o cedict_ts.u8.gz https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.txt.gz && gunzip -f cedict_ts.u8.gz
