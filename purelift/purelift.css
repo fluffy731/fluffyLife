@@ -552,3 +552,138 @@ html[data-lang="en"] .promise-list h3 { letter-spacing: .06em; }
   .update-body { padding: 22px 18px 14px; }
   .update h3 { font-size: 18px; }
 }
+
+/* ───────────────────────── Frosted glass (毛玻璃) ─────────────────────────
+   Glass only shows if there is something behind it to blur, so three layers work together:
+   1. soft light colour fixed behind the whole page (body::before), never darker than the wall colour,
+   2. a few sections with a pre-blurred photo behind them (img/bg-*.jpg, a few KB each),
+   3. translucent white panels with a backdrop blur, a bright edge and a soft shadow on top.
+   Cards that sit inside a blurred panel skip their own blur (their backdrop is already frosted). */
+:root {
+  --glass: rgba(255, 255, 255, .42);
+  --glass-inner: rgba(255, 255, 255, .5);
+  --glass-strong: rgba(255, 255, 255, .72);
+  --glass-panel: rgba(255, 255, 255, .2);
+  --glass-edge: rgba(255, 255, 255, .66);
+  --glass-shadow: 0 10px 34px -12px rgba(70, 45, 35, .3), inset 0 1px 0 rgba(255, 255, 255, .62);
+  --glass-blur: blur(16px) saturate(1.6);
+  --glass-btn: .9;
+  --r: 20px;
+}
+@media (max-width: 760px) { :root { --glass-blur: blur(11px) saturate(1.5); --r: 16px; } }
+
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(60vmax 55vmax at 8% 4%, rgba(255, 244, 238, .95), rgba(255, 244, 238, 0) 62%),
+    radial-gradient(55vmax 50vmax at 96% 14%, rgba(196, 210, 232, .8), rgba(196, 210, 232, 0) 64%),
+    radial-gradient(60vmax 55vmax at 14% 62%, rgba(236, 206, 190, .9), rgba(236, 206, 190, 0) 62%),
+    radial-gradient(55vmax 50vmax at 92% 88%, rgba(232, 203, 176, .85), rgba(232, 203, 176, 0) 64%);
+}
+
+/* Photo backdrops */
+.mv, #first-visit, #updates, #clinic, .menu-band, .feature { position: relative; isolation: isolate; }
+.mv::before, #first-visit::before, #updates::before, #clinic::before, .menu-band::before { content: ""; position: absolute; inset: 0; z-index: -1; background-size: cover; background-position: center; }
+.mv::before { background-image: url("img/bg-corridor.jpg"); }
+#first-visit::before { background-image: url("img/bg-building.jpg"); }
+#updates::before { background-image: url("img/bg-room.jpg"); }
+#clinic::before { background-image: url("img/bg-clinic.jpg"); }
+.menu-band { background: none; }
+.menu-band::before { background-image: linear-gradient(rgba(44, 62, 92, .8), rgba(44, 62, 92, .8)), url("img/bg-portrait.jpg"); }
+.feature { background: url("img/bg-portrait.jpg") center / cover; border-radius: 24px; border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); }
+/* the sections that carry a photo backdrop don't also get the plain panel tint */
+#first-visit.sec-panel, #clinic.sec-panel { background: none; }
+
+/* Panels (full-width bands) */
+.sec-panel { background: var(--glass-panel); -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3); border-block: 1px solid rgba(255, 255, 255, .5); }
+
+/* Glass cards */
+.cpb, .info-box, .news, .promise-list li, .pillars li, .stat, .fv-box, .update, .person, .teach li, .kb-card a, .partners-box, .faq, .clinic, .article, .wx-tags li, .feature-copy {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--r);
+  box-shadow: var(--glass-shadow);
+}
+.article, .person { background: var(--glass-strong); }
+.update { overflow: hidden; }
+.fv-box { background: rgba(230, 235, 242, .5); }
+.pillars li { border-top: 1px solid var(--glass-edge); }
+.promise-list li { margin-bottom: 10px; }
+.cpb { background: linear-gradient(100deg, rgba(255, 255, 255, .66), rgba(230, 235, 242, .42)); }
+.cpb-icon, .cpb-date { box-shadow: 0 2px 8px rgba(31, 43, 71, .12); }
+.strip { background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-block: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); }
+.feature-copy { margin: 18px 26px 18px 0; padding: 26px 120px 26px 34px; background: var(--glass); }
+.feature-line { background: rgba(255, 255, 255, .78); border-radius: 8px; }
+.feature-badge { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3); }
+.wx-tags li { background: rgba(255, 255, 255, .62); border-radius: 8px; }
+.wx-cta { border-radius: 14px; background-image: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 55%); box-shadow: 0 10px 24px -10px rgba(6, 122, 58, .7), inset 0 1px 0 rgba(255, 255, 255, .4); }
+
+/* Cards inside a frosted band: no second blur */
+.sec-panel .promise-list li, .sec-panel .kb-card a, .sec-panel .clinic, .sec-panel .teach li, .info-box .news { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--glass-inner); }
+#first-visit .fv-box, #updates .update, #clinic .clinic { -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+#updates .update { background: var(--glass-strong); }
+#clinic .clinic { background: var(--glass-strong); }
+
+/* Pictures: soft corners */
+.concept-imgs img, .message img, .person > img, .band-img img, .insta li, .clinic-head img { border-radius: 18px; }
+.insta li { border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); }
+.band-img { padding: 0 16px; }
+
+/* Hero headline on glass */
+.mv-copy { display: inline-block; padding: 14px 38px; border-radius: 28px; line-height: 1.9; background: var(--glass); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); }
+@media (max-width: 760px) { .mv-copy { padding: 10px 22px; border-radius: 22px; } }
+
+/* Navigation */
+.topbar { background: rgba(255, 255, 255, .42); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-bottom: 1px solid rgba(255, 255, 255, .5); }
+.header { position: sticky; top: 0; background: var(--glass-strong); -webkit-backdrop-filter: blur(20px) saturate(1.8); backdrop-filter: blur(20px) saturate(1.8); border-bottom: 1px solid var(--glass-edge); box-shadow: 0 8px 28px -14px rgba(70, 45, 35, .4); }
+.gnav a:hover { background: rgba(255, 255, 255, .6); }
+.gnav-campaign { background: rgba(230, 235, 242, .85); border: 1px solid rgba(255, 255, 255, .8); }
+.lang-btn, .btn-book-sp { background: rgba(255, 255, 255, .55); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-color: rgba(255, 255, 255, .8); }
+.lang-menu { background: var(--glass-strong); -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6); border: 1px solid var(--glass-edge); border-radius: 14px; }
+.drawer { background: rgba(40, 30, 28, .28); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.drawer-panel { background: rgba(255, 255, 255, .8); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; }
+.drawer-nav a { border-bottom-color: rgba(60, 40, 30, .12); }
+.drawer-lang button { background: rgba(255, 255, 255, .6); }
+.drawer-lang button[aria-pressed="true"] { background: var(--navy); }
+
+/* Buttons: a sheen on the coloured ones, glass on the outlined ones */
+.btn-pill { border: 1px solid rgba(255, 255, 255, .38); background-image: linear-gradient(180deg, rgba(255, 255, 255, .24), rgba(255, 255, 255, 0) 55%); box-shadow: 0 10px 22px -10px rgba(31, 43, 71, .6), inset 0 1px 0 rgba(255, 255, 255, .45); }
+.btn-pill:hover { box-shadow: 0 14px 26px -10px rgba(31, 43, 71, .7), inset 0 1px 0 rgba(255, 255, 255, .5); }
+.btn-book { background-image: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 55%); border: 1px solid rgba(255, 255, 255, .3); border-radius: 12px; box-shadow: 0 8px 18px -8px rgba(31, 43, 71, .6), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.btn-line { background: rgba(255, 255, 255, .42); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border: 1px solid rgba(43, 43, 51, .5); border-radius: 14px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6); }
+.btn-line:hover { background: var(--ink); }
+.kb-filter button { background: rgba(255, 255, 255, .55); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-color: rgba(255, 255, 255, .85); }
+.kb-filter button[aria-pressed="true"] { background: var(--navy); border-color: var(--navy); }
+.news-tag, .kb-cat { background: rgba(230, 235, 242, .9); }
+.menu-circle { background: rgba(255, 255, 255, .88); border: 1px solid rgba(255, 255, 255, .8); box-shadow: 0 10px 24px -10px rgba(0, 0, 0, .45), inset 0 1px 0 #fff; }
+.tag { background-image: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, 0) 55%); }
+
+/* Fixed Book / Call / WeChat tiles: coloured glass */
+.fcta-btn { border: 1px solid rgba(255, 255, 255, .4); -webkit-backdrop-filter: blur(14px) saturate(1.5); backdrop-filter: blur(14px) saturate(1.5); box-shadow: 0 12px 28px -8px rgba(31, 43, 71, .45), inset 0 1px 0 rgba(255, 255, 255, .45); border-radius: 18px; }
+.fcta-book { background: rgba(74, 99, 133, var(--glass-btn)); }
+.fcta-call { background: rgba(31, 43, 71, var(--glass-btn)); }
+.fcta-wx { background: rgba(6, 122, 58, var(--glass-btn)); }
+@media (max-width: 760px) { .fcta-btn { border-radius: 14px; } }
+
+/* Dialogs and footer */
+.qr-dialog { background: rgba(255, 255, 255, .78); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border: 1px solid var(--glass-edge); border-radius: 24px; box-shadow: 0 30px 60px -20px rgba(31, 43, 71, .5); }
+.qr-dialog::backdrop { background: rgba(40, 30, 28, .35); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.footer { background: rgba(17, 17, 20, .86); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-top: 1px solid rgba(255, 255, 255, .18); }
+
+/* Where blur isn't available, or the visitor asks for less transparency: nearly opaque panels, same layout */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  :root { --glass: rgba(251, 247, 244, .94); --glass-inner: rgba(251, 247, 244, .94); --glass-strong: rgba(255, 255, 255, .97); --glass-panel: rgba(255, 255, 255, .5); --glass-btn: 1; }
+  .drawer, .qr-dialog::backdrop { background: rgba(40, 30, 28, .55); }
+  .drawer-panel, .qr-dialog, .lang-menu { background: #fff; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass: rgba(251, 247, 244, .96); --glass-inner: rgba(251, 247, 244, .96); --glass-strong: #fff; --glass-panel: rgba(255, 255, 255, .55); --glass-btn: 1; --glass-blur: none; }
+  .drawer-panel, .qr-dialog, .lang-menu { background: #fff; }
+  .mv-copy, .fv-box { background: rgba(251, 247, 244, .96); }
+}
+@media (prefers-contrast: more) { :root { --glass: rgba(255, 255, 255, .85); --glass-inner: rgba(255, 255, 255, .88); --glass-strong: #fff; --glass-btn: 1; } }
+
+/* Gallery logo tile */
+.insta-logo { display: grid; place-items: center; background: var(--glass-inner); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+.insta-logo img { width: 62%; height: auto; object-fit: contain; }

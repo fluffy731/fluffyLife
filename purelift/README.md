@@ -12,6 +12,10 @@ A small static site in English and Simplified Chinese: the home page (`index.htm
 
 The layout, buttons and sections follow the reference clinic site the owner chose. The colours come from the clinic's hero photo (the wall colour is the page ground). The colour block at the top of `purelift.css` says how to switch to white and blue.
 
+## Frosted glass
+
+The look is layered. `body::before` (in the "Frosted glass" block at the end of `purelift.css`) fixes soft light colour behind the page, kept at least as light as the wall colour so text keeps its contrast. A few sections (hero, first visit, updates, clinic, areas of focus) sit on a pre-blurred photo (`img/bg-*.jpg`, a few KB each, made from the clinic's photos). The panels on top are translucent white with a backdrop blur, a bright edge and a soft shadow. Cards inside a frosted band skip their own blur to keep scrolling smooth on phones. The tokens (`--glass`, `--glass-blur` and friends) are at the top of that block. Where `backdrop-filter` isn't supported, or the visitor asks for reduced transparency or more contrast, the panels become nearly opaque and everything else stays the same.
+
 ## Two languages
 
 Every piece of text is written twice, side by side:
@@ -36,7 +40,7 @@ Unknown facts are wrapped in `<span class="ph">[…]</span>` and shown in yellow
 
 1. Replace every `class="ph"` placeholder (search the file for `ph"`), in English and Chinese.
 2. Point every `data-booking` link at the booking system and `data-map` at the map. The phone number (0452 600 804), WeChat QR and the Instagram handle (@purelift_cosmetic, read from the clinic's video) are already in; scan-test the two QR codes and open the Instagram link before launch.
-3. Check the photos: say who each person is and that they agreed to appear. This matters for the two visitors in the council photo and the colleague in the training photo, for any client, and for photos that show medicine packaging.
+3. Check the photos: say who each person is and that they agreed to appear. Several photos show the neighbouring tenants' signs and phone number (03 8820 6426); the entrance close-up was dropped for that reason, but the street view of the building is still on the page. This matters for the two visitors in the council photo and the colleague in the training photo, for any client, and for photos that show medicine packaging.
 4. Add a privacy policy page (health service providers have obligations under the Privacy Act 1988) and link it from the footer.
 5. Remove `class="draft"` from `<body>` in both HTML files: the yellow banner and highlights disappear.
 6. Delete the `<meta name="robots" content="noindex, nofollow">` line in both HTML files so search engines can list the site.
