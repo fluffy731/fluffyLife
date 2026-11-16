@@ -53,13 +53,13 @@ jobs:
         continue-on-error: true
         timeout-minutes: 30
         run: pip install --quiet "edge-tts>=6.1,<8" && python scripts/gen_audio.py audio-jobs.json
-      # Offline dictionaries (Korean, Cantonese, English): rebuilt weekly or when the converter changes.
+      # Offline dictionaries (Korean, Cantonese, English): rebuilt weekly or when the converter or the slang lists change.
       - name: Restore dictionaries
         uses: actions/cache@v4
         with:
           path: dict
-          key: dict-v2-${{ hashFiles('scripts/build-dict.mjs') }}-${{ github.run_id }}
-          restore-keys: dict-v2-${{ hashFiles('scripts/build-dict.mjs') }}-
+          key: dict-v2-${{ hashFiles('scripts/build-dict.mjs', 'scripts/data/*.tsv') }}-${{ github.run_id }}
+          restore-keys: dict-v2-${{ hashFiles('scripts/build-dict.mjs', 'scripts/data/*.tsv') }}-
       - name: Build dictionaries
         continue-on-error: true
         run: |
