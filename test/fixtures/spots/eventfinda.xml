@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title> Events in Melbourne</title>
+    <link>http://www.eventfinda.com.au/</link>
+    <item>
+      <title>Sunday Night Stand-Up at Club Voltaire Comedy</title>
+      <link>https://www.eventfinda.com.au/2026/sunday-night-stand-up-at-club-voltaire-comedy/melbourne?utm_medium=rss</link>
+      <description>&lt;p&gt;Around ten comedians from TV, radio and the Melbourne International Comedy Festival, every Sunday at 7:30pm in an intimate 50-seat room upstairs in North Melbourne. A new lineup every week and about two hours of ...&lt;/p&gt;&lt;p&gt;Melbourne | Sunday, 25 October 2026 - Sunday, 31 January 2027&lt;/p&gt;</description>
+      <content:encoded><![CDATA[Sunday 25th Oct, 7.30pm &ndash; Sunday 31st Jan, 9.30pm, Club Voltaire<br/>Melbourne]]></content:encoded>
+      <guid isPermalink="false">404322</guid>
+      <pubDate>2026-11-15T19:30:00</pubDate>
+      <enclosure url="https://cdn.eventfinda.com.au/uploads/events/transformed/861243-405336-13.jpg?v=2" length="5000" type="image/jpeg"></enclosure>
+    </item>
+    <item>
+      <title>Japanese Film Festival 2026 – Melbourne</title>
+      <link>https://www.eventfinda.com.au/2026/japanese-film-festival-2026-melbourne2/melbourne/inner-city?utm_medium=rss</link>
+      <description>&lt;p&gt;From 9th November to 17 November 2026, the Japanese Film Festival returns to Melbourne.&lt;/p&gt;&lt;p&gt;Melbourne | Monday, 9 November 2026 - Tuesday, 17 November 2026&lt;/p&gt;</description>
+      <content:encoded><![CDATA[Monday 9th Nov, 7.30pm &ndash; Tuesday 17th Nov, 11.55pm, Kino Cinemas<br/>Melbourne]]></content:encoded>
+      <guid isPermalink="false">404928</guid>
+      <pubDate>2026-11-15T23:30:00</pubDate>
+      <enclosure url="https://cdn.eventfinda.com.au/uploads/events/transformed/860233-404928-13.jpg" length="5000" type="image/jpeg"></enclosure>
+    </item>
+    <item>
+      <title>Free Midday Guided Meditation Classes</title>
+      <link>https://www.eventfinda.com.au/2026/free-midday-meditation/melbourne/richmond?utm_medium=rss</link>
+      <description>&lt;p&gt;Drop in for a calm half hour.&lt;/p&gt;&lt;p&gt;Richmond | Monday, 16 November 2026&lt;/p&gt;</description>
+      <content:encoded><![CDATA[Monday 16th Nov, 12.30pm, Richmond Library<br/>Richmond]]></content:encoded>
+      <guid isPermalink="false">405001</guid>
+      <pubDate>2026-11-16T12:30:00</pubDate>
+    </item>
+    <item>
+      <title>Polish Festival 2026</title>
+      <link>https://www.eventfinda.com.au/2026/polish-festival/melbourne?utm_medium=rss</link>
+      <description>&lt;p&gt;Pierogi, dancing and folk music in the square.&lt;/p&gt;&lt;p&gt;Melbourne | Sunday, 15 November 2026&lt;/p&gt;</description>
+      <content:encoded><![CDATA[Sunday 15th Nov, 11.00am, Federation Square<br/>Melbourne]]></content:encoded>
+      <guid isPermalink="false">405100</guid>
+      <pubDate>2026-11-15T11:00:00</pubDate>
+      <enclosure url="https://cdn.eventfinda.com.au/uploads/events/polish.jpg" length="5000" type="image/jpeg"></enclosure>
+    </item>
+  </channel>
+</rss>

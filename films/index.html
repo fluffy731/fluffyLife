@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en-AU" data-line="film">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Films</title>
+<meta name="description" content="Good Hong Kong, Chinese, Korean and English-language films by place, era and genre.">
+<meta name="theme-color" content="#f1f3f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0d1013" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Films">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="../icons/films-180.png">
+<link rel="icon" href="../icons/films.svg" type="image/svg+xml">
+<link rel="preload" href="../fonts/Pretendard-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="../metro.css">
+<link rel="stylesheet" href="./films.css">
+</head>
+<body>
+<header class="top">
+  <span class="roundel" aria-hidden="true">影</span>
+  <h1>Films</h1>
+  <span id="want-badge" class="badge" hidden></span>
+</header>
+<main id="view" class="view"></main>
+<nav class="tabs" id="tabs">
+  <button data-tab="browse" class="active"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8.5 5v14M15.5 5v14M4 9.7h4.5M4 14.3h4.5M15.5 9.7H20M15.5 14.3H20"/></svg>Browse</button>
+  <button data-tab="search"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.4-4.4"/></svg>Search</button>
+  <button data-tab="watchlist"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h10v15l-5-3.6-5 3.6z"/></svg>Watchlist</button>
+  <button data-more aria-haspopup="dialog" aria-controls="more"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="6" height="6" rx="1.6"/><rect x="13.5" y="4.5" width="6" height="6" rx="1.6"/><rect x="4.5" y="13.5" width="6" height="6" rx="1.6"/><rect x="13.5" y="13.5" width="6" height="6" rx="1.6"/></svg>More</button>
+</nav>
+<dialog id="more" class="sheet" aria-label="More">
+  <div class="sheet-grab" aria-hidden="true"></div>
+  <div class="tiles">
+    <button data-tab="settings" class="tile"><svg class="tile-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h9M17 8h3M4 16h3M11 16h9"/><circle cx="15" cy="8" r="2"/><circle cx="9" cy="16" r="2"/></svg><b>Settings</b><small>Theme, hide films you've seen, about the data</small></button>
+    <button data-act="backup" class="tile"><svg class="tile-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.5v10M8 10.5l4 4 4-4"/><path d="M5 16v3h14v-3"/></svg><b>Back up</b><small>Save your watchlist as a file</small></button>
+  </div>
+</dialog>
+<dialog id="film" class="sheet" aria-label="Film"></dialog>
+<input type="file" id="file" accept="application/json" hidden>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="./films.js"></script>
+</body>
+</html>

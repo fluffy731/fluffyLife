@@ -163,10 +163,12 @@ test("10 Nov answers: Salli Hon is President, Gita speaks and runs the oath, Mel
   assert.match(seg("20:20"), /\{chequeBy\}/);
   assert.doesNotMatch(seg("20:20"), /In just one week|短短一个星期/, "Salli's card says two weeks and she covers it");
   assert.equal(LISTS.nepal.n, 7);
-  // Goddess has two reasons: Tian's song and an all-female club.
+  // Goddess has two reasons: Tian's song and a women's growth club (13 Nov: no longer "all-female").
   assert.match(seg("19:00"), /Two reasons/);
-  assert.match(seg("19:00"), /all-female club/);
-  assert.match(seg("19:00"), /全女性会员/);
+  assert.match(seg("19:00"), /women's growth club/);
+  assert.doesNotMatch(seg("19:00"), /all-female/i);
+  assert.match(seg("19:00"), /女性成长的狮子会/);
+  assert.doesNotMatch(seg("19:00"), /全女性/);
   // Best Dress is now judged by applause: no winner field, cash 100 / 50 / 20, two bottles of wine, three women and two men.
   assert.match(seg("20:55"), /judged by applause/);
   assert.match(seg("20:55"), /\$100 \/ \$50 \/ \$20/);
@@ -410,4 +412,13 @@ test("13 Nov: Eric's introduction and both songs are filled in, and Tian's Engli
   assert.doesNotMatch(JSON.stringify(SEGMENTS), /A Million Dreams/);
   assert.match(JSON.stringify(NOTES.check), /I Have Nothing[\s\S]*It's All Coming Back To Me Now/);
   assert.doesNotMatch(JSON.stringify(NOTES.check), /Still missing: Eric's two songs|official English name of the Global Chinese/);
+});
+
+test("13 Nov: after the President and Vice President are welcomed, asking the other members to sit is an ad-lib cue", () => {
+  const items = SEGMENTS.find((s) => s.t === "19:06").items;
+  const i = items.findIndex((it) => it[0] === "zh" && /有请她慧狮子会会长/.test(it[1]));
+  assert.ok(i > 0, "the welcome line is in the 7:06 segment");
+  assert.deepEqual(items[i + 1], ["cue", "临场发挥：请其他会员坐下", "Ad-lib: ask the other members to sit down"]);
+  const spoken = items.filter((it) => ["en", "zh"].includes(it[0])).map((it) => it[1]).join(" ");
+  assert.doesNotMatch(spoken, /sit down|请.*坐下/, "the seating request is not a line to read");
 });

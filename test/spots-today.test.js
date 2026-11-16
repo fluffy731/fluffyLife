@@ -1,0 +1,298 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  iso, addDays, clock, dayType, partOf, isOnDay, startOn, rank, stillOn, onToday, nextList, whenLabel, dateRange,
+  ideasFor, momentLine, kindForCat, catOf, weatherState, weatherNow, skyIcon, daylightLeft,
+} from "../spots/today.js";
+
+// 15 November 2026 is a Sunday; 18th Wednesday; 20th Friday; 21st Saturday.
+const at = (d, h, m = 0) => new Date(2026, 10, d, h, m);
+const ev = (o) => ({ id: o.title, src: "wom", blurb: "", days: [], weekend: null, next: null, free: null, cat: "other", outdoor: null, ...o });
+
+const EVENTS = [
+  ev({ title: "Polish Festival", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], cat: "festival", outdoor: true }),
+  ev({ title: "Stock Up Vintage Market", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], cat: "market", free: true }),
+  ev({ title: "Library Exhibition", from: "2026-08-07", to: "2027-06-27", days: ["2026-11-15"], cat: "arts", free: true }),
+  ev({ title: "This is Our Youth", from: "2026-11-05", to: "2026-11-15", days: ["2026-11-15"], cat: "theatre" }),
+  ev({ title: "My Fair Lady", from: "2026-11-14", to: "2027-01-17", days: ["2026-11-15"], cat: "theatre" }),
+  ev({ title: "Sunday Stand-Up", src: "ef", from: "2026-10-25", to: "2027-01-31", days: ["2026-11-15"], next: "2026-11-15T19:30", cat: "comedy" }),
+  ev({ title: "Morning Yoga", src: "ef", from: "2026-01-01", to: "2026-12-31", days: ["2026-11-15"], next: "2026-11-15T08:00", cat: "outdoors", outdoor: true }),
+  ev({ title: "Japanese Film Festival", src: "ef", from: "2026-11-09", to: "2026-11-17", cat: "film" }), // not listed for any day
+  ev({ title: "Three-day Design Market", from: "2026-11-14", to: "2026-11-16", cat: "market" }), // short: on every day it covers
+  ev({ title: "Weekend Night Market", from: "2026-11-20", to: "2026-11-22", weekend: "2026-11-21", cat: "market" }),
+  ev({ title: "Saturday Gig", src: "ef", from: "2026-11-21", to: "2026-11-21", days: ["2026-11-21"], next: "2026-11-21T20:00", cat: "music" }),
+  ev({ title: "Monday Talk", from: "2026-11-16", to: "2026-11-16", days: ["2026-11-16"], cat: "talk", free: true }),
+];
+const FEED = {
+  today: "2026-11-15", events: EVENTS,
+  weather: [{ date: "2026-11-15", rain: 10, max: 22 }, { date: "2026-11-16", rain: 20, max: 20 }, { date: "2026-11-21", rain: 70, max: 23 }, { date: "2026-11-22", rain: 10, max: 25 }],
+  holidays: [{ date: "2026-12-25", name: "Christmas Day" }, { date: "2026-12-28", name: "Boxing Day" }],
+};
+const wet = (feed, day, rain, max = 17) => ({ ...feed, weather: [{ date: day, rain, max }, ...feed.weather.filter((w) => w.date !== day)] });
+
+// ---------- the moment ----------
+
+test("dates and clock", () => {
+  assert.equal(iso(at(15, 23, 59)), "2026-11-15");
+  assert.equal(addDays("2026-11-30", 1), "2026-12-01");
+  assert.equal(clock("19:30"), "7:30 pm");
+  assert.equal(clock("11:00"), "11 am");
+  assert.equal(clock("00:15"), "12:15 am");
+  assert.equal(clock("12:00"), "12 pm");
+});
+
+test("dayType: weekdays, Friday, the weekend, and a holiday counts as Sunday", () => {
+  assert.equal(dayType(at(18, 12), FEED), "weekday");
+  assert.equal(dayType(at(20, 12), FEED), "friday");
+  assert.equal(dayType(at(21, 12), FEED), "saturday");
+  assert.equal(dayType(at(15, 12), FEED), "sunday");
+  assert.equal(dayType(new Date(2026, 11, 25, 12), FEED), "sunday", "Christmas Day is a Friday in 2026");
+});
+
+test("partOf: early, morning, lunch, afternoon, evening, late", () => {
+  assert.deepEqual([4, 5, 8, 11, 14, 17, 21, 23].map((h) => partOf(at(18, h))), ["late", "early", "morning", "lunch", "afternoon", "evening", "late", "late"]);
+});
+
+// ---------- events ----------
+
+test("isOnDay: listed for the day, or a short event covering it; long runs need a listing", () => {
+  const by = (t) => EVENTS.find((e) => e.title === t);
+  assert.ok(isOnDay(by("Library Exhibition"), "2026-11-15"));
+  assert.ok(!isOnDay(by("Library Exhibition"), "2026-11-16"), "a long run isn't assumed on every day");
+  assert.ok(isOnDay(by("Three-day Design Market"), "2026-11-16"));
+  assert.ok(!isOnDay(by("Japanese Film Festival"), "2026-11-15"), "nine days is not short");
+  assert.equal(startOn(by("Sunday Stand-Up"), "2026-11-15"), "19:30");
+  assert.equal(startOn(by("Sunday Stand-Up"), "2026-11-16"), null);
+});
+
+test("rank: one-offs, last chances, just opened, timed sessions, then long runs; free first among equals", () => {
+  const order = rank(EVENTS.filter((e) => isOnDay(e, "2026-11-15")), "2026-11-15").map((e) => e.title);
+  assert.deepEqual(order, ["Stock Up Vintage Market", "Polish Festival", "Three-day Design Market", "This is Our Youth", "My Fair Lady", "Morning Yoga", "Sunday Stand-Up", "Library Exhibition"]);
+});
+
+test("rank: outdoor events go after indoor ones when rain is likely", () => {
+  const order = rank(EVENTS.filter((e) => isOnDay(e, "2026-11-15")), "2026-11-15", { rain: 80 }).map((e) => e.title);
+  assert.deepEqual(order.slice(0, 3), ["Stock Up Vintage Market", "Three-day Design Market", "Polish Festival"]);
+});
+
+test("onToday: in the morning everything on today, except sessions over an hour old", () => {
+  const titles = onToday(FEED, at(15, 11)).map((e) => e.title);
+  assert.ok(titles.includes("Library Exhibition") && titles.includes("Sunday Stand-Up"));
+  assert.ok(!titles.includes("Morning Yoga"), "8 am session is three hours old");
+  assert.ok(!titles.includes("Japanese Film Festival") && !titles.includes("Monday Talk"));
+});
+
+test("onToday: tonight keeps sessions still to come and evening kinds", () => {
+  const titles = onToday(FEED, at(15, 18)).map((e) => e.title);
+  assert.deepEqual(titles, ["Polish Festival", "This is Our Youth", "My Fair Lady", "Sunday Stand-Up"]);
+  assert.ok(!stillOn(EVENTS.find((e) => e.title === "Sunday Stand-Up"), "2026-11-15", at(15, 20)), "started 30 min ago");
+});
+
+test("onToday: a filter for one kind, or free", () => {
+  assert.deepEqual(onToday(FEED, at(15, 10), { filter: "market" }).map((e) => e.title), ["Stock Up Vintage Market", "Three-day Design Market"]);
+  assert.deepEqual(onToday(FEED, at(15, 10), { filter: "free" }).map((e) => e.title), ["Stock Up Vintage Market", "Library Exhibition"]);
+  assert.deepEqual(onToday(null, at(15, 10)), []);
+});
+
+test("nextList: this weekend from Monday to Friday, tomorrow on the weekend", () => {
+  const wk = nextList(FEED, at(18, 12));
+  assert.equal(wk.title, "This weekend");
+  assert.equal(wk.day, "2026-11-21");
+  assert.deepEqual(wk.events.map((e) => e.title), ["Saturday Gig", "Weekend Night Market"], "rain on Saturday is 70%, but neither is outdoor");
+  const sun = nextList(FEED, at(15, 12));
+  assert.equal(sun.title, "Tomorrow");
+  assert.deepEqual(sun.events.map((e) => e.title), ["Monday Talk", "Three-day Design Market"]);
+});
+
+test("whenLabel: time, today only, last day, opens today, until …", () => {
+  const by = (t) => EVENTS.find((e) => e.title === t), d = "2026-11-15";
+  assert.equal(whenLabel(by("Sunday Stand-Up"), d), "7:30 pm");
+  assert.equal(whenLabel(by("Polish Festival"), d), "Today only");
+  assert.equal(whenLabel(by("This is Our Youth"), d), "Last day");
+  assert.equal(whenLabel(by("Three-day Design Market"), d), "Until Mon");
+  assert.equal(whenLabel(by("Library Exhibition"), d), "Until 27 Jun 2027");
+  assert.equal(whenLabel(by("My Fair Lady"), "2026-11-14"), "Opens today");
+  assert.equal(whenLabel(by("Saturday Gig"), "2026-11-21", { withDay: true }), "Sat 8 pm");
+  assert.equal(whenLabel(by("Weekend Night Market"), "2026-11-21", { withDay: true }), "Until Sun");
+});
+
+test("dateRange names the year only when it isn't this year", () => {
+  assert.equal(dateRange(EVENTS[0], "2026-11-15"), "Sun 15 Nov");
+  assert.equal(dateRange(EVENTS[2], "2026-11-15"), "Fri 7 Aug – Sun 27 Jun 2027");
+  assert.equal(dateRange(EVENTS[7], "2026-11-15"), "Mon 9 Nov – Tue 17 Nov");
+});
+
+test("kindForCat and catOf", () => {
+  assert.deepEqual(["food", "market", "arts", "music", "nonsense"].map(kindForCat), ["eat", "eat", "sights", "activities", "activities"]);
+  assert.deepEqual(catOf({ cat: "comedy" }), ["🎤", "Comedy"]);
+  assert.deepEqual(catOf({ cat: "nope" }), ["📅", "Event"]);
+});
+
+// ---------- ideas ----------
+
+const ids = (list) => list.map((i) => i.id);
+
+test("ideas: a dry Sunday morning is brunch, the markets on today, and a trail", () => {
+  const list = ideasFor(at(15, 10), FEED);
+  assert.deepEqual(ids(list), ["brunch", "ev:market", "trail"]);
+  assert.equal(list[1].label, "Markets on today");
+  assert.equal(list[1].count, 2);
+  assert.deepEqual(list[0].preset, { mode: "now", kinds: ["coffee", "eat"], minutes: 120 });
+});
+
+test("ideas: rain swaps out and about for a gallery and something fun indoors", () => {
+  assert.deepEqual(ids(ideasFor(at(15, 15), wet(FEED, "2026-11-15", 92))), ["museum", "fun", "dessert"]);
+});
+
+test("ideas: a hot, calm afternoon puts the beach first, then gelato", () => {
+  const list = ideasFor(at(18, 15), wet(FEED, "2026-11-18", 5, 34));
+  assert.deepEqual(ids(list).slice(0, 2), ["beach", "dessert"]);
+  assert.equal(list[1].label, "Gelato weather");
+  assert.match(list[1].sub, /34°/);
+  const windy = { ...FEED, weather: [{ date: "2026-11-18", rain: 5, max: 34, wind: 50 }] };
+  assert.equal(ideasFor(at(18, 15), windy)[0].id, "dessert", "too windy for the beach: gelato first");
+});
+
+test("ideas: a weekday lunch, with the free-things idea only when there are some", () => {
+  assert.deepEqual(ids(ideasFor(at(18, 12, 30), FEED)), ["lunch", "coffee"]);
+  const withFree = { ...FEED, events: [...EVENTS, ev({ title: "Free lunchtime concert", from: "2026-11-18", to: "2026-11-18", days: ["2026-11-18"], cat: "music", free: true })] };
+  const list = ideasFor(at(18, 12, 30), withFree);
+  assert.deepEqual(ids(list), ["lunch", "coffee", "ev:free"]);
+  assert.equal(list[2].label, "Free things on today");
+});
+
+test("ideas: Friday evening offers dinner and drinks and planning tomorrow, around town if rain is likely", () => {
+  const fri = ideasFor(at(20, 19), FEED);
+  assert.deepEqual(ids(fri), ["dinnerDrinks", "tomorrow"]);
+  const t = fri.find((i) => i.id === "tomorrow");
+  assert.equal(t.preset.where, "town", "70% rain on Saturday");
+  assert.match(t.sub, /70% rain/);
+  assert.equal(ideasFor(at(20, 19), { ...FEED, weather: [] }).find((i) => i.id === "tomorrow").preset.where, "surprise");
+});
+
+test("ideas: Friday afternoon drinks get their name", () => {
+  assert.equal(ideasFor(at(20, 16), FEED)[0].label, "Friday drinks");
+});
+
+test("ideas: events ideas at night say tonight", () => {
+  const list = ideasFor(at(21, 18), { ...FEED, today: "2026-11-21" });
+  assert.deepEqual(ids(list), ["dinnerDrinks", "ev:music", "tomorrow"]);
+  assert.equal(list[1].label, "Live music tonight");
+});
+
+test("ideas: late at night, bars first on Saturday, food first on a weeknight", () => {
+  assert.deepEqual(ids(ideasFor(at(21, 23), FEED)), ["lateBar", "lateEats"]);
+  assert.deepEqual(ids(ideasFor(at(18, 23), FEED)), ["lateEats", "lateBar"]);
+  assert.deepEqual(ideasFor(at(18, 23), FEED)[0].preset, { mode: "late", lateKinds: ["eat", "dessert"], late: 30 });
+});
+
+test("ideas: Plan tomorrow only before a weekend or a holiday", () => {
+  assert.ok(!ids(ideasFor(at(15, 19), FEED)).includes("tomorrow"), "Sunday evening, Monday is a workday");
+  const xmasEve = ideasFor(new Date(2026, 11, 24, 19), FEED);
+  assert.ok(ids(xmasEve).includes("tomorrow"), "Thursday evening before Christmas Day");
+  assert.match(xmasEve.find((i) => i.id === "tomorrow").sub, /Christmas Day/);
+  assert.deepEqual(ids(ideasFor(new Date(2026, 11, 25, 10), FEED)).slice(0, 1), ["brunch"], "Christmas morning is a Sunday morning");
+});
+
+test("ideas work with no feed at all", () => {
+  assert.deepEqual(ids(ideasFor(at(15, 10), null)), ["brunch", "outAbout"]);
+});
+
+test("momentLine: day, part of the day and weather; a holiday's name", () => {
+  assert.equal(momentLine(at(15, 10), wet(FEED, "2026-11-15", 92, 17)), "Sunday morning · 🌧 92% rain · 17°");
+  assert.equal(momentLine(new Date(2026, 11, 25, 19), FEED), "Christmas Day · evening");
+  assert.equal(momentLine(at(18, 23), null), "Wednesday night");
+});
+
+test("ideas: a saved event on today puts top-rated places near its venue first, until it starts", () => {
+  const saved = [{ id: "e", title: "Men I Trust", venue: "Forum Melbourne", address: "154 Flinders St, Melbourne 3000", area: "Melbourne", cat: "music", day: "2026-11-15", to: "2026-11-15", time: "19:00" }];
+  const list = ideasFor(at(15, 16), FEED, { saved });
+  assert.equal(list[0].id, "near");
+  assert.equal(list[0].label, "Near Forum Melbourne");
+  assert.deepEqual(list[0].preset, { mode: "near", near: { q: "Forum Melbourne, 154 Flinders St, Melbourne 3000", label: "Forum Melbourne" } });
+  assert.equal(list.length, 3);
+  assert.ok(!ids(ideasFor(at(15, 19, 30), FEED, { saved })).includes("near"), "it has started");
+  assert.ok(!ids(ideasFor(at(16, 12), FEED, { saved })).includes("near"), "it was yesterday");
+});
+
+test("a market or festival with a start time stays on all day: the time is when it opens", () => {
+  const polish = ev({ title: "Polish Festival", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], next: "2026-11-15T11:00", cat: "festival" });
+  const market = ev({ title: "Farmers Market", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], next: "2026-11-15T08:00", cat: "market" });
+  const nightMkt = ev({ title: "Riverside Market", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], next: "2026-11-15T17:30", cat: "market" });
+  const feed = { ...FEED, events: [polish, market, nightMkt] };
+  assert.deepEqual(onToday(feed, at(15, 12, 30)).map((e) => e.title).sort(), ["Farmers Market", "Polish Festival", "Riverside Market"]);
+  assert.deepEqual(onToday(feed, at(15, 18)).map((e) => e.title).sort(), ["Polish Festival", "Riverside Market"], "tonight: festivals, and markets opening at 5 pm or later");
+  assert.equal(whenLabel(polish, "2026-11-15"), "From 11 am");
+  assert.equal(whenLabel(nightMkt, "2026-11-15", { withDay: true }), "Sun from 5:30 pm");
+  assert.equal(ideasFor(at(15, 12, 30), feed).find((i) => i.id === "ev:market").count, 2);
+});
+
+// ---------- weather ----------
+
+test("weatherState: good is dry, sunny or cloudy, 14° or warmer and not too windy; wet is rain likely", () => {
+  assert.equal(weatherState({ rain: 10, code: 2, max: 21, wind: 20 }).state, "good");
+  assert.equal(weatherState({ rain: 10, code: 3, max: 18 }).state, "good", "overcast but dry is fine");
+  assert.equal(weatherState({ rain: 60, code: 3, max: 18 }).state, "wet");
+  assert.equal(weatherState({ rain: 20, code: 61, max: 18 }).state, "wet", "raining now, whatever the chance says");
+  assert.equal(weatherState({ rain: 40, code: 3, max: 18 }).state, "mixed");
+  assert.equal(weatherState({ rain: 10, code: 1, max: 11 }).state, "mixed", "too cold");
+  assert.equal(weatherState({ rain: 10, code: 1, max: 20, wind: 50 }).state, "mixed", "too windy");
+  assert.equal(weatherState({ rain: 10, code: 45, max: 20 }).state, "mixed", "fog");
+  assert.equal(weatherState(null).state, null);
+  assert.ok(weatherState({ rain: 5, code: 0, max: 26, wind: 20 }).beachy);
+  assert.ok(!weatherState({ rain: 5, code: 0, max: 22, wind: 20 }).beachy, "not warm enough for the beach");
+  assert.deepEqual([skyIcon(0), skyIcon(2), skyIcon(3), skyIcon(61), skyIcon(95), skyIcon(null, 70)], ["☀️", "⛅", "☁️", "🌧", "⛈", "🌧"]);
+});
+
+// A wet morning that clears after midday, as Open-Meteo's hourly forecast gives it.
+const hours = (day, list) => list.map(([h, rain, code, temp]) => ({ t: `${day}T${String(h).padStart(2, "0")}:00`, rain, code, temp }));
+const CLEARING = { ...FEED, weather: [{ date: "2026-11-15", rain: 90, max: 21, code: 61, wind: 20, sunset: "20:13" }, ...FEED.weather.slice(1)],
+  hourly: hours("2026-11-15", [[9, 90, 61, 14], [10, 80, 61, 15], [11, 60, 80, 16], [12, 20, 3, 18], [13, 10, 2, 19], [14, 5, 2, 20], [15, 5, 1, 21], [16, 5, 1, 21],
+    [17, 5, 1, 20], [18, 5, 1, 19], [19, 5, 0, 18], [20, 10, 0, 16], [21, 10, 0, 15]]) };
+
+test("weatherNow reads the next three hours, so a wet morning that clears counts as good after midday", () => {
+  assert.equal(weatherNow(CLEARING, at(15, 9, 30)).state, "wet");
+  const noon = weatherNow(CLEARING, at(15, 12, 10));
+  assert.equal(noon.state, "good");
+  assert.deepEqual([noon.rain, noon.code, noon.max, noon.sunset], [20, 3, 21, "20:13"], "worst of 12–2 pm; the day's top and sunset");
+  assert.equal(daylightLeft(noon, at(15, 18, 13)), 120);
+  assert.equal(weatherNow(FEED, at(15, 10)).state, "good", "no hours: the day's figures");
+});
+
+test("ideas follow the next few hours: indoors in the rain, a park walk once it clears", () => {
+  const morning = ideasFor(at(15, 9, 30), CLEARING);
+  assert.ok(!ids(morning).some((id) => ["trail", "nature", "beach", "outAbout"].includes(id)), ids(morning).join());
+  assert.ok(ids(morning).includes("museum"));
+  assert.match(morning.find((i) => i.id === "museum").sub, /Rain likely/);
+  const afternoon = ideasFor(at(15, 14), CLEARING);
+  assert.equal(afternoon[0].id, "nature");
+  assert.match(afternoon[0].sub, /dry/);
+  assert.deepEqual(afternoon[0].preset, { mode: "now", kinds: ["nature"], minutes: 180 });
+});
+
+test("ideas: a good evening offers a sunset walk while there's daylight, none after dark", () => {
+  const evening = ideasFor(at(15, 18, 30), CLEARING);
+  assert.equal(evening[1].id, "sunset");
+  assert.equal(evening[1].sub, "Sunset 8:13 pm · a park or the beach");
+  assert.ok(!ids(ideasFor(at(15, 20, 0), CLEARING)).includes("sunset"), "13 minutes before sunset is too late");
+});
+
+test("ideas: a good weekday afternoon swaps the gallery for a park; a mixed day keeps out and about", () => {
+  const good = { ...FEED, weather: [{ date: "2026-11-18", rain: 10, max: 20, code: 2 }] };
+  assert.deepEqual(ids(ideasFor(at(18, 15), good)), ["coffee", "dessert", "nature"]);
+  const mixed = { ...FEED, weather: [{ date: "2026-11-15", rain: 40, max: 18, code: 3 }] };
+  assert.deepEqual(ids(ideasFor(at(15, 15), mixed)), ["outAbout", "dessert", "ev:festival"]);
+});
+
+test("rank: on a good day outdoor events come first among equals", () => {
+  const a = ev({ title: "Indoor Fair", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"] });
+  const b = ev({ title: "Park Fair", from: "2026-11-15", to: "2026-11-15", days: ["2026-11-15"], outdoor: true });
+  assert.deepEqual(rank([a, b], "2026-11-15").map((e) => e.title), ["Indoor Fair", "Park Fair"]);
+  assert.deepEqual(rank([a, b], "2026-11-15", { good: true }).map((e) => e.title), ["Park Fair", "Indoor Fair"]);
+});
+
+test("momentLine uses the next three hours when the feed has them, and says when it's windy", () => {
+  assert.equal(momentLine(at(15, 9, 30), CLEARING), "Sunday morning · 🌧 90% rain next 3 h · 21°");
+  assert.equal(momentLine(at(15, 14), CLEARING), "Sunday afternoon · ⛅ 5% rain next 3 h · 21°");
+  assert.equal(momentLine(at(18, 12), { ...FEED, weather: [{ date: "2026-11-18", rain: 10, max: 20, code: 1, wind: 52 }] }), "Wednesday lunchtime · 🌤 10% rain · 20° · windy");
+});

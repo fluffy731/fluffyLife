@@ -9,7 +9,13 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 
 let S = {};
 try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { S = {}; }
-S.f ||= {}; S.drawn ||= {}; S.who ||= "both"; S.done ||= {};
+S.f ||= {}; S.drawn ||= {}; S.who ||= "both"; S.done ||= {}; S.cut ||= {}; S.ed ||= {};
+// Delete-a-line (last-minute changes): S.cut holds the lines this phone has removed. A line is keyed by its segment, position and
+// first words, so if the script is updated and that line changes, it simply comes back. Edit mode is never saved, so a reload is safe.
+let editing = false, editKey = null;
+// S.ed holds lines this phone has reworded (same key as S.cut); the {placeholders} in the new text still fill in.
+const lineText = (k) => { for (const s of SEGS) for (let i = 0; i < s.items.length; i++) if (keyOf(s, s.items[i], i) === k) return String(s.items[i][1]); return ""; };
+const keyOf = (s, it, i) => `${s.t}|${i}|${String(it[1]).slice(0, 20)}`;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* private mode: keep working without saving */ } };
 
 // ---------- Field registry ----------
@@ -65,14 +71,26 @@ function chip(k, l) {
 const fill = (text, l) => esc(text).replace(/\{(\w+)\}/g, (_, k) => chip(k, l));
 const duo = (zh, en, tag = "span") => `<${tag} class="zh" lang="zh-Hans">${fill(zh, "zh")}</${tag}><${tag} class="en" lang="en">${fill(en, "en")}</${tag}>`;
 
-function lineHTML([tag, text, o = {}]) {
+function lineHTML([tag, text, o = {}], k) {
   if (o.if && !val(o.if)) return "";
+  const cut = !!S.cut[k];
+  if (cut && !editing) return "";
+  const edited = S.ed[k] != null, shown = edited ? S.ed[k] : text;
   // Line tags are languages ("zh", "en") or "SW" (said together, shown as Chinese then English).
   // o.who ("S" or "W") overrides who speaks the line, e.g. Solomon in Chinese in the two-man opener.
   const who = tag === "SW" ? "SW" : o.who || SPEAKER[tag], l = tag === "en" ? "en" : "zh";
   const label = { S: NAME.S, W: NAME.W, SW: `${NAME.S} + ${NAME.W}` }[who];
-  return `<div class="ln${o.tpl ? " tpl" : ""}" data-s="${who}"><b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>` +
-    `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(text, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}</p></div>`;
+  const badge = `<b class="b ${who}" title="${label}" aria-label="${label}">${who === "SW" ? "S+W" : who}</b>`;
+  if (editing && editKey === k) {
+    return `<div class="ln edit editing" data-s="${who}">${badge}<div class="ebox"><textarea class="ledit" rows="${Math.max(3, Math.ceil(shown.length / 30))}" lang="${l === "en" ? "en" : "zh-Hans"}" aria-label="${bi("修改这一行", "Edit this line")}">${esc(shown)}</textarea>` +
+      (/\{\w+\}/.test(shown) ? `<p class="ehint">${bi("大括号里的内容会自动填入，请保留大括号", "Keep the {braces}: what is inside fills in automatically")}</p>` : "") +
+      `<div class="eact"><button type="button" class="primary" data-esave="${esc(k)}">${bi("保存", "Save")}</button><button type="button" data-ecancel="1">${bi("取消", "Cancel")}</button>` +
+      (edited ? `<button type="button" data-ereset="${esc(k)}">${bi("还原原文", "Restore original")}</button>` : "") + `</div></div></div>`;
+  }
+  const btn = !editing ? "" : `<span class="lacts">${cut ? "" : `<button type="button" class="lbtn ed" data-edit="${esc(k)}" aria-label="${bi("修改这一行", "Edit this line")}">✎</button>`}` +
+    `<button type="button" class="lbtn${cut ? " back" : ""}" data-cut="${esc(k)}" aria-label="${cut ? bi("恢复这一行", "Restore this line") : bi("删除这一行", "Delete this line")}">${cut ? "↩" : "✕"}</button></span>`;
+  return `<div class="ln${o.tpl ? " tpl" : ""}${cut ? " cut" : ""}${edited ? " edited" : ""}${editing ? " edit" : ""}" data-s="${who}">${badge}` +
+    `<p lang="${l === "en" ? "en" : "zh-Hans"}">${fill(shown, l)}${o.tpl ? `<small class="tpl-tag">${bi("模板", "pattern")}</small>` : ""}${edited && editing ? `<small class="tpl-tag">${bi("已改", "edited")}</small>` : ""}</p>${btn}</div>`;
 }
 
 function listHTML(name, o = {}) {
@@ -98,9 +116,9 @@ function listHTML(name, o = {}) {
   return `<ol class="awards">${rows.map((j) => `<li><span class="aw">${chip("award" + j, l)}</span><span class="wn">${chip("winner" + j, l)}</span></li>`).join("")}</ol>`;
 }
 
-function itemHTML(it) {
+function itemHTML(it, s, i) {
   const [type] = it;
-  if (type === "zh" || type === "en" || type === "SW") return lineHTML(it);
+  if (type === "zh" || type === "en" || type === "SW") return lineHTML(it, keyOf(s, it, i));
   if (type === "cue") return `<p class="cue">${duo(it[1], it[2])}</p>`;
   if (type === "crit") return `<p class="crit">${duo(it[1], it[2])}</p>`;
   if (type === "list") return listHTML(it[1], it[2]);
@@ -118,7 +136,7 @@ function segHTML(s) {
       <h2>${duo(s.zh, s.en)}</h2>
       <p class="at">${duo(s.at[0], s.at[1])}</p>
     </header>
-    ${s.items.map(itemHTML).join("")}
+    ${s.items.map((it, i) => itemHTML(it, s, i)).join("")}
   </article>`;
 }
 
@@ -133,7 +151,7 @@ function fieldHTML(k) {
   const m = META[k];
   return `<label class="field" data-key="${k}" for="f-${k}">
     <span class="lab"><span class="zh">${esc(m.zh)}</span><span class="en">${esc(m.en)}</span><span class="tag"></span></span>
-    <input id="f-${k}" data-f="${k}" value="${esc(raw(k))}" placeholder="${esc(m.ex || "")}" autocomplete="off" autocapitalize="words" enterkeyhint="next">
+    <textarea id="f-${k}" class="fta" rows="${Math.max(1, Math.ceil(String(raw(k)).length / 30))}" data-f="${k}" placeholder="${esc(m.ex || "")}" autocomplete="off" autocapitalize="sentences" enterkeyhint="done">${esc(raw(k))}</textarea>
   </label>`;
 }
 function listFormHTML(name) {
@@ -147,8 +165,12 @@ function buildForm() {
   $("#groups").innerHTML = GROUPS.map(([g, zh, en]) => `<section class="grp" data-group="${g}"><h3>${esc(zh)}${zh !== en ? ` <span>${esc(en)}</span>` : ""}</h3>` +
     FIELDS.filter((f) => f[3] === g).map((f) => fieldHTML(f[0])).join("") +
     Object.entries(LISTS).filter(([, L]) => L.group === g).map(([n]) => listFormHTML(n)).join("") + `</section>`).join("");
-  paintForm();
+  paintForm(); growAll();
 }
+// The TBC fields are auto-growing boxes, so a long bio is all visible and easy to edit. Hidden panels cannot be measured, so show() grows them again.
+const grow = (el) => { if (!el.offsetParent) return; el.style.height = "auto"; if (el.scrollHeight) el.style.height = `${el.scrollHeight + 2}px`; };
+const growAll = () => $$(".field textarea.fta").forEach(grow);
+addEventListener("resize", growAll);
 function paintForm() {
   for (const el of $$(".field[data-key]")) {
     const k = el.dataset.key, m = META[k], v = val(k);
@@ -204,10 +226,28 @@ function renderNotes() {
     <section class="note-card"><h3>${bi("活动信息", "Event")}</h3><p>${esc(EVENT.title)} · ${esc(EVENT.en)}<br>${duo("2026 年 11 月 13 日（星期五）", "Friday 13 November 2026")}<br>${esc(EVENT.venue)}<br>${duo("着装：银色 / 香槟色 / 金色", "Dress: silver, champagne, gold")}</p></section>`;
 }
 
+const liveKeys = () => new Set(SEGS.flatMap((s) => s.items.map((it, i) => keyOf(s, it, i))));
+// The "Delete lines" bar above the script: edit mode on/off, how many lines are removed, and restore-all.
+function renderCutbar() {
+  const live = liveKeys();
+  const n = Object.keys(S.cut).filter((k) => live.has(k)).length;
+  const eb = $("#editLines");
+  eb.setAttribute("aria-pressed", String(editing));
+  eb.textContent = (editing ? "✓ " : "✎ ") + (editing ? bi("完成", "Done") : bi("改稿 / 删行", "Edit / delete lines"));
+  const m = Object.keys(S.ed).filter((k) => live.has(k)).length;
+  $("#cutN").textContent = [n ? bi(`已删 ${n} 行`, `${n} removed`) : "", m ? bi(`已改 ${m} 行`, `${m} edited`) : ""].filter(Boolean).join(" · ");
+  $("#restoreAll").textContent = bi("全部还原", "Reset all");
+  $("#restoreAll").hidden = !(n || m);
+  $("#cutHint").hidden = !editing;
+  $("#cutHint").textContent = bi("点 ✎ 修改这一行，点 ✕ 删掉；灰色划线的是已删，点 ↩ 恢复。只影响这部手机，搭档的手机不会变。", "Tap ✎ to reword a line or ✕ to remove it; struck-through lines are removed, tap ↩ to bring one back. This only changes this phone, not your partner's.");
+}
+function redrawScript() { const y = scrollY; renderScript(); renderCutbar(); scrollTo(0, y); }
+$("#editLines").addEventListener("click", () => { editing = !editing; editKey = null; redrawScript(); });
+$("#restoreAll").addEventListener("click", () => { S.cut = {}; S.ed = {}; editKey = null; save(); redrawScript(); });
 function renderAll() {
   document.body.dataset.who = S.who; document.body.dataset.lang = showLang();
   for (const b of $$("[data-who]")) b.setAttribute("aria-pressed", String(b.dataset.who === S.who));
-  renderScript(); renderRun(); renderNotes(); paintPager(); tick();
+  renderScript(); renderRun(); renderNotes(); paintPager(); tick(); renderCutbar();
 }
 $("#notesBody").addEventListener("change", (e) => {
   const c = e.target.closest("li.rem input");
@@ -224,6 +264,7 @@ function show(tab) {
   for (const b of $$("#tabs button")) b.setAttribute("aria-current", String(b.dataset.tab === tab));
   for (const p of PANELS) $("#" + p).hidden = p !== tab;
   S.tab = tab; save(); paintPager();
+  if (tab === "tbc") growAll();
 }
 $("#tabs").addEventListener("click", (e) => { const b = e.target.closest("button[data-tab]"); if (b) { show(b.dataset.tab); scrollTo(0, 0); } });
 
@@ -341,6 +382,27 @@ document.addEventListener("click", (e) => {
     }
     return;
   }
+  const edBtn = e.target.closest("button[data-edit], button[data-esave], button[data-ecancel], button[data-ereset]");
+  if (edBtn) {
+    const d = edBtn.dataset;
+    if (d.edit != null) editKey = d.edit;
+    else if (d.esave != null) {
+      const ta = $(".ledit"), t = ta ? ta.value.replace(/\s*\n\s*/g, " ").trim() : "";
+      if (t && t !== lineText(d.esave).trim()) S.ed[d.esave] = t; else delete S.ed[d.esave];
+      editKey = null; save();
+    } else if (d.ereset != null) { delete S.ed[d.ereset]; editKey = null; save(); }
+    else editKey = null;
+    redrawScript();
+    const box = $(".ledit"); if (box) { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }
+    return;
+  }
+  const cutBtn = e.target.closest("button[data-cut]");
+  if (cutBtn) {
+    const k = cutBtn.dataset.cut;
+    if (S.cut[k]) delete S.cut[k]; else S.cut[k] = 1;
+    save(); redrawScript();
+    return;
+  }
   const who = e.target.closest("button[data-who]");
   if (who) { S.who = who.dataset.who; save(); renderAll(); }
 });
@@ -350,30 +412,44 @@ document.addEventListener("change", (e) => {
   if (t.id === "onlyBlank") $("#tbc").classList.toggle("only-blank", t.checked);
 });
 let rt = 0;
+$("#groups").addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.classList.contains("fta")) { e.preventDefault(); e.target.blur(); } });
 $("#groups").addEventListener("input", (e) => {
   const k = e.target.dataset.f;
   if (!k) return;
+  if (e.target.classList.contains("fta")) {
+    const v = e.target.value.replace(/\s*\n+\s*/g, " ");
+    if (v !== e.target.value) e.target.value = v;
+    grow(e.target);
+  }
   S.f[k] = e.target.value; save(); paintForm();
   clearTimeout(rt); rt = setTimeout(renderScript, 250);
 });
 
 // ---------- Share with the co-MC ----------
-const CODE = "SHINE1.";
+// SHINE2 carries the whole master version: TBC entries, removed lines and reworded lines. SHINE1 (entries only) still imports.
+const CODE = "SHINE2.", CODE_RE = /SHINE([12])\.([A-Za-z0-9_-]+)/;
 function toCode() {
-  const f = Object.fromEntries(Object.entries(S.f).filter(([k, v]) => META[k] && String(v).trim()));
-  const bytes = new TextEncoder().encode(JSON.stringify(f));
+  const f = Object.fromEntries(Object.entries(S.f).filter(([k, v]) => META[k] && String(v).trim() !== String(DEFAULTS[k] ?? "").trim()));
+  const live = liveKeys();
+  const cut = Object.keys(S.cut).filter((k) => live.has(k));
+  const ed = Object.fromEntries(Object.entries(S.ed).filter(([k]) => live.has(k)));
+  const bytes = new TextEncoder().encode(JSON.stringify({ v: 2, f, cut, ed }));
   let bin = ""; for (const b of bytes) bin += String.fromCharCode(b);
   return CODE + btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 function fromCode(text) {
-  const m = String(text).match(/SHINE1\.([A-Za-z0-9_-]+)/);
+  const m = String(text).match(CODE_RE);
   if (!m) return null;
   try {
-    let b = m[1].replace(/-/g, "+").replace(/_/g, "/"); while (b.length % 4) b += "=";
-    const f = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0))));
-    const out = {};
-    for (const [k, v] of Object.entries(f || {})) if (META[k] && typeof v === "string") out[k] = v.slice(0, 300);
-    return out;
+    let b = m[2].replace(/-/g, "+").replace(/_/g, "/"); while (b.length % 4) b += "=";
+    const j = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0)))) || {};
+    const master = m[1] === "2", src = master ? j.f : j;
+    const f = {};
+    for (const [k, v] of Object.entries(src || {})) if (META[k] && typeof v === "string") f[k] = v.slice(0, 1500);
+    const cut = master && Array.isArray(j.cut) ? j.cut.filter((k) => typeof k === "string" && k.length < 200).slice(0, 500) : [];
+    const ed = {};
+    if (master && j.ed) for (const [k, v] of Object.entries(j.ed)) if (typeof v === "string" && k.length < 200 && v.trim()) ed[k] = v.slice(0, 1500);
+    return { master, f, cut, ed };
   } catch { return null; }
 }
 const onPages = /github\.io$/.test(location.hostname);
@@ -383,17 +459,118 @@ $("#copy").addEventListener("click", () => {
   const done = (ok) => { $("#copyMsg").textContent = ok ? (onPages ? "已复制链接，发给搭档打开即可 · Link copied: send it to your co-MC" : "已复制，发给搭档粘贴到下方 · Copied: your co-MC pastes it below") : "请手动全选复制 · Select and copy the text above"; if (!ok) out.select(); };
   try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch { done(false); }
 });
+// One-tap sync. The master phone taps "Publish my version": the code goes to a small public relay (ntfy.sh, one private room for this event).
+// Every other phone taps "Sync from master": it fetches the newest version, applies it (replacing that phone's edits) and offers Undo.
+// If the relay can't be reached (venue wifi, offline) or the code is too big for it, the old route still works: share link, clipboard, or paste on the TBC tab.
+// ntfy.sh keeps a message to 4096 bytes, so a big version goes up as numbered parts (SHINE2C.<id>.<part>.<parts>.<text>) and is only used once every part has arrived.
+const RELAY = "https://ntfy.sh/", ROOM = "shine-2026-11-13-034ba6ad3b6ea35b", RELAY_MAX = 3600, CHUNK = 3500, MAX_PARTS = 40;
+const PART_RE = /^SHINE2C\.([0-9a-z]+)\.(\d+)\.(\d+)\.([\s\S]*)$/;
+const syncMsg = (t) => { const el = $("#syncMsg"); el.textContent = t; el.hidden = !t; };
+const hhmm = (ms) => new Date(ms).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", hour12: false });
+const relay = async (path, init) => {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
+  try { const r = await fetch(RELAY + ROOM + path, { ...init, signal: ctl.signal, cache: "no-store" }); if (!r.ok) throw new Error("relay " + r.status); return r; }
+  finally { clearTimeout(t); }
+};
+async function publish(code) {
+  if (code.length <= RELAY_MAX) { await relay("", { method: "POST", body: code }); return 1; }
+  const n = Math.ceil(code.length / CHUNK);
+  if (n > MAX_PARTS) throw new Error("too big");
+  const id = Date.now().toString(36);
+  for (let i = 0; i < n; i++) await relay("", { method: "POST", body: `SHINE2C.${id}.${i}.${n}.${code.slice(i * CHUNK, (i + 1) * CHUNK)}` });
+  return n;
+}
+async function latestMaster() {
+  const lines = (await (await relay("/json?poll=1&since=all")).text()).split("\n");
+  let best = null; const groups = new Map();
+  const take = (message, time) => { if (!best || time >= best.time) best = { message, time }; };
+  for (const ln of lines) {
+    let m; try { m = JSON.parse(ln); } catch { continue; /* not a message line */ }
+    if (m.event !== "message" || typeof m.message !== "string") continue;
+    const c = m.message.match(PART_RE);
+    if (c) {
+      const id = c[1], i = +c[2], n = +c[3];
+      if (!(n >= 1 && n <= MAX_PARTS && i < n)) continue;
+      const g = groups.get(id) || { n, parts: {}, time: 0 };
+      g.parts[i] = c[4]; g.time = Math.max(g.time, m.time); groups.set(id, g);
+      if (g.n === n && Array.from({ length: n }, (_, j) => j in g.parts).every(Boolean)) take(Array.from({ length: n }, (_, j) => g.parts[j]).join(""), g.time);
+    } else if (CODE_RE.test(m.message)) take(m.message, m.time);
+  }
+  return best;
+}
+function applyMaster(p) {
+  S.f = { ...p.f }; S.cut = Object.fromEntries(p.cut.map((k) => [k, 1])); S.ed = { ...p.ed };
+  editKey = null; save(); buildForm(); redrawScript();
+}
+let undoSnap = null;
+$("#sendMaster").addEventListener("click", async () => {
+  const code = toCode(), link = onPages ? `${location.origin}${location.pathname}#${code}` : code;
+  let pre = "";
+  try {
+    await publish(code);
+    try { await navigator.clipboard.writeText(link); } catch { /* the copy is only a spare */ }
+    syncMsg(bi(`已发布（${hhmm(Date.now())}）：其他手机点「同步主版本」即可`, `Published at ${hhmm(Date.now())}: other phones just tap Sync from master`));
+    return;
+  } catch (e) {
+    pre = e && e.message === "too big" ? bi("内容太长，同步服务放不下，改用分享链接。", "Too big for the sync service, so using the share link.") : bi("连不上同步服务，改用分享链接。", "Couldn't reach the sync service, so using the share link.");
+  }
+  const say = (t) => syncMsg(pre ? `${pre} ${t}` : t);
+  const note = "A Night to Shine: master script version. Open the link, or copy this message and tap 同步主版本 / Sync from master.";
+  let copied = false;
+  try { await navigator.clipboard.writeText(link); copied = true; } catch { /* the share sheet or the TBC tab still work */ }
+  try {
+    if (navigator.share) { await navigator.share(onPages ? { title: "A Night to Shine · 主版本", text: note, url: link } : { title: "A Night to Shine · 主版本", text: `${note}\n${link}` }); say(bi("已打开分享，也已复制链接", "Share sheet opened; the link is also copied")); return; }
+  } catch (e) { if (e && e.name === "AbortError") { say(copied ? bi("已取消分享，链接已复制，可直接粘贴发送", "Share cancelled; the link is copied, so you can paste it into a message") : ""); return; } }
+  if (copied) say(bi("已复制主版本链接：粘贴发给搭档", "Master version link copied: paste it to your co-MC"));
+  else { show("tbc"); $("#copy").click(); }
+});
+async function fromClipboard(pre) {
+  const say = (t) => syncMsg(pre ? `${pre} ${t}` : t);
+  try {
+    const p = fromCode(await navigator.clipboard.readText());
+    if (p) { syncMsg(""); offer(p); scrollTo(0, 0); return; }
+    say(bi("剪贴板里没有主版本：先把搭档发来的消息拷贝下来", "No master version on the clipboard: copy your co-MC's message first"));
+  } catch { say(bi("读不到剪贴板：到「待填」页最下面粘贴", "Can't read the clipboard: paste it at the bottom of the TBC tab")); }
+}
+$("#getMaster").addEventListener("click", async () => {
+  const btn = $("#getMaster"); btn.disabled = true; syncMsg(bi("正在同步…", "Syncing…"));
+  try {
+    let m = null, down = false;
+    try { m = await latestMaster(); } catch { down = true; }
+    const p = m && fromCode(m.message);
+    if (p && p.master) {
+      undoSnap = { f: S.f, cut: S.cut, ed: S.ed };
+      applyMaster(p);
+      const t = hhmm(m.time * 1000);
+      $("#undoSync").hidden = false;
+      syncMsg(bi(`已同步（主版本发布于 ${t}）：${Object.keys(p.f).length} 项填写，${Object.keys(p.ed).length} 行改过，${p.cut.length} 行删除`, `Synced (master published ${t}): ${Object.keys(p.f).length} entries, ${Object.keys(p.ed).length} reworded, ${p.cut.length} removed`));
+      return;
+    }
+    await fromClipboard(down ? bi("连不上同步服务。", "Couldn't reach the sync service.") : bi("主版本还没有发布。", "Nothing published yet."));
+  } finally { btn.disabled = false; }
+});
+$("#undoSync").addEventListener("click", () => {
+  if (!undoSnap) return;
+  S.f = undoSnap.f; S.cut = undoSnap.cut; S.ed = undoSnap.ed; undoSnap = null;
+  editKey = null; save(); buildForm(); redrawScript();
+  $("#undoSync").hidden = true; syncMsg(bi("已撤销同步，恢复到同步前", "Sync undone: back to how it was before"));
+});
 let pending = null;
-function offer(f) {
-  pending = f;
-  const n = Object.keys(f).length;
-  $("#importText").textContent = n ? `收到搭档的 ${n} 项填写 · ${n} entries from your co-MC` : "内容为空 · Nothing to import";
+function offer(p) {
+  pending = p;
+  const nf = Object.keys(p.f).length, nc = p.cut.length, ne = Object.keys(p.ed).length, n = nf + nc + ne;
+  $("#importText").textContent = p.master
+    ? `搭档的主版本：${nf} 项填写，${ne} 行改过，${nc} 行删除。应用后会替换这部手机上的改动。 · Master version: ${nf} entries, ${ne} reworded and ${nc} removed lines. Applying replaces the changes on this phone.`
+    : n ? `收到搭档的 ${n} 项填写 · ${n} entries from your co-MC` : "内容为空 · Nothing to import";
   $("#importBanner").hidden = false;
-  $("#doImport").hidden = !n;
+  $("#doImport").hidden = !n && !p.master;
+  $("#doImport").textContent = p.master ? "应用主版本 Apply" : "导入 Import";
 }
 $("#doImport").addEventListener("click", () => {
-  if (pending) { Object.assign(S.f, pending); save(); buildForm(); renderScript(); }
-  $("#importBanner").hidden = true; pending = null; show("tbc");
+  const master = pending && pending.master;
+  if (pending && master) applyMaster(pending);
+  else if (pending) { Object.assign(S.f, pending.f); save(); buildForm(); renderScript(); }
+  $("#importBanner").hidden = true; pending = null; show(master ? "script" : "tbc");
 });
 $("#skipImport").addEventListener("click", () => { $("#importBanner").hidden = true; pending = null; });
 $("#pasteGo").addEventListener("click", () => {
@@ -433,5 +610,5 @@ const n0 = tick();
 show(n0.cur ? "script" : S.tab || "script");
 if (n0.cur && S.tab === "script") requestAnimationFrame(() => goTo($(`#s${n0.cur.i}`)));
 setInterval(tick, 20000);
-try { const h = decodeURIComponent(location.hash); if (h.includes(CODE)) { const f = fromCode(h); if (f) offer(f); history.replaceState(null, "", location.pathname + location.search); } } catch { /* hash unavailable */ }
+try { const h = decodeURIComponent(location.hash); if (CODE_RE.test(h)) { const p = fromCode(h); if (p) offer(p); history.replaceState(null, "", location.pathname + location.search); } } catch { /* hash unavailable */ }
 try { if ("serviceWorker" in navigator && onPages) navigator.serviceWorker.register("../sw.js").catch(() => {}); } catch { /* not allowed here */ }

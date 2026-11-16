@@ -1,0 +1,15 @@
+{
+  "name": "Spots",
+  "short_name": "Spots",
+  "description": "Where to go now, tonight or tomorrow, and a passport of everywhere you've been.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1fa",
+  "theme_color": "#f4f1fa",
+  "icons": [
+    { "src": "../icons/spots.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "../icons/spots-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "../icons/spots-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
