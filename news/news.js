@@ -1,5 +1,6 @@
 // Briefing: renders news/feed.json (built hourly on GitHub Actions by scripts/build-news.mjs).
 import { TABS, LEANS, LEAN_LABEL, storiesFor, leanCounts, skew, headline, ago, koLookup } from "./model.js";
+import { glossLang } from "../lib/dict.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -79,8 +80,8 @@ async function lookup(word) {
   const r = koLookup(word, dict);
   sheet(r
     ? `<h3>${esc(r[0])}${r[1] && r[1] !== r[0] ? `<span class="hj" lang="zh-Hant">${esc(r[1])}</span>` : ""}</h3>
-       ${r[3] ? `<p class="note">[${esc(r[3])}] · ${esc(r[2])}</p>` : `<p class="note">${esc(r[2])}</p>`}
-       <p>${esc(r[4])}</p>${r[5] ? `<p class="note">${esc(r[5])}<br>${esc(r[6])}</p>` : ""}
+       ${r[3] || r[2] ? `<p class="note">${[r[3] && `[${esc(r[3])}]`, esc(r[2])].filter(Boolean).join(" · ")}</p>` : ""}
+       <p lang="${glossLang(r)}">${esc(r[4])}</p>${r[5] ? `<p class="note">${esc(r[5])}<br>${esc(r[6])}</p>` : ""}
        <p class="note">Search it in 한자 Korean → Browse to add it to your study cards.</p>`
     : `<h3>${esc(word)}</h3><p class="note">Not found in the dictionary (it may be a name or an inflected form).</p>`);
 }
