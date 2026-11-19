@@ -4,7 +4,7 @@
 
 import { DEFAULT } from './data.js';
 import { META } from './meta.js';
-import { MONTHS, pad, parseTime, fmt12, longDate, effTimes, nowState, parts, fieldVal, rowDone, rowAny, leftOf, keysIn, normalise, encode, decode } from './model.js';
+import { MONTHS, pad, parseTime, fmt12, longDate, effTimes, nowState, parts, fieldVal, rowDone, rowAny, leftOf, keysIn, normalise, encode, decode, toParts, pickMaster } from './model.js';
 
 const KEY = 'lions-2026-11-21';
 const clone = (o) => JSON.parse(JSON.stringify(o));
@@ -208,11 +208,11 @@ const fixHTML = (f) => '<li class="fx" data-fix="' + f.id + '"><div class="fx-h"
   '<div class="rt"><button type="button" class="btn danger" data-act="delFix" data-id="' + f.id + '">Delete</button></div></li>';
 function renderNotes() {
   const all = S.lists.flatMap((l) => l.items), done = all.filter((i) => i.done).length;
-  return '<div class="sum"><p><b id="doneN">' + done + '</b><span id="doneOf">of ' + all.length + ' ticked</span></p><div class="meter" aria-hidden="true"><i id="cbar" style="width:' + (all.length ? Math.round(done / all.length * 100) : 0) + '%"></i></div></div>' +
+  return shareHTML() + '<div class="sum"><p><b id="doneN">' + done + '</b><span id="doneOf">of ' + all.length + ' ticked</span></p><div class="meter" aria-hidden="true"><i id="cbar" style="width:' + (all.length ? Math.round(done / all.length * 100) : 0) + '%"></i></div></div>' +
     S.lists.map(listHTML).join('') + '<button type="button" class="btn add edit-only" data-act="addList">+ Add list</button>' +
     '<section class="card"><div class="lh"><h2 class="lt" style="margin:6px 8px">Changes made to the original sheet</h2></div><p class="hint" style="margin:0 8px 6px">Wording and times fixed when this page was built from the committee’s spreadsheet.</p><ul class="fxs">' + S.fixes.map(fixHTML).join('') + '</ul>' +
     '<button type="button" class="btn add edit-only" data-act="addFix" style="margin-top:8px;margin-bottom:0">+ Add a change</button></section>' +
-    '<section class="card"><div class="lh"><h2 class="lt" style="margin:6px 8px">Notes</h2></div>' + taHTML('n-notes', 'data-n="notes"', S.notes, editing() ? 'Anything else the team should know' : 'No notes yet', '') + '</section>' + shareHTML();
+    '<section class="card"><div class="lh"><h2 class="lt" style="margin:6px 8px">Notes</h2></div>' + taHTML('n-notes', 'data-n="notes"', S.notes, editing() ? 'Anything else the team should know' : 'No notes yet', '') + '</section>';
 }
 const PANELS = { script: renderScript, fill: renderFill, run: renderRun, notes: renderNotes };
 
@@ -441,16 +441,18 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(autosizeAl
 
 /* ---------- saving: this phone only ---------- */
 const canWrite = true, resolved = true;
-let saveTimer = 0, pending = false, undoState = null;
-const bannerHTML = () => '';
-const shareHTML = () => '<section class="card" id="share"><div class="lh"><h2 class="lt" style="margin:6px 8px">Share changes</h2></div>' +
-  '<p class="hint" style="margin:0 8px 10px">Your edits are saved on this phone only. To move them to another phone, copy them here, send the code in any chat, and paste it on the other phone.</p>' +
-  '<div class="btns"><button type="button" class="btn primary" id="copyCode">Copy my changes</button></div>' +
-  '<textarea id="shareOut" class="fld code" rows="3" readonly hidden aria-label="Code to share"></textarea>' +
+let saveTimer = 0, pending = false, undoState = null, pendingImport = null;
+const bannerHTML = () => (pendingImport ? '<div class="banner" id="importBanner"><p>A version was sent to you: ' + pendingImport.script.length + ' script segments and ' + pendingImport.rows.length + ' run sheet rows. Applying it replaces the changes on this phone. Undo is available.</p><div><button type="button" class="btn primary" id="doImport">Apply it</button><button type="button" class="btn" id="skipImport">Not now</button></div></div>' : '');
+const shareHTML = () => '<section class="card" id="share"><div class="lh"><h2 class="lt" style="margin:6px 8px">Share with the other MC</h2></div>' +
+  '<p class="hint" style="margin:0 8px 10px">Your edits are saved on this phone. One phone is the master. After you change the script, tap Publish my version; every other phone taps Sync from master to get it. The newest published version wins.</p>' +
+  '<div class="btns"><button type="button" class="btn primary" id="sendMaster">Publish my version</button><button type="button" class="btn" id="getMaster">Sync from master</button></div>' +
+  '<p class="msg" id="syncMsg" role="status" hidden></p>' +
+  '<div class="btns"><button type="button" class="btn" id="copyLink">Copy a link to send</button><button type="button" class="btn" id="undoImport"' + (undoState ? '' : ' hidden') + '>Undo</button></div>' +
+  '<textarea id="shareOut" class="fld code" rows="3" readonly hidden aria-label="Link to send"></textarea>' +
   '<p class="msg" id="shareMsg" role="status"></p>' +
-  '<label class="cl2" for="pasteIn">Paste a code from someone else</label>' +
-  '<textarea id="pasteIn" class="fld code" rows="3" placeholder="LIONS1.…" aria-label="Paste a code"></textarea>' +
-  '<div class="btns"><button type="button" class="btn" id="pasteGo">Load this version</button><button type="button" class="btn" id="undoImport"' + (undoState ? '' : ' hidden') + '>Undo</button></div>' +
+  '<label class="cl2" for="pasteIn">Paste a link or code from someone else</label>' +
+  '<textarea id="pasteIn" class="fld code" rows="3" placeholder="https://\u2026#LIONS3.\u2026" aria-label="Paste a link or code"></textarea>' +
+  '<div class="btns"><button type="button" class="btn" id="pasteGo">Load this version</button></div>' +
   '<p class="msg" id="pasteMsg" role="status"></p>' +
   '<div class="btns"><button type="button" class="btn danger" id="resetAll">Reset to the original sheet</button></div></section>';
 function paintToast() {
@@ -465,28 +467,94 @@ function persist() {
   catch (e) { setNotice('This browser would not save your changes. Keep this page open, or copy them from Notes.', 12000); }
 }
 function touch() { pending = true; clearTimeout(saveTimer); saveTimer = setTimeout(persist, 500); }
-function copyCode() {
-  const code = encode(S), out = $('#shareOut'), msg = $('#shareMsg');
-  out.value = code;
-  const manual = () => { out.hidden = false; out.focus(); out.select(); msg.className = 'msg'; msg.textContent = 'Select all and copy this code.'; };
-  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(() => { msg.className = 'msg'; msg.textContent = 'Copied. Send it in a chat, then paste it on the other phone.'; }, manual);
+
+// One-tap sync, as on Night to Shine. The master phone taps Publish my version: the whole sheet goes to a small public relay (ntfy.sh, one room for this
+// event). Every other phone taps Sync from master: it fetches the newest version, applies it (replacing that phone's edits) and offers Undo.
+// If the relay cannot be reached (venue wifi, offline) the link still works: it opens this page with the version in the address, and asks before applying it.
+const RELAY = 'https://ntfy.sh/', ROOM = 'lions-2026-11-21-e02758128387bf84', RELAY_MAX = 3600;
+const hhmm = (ms) => new Date(ms).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit', hour12: true });
+const msgIn = (id, text, err) => { const el = $(id); if (!el) return; el.textContent = text; el.hidden = !text; el.className = 'msg' + (err ? ' err' : ''); };
+const relay = async (path, init) => {
+  const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 8000);
+  try { const r = await fetch(RELAY + ROOM + path, { ...init, signal: ctl.signal, cache: 'no-store' }); if (!r.ok) throw new Error('relay ' + r.status); return r; }
+  finally { clearTimeout(t); }
+};
+async function publishCode(code) {
+  if (code.length <= RELAY_MAX) { await relay('', { method: 'POST', body: code }); return 1; }
+  const ps = toParts(code, Date.now().toString(36));
+  for (const body of ps) await relay('', { method: 'POST', body });
+  return ps.length;
+}
+async function latestMaster() {
+  const lines = (await (await relay('/json?poll=1&since=all')).text()).split('\n');
+  return pickMaster(lines.map((l) => { try { return JSON.parse(l); } catch (e) { return null; } }));
+}
+const shareLink = async () => location.origin + location.pathname + '#' + await encode(S, { end: false });
+function applyVersion(next, say) {
+  undoState = clone(S); replaceState(next); persist(); renderAll();
+  const u = $('#undoImport'); if (u) u.hidden = false;
+  msgIn('#syncMsg', say);
+}
+function offerVersion(next) { pendingImport = next; renderPanel(); scrollTo(0, 0); }
+async function sendMaster() {
+  const btn = $('#sendMaster'); if (btn) btn.disabled = true; msgIn('#syncMsg', 'Publishing\u2026');
+  try {
+    const code = await encode(S), link = await shareLink();
+    let pre = '';
+    try {
+      await publishCode(code);
+      try { await navigator.clipboard.writeText(link); } catch (e) { /* the copy is only a spare */ }
+      return msgIn('#syncMsg', 'Published at ' + hhmm(Date.now()) + '. Other phones just tap Sync from master.');
+    } catch (e) { pre = e && e.message === 'too big' ? 'Too big for the sync service, so use the link.' : 'Could not reach the sync service, so use the link.'; }
+    let copied = false;
+    try { await navigator.clipboard.writeText(link); copied = true; } catch (e) { /* the share sheet or the box below still work */ }
+    try {
+      if (navigator.share) { await navigator.share({ title: 'Lions Charity Ball: master version', text: 'Lions Charity Ball: the latest MC script. Open the link and tap Apply it.', url: link }); return msgIn('#syncMsg', pre + ' The share sheet opened' + (copied ? ', and the link is copied.' : '.'), true); }
+    } catch (e) { if (e && e.name === 'AbortError') return msgIn('#syncMsg', pre + (copied ? ' Sharing cancelled; the link is copied, so you can paste it into a message.' : ''), true); }
+    if (copied) return msgIn('#syncMsg', pre + ' The link is copied: paste it into a message.', true);
+    const out = $('#shareOut'); if (out) { out.value = link; out.hidden = false; out.select(); }
+    msgIn('#syncMsg', pre + ' Select all and copy the link below.', true);
+  } finally { const b = $('#sendMaster'); if (b) b.disabled = false; }
+}
+async function getMaster() {
+  const btn = $('#getMaster'); if (btn) btn.disabled = true; msgIn('#syncMsg', 'Syncing\u2026');
+  try {
+    let m = null, down = false;
+    try { m = await latestMaster(); } catch (e) { down = true; }
+    const next = m && await decode(m.message, DEFAULT);
+    if (next) return applyVersion(next, 'Synced: the master was published at ' + hhmm(m.time * 1000) + '. Undo brings your earlier version back.');
+    const why = down ? 'Could not reach the sync service. ' : 'Nothing has been published yet. ';
+    try {
+      const clip = await decode(await navigator.clipboard.readText(), DEFAULT);
+      if (clip) return offerVersion(clip);
+      msgIn('#syncMsg', why + 'Copy the link from the other MC\u2019s message first, then tap Sync again.', true);
+    } catch (e) { msgIn('#syncMsg', why + 'Paste their link in the box below.', true); }
+  } finally { const b = $('#getMaster'); if (b) b.disabled = false; }
+}
+async function copyLink() {
+  const link = await shareLink(), out = $('#shareOut');
+  out.value = link;
+  const manual = () => { out.hidden = false; out.focus(); out.select(); msgIn('#shareMsg', 'Select all and copy this link.'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(() => msgIn('#shareMsg', 'Link copied. Send it in a chat; the other MC opens it and taps Apply it.'), manual);
   else manual();
 }
-function showUndo(text) { const m = $('#pasteMsg'), u = $('#undoImport'); if (m) { m.className = 'msg'; m.textContent = text; } if (u) u.hidden = !undoState; }
-function pasteGo() {
-  const next = decode($('#pasteIn').value, DEFAULT), msg = $('#pasteMsg');
-  if (!next) { msg.className = 'msg err'; msg.textContent = 'That code was not understood. Copy the whole message, starting at LIONS1.'; return; }
-  undoState = clone(S); replaceState(next); persist(); renderAll();
-  showUndo('Loaded: ' + S.script.length + ' script segments and ' + S.rows.length + ' run sheet rows. Undo brings your earlier edits back.');
+async function pasteGo() {
+  const next = await decode($('#pasteIn').value, DEFAULT);
+  if (!next) return msgIn('#pasteMsg', 'No version found. Paste the whole link or code, starting at the address or LIONS.', true);
+  offerVersion(next);
 }
-function undoImport() { if (!undoState) return; replaceState(undoState); undoState = null; persist(); renderAll(); showUndo('Undone. Your earlier version is back.'); }
-function resetAll() { undoState = clone(S); replaceState(DEFAULT); persist(); renderAll(); showUndo('Back to the original sheet. Undo brings your edits back.'); }
+function undoImport() { if (!undoState) return; replaceState(undoState); undoState = null; persist(); renderAll(); msgIn('#syncMsg', 'Undone. Your earlier version is back.'); }
+function resetAll() { undoState = clone(S); replaceState(DEFAULT); persist(); renderAll(); const u = $('#undoImport'); if (u) u.hidden = false; msgIn('#syncMsg', 'Back to the original sheet. Undo brings your edits back.'); }
 app.addEventListener('click', (e) => {
   const b = e.target.closest('button'); if (!b) return;
-  if (b.id === 'copyCode') return copyCode();
+  if (b.id === 'sendMaster') return sendMaster();
+  if (b.id === 'getMaster') return getMaster();
+  if (b.id === 'copyLink') return copyLink();
   if (b.id === 'pasteGo') return pasteGo();
   if (b.id === 'undoImport') return undoImport();
   if (b.id === 'resetAll') return arm(b, resetAll);
+  if (b.id === 'doImport') { const next = pendingImport; pendingImport = null; if (next) applyVersion(next, 'Applied. Undo brings your earlier version back.'); return; }
+  if (b.id === 'skipImport') { pendingImport = null; return renderPanel(); }
 });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && pending) persist(); else wake(); });
 addEventListener('pagehide', () => { if (pending) persist(); });
@@ -494,5 +562,11 @@ addEventListener('pagehide', () => { if (pending) persist(); });
 /* ---------- start ---------- */
 renderAll();
 setInterval(paintNow, 15000);
+// A link carries a version after "#": show it and ask before replacing anything, then clear it from the address so a reload does not ask again.
+if (/^#LIONS/.test(location.hash)) {
+  const h = location.hash;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+  decode(h, DEFAULT).then((next) => { if (next) offerVersion(next); else setNotice('That link could not be read. Ask for it to be sent again.', 10000); });
+}
 const onPages = /github\.io$/.test(location.hostname);
 try { if ('serviceWorker' in navigator && onPages) navigator.serviceWorker.register('../sw.js').catch(() => {}); } catch (e) { /* not allowed here */ }
