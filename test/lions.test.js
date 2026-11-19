@@ -258,3 +258,18 @@ test("the share code carries the script and the answers", () => {
   assert.equal(back.rosters.prizes[0].prize, "Dinner for two");
   assert.deepEqual(back, normalise(edited, DEFAULT));
 });
+
+test("the opening starts with the Acknowledgment of Country, in the words given, before any welcome", () => {
+  const g = SEGS.find((x) => x.time === "19:00");
+  const spoken = g.items.filter((i) => i.k === "line");
+  const ack = "Before we begin tonight’s festivities, I would like to acknowledge the Traditional Custodians of the land on which we gather this evening, the Wurundjeri Woi-wurrung people of the Kulin Nation. We pay our respects to their Elders past and present, and extend that respect to all Aboriginal and Torres Strait Islander peoples here tonight.";
+  assert.equal(spoken[0].who, "P");
+  assert.equal(spoken[0].text, ack, "Paul's first line is the acknowledgment, word for word");
+  assert.equal(spoken[1].who, "S");
+  assert.match(spoken[1].text, /库林民族.*Wurundjeri Woi-wurrung/, "Salli's Chinese version names the same people");
+  const welcome = g.items.findIndex((i) => /Good evening, ladies and gentlemen/.test(i.text || ""));
+  assert.ok(welcome > g.items.indexOf(spoken[1]), "the welcome comes after the acknowledgment");
+  assert.ok(!keysIn(ack).length, "no blanks left in the acknowledgment");
+  assert.ok(!fieldKeys.has("country"), "the Nation is stated, so the old blank is gone");
+  assert.equal(SEGS.flatMap((x) => x.items).filter((i) => /acknowledge the Traditional Custodians/.test(i.text || "")).length, 1, "said once, not twice");
+});
