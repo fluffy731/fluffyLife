@@ -18,6 +18,7 @@ const FILES = [
   "./packs/en.js", "./cards/en.js", "./ui/ko-en.js", "./quiz/en.js",
   "./mc/", "./mc/index.html", "./mc/mc.js", "./mc/mc.css", "./icons/mc.svg", "./icons/mc-180.png",
   "./shine/", "./shine/index.html", "./shine/app.js", "./shine/data.js", "./shine/shine.css", "./shine/manifest.json", "./icons/shine.svg", "./icons/shine-180.png", "./icons/shine-192.png", "./icons/shine-512.png",
+  "./lions/", "./lions/index.html", "./lions/app.js", "./lions/model.js", "./lions/data.js", "./lions/lions.css", "./lions/manifest.json", "./icons/lions.svg", "./icons/lions-180.png", "./icons/lions-192.png", "./icons/lions-512.png",
   "./spots/", "./spots/index.html", "./spots/spots.js", "./spots/explore.js", "./spots/today.js", "./spots/todayview.js", "./spots/stampbook.js", "./spots/model.js", "./spots/places.js", "./spots/samples.js", "./spots/regions.js", "./spots/db.js", "./spots/ui.js", "./spots/spots.css", "./spots/manifest.json", "./icons/spots.svg", "./icons/spots-180.png", "./icons/spots-512.png",
   "./films/", "./films/index.html", "./films/films.js", "./films/films.css", "./films/model.js", "./films/store.js", "./films/manifest.json", "./icons/films.svg", "./icons/films-180.png", "./icons/films-512.png",
   "./travel/", "./travel/index.html", "./travel/travel.js", "./travel/model.js", "./travel/items.js", "./travel/plan.html", "./travel/plan.js", "./travel/plan-model.js", "./travel/travel.css", "./travel/manifest.json", "./icons/travel.svg", "./icons/travel-180.png", "./icons/travel-512.png",
@@ -45,7 +46,7 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : path.includes("/stocks") ? "./stocks/index.html" : path.includes("/mc/") ? "./mc/index.html" : path.includes("/shine/") ? "./shine/index.html" : path.includes("/builder/") ? "./builder/index.html" : path.includes("/films/") ? "./films/index.html" : path.includes("/spots/") ? "./spots/index.html" : path.includes("/travel/plan") ? "./travel/plan.html" : path.includes("/travel/") ? "./travel/index.html" : "./korean/index.html");
+const fallbackPage = (path) => (path.includes("/yue") ? "./yue/index.html" : path.includes("/mongolian") ? "./mongolian/index.html" : path.includes("/english") ? "./english/index.html" : path.includes("/news") ? "./news/index.html" : path.includes("/stocks") ? "./stocks/index.html" : path.includes("/mc/") ? "./mc/index.html" : path.includes("/shine/") ? "./shine/index.html" : path.includes("/lions/") ? "./lions/index.html" : path.includes("/builder/") ? "./builder/index.html" : path.includes("/films/") ? "./films/index.html" : path.includes("/spots/") ? "./spots/index.html" : path.includes("/travel/plan") ? "./travel/plan.html" : path.includes("/travel/") ? "./travel/index.html" : "./korean/index.html");
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;

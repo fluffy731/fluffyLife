@@ -1,0 +1,34 @@
+{
+  "name": "Lions Charity Ball Run Sheet",
+  "short_name": "Lions Ball",
+  "description": "Run sheet for the Lions Charity Ball, 21 November 2026.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d1230",
+  "theme_color": "#141a3c",
+  "icons": [
+    {
+      "src": "../icons/lions.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "../icons/lions-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "../icons/lions-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "../icons/lions-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
