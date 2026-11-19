@@ -276,11 +276,6 @@ export const DEFAULT = {
     },
     {
      "id": "j13",
-     "text": "Acknowledgment of Country: confirm which Traditional Custodians apply at the RACV venue, and fill them in on the To fill tab.",
-     "done": false
-    },
-    {
-     "id": "j14",
      "text": "Entry song: confirm the singers' entrance song, 'Everyone is a superstar' (the sheet gives the English title only).",
      "done": false
     }
@@ -672,6 +667,32 @@ export const DEFAULT = {
     },
     {
      "id": "g4-2",
+     "k": "crit",
+     "text": "The Acknowledgment of Country comes first (run sheet). Paul Lai delivers it, before any welcome."
+    },
+    {
+     "id": "g4-3",
+     "k": "line",
+     "who": "P",
+     "text": "Before we begin tonight’s festivities, I would like to acknowledge the Traditional Custodians of the land on which we gather this evening, the Wurundjeri Woi-wurrung people of the Kulin Nation. We pay our respects to their Elders past and present, and extend that respect to all Aboriginal and Torres Strait Islander peoples here tonight.",
+     "tpl": false,
+     "when": ""
+    },
+    {
+     "id": "g4-4",
+     "k": "line",
+     "who": "S",
+     "text": "在今晚的庆典开始之前，我们谨向我们今晚相聚的这片土地的传统拥有者——库林民族（Kulin Nation）的 Wurundjeri Woi-wurrung 人民——致以敬意。我们向他们过去和现在的长者表示尊重，并将这份敬意延伸至今晚在座的所有澳洲原住民和托雷斯海峡岛民。",
+     "tpl": false,
+     "when": ""
+    },
+    {
+     "id": "g4-5",
+     "k": "cue",
+     "text": "Salli's Chinese version is optional. Paul's English acknowledgment is the one that counts."
+    },
+    {
+     "id": "g4-6",
      "k": "line",
      "who": "P",
      "text": "Good evening, ladies and gentlemen. I am Paul Lai.",
@@ -679,7 +700,7 @@ export const DEFAULT = {
      "when": ""
     },
     {
-     "id": "g4-3",
+     "id": "g4-7",
      "k": "line",
      "who": "S",
      "text": "各位来宾，晚上好！我是 Salli。",
@@ -687,7 +708,7 @@ export const DEFAULT = {
      "when": ""
     },
     {
-     "id": "g4-4",
+     "id": "g4-8",
      "k": "line",
      "who": "P",
      "text": "On behalf of the Lions Club of Melbourne Chinese, welcome to our Lions Charity Ball. Tonight we come together for {charity}.",
@@ -695,38 +716,12 @@ export const DEFAULT = {
      "when": ""
     },
     {
-     "id": "g4-5",
+     "id": "g4-9",
      "k": "line",
      "who": "S",
      "text": "我代表{clubZh}，欢迎大家来到狮子会慈善晚宴。今晚，我们相聚一堂，为{charityZh}献出一份爱心。",
      "tpl": false,
      "when": ""
-    },
-    {
-     "id": "g4-6",
-     "k": "crit",
-     "text": "The Acknowledgment of Country comes first (run sheet). Paul Lai delivers it."
-    },
-    {
-     "id": "g4-7",
-     "k": "line",
-     "who": "P",
-     "text": "Before we begin, I would like to acknowledge the Traditional Custodians of the land on which we meet tonight, the {country}. I pay my respects to their Elders, past and present, and to all First Nations people here with us.",
-     "tpl": false,
-     "when": ""
-    },
-    {
-     "id": "g4-8",
-     "k": "line",
-     "who": "S",
-     "text": "在开始之前，我们谨向今晚这片土地的传统拥有者——{country}——致以敬意，并向他们的长者，包括过去和现在的长者，以及在座的所有原住民朋友表示尊重。",
-     "tpl": false,
-     "when": ""
-    },
-    {
-     "id": "g4-9",
-     "k": "cue",
-     "text": "Salli's Chinese version is optional. Paul's English acknowledgment is the one that counts."
     },
     {
      "id": "g4-10",

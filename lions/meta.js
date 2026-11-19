@@ -16,7 +16,6 @@ export const META = {
     ["codeLeader", "Who leads the Code of Ethics", "club", "name"],
     ["charity", "Charity or cause", "guests", "who the ball raises funds for"],
     ["charityZh", "Charity or cause (Chinese)", "guests", "the same, in Chinese"],
-    ["country", "Traditional Custodians", "guests", "for example Wurundjeri Woi-wurrung"],
     ["vips", "Other VIPs", "guests", "names and titles, or leave blank", true],
     ["crown", "Diamond sponsor", "sponsors", "as it should be announced"],
     ["hexa", "First Gold sponsor", "sponsors", "as it should be announced"],
