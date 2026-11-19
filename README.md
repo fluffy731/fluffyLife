@@ -239,6 +239,14 @@ The two-MC script for She Rises' A Night to Shine, Friday 13 November 2026, Romb
 - **On the night:** the bar under the title shows the current segment and the minutes left, the pager and a Bluetooth page-turner step through segments, prizes can be ticked off as they are drawn, and the screen is kept awake. Add `?at=19:12` to the address to rehearse at a given time on any day.
 - **Edit the script:** everything is in `shine/data.js`; `node --test test/shine.test.js` checks that every `{field}` exists, segments run back to back, Chinese lines use simplified characters, English lines have no Chinese, and both MCs speak in every spoken segment.
 
+# Lions Charity Ball run sheet (`/lions/`, unlisted)
+
+The committee's run sheet for the Lions Club of Melbourne Chinese charity ball, Saturday 21 November 2026 at RACV, built from `Event_schedule1.xlsx`. One card per segment, with the Committee, Sound, Light and LCD cues in team colours: pick a team and its cues show large while the others shrink. The bar under the title shows the current segment and the next cue in Melbourne time; add `?at=19:12` to the address to rehearse at a given time. The Sheet tab mirrors the spreadsheet, the Checklist tab holds the ball chair's pack list and the open questions, and Notes lists every correction made to the original (three evening times the sheet stored as morning times, two missing segment names, spelling).
+
+- **Everything is editable:** times, segment names, cues, the title, date, venue, checklist items and notes. Edits are saved in that browser. **Copy my changes** on the Notes tab makes a code another phone pastes to load the same version (with Undo); **Reset to the original sheet** brings back `lions/data.js`.
+- **Unlisted:** left off the home page, and its page asks search engines not to index it. Unlisted is not private: the address still opens for anyone who has it, and the repo is public, so `lions/data.js` holds the committee's schedule, names included.
+- **Edit the schedule:** it is all in `lions/data.js`. The logic that needs no DOM (times, the live bar, the share code) is in `lions/model.js`; `node --test test/lions.test.js` checks it, the data, and the offline wiring.
+
 # Stocks (`/stocks/`, unlisted)
 
 Large US, Hong Kong and UK stocks rated by fixed rules, with the rules' own scorecard, built for someone new to shares. A cut-down version of the TradingAgents idea (several analysts argue, a judge rates, every past call is scored) without the dozens of AI calls per stock. Personal research, not financial advice.
