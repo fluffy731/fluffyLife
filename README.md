@@ -248,11 +248,13 @@ The two-MC script and run sheet for the Lions Club of Melbourne Chinese charity 
 - **Run sheet:** the committee's cues as cards (Committee, Sound, Light and LCD in team colours, with a team filter) or as a grid like the spreadsheet.
 - **Notes:** the ball chair's pack list, a **To confirm** list of open questions, and every correction made to the original sheet (three evening times the sheet stored as morning times, two missing segment names, spelling).
 
-Everything is editable: script lines (Edit lines), the blanks, the run sheet cells, the checklists, the title, date and venue. Edits are saved in that browser. **Copy my changes** on the Notes tab makes a code another phone pastes to load the same version (with Undo); **Reset to the original sheet** brings back `lions/data.js`. A copy saved before the script existed keeps its edits and gains the script.
+Everything is editable: script lines (Edit lines), the blanks, the run sheet cells, the checklists, the title, date and venue. Edits are saved in that browser.
+
+**Sharing, as on Night to Shine** (top of the Notes tab). One phone is the master: after changing the script it taps **Publish my version**, which sends the whole sheet, compressed, to a small public relay (ntfy.sh, a room just for this event). Every other phone taps **Sync from master**, which fetches the newest version, applies it in place of that phone's edits, and offers **Undo**. If the relay cannot be reached (venue wifi), Publish copies a link instead (or opens the share sheet): opening the link shows a banner that asks before it applies anything, and **Copy a link to send** and the paste box do the same without the relay. **Reset to the original sheet** brings back `lions/data.js`. A copy saved before the script existed keeps its edits and gains the script. The relay room name is in this public repo, so anyone who finds it could publish to it; anything that arrives is rebuilt field by field as plain text, size-capped, and never applied without Undo.
 
 Unlisted: left off the home page, and its page asks search engines not to index it. Unlisted is not private: the address still opens for anyone who has it, and the repo is public, so `lions/data.js` holds the committee's schedule, names included.
 
-Where things are: the script and run sheet are in `lions/data.js`; the blanks and rosters are defined in `lions/meta.js`; the logic that needs no DOM (times, the live bar, blanks, the share code) is in `lions/model.js`. `node --test test/lions.test.js` checks the data (times match the run sheet, every `{blank}` is a field, every English line has a Chinese partner, the Chinese is simplified), the logic and the offline wiring.
+Where things are: the script and run sheet are in `lions/data.js`; the blanks and rosters are defined in `lions/meta.js`; the logic that needs no DOM (times, the live bar, blanks, the share code, the relay's parts) is in `lions/model.js`. `node --test test/lions.test.js` checks the data (times match the run sheet, every `{blank}` is a field, every English line has a Chinese partner, the Chinese is simplified), the logic and the offline wiring.
 
 # Stocks (`/stocks/`, unlisted)
 

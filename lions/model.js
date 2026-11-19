@@ -79,7 +79,7 @@ export function leftOf(state, meta) {
 }
 
 // ---------- state from outside (a pasted code, or localStorage) ----------
-const str = (v) => (typeof v === "string" ? v : "");
+const str = (v) => (typeof v === "string" ? v.slice(0, 5000) : "");
 const rid = (p) => p + Math.random().toString(36).slice(2, 8);
 const objs = (a) => (Array.isArray(a) ? a.filter((x) => x && typeof x === "object") : []);
 const hm = (t) => (/^([01]\d|2[0-3]):[0-5]\d$/.test(t) ? t : "");
@@ -123,17 +123,82 @@ export function normalise(o, base) {
   return out;
 }
 
-// The share code is the whole sheet as base64 text with a prefix, so it survives any chat app.
-export const PREFIX = "LIONS1.";
-const toB64 = (s) => { let bin = ""; new TextEncoder().encode(s).forEach((b) => { bin += String.fromCharCode(b); }); return btoa(bin); };
-const fromB64 = (b) => new TextDecoder().decode(Uint8Array.from(atob(b), (c) => c.charCodeAt(0)));
-// A full stop ends the code (base64 never contains one), so words around it in a chat message are ignored.
-export const encode = (state) => PREFIX + toB64(JSON.stringify(state)) + ".";
-export function decode(text, base) {
+// ---------- sharing ----------
+// A version travels as text. LIONS3 is the whole sheet gzipped then base64url; LIONS2 is the same without gzip (for a browser that cannot
+// compress); LIONS1 is the first release (plain JSON in ordinary base64) and still opens. A full stop ends a pasted code (base64 never
+// contains one), so words around it in a chat message are ignored. A link carries the code after "#" and needs no full stop,
+// because chat apps tend to drop a full stop at the end of a link.
+export const PREFIX = "LIONS3.", PLAIN = "LIONS2.", LEGACY = "LIONS1.";
+const toB64 = (bytes) => { let bin = ""; for (const b of bytes) bin += String.fromCharCode(b); return btoa(bin); };
+const fromB64 = (b) => Uint8Array.from(atob(b), (c) => c.charCodeAt(0));
+const toUrl = (b) => b.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const fromUrl = (b) => { let s = b.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return s; };
+const gzip = async (bytes) => new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer());
+// A code can come from anyone who finds the relay room, so unzipping stops at a size no real sheet reaches.
+export const MAX_UNZIPPED = 4_000_000;
+async function gunzip(bytes) {
+  const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip")).getReader();
+  const chunks = [];
+  let n = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    n += value.length;
+    if (n > MAX_UNZIPPED) { await reader.cancel(); throw new Error("too big"); }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(n);
+  let at = 0;
+  for (const c of chunks) { out.set(c, at); at += c.length; }
+  return out;
+}
+export async function encode(state, { end = true } = {}) {
+  const raw = new TextEncoder().encode(JSON.stringify(state));
+  let code;
+  try { code = PREFIX + toUrl(toB64(await gzip(raw))); } catch { code = PLAIN + toUrl(toB64(raw)); }
+  return end ? code + "." : code;
+}
+export async function decode(text, base) {
   const t = String(text ?? "");
-  const i = t.indexOf(PREFIX);
-  if (i < 0) return null;
-  const rest = t.slice(i + PREFIX.length), end = rest.indexOf(".");
-  if (end < 0) return null; // a copy that lost its end
-  try { return normalise(JSON.parse(fromB64(rest.slice(0, end).replace(/[^A-Za-z0-9+/=]/g, ""))), base); } catch { return null; }
+  const hits = [PREFIX, PLAIN, LEGACY].map((p) => ({ p, i: t.indexOf(p) })).filter((h) => h.i >= 0).sort((a, b) => a.i - b.i);
+  if (!hits.length) return null;
+  const { p, i } = hits[0];
+  const rest = t.slice(i + p.length), dot = rest.indexOf("."), link = t[i - 1] === "#";
+  if (dot < 0 && !link) return null; // a copy that lost its end
+  const payload = (dot >= 0 ? rest.slice(0, dot) : rest.split(/\s/)[0]).replace(/[^A-Za-z0-9+/=_-]/g, "");
+  try {
+    let bytes = fromB64(fromUrl(payload));
+    if (p === PREFIX) bytes = await gunzip(bytes);
+    return normalise(JSON.parse(new TextDecoder().decode(bytes)), base);
+  } catch { return null; }
+}
+
+// ---------- the relay (one-tap sync between phones) ----------
+// The relay keeps a message to about 4 KB, so a bigger version goes up as numbered parts that only count once every part has arrived.
+export const MAX_PARTS = 40, CHUNK = 3500;
+export const PART_RE = /^LIONSC\.([0-9a-z]+)\.(\d+)\.(\d+)\.([\s\S]*)$/;
+export function toParts(code, id) {
+  const n = Math.ceil(code.length / CHUNK);
+  if (n > MAX_PARTS) throw new Error("too big");
+  return Array.from({ length: n }, (_, i) => `LIONSC.${id}.${i}.${n}.${code.slice(i * CHUNK, (i + 1) * CHUNK)}`);
+}
+// events: the relay's "message" events, { event, message, time }. Returns the newest complete version as { message, time }, or null.
+export function pickMaster(events) {
+  let best = null;
+  const groups = new Map();
+  const take = (message, time) => { if (!best || time >= best.time) best = { message, time }; };
+  for (const m of events) {
+    if (!m || m.event !== "message" || typeof m.message !== "string") continue;
+    const c = m.message.match(PART_RE);
+    if (c) {
+      const id = c[1], i = +c[2], n = +c[3];
+      if (!(n >= 1 && n <= MAX_PARTS && i < n)) continue;
+      const g = groups.get(id) || { n, parts: {}, time: 0 };
+      g.parts[i] = c[4];
+      g.time = Math.max(g.time, m.time);
+      groups.set(id, g);
+      if (g.n === n && Array.from({ length: n }, (_, j) => j in g.parts).every(Boolean)) take(Array.from({ length: n }, (_, j) => g.parts[j]).join(""), g.time);
+    } else if (/LIONS[123]\./.test(m.message)) take(m.message, m.time);
+  }
+  return best;
 }

@@ -2,7 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import { DEFAULT } from "../lions/data.js";
-import { parseTime, fmt12, longDate, effTimes, nowState, normalise, encode, decode, PREFIX, keysIn, parts, leftOf, rowDone } from "../lions/model.js";
+import { parseTime, fmt12, longDate, effTimes, nowState, normalise, encode, decode, PREFIX, PLAIN, LEGACY, keysIn, parts, leftOf, rowDone, toParts, pickMaster, MAX_PARTS, CHUNK, MAX_UNZIPPED } from "../lions/model.js";
+import { gzipSync } from "node:zlib";
 import { META } from "../lions/meta.js";
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), "utf8");
@@ -77,23 +78,40 @@ test("the live bar: before, early, live (with the next cue), and after", () => {
   assert.equal(nowState(rows, "", { date, min: 60 }).phase, "none");
 });
 
-test("the share code round-trips the whole sheet", () => {
+test("the share code round-trips the whole sheet, however it arrives", async () => {
   const edited = structuredClone(DEFAULT);
-  edited.rows[4].s = "Lions song 5% — fade for the MCs. 你好";
+  edited.rows[4].s = "Lions song 5% \u2014 fade for the MCs. \u4f60\u597d";
   edited.lists[0].items[0].done = true;
   edited.notes = "Bring a spare lectern mic";
-  const code = encode(edited);
-  assert.ok(code.startsWith(PREFIX));
-  assert.deepEqual(decode(`Here you go:\n${code}\nthanks`), normalise(edited), "survives text around it");
-  assert.deepEqual(decode(code.replace(PREFIX, `${PREFIX}\n`).replace(/(.{40})/g, "$1\n")), normalise(edited), "survives chat line wrapping");
-  assert.equal(decode(code.slice(0, -1)), null, "a copy that lost its end is refused, not half-loaded");
-  assert.equal(decode(code.slice(0, 200)), null, "a cut-off copy is refused");
+  const code = await encode(edited);
+  assert.ok(code.startsWith(PREFIX) && code.endsWith("."), "gzipped, with an end marker");
+  assert.match(code, /^LIONS3\.[A-Za-z0-9_-]+\.$/, "only link-safe characters");
+  assert.ok(code.length < 25000, `a full sheet should stay small: ${code.length}`);
+  const want = normalise(edited, DEFAULT);
+  assert.deepEqual(await decode(`Here you go:\n${code}\nthanks`, DEFAULT), want, "survives text around it");
+  assert.deepEqual(await decode(code.replace(PREFIX, `${PREFIX}\n`).replace(/(.{40})/g, "$1\n"), DEFAULT), want, "survives chat line wrapping");
+  assert.equal(await decode(code.slice(0, -1), DEFAULT), null, "a copy that lost its end is refused, not half-loaded");
+  assert.equal(await decode(code.slice(0, 200), DEFAULT), null, "a cut-off copy is refused");
+  // a link carries the code after # and needs no full stop (chat apps tend to drop one at the end of a link)
+  const link = `https://example.test/fluffyLife/lions/#${await encode(edited, { end: false })}`;
+  assert.ok(!link.endsWith("."));
+  assert.deepEqual(await decode(link, DEFAULT), want, "a link opens");
+  assert.deepEqual(await decode(`Open this: ${link} thanks!`, DEFAULT), want, "a link with words after it opens");
+  assert.deepEqual(await decode(`${link}.`, DEFAULT), want, "a link whose full stop survived opens too");
+  // older formats still open
+  const json = JSON.stringify(edited);
+  assert.deepEqual(await decode(`${PLAIN}${Buffer.from(json).toString("base64url")}.`, DEFAULT), want, "LIONS2: plain, no compression");
+  assert.deepEqual(await decode(`${LEGACY}${Buffer.from(json).toString("base64")}.`, DEFAULT), want, "LIONS1: the first release");
 });
 
-test("anything from outside is rebuilt field by field", () => {
-  assert.equal(decode("nothing here"), null);
-  assert.equal(decode(`${PREFIX}!!!not base64!!!`), null);
-  assert.equal(decode(`${PREFIX}${Buffer.from("{\"rows\":1}").toString("base64")}`), null);
+test("anything from outside is rebuilt field by field", async () => {
+  assert.equal(await decode("nothing here"), null);
+  assert.equal(await decode(`${PREFIX}!!!not base64!!!.`), null);
+  assert.equal(await decode(`${PREFIX}${gzipSync("{\"rows\":1}").toString("base64url")}.`), null, "valid gzip, wrong shape");
+  assert.equal(await decode(`${PLAIN}${Buffer.from("{\"rows\":1}").toString("base64url")}.`), null, "plain, wrong shape");
+  const bomb = gzipSync(Buffer.alloc(MAX_UNZIPPED + 1000, 32));
+  assert.ok(bomb.length < 20000, "a small code that unzips to far more than any sheet");
+  assert.equal(await decode(`${PREFIX}${bomb.toString("base64url")}.`), null, "refused instead of unzipped");
   const hostile = normalise({
     event: { title: "<img src=x onerror=alert(1)>", date: { x: 1 }, __proto__: { polluted: true } },
     rows: [{ id: 5, time: "25:99", seg: "ok", d: { a: 1 }, extra: "drop me" }, "not a row", null],
@@ -247,12 +265,12 @@ test("a copy saved before the script existed picks the script up, and hostile sc
   assert.ok(!({}).polluted);
 });
 
-test("the share code carries the script and the answers", () => {
+test("the share code carries the script and the answers", async () => {
   const edited = structuredClone(DEFAULT);
   edited.script[3].items[1].text = "Good evening, everyone. I am Paul.";
   edited.fields.charity = "Children's health";
   edited.rosters.prizes[0] = { prize: "Dinner for two", donor: "A sponsor" };
-  const back = decode(`Updated script:\n${encode(edited)}\nthanks`, DEFAULT);
+  const back = await decode(`Updated script:\n${await encode(edited)}\nthanks`, DEFAULT);
   assert.equal(back.script[3].items[1].text, "Good evening, everyone. I am Paul.");
   assert.equal(back.fields.charity, "Children's health");
   assert.equal(back.rosters.prizes[0].prize, "Dinner for two");
@@ -272,4 +290,41 @@ test("the opening starts with the Acknowledgment of Country, in the words given,
   assert.ok(!keysIn(ack).length, "no blanks left in the acknowledgment");
   assert.ok(!fieldKeys.has("country"), "the Nation is stated, so the old blank is gone");
   assert.equal(SEGS.flatMap((x) => x.items).filter((i) => /acknowledge the Traditional Custodians/.test(i.text || "")).length, 1, "said once, not twice");
+});
+
+// ---------- one-tap sync through the relay ----------
+const ev = (message, time) => ({ event: "message", message, time });
+
+test("a big version goes up as parts and comes back as one, only once every part has arrived", async () => {
+  const code = await encode(DEFAULT);
+  const ps = toParts(code, "abc");
+  assert.ok(ps.length > 1 && ps.length <= MAX_PARTS, `${ps.length} parts`);
+  assert.ok(ps.every((x) => x.length <= CHUNK + 40), "each part fits the relay's message size");
+  assert.equal(pickMaster(ps.map((m, i) => ev(m, 100 + i))).message, code, "in order");
+  assert.equal(pickMaster([...ps].reverse().map((m, i) => ev(m, 100 + i))).message, code, "out of order");
+  assert.equal(pickMaster(ps.slice(1).map((m, i) => ev(m, 100 + i))), null, "one part missing: not used");
+  assert.deepEqual(await decode(pickMaster(ps.map((m) => ev(m, 5))).message, DEFAULT), normalise(DEFAULT, DEFAULT));
+  assert.throws(() => toParts("x".repeat(CHUNK * MAX_PARTS + 1), "z"), /too big/);
+});
+
+test("the relay picks the newest complete version and ignores everything else", async () => {
+  const old = await encode({ ...DEFAULT, notes: "old" }), now = await encode({ ...DEFAULT, notes: "newest" });
+  const partsOf = toParts(now, "n1");
+  const events = [
+    ev(old, 100), ev("hello from someone", 150), { event: "open", time: 160 }, null, { event: "message", message: 42, time: 170 },
+    ev(partsOf[0], 200), ev("LIONSC.bad.9.2.xx", 205), ...partsOf.slice(1).map((m, i) => ev(m, 201 + i)),
+  ];
+  assert.equal(pickMaster(events).message, now, "the newer version wins");
+  assert.equal(pickMaster([ev(now, 100), ev(old, 300)]).message, old, "newest by time, not by order");
+  assert.equal(pickMaster([ev("hello", 1), { event: "keepalive" }]), null, "nothing published yet");
+  const incomplete = pickMaster([ev(old, 100), ev(partsOf[0], 500)]);
+  assert.equal(incomplete.message, old, "a half-finished newer upload does not replace a complete older one");
+});
+
+test("the Lions page offers sharing like Night to Shine: publish, sync, a link, a banner, Undo", () => {
+  const app = read("lions/app.js");
+  for (const id of ["sendMaster", "getMaster", "copyLink", "pasteGo", "undoImport", "resetAll", "doImport", "skipImport"]) assert.ok(app.includes(`'${id}'`) || app.includes(`id="${id}"`), `${id} is missing`);
+  assert.match(app, /const RELAY = 'https:\/\/ntfy\.sh\/', ROOM = 'lions-2026-11-21-[0-9a-f]{16}'/, "its own room, not Night to Shine's");
+  assert.ok(!app.includes("shine-2026"), "the Shine room is not reused");
+  assert.match(app, /\^#LIONS/, "opens a link that carries a version");
 });
