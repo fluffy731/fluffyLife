@@ -7,6 +7,7 @@ import { load, save, exportJSON, importJSON } from "./lib/store.js";
 import { mergeItems } from "./lib/validate.js";
 import { clipName } from "./lib/audio.js";
 import { createQuiz } from "./quiz-view.js";
+import { nav } from "./lib/nav.js";
 
 // ---------- state ----------
 let pack, t, ctx, ls, state, items, vocab, grammar, units, quiz, songs;
@@ -241,6 +242,15 @@ function render() {
   document.querySelectorAll("#more .tile").forEach((b) => b.classList.toggle("on", b === tile));
   const due = dueItems(items, state.progress, Date.now()).length;
   const badge = $("#due-badge"); badge.hidden = !due; badge.textContent = t.dueBadge(due);
+  syncLevel();
+}
+
+// A drill-in screen (an open song, the add or import form, a quiz result) is a level: Back, or a swipe from the left
+// edge, returns to its list, as on an iPhone. A quiz in progress is not one, so a stray swipe can't abandon it.
+function syncLevel() {
+  const deep = (tab === "songs" && songs?.deep()) || (tab === "quiz" && quiz.deep());
+  if (!deep) return nav.release("screen");
+  nav.push("screen", () => { if (tab === "songs") songs.leave(); else quiz.reset(); render(); });
 }
 
 // ---------- editing ----------
@@ -276,6 +286,7 @@ function openEditor(existing, prefill = {}) {
   $("#fields").innerHTML = fields(g ? "grammar" : "vocab");
   const kindSel = $('select[name="kind"]'); if (kindSel) kindSel.onchange = () => { $("#fields").innerHTML = fields(kindSel.value); };
   const dlg = $("#dlg");
+  dlg.returnValue = "";   // a Back or Escape close must never inherit "delete" from the last form
   dlg.onclose = () => {
     if (dlg.returnValue === "delete") { state.custom = state.custom.filter((c) => c.id !== existing.id); delete state.progress[existing.id]; persist(); rebuild(); render(); }
   };
@@ -486,19 +497,8 @@ function setupMore() {
   });
   sheet.addEventListener("click", (e) => { if (e.target === sheet) closeMore(); });   // the backdrop
   sheet.addEventListener("cancel", (e) => { e.preventDefault(); closeMore(); });     // Escape, with the slide
-  let y0 = null;
-  sheet.addEventListener("touchstart", (e) => { y0 = sheet.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
-  sheet.addEventListener("touchmove", (e) => {
-    if (y0 === null) return;
-    const dy = Math.max(0, e.touches[0].clientY - y0);
-    sheet.style.transform = dy ? `translateY(${dy}px)` : "";
-  }, { passive: true });
-  sheet.addEventListener("touchend", (e) => {
-    if (y0 === null) return;
-    const dy = e.changedTouches[0].clientY - y0; y0 = null;
-    sheet.style.transform = "";
-    if (dy > 80) closeMore();
-  });
+  // Swipe down closes it, and Back or the left-edge swipe does too (lib/nav.js), both through the slide.
+  nav.watchDialog(sheet, { close: closeMore, swipeDown: true });
 }
 function openMore() { const sheet = $("#more"); if (sheet && !sheet.open) { sheet.classList.remove("closing"); sheet.showModal(); } }
 function closeMore() {
@@ -539,6 +539,11 @@ export function start(p) {
   setupMore();
   bindEvents();
   applyTheme();
+  // iPhone behaviour: the editor is a level too (Back cancels it), a swipe from the left edge goes back, and a pull
+  // down on Home re-draws the hour's card. Flashcards keep their own gestures, so a pull does nothing there.
+  if ($("#dlg")) nav.watchDialog($("#dlg"), { close: () => $("#dlg").close("cancel") });
+  nav.installEdgeSwipe();
+  nav.pullToRefresh(window, () => render(), { enabled: () => tab === "home" });
   render();
   setInterval(() => { if (tab === "home") render(); }, 60000);
   const refresh = () => { if (document.visibilityState === "visible" && (tab === "home" || tab === "review")) render(); };

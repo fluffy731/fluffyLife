@@ -85,6 +85,7 @@ export function createQuiz(api) {
   return {
     render: () => (s.view === "q" ? questionHTML() : s.view === "done" ? doneHTML() : listHTML()),
     reset: () => { s = { view: "list" }; },
+    deep: () => s.view === "done",   // the result screen is a level above the list; a quiz in progress is not
     passed,
     homeCard() {
       const u = api.units().find((x) => api.isLearned(x) && !passed(x.key));

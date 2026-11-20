@@ -15,12 +15,14 @@
 <link rel="icon" href="../icons/films.svg" type="image/svg+xml">
 <link rel="preload" href="../fonts/Pretendard-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="../metro.css">
+<link rel="stylesheet" href="../lib/nav.css">
 <link rel="stylesheet" href="./films.css">
 </head>
 <body>
 <header class="top">
   <span class="roundel" aria-hidden="true">影</span>
   <h1>Films</h1>
+  <button id="refresh" class="refresh" type="button" aria-label="Refresh the film list"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.2 12a7.2 7.2 0 1 1-2.2-5.2"/><path d="M19.4 4.2v4.4h-4.4"/></svg></button>
   <span id="want-badge" class="badge" hidden></span>
 </header>
 <main id="view" class="view"></main>

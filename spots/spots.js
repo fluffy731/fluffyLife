@@ -6,13 +6,14 @@ import { renderExplore } from "./explore.js";
 import { renderToday } from "./todayview.js";
 import { renderSaved, renderPassport, openCheckIn, backupNow, restoreFrom } from "./stampbook.js";
 import { $, esc, toast, closeSheet } from "./ui.js";
+import { nav } from "../lib/nav.js";
 
 const FIELD_NAMES = { photo: "Photos", price: "Price level", priceRange: "Price range", rating: "Ratings", hours: "Opening hours",
   mapsUrl: "Google Maps link", summary: "Review summary (Google may not offer it in Australia yet)", reviews: "Review excerpts" };
 
 const app = {
   state: load(localStorage),
-  ui: { mode: "now", minutes: 120, travel: "drive", kinds: new Set(["eat"]), price: null, late: 30,
+  ui: { mode: "now", minutes: 120, travel: "drive", kinds: new Set(["eat"]), price: null, late: 30, cuisines: new Set(), maxKm: null, townKm: 10,
     lateKinds: new Set(["eat", "drink", "dessert"]), where: "town", start: "09:00", pace: "relaxed", savedKind: "all", todayFilter: null, showAll: {},
     near: { q: "", label: "", target: null, range: "d15", minRating: 4.5, minReviews: 1000, kinds: new Set(["eat", "drink", "coffee"]) } },
   pos: null, places: new Map(), lastResult: null, freshStamp: null, tab: "today",
@@ -196,6 +197,13 @@ async function refreshStale() {
     app.persist();
   } catch { /* offline or quota: try again next time */ }
 }
+
+// iPhone behaviour (lib/nav.js): Back, a swipe from the left edge or a swipe down close the sheet, pulling down on Today
+// fetches the listings again, and tapping the tab you are on scrolls to the top.
+nav.watchDialog($("#sheet"), { close: closeSheet, swipeDown: true });
+nav.installEdgeSwipe();
+nav.pullToRefresh(window, async () => { await app.loadFeed(true); renderToday(app); }, { enabled: () => app.tab === "today" });
+nav.onTabReselect($(".tabbar"), ".tab");
 
 applyTheme();
 tickClock(); setInterval(tickClock, 30e3);

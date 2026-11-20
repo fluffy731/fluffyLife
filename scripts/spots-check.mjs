@@ -330,6 +330,98 @@ await page.waitForFunction(() => document.querySelector("#v-today")?.textContent
 ok("without a feed, Today says when events arrive and still offers ideas", (await page.textContent("#v-today")).includes("next hourly update") && (await page.locator("[data-idea]").count()) >= 2);
 await page.screenshot({ path: process.env.SHOT_DIR ? `${process.env.SHOT_DIR}/spots-today-nofeed.png` : "/tmp/spots-today-nofeed.png" });
 
+// Cuisine and distance
+page = await newPage({ sample: true });
+await page.click("#mode-now");
+ok("Cuisine shows under What when Eat is chosen, led by Cantonese, Chinese and Korean", (await page.locator(".cuisines [data-cuisine]").allTextContents()).slice(0, 4).join("|") === "Any|Cantonese|Chinese|Korean");
+await page.click('.kinds [data-kind="coffee"]'); await page.click('.kinds [data-kind="eat"]');
+ok("Cuisine hides when Eat is off", (await page.locator(".cuisines").count()) === 0);
+await page.click('.kinds [data-kind="eat"]'); await page.click('.kinds [data-kind="coffee"]');   // back to Eat alone
+await page.click('[data-cuisine="korean"]');
+ok("choosing a cuisine presses it and releases Any", (await page.locator('[data-cuisine="korean"][aria-pressed=true]').count()) === 1 && (await page.locator('[data-cuisine="any"][aria-pressed=true]').count()) === 0);
+await page.click("#find");
+await page.waitForSelector(".result", { timeout: 10000 });
+const meta = (await page.locator(".result .meta").allTextContents()).filter((t) => t.includes("★"));
+ok(`every result is Korean (${meta.length} shown)`, meta.length > 0 && meta.every((t) => t.includes("Korean")));
+await page.click('[data-cuisine="any"]');
+ok("Any clears the cuisines", (await page.locator('[data-cuisine="korean"][aria-pressed=true]').count()) === 0);
+// the slider: five steps up from 500 m is 3 km
+const slide = async (id, step) => page.evaluate(([i, v]) => { const el = document.getElementById(`dist-${i}`); el.value = String(v); el.dispatchEvent(new Event("input", { bubbles: true })); }, [id, step]);
+ok("Now starts on Any distance", (await page.textContent("#dist-now-val")) === "Any distance");
+await slide("now", 4);
+ok("moving the slider shows the distance and how long it takes", (await page.textContent("#dist-now-val")) === "3 km" && (await page.textContent("#dist-now-hint")).includes("drive"));
+await page.click("#find");
+await page.waitForSelector(".result", { timeout: 10000 });
+const kms = (await page.locator(".result .travel + *, .result .meta").allTextContents()).map((t) => /· ([\d.]+) km/.exec(t)).filter(Boolean).map((m) => +m[1]);
+ok(`every result is within 3 km (${kms.length} distances read, furthest ${Math.max(...kms)} km)`, kms.length > 0 && Math.max(...kms) <= 3);
+await slide("now", 4);
+await page.click('[data-nrange], #mode-near').catch(() => {});
+await page.click("#mode-near");
+await page.click('[data-nrange="w1"]');
+await slide("near", 6);
+ok("in Near, the slider sets the distance and lets go of the presets", (await page.textContent("#dist-near-val")) === "5 km" && (await page.locator("[data-nrange][aria-pressed=true]").count()) === 0);
+await page.fill("#near-q", "Fitzroy");
+await page.click("#find");
+await page.waitForSelector(".region", { timeout: 10000 });
+ok("Near results say the typed radius", (await page.textContent(".region")).includes("within a 5 km radius"));
+await page.click("#mode-tomorrow");
+ok("Tomorrow around town has a distance slider, and Eat's cuisines are for lunch and dinner", (await page.locator("#dist-town").count()) === 1 && (await page.textContent(".cuisines").catch(() => "")).includes("Korean") && (await page.locator("#v-explore .label small").first().textContent()).includes("lunch and dinner"));
+await page.click('[data-where="surprise"]');
+ok("a day-trip region has no around-town slider", (await page.locator("#dist-town").count()) === 0);
+ok("no horizontal scroll with the sliders", await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+
+// iPhone navigation (lib/nav.js), in Chromium with touch emulation (not a real iPhone)
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, serviceWorkers: "block", permissions: ["geolocation"], geolocation: { latitude: -37.8136, longitude: 144.9631 } });
+  const pg = await ctx.newPage();
+  pg.on("pageerror", (e) => errs.push(e.message));
+  await pg.clock.setFixedTime(WED_1PM);
+  await pg.addInitScript(sampleOn);
+  await pg.route("**/spots/feed.json", (r) => r.fulfill({ contentType: "application/json", body: FEED }));
+  await pg.route(/^https:\/\/(cdn\.eventfinda|media\.timeout|cdn\.concreteplayground)/, (r) => r.fulfill({ status: 404, body: "" }));
+  await pg.goto(base, { waitUntil: "load" });
+  const cdp = await ctx.newCDPSession(pg);
+  const touch = (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+  const swipe = async (x0, y0, x1, y1, steps = 10) => { await touch("touchStart", x0, y0); for (let i = 1; i <= steps; i++) { await touch("touchMove", x0 + ((x1 - x0) * i) / steps, y0 + ((y1 - y0) * i) / steps); await pg.waitForTimeout(12); } await touch("touchEnd"); };
+  const st = () => pg.evaluate(() => ({ nav: (history.state && history.state.nav) || 0, open: document.querySelector("#sheet").open, url: location.pathname }));
+  await pg.tap('.tab[data-tab="explore"]');
+  await pg.tap("#find");
+  await pg.waitForSelector(".result");
+  await pg.tap(".result .open-place >> nth=0");
+  await pg.waitForFunction(() => document.querySelector("#sheet").open);
+  let s = await st();
+  ok("opening a place adds one history entry and keeps the address", s.open && s.nav === 1 && s.url === "/spots/");
+  await pg.evaluate(() => history.back()); await pg.waitForTimeout(500);
+  s = await st();
+  ok("Back closes the place and stays in Spots", !s.open && s.nav === 0 && s.url === "/spots/");
+  await pg.tap(".result .open-place >> nth=0");
+  await pg.waitForFunction(() => document.querySelector("#sheet").open);
+  await swipe(6, 420, 200, 430); await pg.waitForTimeout(700);
+  s = await st();
+  ok("a swipe from the left edge closes the place", !s.open && s.nav === 0);
+  await pg.tap(".result .open-place >> nth=0");
+  await pg.waitForFunction(() => document.querySelector("#sheet").open);
+  await pg.evaluate(() => document.querySelector("#sheet").scrollTo(0, 0));
+  await swipe(200, 420, 205, 760); await pg.waitForTimeout(600);
+  ok("a swipe down closes the place", !(await st()).open);
+  await pg.tap('.tab[data-tab="saved"]');
+  await swipe(6, 420, 200, 430); await pg.waitForTimeout(400);
+  ok("at the root, a swipe from the edge does nothing", (await pg.getAttribute('.tab[data-tab="saved"]', "aria-current")) === "page" && (await st()).nav === 0);
+  await pg.tap('.tab[data-tab="today"]');
+  await pg.waitForSelector("#v-today *");
+  let pulls = 0;
+  await pg.route("**/spots/feed.json", (r) => { pulls++; r.fulfill({ contentType: "application/json", body: FEED }); });
+  await pg.evaluate(() => scrollTo(0, 0));
+  await swipe(200, 140, 204, 420, 14); await pg.waitForTimeout(1200);
+  ok(`pulling down on Today fetches the listings again (${pulls} fetch)`, pulls === 1);
+  await pg.tap('.tab[data-tab="explore"]');
+  await pg.waitForSelector("#find");
+  await pg.evaluate(() => scrollTo(0, 0));
+  await swipe(200, 140, 204, 420, 14); await pg.waitForTimeout(600);
+  ok("pulling down on another tab does nothing (no refresh there)", pulls === 1);
+  await ctx.close();
+}
+
 ok(`no page errors${errs.length ? ": " + errs.join(" | ") : ""}`, errs.length === 0);
 await b.close(); srv.close();
 console.log(out.join("\n"));

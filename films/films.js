@@ -1,7 +1,8 @@
 // Films: the screens. Renders films/feed.json (built weekly on GitHub Actions by scripts/build-films.mjs) on the
 // Metro line look (../metro.css, data-line="film"). The ranking logic is in model.js; what the phone keeps, store.js.
-import { PLACES, ERAS, NAMED_ERAS, shelfLists, genreChips, erasWithFilms, rankMap, surprise, moreLike, search, browseRows } from "./model.js";
+import { PLACES, ERAS, NAMED_ERAS, shelfLists, genreChips, erasWithFilms, rankMap, surprise, moreLike, search, browseRows, peopleIndex, searchPeople, filmography, matchedBy, feedChange } from "./model.js";
 import { load, save, toggleWant, toggleSeen, backupText, restore } from "./store.js";
+import { nav } from "../lib/nav.js";
 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -12,7 +13,9 @@ const LISTS = { rated: "Best rated", popular: "Most popular", crowd: "Crowd-plea
 const GRID_STEP = 24;
 
 const state = load();
-let feed, ranks = new Map(), byId = new Map();   // feed: undefined while loading, null when there is none
+let feed, ranks = new Map(), byId = new Map(), people = new Map();   // feed: undefined while loading, null when there is none
+let fetchedAt = 0;          // when the feed was last fetched, so coming back to the app after an hour refreshes it
+let person = null;          // the actor or director whose films the Search tab is showing (a TMDB id)
 let tab = "browse";
 let grid = null;            // { list: "rated"|"popular"|"crowd", genre: string|null, shown: number } while a full list is open
 
@@ -98,18 +101,24 @@ function fullList(el) {
 
 // A list row (search results, the watchlist): a small poster, both titles, the year and place. Works from a
 // catalogue film or a stored snapshot.
-function rowItem(f) {
+function rowItem(f, why = null) {
   const place = PLACES.find((p) => p.id === f.places?.[0]);
   const zh = /[㐀-鿿]/.test(f.original || "");
   const img = f.poster ? `<img loading="lazy" alt="" src="${esc(posterURL(f.poster))}" onerror="this.remove()">` : "";
   const en = f.title && f.title !== f.original ? `${esc(f.title)} · ` : "";
   return `<button class="item film-row" data-film="${esc(f.id)}"><span class="poster mini">${img}</span>`
-    + `<span class="row-t"><b class="${zh ? "zh-t" : ""}">${esc(f.original || f.title)}</b><span class="meta">${en}${esc(f.year || "")}${place ? ` · ${place.name}` : ""}</span></span></button>`;
+    + `<span class="row-t"><b class="${zh ? "zh-t" : ""}">${esc(f.original || f.title)}</b><span class="meta">${en}${esc(f.year || "")}${place ? ` · ${place.name}` : ""}</span>`
+    + (why ? `<span class="meta why">${esc(why.role)} ${esc(why.name)}</span>` : "") + `</span></button>`;
 }
 
 let query = "", queryTimer = 0;
+const initials = (name) => (name.match(/[\p{L}\p{N}]+/gu) || []).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+const personRow = (p) => `<button class="item person-row" data-person="${esc(p.id)}"><span class="avatar" aria-hidden="true">${esc(initials(p.name))}</span>`
+  + `<span class="row-t"><b>${esc(p.name)}</b><span class="meta">${esc(p.role)} · ${p.count} ${p.count === 1 ? "film" : "films"}</span></span></button>`;
+
 function searchScreen(el) {
-  el.innerHTML = `<h2>Search</h2><input type="search" id="q" placeholder="Title, director or actor" autocomplete="off" autocapitalize="off" enterkeyhint="search" value="${esc(query)}">`
+  if (person !== null) return personScreen(el);
+  el.innerHTML = `<h2>Search</h2><input type="search" id="q" placeholder="Title, actor or director" autocomplete="off" autocapitalize="off" enterkeyhint="search" value="${esc(query)}">`
     + `<div class="list results" id="results"></div>`;
   const q = $("#q", el);
   q.addEventListener("input", () => { clearTimeout(queryTimer); queryTimer = setTimeout(() => { query = q.value; showResults(); }, 120); });
@@ -120,8 +129,20 @@ function showResults() {
   if (!box) return;
   if (feed === undefined) { box.innerHTML = LOADING; return; }
   if (!feed) { box.innerHTML = `<p class="empty">${NO_FEED}</p>`; return; }
+  const who = searchPeople(people, query, 6);
   const hits = search(feed.films, query);   // search finds Seen films too, whatever Hide seen says
-  box.innerHTML = hits.length ? hits.map(rowItem).join("") : query.trim() ? `<p class="empty">No films match. The list holds the best-rated and most-rated films of each place and decade.</p>` : "";
+  if (!who.length && !hits.length) { box.innerHTML = query.trim() ? `<p class="empty">No films or people match. The list holds the best-rated and most-rated films of each place and decade.</p>` : ""; return; }
+  box.innerHTML = (who.length ? `<h3 class="sub-h">People</h3>${who.map(personRow).join("")}` : "")
+    + (hits.length ? (who.length ? `<h3 class="sub-h">Films</h3>` : "") + hits.map((f) => rowItem(f, matchedBy(f, query))).join("") : "");
+}
+
+// One person's films, best known first. Back returns to the search they came from.
+function personScreen(el) {
+  const p = filmography(people, person);
+  if (!p) { el.innerHTML = `<div class="grid-head"><button class="back" data-back-person>Back</button></div><p class="empty">${feed ? "That person isn't in this week's list." : "The film list isn't loaded right now."}</p>`; return; }
+  el.innerHTML = `<div class="grid-head"><button class="back" data-back-person>Back</button></div>`
+    + `<div class="person-head"><h2>${esc(p.name)}</h2></div><p class="person-sub">${esc(p.role)} · ${p.films.length} ${p.films.length === 1 ? "film" : "films"} in the list</p>`
+    + `<div class="list results">${p.films.map((f) => rowItem(f)).join("")}</div>`;
 }
 
 function watchlistScreen(el) {
@@ -144,10 +165,19 @@ function render() {
   $("#tabs [data-more]").classList.toggle("active", inSheet);
   $$("#more .tile[data-tab]").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   badge();
+  syncLevels();
+}
+
+// A full list and a person's page are drill-in screens: Back, or a swipe from the left edge, returns from them, as on an
+// iPhone (lib/nav.js). They only count while on screen: change tab and the list is no longer something to go back from.
+function syncLevels() {
+  if (tab === "browse" && grid) nav.push("grid", () => { grid = null; render(); }); else nav.release("grid");
+  if (tab === "search" && person !== null) nav.push("person", () => { person = null; render(); }); else nav.release("person");
 }
 
 function go(t) {
   if (t === "browse" && tab === "browse") grid = null;   // tapping Browse again goes back to the shelves
+  if (t === "search" && tab === "search") person = null;  // and Search again, back to the search
   tab = t;
   closeMore();
   render();
@@ -248,7 +278,8 @@ function sheetHTML(f, gone, fromSurprise) {
   const where = PLACES.find((p) => p.id === f.places[0])?.name;
   const rankLine = r ? `<p class="ranks">#${r.popular} most popular among ${esc(where)} films · #${r.rated} best rated</p>` : "";
   const rating = !gone ? `<p class="sign-rate"><i class="star" aria-hidden="true"></i>${(f.rating || 0).toFixed(1)} · ${fmt(f.votes)} ratings</p>` : "";
-  const people = [f.director ? `Directed by ${esc(f.director.name)}` : "", f.cast?.length ? `With ${f.cast.map((c) => esc(c.name)).join(", ")}` : ""].filter(Boolean);
+  const who = (c) => `<button class="who" type="button" data-person="${esc(c.id)}">${esc(c.name)}</button>`;
+  const crew = [f.director ? `Directed by ${who(f.director)}` : "", f.cast?.length ? `With ${f.cast.map(who).join(", ")}` : ""].filter(Boolean);
   const want = !!state.want[f.id], seen = !!state.seen[f.id];
   const douban = f.places.some((p) => p === "HK" || p === "CN") ? `<a class="douban" href="https://search.douban.com/movie/subject_search?search_text=${encodeURIComponent(f.original || f.title)}" target="_blank" rel="noopener">Douban</a>` : "";
   const like = gone ? [] : moreLike(f, films());
@@ -256,7 +287,7 @@ function sheetHTML(f, gone, fromSurprise) {
     + `<div class="card flash film-sign"><div class="sign-top"><span class="poster big"><span class="ph" lang="${langOf(f)}">${esc(f.original || f.title)}</span>${img}</span>`
     + `<div class="titles">${original}${en}</div></div><div class="rule"></div>`
     + `<p class="sign-meta">${esc(meta)}</p>${rating}${rankLine}`
-    + (people.length ? `<p class="people">${people.join("<br>")}</p>` : "")
+    + (crew.length ? `<p class="people">${crew.join("<br>")}</p>` : "")
     + (f.plot ? `<p class="plot">${esc(f.plot)}</p>` : "")
     + (gone ? `<p class="gone">${feed ? "No longer in this week's list" : "Saved on this phone. The film list isn't loaded right now."}</p>` : "") + `</div>`
     + `<div class="actions film-actions"><button class="btn${want ? "" : " primary"}" data-act="want" aria-pressed="${want}">${want ? "On your watchlist" : "Want to watch"}</button>`
@@ -296,23 +327,12 @@ function sheetAct(act) {
 }
 
 // ---------- sheets: More, and the film sheet (same slide, swipe and close) ----------
-// They close on a destination, Escape, a tap above them, or a swipe down of more than 80px.
+// They close on a destination, Escape, a tap above them, Back or a swipe from the left edge, or a swipe down of more
+// than 80px. Back, the edge swipe and the swipe down are lib/nav.js's, each going through the same slide.
 function setupSheet(sheet, onClose = () => {}) {
   sheet.addEventListener("click", (e) => { if (e.target === sheet) closeSheet(sheet, onClose); });   // the backdrop
   sheet.addEventListener("cancel", (e) => { e.preventDefault(); closeSheet(sheet, onClose); });     // Escape, with the slide
-  let y0 = null;
-  sheet.addEventListener("touchstart", (e) => { y0 = sheet.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
-  sheet.addEventListener("touchmove", (e) => {
-    if (y0 === null) return;
-    const dy = Math.max(0, e.touches[0].clientY - y0);
-    sheet.style.transform = dy ? `translateY(${dy}px)` : "";
-  }, { passive: true });
-  sheet.addEventListener("touchend", (e) => {
-    if (y0 === null) return;
-    const dy = e.changedTouches[0].clientY - y0; y0 = null;
-    sheet.style.transform = "";
-    if (dy > 80) closeSheet(sheet, onClose);
-  });
+  nav.watchDialog(sheet, { close: () => closeSheet(sheet, onClose), swipeDown: true });
 }
 function openSheet(sheet) { if (!sheet.open) { sheet.classList.remove("closing"); sheet.showModal(); } }
 function closeSheet(sheet, onClose = () => {}) {
@@ -332,7 +352,7 @@ function setFilter(key, val) {
 }
 
 document.addEventListener("click", (e) => {
-  const el = e.target.closest("[data-tab],[data-more],[data-place],[data-era],[data-genre],[data-all],[data-sort],[data-back],[data-film],[data-act],button[data-theme],#surprise");
+  const el = e.target.closest("[data-tab],[data-more],[data-place],[data-era],[data-genre],[data-all],[data-sort],[data-back],[data-film],[data-person],[data-back-person],[data-act],button[data-theme],#surprise,#refresh");
   if (!el || el.disabled) return;
   const d = el.dataset;
   if (d.more !== undefined) return openSheet($("#more"));
@@ -347,6 +367,14 @@ document.addEventListener("click", (e) => {
   }
   if (d.sort) { grid.list = d.sort; grid.shown = GRID_STEP; return render(); }
   if (d.back !== undefined) { grid = null; return render(); }
+  if (d.person !== undefined) {
+    if (el.closest("#film")) closeSheet($("#film"));
+    go("search");               // (go resets the person when Search is tapped again, so set it after)
+    person = Number(d.person);
+    return render();
+  }
+  if (d.backPerson !== undefined) { person = null; return render(); }
+  if (el.id === "refresh") return refresh();
   if (d.film) return openFilm(Number(d.film));
   if (d.act && el.closest("#film")) return sheetAct(d.act);
   if (d.act === "backup") { closeMore(); return backup(); }
@@ -362,20 +390,56 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// ---------- start ----------
-async function loadFeed() {
+// ---------- the feed, and refreshing it ----------
+async function fetchFeed() {
   try {
     const r = await fetch("./feed.json", { cache: "no-cache" });
-    feed = r.ok ? await r.json() : null;
-  } catch { feed = null; }
-  if (feed && !Array.isArray(feed.films)) feed = null;
-  if (feed) { ranks = rankMap(feed.films, feed.stats); byId = new Map(feed.films.map((f) => [f.id, f])); }
+    const f = r.ok ? await r.json() : null;
+    return f && Array.isArray(f.films) ? f : null;
+  } catch { return null; }
+}
+function setFeed(f) {
+  feed = f;
+  fetchedAt = Date.now();
+  if (feed) {
+    ranks = rankMap(feed.films, feed.stats);
+    byId = new Map(feed.films.map((x) => [x.id, x]));
+    people = peopleIndex(feed.films);
+  }
 }
 
+// Refresh fetches the list again, without closing the app. The list is rebuilt weekly, so most taps find nothing new:
+// it says so. A failed fetch (offline) keeps the list you have.
+let refreshing = false;
+async function refresh({ quiet = false } = {}) {
+  if (refreshing) return;
+  refreshing = true;
+  const btn = $("#refresh");
+  btn.classList.add("spin"); btn.disabled = true;
+  const [next] = await Promise.all([fetchFeed(), new Promise((r) => setTimeout(r, quiet ? 0 : 500))]);   // a beat, so the turn is seen
+  const change = feedChange(feed, next);
+  if (change === "updated") { setFeed(next); suggested.clear(); render(); }
+  else if (change === "same") fetchedAt = Date.now();
+  btn.classList.remove("spin"); btn.disabled = false;
+  refreshing = false;
+  if (quiet) return;
+  toast(change === "updated" ? `Updated · ${fmt(feed.films.length)} films`
+    : change === "same" ? `Already up to date · built ${new Date(feed.built).toLocaleDateString("en-AU", { day: "numeric", month: "long", timeZone: "Australia/Melbourne" })}`
+    : "Couldn't refresh. Check your connection.");
+}
+// Coming back to the app after an hour away: look for a newer list, quietly (a phone app can sit in the background for days).
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && feed && Date.now() - fetchedAt > 60 * 60e3 && !$("#film").open) refresh({ quiet: true });
+});
+
+// ---------- start ----------
 applyTheme();
 setupSheet($("#more"));
 setupSheet($("#film"));
+nav.installEdgeSwipe();
+nav.pullToRefresh(window, () => refresh());
+nav.onTabReselect($("#tabs"), "button[data-tab]");
 render();
-await loadFeed();
+setFeed(await fetchFeed());
 render();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("../sw.js").catch(() => {});

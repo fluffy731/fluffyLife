@@ -61,6 +61,10 @@ export function trimPlot(s, max = 300) {
   return (sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,;:.–-]+$/, "") + "…";
 }
 
+// Billed actors kept per film: enough that a supporting actor can be searched for. More like this still goes by the
+// first three (films/model.js), and TMDB's own list is cached with ten.
+const CAST = 6;
+
 const r1 = (x) => (Number.isFinite(x) ? Math.round(x * 10) / 10 : 0);
 
 // One TMDB movie-details record (with credits, keywords and videos appended) as a catalogue Film, or null.
@@ -74,7 +78,7 @@ export function filmFrom(d, foundIn) {
   const genres = (d.genres || []).map((x) => x.name).filter((n) => n && n !== "TV Movie");
   if ((d.keywords?.keywords || []).some((k) => MARTIAL.test(k.name)) && !genres.includes("Martial arts")) genres.push("Martial arts");
   const dir = (d.credits?.crew || []).find((c) => c.job === "Director");
-  const cast = [...(d.credits?.cast || [])].sort((a, b) => a.order - b.order).slice(0, 3).map((c) => ({ id: c.id, name: c.name }));
+  const cast = [...(d.credits?.cast || [])].sort((a, b) => a.order - b.order).slice(0, CAST).map((c) => ({ id: c.id, name: c.name }));
   const trailers = (d.videos?.results || []).filter((v) => v.site === "YouTube" && v.type === "Trailer");
   const trailer = (trailers.find((v) => v.official) || trailers[0])?.key || null;
   return {

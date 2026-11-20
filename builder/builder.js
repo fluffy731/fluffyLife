@@ -1,4 +1,5 @@
 import { TABS, SECTIONS, ACTIVITIES, STEPS, SOURCES, CHECKED } from "./data.js";
+import { nav } from "../lib/nav.js";
 import {
   load, save, normalise, sectionsFor, progress, evidenceKey, activityGaps, projectCounts, coveredMonths, outsideWindow,
   newRef, refProgress, folderTree, folderPaths, macCommands, winCommands, plainList, NPROJECTS, ROOT,
@@ -284,6 +285,7 @@ function render() {
 }
 
 window.addEventListener("hashchange", () => { render(); window.scrollTo(0, 0); });
+nav.onTabReselect($("#tabbar"), "a");   // tapping the tab you are on scrolls to the top, as on iPhone
 
 // Footer: sources, backup, reset.
 $("#sources").append(`Requirements checked against BPC pages on ${CHECKED}. Sources: `, ...SOURCES.flatMap(([label, href], i) => [i ? " · " : "", el("a", { href, textContent: label, target: "_blank", rel: "noopener" })]));

@@ -1,0 +1,33 @@
+/* Shared by the home-screen apps with lib/nav.js: the pull-to-refresh indicator and the left-edge swipe's look.
+   Uses each app's own colour variables, with system colours as the fallback so light and dark both read. */
+
+.nav-ptr {
+  position: fixed; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 50%; z-index: 90;
+  width: 38px; height: 38px; margin-left: -19px; display: grid; place-items: center; border-radius: 50%;
+  background: var(--surface, var(--card, Canvas)); color: var(--ink, CanvasText);
+  border: 1px solid var(--hair, var(--line, rgba(128, 128, 128, .35)));
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, .35);
+  opacity: 0; transform: translateY(-60px); pointer-events: none;
+  transition: transform 220ms cubic-bezier(.2, .7, .3, 1), opacity 180ms ease-out;
+}
+.nav-ptr i {
+  width: 16px; height: 16px; border-radius: 50%; box-sizing: border-box;
+  border: 2.5px solid currentColor; border-right-color: transparent;
+  transform: rotate(calc(var(--p, 0) * 1deg)); transition: color 120ms;
+}
+.nav-ptr.ready i { color: var(--route-strong, var(--accent, var(--stamp, currentColor))); }
+.nav-ptr.busy i { animation: nav-spin 700ms linear infinite; }
+@keyframes nav-spin { to { transform: rotate(360deg); } }
+
+/* A screen or sheet following the finger away from the left edge. */
+.nav-dragging { box-shadow: -14px 0 30px -10px rgba(0, 0, 0, .4); will-change: transform; }
+main.nav-dragging { background: var(--bg, Canvas); min-height: 100dvh; }
+
+/* A tap is a tap, with no 300 ms wait; sheets hand a drag past their edge to the page no further. */
+button, [role="button"], summary, label { touch-action: manipulation; }
+dialog { overscroll-behavior: contain; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-ptr { transition: none; }
+  .nav-ptr.busy i { animation: none; border-right-color: currentColor; opacity: .6; }
+}
