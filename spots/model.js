@@ -17,8 +17,59 @@ export const KINDS = [
   { id: "nature", label: "Nature", visit: 90, query: "park", queries: ["park", "walking trail"], priced: false, alwaysOpen: true, day: true },
   { id: "beach", label: "Beach", visit: 120, query: "beach", queries: ["beach"], priced: false, alwaysOpen: true, day: true },
 ];
-export const queriesOf = (k) => kindOf(k).queries || [kindOf(k).query];
 export const kindOf = (id) => KINDS.find((k) => k.id === id) || KINDS[0];
+
+// ---------- Cuisine ----------
+// Google names most restaurants' cuisine in their primary type (korean_restaurant). It has no Cantonese type, so a
+// Cantonese place is a Chinese one whose name says so, and a Cantonese search asks Google for it by name.
+// query: what to ask Google; types: Google's primary types for it.
+export const CUISINES = [
+  { id: "cantonese", label: "Cantonese", query: "Cantonese restaurant", types: [] },
+  { id: "chinese", label: "Chinese", query: "Chinese restaurant", types: ["chinese_restaurant"] },
+  { id: "korean", label: "Korean", query: "Korean restaurant", types: ["korean_restaurant", "korean_barbecue_restaurant"] },
+  { id: "japanese", label: "Japanese", query: "Japanese restaurant", types: ["japanese_restaurant", "ramen_restaurant", "sushi_restaurant", "izakaya"] },
+  { id: "thai", label: "Thai", query: "Thai restaurant", types: ["thai_restaurant"] },
+  { id: "vietnamese", label: "Vietnamese", query: "Vietnamese restaurant", types: ["vietnamese_restaurant"] },
+  { id: "malaysian", label: "Malaysian", query: "Malaysian restaurant", types: ["malaysian_restaurant", "indonesian_restaurant"] },
+  { id: "indian", label: "Indian", query: "Indian restaurant", types: ["indian_restaurant"] },
+  { id: "italian", label: "Italian", query: "Italian restaurant", types: ["italian_restaurant", "pizza_restaurant"] },
+  { id: "greek", label: "Greek", query: "Greek restaurant", types: ["greek_restaurant"] },
+  { id: "mexican", label: "Mexican", query: "Mexican restaurant", types: ["mexican_restaurant"] },
+  { id: "middleeast", label: "Middle Eastern", query: "Middle Eastern restaurant", types: ["middle_eastern_restaurant", "lebanese_restaurant", "turkish_restaurant"] },
+];
+const CANTONESE_NAME = /cantonese|yum cha|dim sum|hong kong|\bhk\b|congee|roast duck|bbq pork|char siu|wonton/i;
+
+export function cuisineOf(p) {
+  const type = (p && p.type) || "";
+  const c = CUISINES.find((x) => x.types.includes(type));
+  if (!c) return null;
+  return c.id === "chinese" && CANTONESE_NAME.test(p.name || "") ? "cantonese" : c.id;
+}
+
+// What to print on a card: the cuisine when Google's type tells it, else Google's own name for the type.
+export function cuisineLabel(p) {
+  const id = cuisineOf(p);
+  return id ? CUISINES.find((c) => c.id === id).label : (p && p.typeLabel) || "";
+}
+
+// cuisines: a Set of ids, empty for any. A place Google couldn't type has no cuisine to contradict, and Google's own
+// search for "Korean restaurant" put it there, so it stays. Google has one Chinese type, so Cantonese and Chinese
+// searches each keep the other's places.
+export function fitsCuisine(p, cuisines) {
+  if (!cuisines || !cuisines.size) return true;
+  const c = cuisineOf(p);
+  if (!c || cuisines.has(c)) return true;
+  return (c === "chinese" && cuisines.has("cantonese")) || (c === "cantonese" && cuisines.has("chinese"));
+}
+// Only Eat has cuisines: a café that Google types as Italian is still a café.
+const cuisineOk = (p, cuisines) => !cuisines || !cuisines.size || p.kind !== "eat" || fitsCuisine(p, cuisines);
+
+// Eat asks for each chosen cuisine (in the list's order); every other kind asks as before.
+export const queriesOf = (k, cuisines) => {
+  const kind = kindOf(k);
+  if (kind.id === "eat" && cuisines && cuisines.size) return CUISINES.filter((c) => cuisines.has(c.id)).map((c) => c.query);
+  return kind.queries || [kind.query];
+};
 
 const rad = (d) => (d * Math.PI) / 180;
 export function haversineKm(a, b) {
@@ -68,6 +119,27 @@ export function fmtMinutes(m) {
   if (m < 60) return `about ${m} min`;
   const h = Math.floor(m / 60), r = m % 60;
   return r ? `about ${h} h ${r} min` : `about ${h} h`;
+}
+
+// ---------- Distance ----------
+// The steps of the distance slider: fine near, coarse far, up to Google's search limit.
+export const DISTANCES = [0.5, 1, 1.5, 2, 3, 4, 5, 7, 10, 15, 20, 30, MAX_RADIUS_KM];
+
+// The slider counts steps. With `any`, one more step past the last distance means no limit (null).
+export const kmFromStep = (i, any = false) => (any && i >= DISTANCES.length ? null : DISTANCES[Math.min(DISTANCES.length - 1, Math.max(0, i))]);
+export function stepFromKm(km, any = false) {
+  if (km == null) return any ? DISTANCES.length : DISTANCES.length - 1;
+  let best = 0;
+  DISTANCES.forEach((d, i) => { if (Math.abs(d - km) < Math.abs(DISTANCES[best] - km)) best = i; });   // a tie keeps the nearer one
+  return best;
+}
+
+export const fmtKm = (km) => (km < 1 ? `${Math.round(km * 1000)} m` : `${Number.isInteger(km) ? km : Math.round(km * 10) / 10} km`);
+
+// How long that distance is by car (and on foot when it's short), by the travel model.
+export function distanceHint(km, { at = new Date() } = {}) {
+  const drive = `${fmtMinutes(travelMinutes(km, { at }))} drive`;
+  return km <= 3 ? `${drive} · ${fmtMinutes(travelMinutes(km, { mode: "walk", at }))} walk` : drive;
 }
 
 // ---------- Prices ----------
@@ -223,19 +295,25 @@ const nowChecks = (p, { at, minutes, priceMax, kind }) => {
   return { open: left != null && left > 0, budget: fitsBudget(p, priceMax), near: p.travel <= driveBudget(minutes, visit), long: left != null && left >= visit + p.travel };
 };
 
-export function pickNow(places, { from, at, minutes, mode = "drive", priceMax = null, kind = "eat" }) {
-  return uniq(places).map((p) => annotate(p, from, { mode, at })).filter((p) => {
+// maxKm: the straight-line distance you chose, on top of the time (null: only the time limits it).
+const withinKm = (p, maxKm) => maxKm == null || p.km <= maxKm;
+
+export function pickNow(places, { from, at, minutes, mode = "drive", priceMax = null, kind = "eat", maxKm = null, cuisines = null }) {
+  return uniq(places).filter((p) => cuisineOk(p, cuisines)).map((p) => annotate(p, from, { mode, at })).filter((p) => {
     const c = nowChecks(p, { at, minutes, priceMax, kind });
-    return c.open && c.budget && c.near && c.long;
+    return c.open && c.budget && c.near && c.long && withinKm(p, maxKm);
   }).sort((a, b) => (score(b) - 0.02 * b.travel) - (score(a) - 0.02 * a.travel)).slice(0, 12);
 }
 
 // Why pickNow came back empty, so the app can say which limit to loosen.
-export function whyEmpty(places, { from, at, minutes, mode = "drive", priceMax = null, kind = "eat" }) {
+export function whyEmpty(places, { from, at, minutes, mode = "drive", priceMax = null, kind = "eat", maxKm = null, cuisines = null }) {
   if (!places.length) return "none";
-  const cs = uniq(places).map((p) => nowChecks(annotate(p, from, { mode, at }), { at, minutes, priceMax, kind }));
-  if (!cs.some((c) => c.open)) return "closed";
-  if (!cs.some((c) => c.open && c.budget)) return "budget";
+  if (!places.some((p) => cuisineOk(p, cuisines))) return "cuisine";
+  const cs = uniq(places).filter((p) => cuisineOk(p, cuisines)).map((p) => { const a = annotate(p, from, { mode, at }); return { a, c: nowChecks(a, { at, minutes, priceMax, kind }) }; });
+  if (!cs.some((x) => x.c.open)) return "closed";
+  if (!cs.some((x) => x.c.open && x.c.budget)) return "budget";
+  const fit = cs.filter((x) => x.c.open && x.c.budget && x.c.near && x.c.long);
+  if (fit.length && fit.every((x) => !withinKm(x.a, maxKm))) return "distance";
   return "far";
 }
 
@@ -249,11 +327,11 @@ export function lateStart(now) {
 
 // Open at `at` with at least an hour left, within the night drive. Latest closers first; anything open
 // past 4 am counts the same, so 24-hour places don't crowd out better ones.
-export function pickLate(places, { from, at, maxMinutes, priceMax = null }) {
+export function pickLate(places, { from, at, maxMinutes, priceMax = null, maxKm = null, cuisines = null }) {
   const lateness = (p) => Math.min(minutesLeft(p.hours, at, p.off), 360);
-  return uniq(places).map((p) => annotate(p, from, { mode: "drive", at })).filter((p) => {
+  return uniq(places).filter((p) => cuisineOk(p, cuisines)).map((p) => annotate(p, from, { mode: "drive", at })).filter((p) => {
     const left = minutesLeft(p.hours, at, p.off);
-    return left != null && left >= 60 && fitsBudget(p, priceMax) && p.travel <= maxMinutes;
+    return left != null && left >= 60 && fitsBudget(p, priceMax) && p.travel <= maxMinutes && withinKm(p, maxKm);
   }).sort((a, b) => lateness(b) - lateness(a) || score(b) - score(a)).slice(0, 12);
 }
 
@@ -272,16 +350,24 @@ export const NEAR = {
   ],
   reviews: [300, 1000, 2000], ratings: [4.3, 4.5, 4.7], kinds: ["eat", "drink", "coffee"],
 };
-export const nearRange = (id) => NEAR.ranges.find((r) => r.id === id) || NEAR.ranges.find((r) => r.id === "d15");
+// "km:3.5" is a distance typed with the slider: a radius in kilometres (walked when it's short), not a timed trip.
+export function nearRange(id) {
+  const m = /^km:(\d+(?:\.\d+)?)$/.exec(id || "");
+  if (m) {
+    const km = Math.min(MAX_RADIUS_KM, Math.max(0.5, Number(m[1])));
+    return { id: `km:${km}`, mode: km <= 1.5 ? "walk" : "drive", km, label: `${fmtKm(km)} radius`, short: fmtKm(km), custom: true };
+  }
+  return NEAR.ranges.find((r) => r.id === id) || NEAR.ranges.find((r) => r.id === "d15");
+}
 // The search radius for a range at a given time.
-export const rangeKm = (range, at = new Date()) => (range.mode === "walk" ? range.km : Math.max(0.5, reachKm(range.minutes, { mode: "drive", at })));
+export const rangeKm = (range, at = new Date()) => (Number.isFinite(range.km) ? range.km : Math.max(0.5, reachKm(range.minutes, { mode: "drive", at })));
 
-export function pickNear(places, { center, range = "d15", at = new Date(), minRating = 4.5, minReviews = 1000, priceMax = null, max = 6 }) {
+export function pickNear(places, { center, range = "d15", at = new Date(), minRating = 4.5, minReviews = 1000, priceMax = null, max = 6, cuisines = null }) {
   const r = typeof range === "string" ? nearRange(range) : range;
   const near = uniq(places).filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng)).map((p) => {
     const km = haversineKm(center, p);
     return { ...p, km: Math.round(km * 10) / 10, travel: travelMinutes(km, { mode: r.mode, at }) };
-  }).filter((p) => (r.mode === "walk" ? p.km <= r.km : p.travel <= r.minutes) && fitsBudget(p, priceMax));
+  }).filter((p) => (Number.isFinite(r.km) ? p.km <= r.km : p.travel <= r.minutes) && fitsBudget(p, priceMax) && cuisineOk(p, cuisines));
   const rated = (p, r, n) => (p.rating ?? 0) >= r && (p.ratingCount ?? 0) >= n;
   const good = near.filter((p) => rated(p, minRating, minReviews))
     .sort((a, b) => b.rating - a.rating || b.ratingCount - a.ratingCount || a.km - b.km);
@@ -323,12 +409,12 @@ export function slotTimes(slots, startHHMM, day) {
 
 // One place per slot: open long enough at that time, within budget, not used already, best by score
 // minus the extra driving it adds from the previous stop.
-export function buildDayPlan(slots, candidatesBySlotId, { start, day, startTime = "09:00", priceMax = null }) {
+export function buildDayPlan(slots, candidatesBySlotId, { start, day, startTime = "09:00", priceMax = null, cuisines = null }) {
   const times = slotTimes(slots, startTime, day), used = new Set();
   let here = start;
   return slots.map((s, i) => {
     const at = times[i];
-    const ok = uniq(candidatesBySlotId[s.id] || []).filter((p) => !used.has(p.id) && fitsBudget(p, priceMax)
+    const ok = uniq(candidatesBySlotId[s.id] || []).filter((p) => !used.has(p.id) && fitsBudget(p, priceMax) && cuisineOk(p, cuisines)
       && (openLeft(p, at) ?? 0) >= s.visit)
       .map((p) => annotate(p, here, { mode: "drive", at }))
       .sort((a, b) => (score(b) - 0.03 * b.travel) - (score(a) - 0.03 * a.travel));

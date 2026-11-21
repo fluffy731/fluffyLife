@@ -7,6 +7,7 @@ import { toggle, sinceWatching, ratingChanges, markSeen, backupText, readBackup 
 import { chartModel, compareModel, RANGES } from "./chart.js";
 import { newPractice, buy, sell, valuation, monthlyPlan, readPractice, START_CASH, FEE } from "./practice.js";
 import { COMPANIES } from "./companies.js";
+import { nav, EDGE } from "../lib/nav.js";
 import { PERIODS, HEAT_SCALE, HOURS, periodReturn, heat, pool, breadth, movers, sectors, ratingMix, groups, marketClock, shortSymbol, overlay } from "./market.js";
 
 const $ = (s) => document.querySelector(s);
@@ -800,7 +801,7 @@ document.addEventListener("change", (e) => {
 $("#sheet").addEventListener("click", (e) => { if (e.target.id === "sheet") { openStock = null; $("#sheet").close(); } });
 // Swipe sideways on a stock's sheet for the next or previous one (not on the chart, which reads a day instead).
 let swipe = null;
-$("#sheet").addEventListener("touchstart", (e) => { swipe = e.touches.length === 1 && !e.target.closest(".chart, input, select") ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null; }, { passive: true });
+$("#sheet").addEventListener("touchstart", (e) => { swipe = e.touches.length === 1 && e.touches[0].clientX > EDGE && !e.target.closest(".chart, input, select") ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : null; }, { passive: true });   // the left edge is the back swipe's
 $("#sheet").addEventListener("touchend", (e) => {
   if (!swipe || !openStock) return;
   const dx = e.changedTouches[0].clientX - swipe.x, dy = e.changedTouches[0].clientY - swipe.y;
@@ -814,6 +815,14 @@ document.addEventListener("keydown", (e) => {
 });
 $("#sheet").addEventListener("close", () => { openStock = null; });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && feed && Date.now() - Date.parse(feed.builtAt) > 60 * 60e3) load(true); });
+
+// iPhone behaviour (lib/nav.js): Back and the left-edge swipe close the stock, a swipe down does too (not on a chart,
+// which reads a day), pulling down refreshes, and tapping the tab you are on scrolls to the top.
+nav.watchDialog($("#sheet"));
+nav.swipeDownToClose($("#sheet"), () => $("#sheet").close(), { ignore: ".chart, input, select, textarea, [data-no-swipe]" });
+nav.installEdgeSwipe();
+nav.pullToRefresh(window, () => load(true), { ignore: ".chart" });
+nav.onTabReselect($("#tabs"), "button[data-tab]");
 
 render();
 load();

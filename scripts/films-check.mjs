@@ -299,6 +299,138 @@ await page.waitForTimeout(250);
 ok("…then start again, never with the film on screen", (await page.$eval("#film", (el) => Number(el.dataset.id))) !== drawn[drawn.length - 1]);
 await page.context().close();
 
+// 9. People: search by actor or director, a person's page, tappable names, and Refresh
+page = await newPage();
+await page.click('#tabs [data-tab="search"]');
+ok("the search box asks for a title, actor or director", (await page.getAttribute("#q", "placeholder")) === "Title, actor or director");
+await page.fill("#q", "tony leung");
+await page.waitForSelector(".person-row");
+ok("an actor's name finds the actor first, with their role and film count", (await page.textContent(".person-row b")) === "Tony Leung Chiu-wai" && /^Actor · \d+ films$/.test(await page.textContent(".person-row .meta")));
+ok("the films that came up say why: With Tony Leung Chiu-wai", (await page.locator(".film-row .why").first().textContent()) === "With Tony Leung Chiu-wai");
+await page.fill("#q", "andrew lau");
+await page.waitForFunction(() => document.querySelector(".person-row b")?.textContent === "Andrew Lau");
+ok("a director's name finds the director", (await page.textContent(".person-row .meta")).startsWith("Director · "));
+ok("…and their films say Directed by", (await page.locator(".film-row .why").first().textContent()) === "Directed by Andrew Lau");
+await page.click(".person-row");
+await page.waitForSelector(".person-head");
+ok("tapping a person opens their films", (await page.textContent(".person-head h2")) === "Andrew Lau" && (await page.locator(".film-row").count()) > 0);
+await page.click("[data-back-person]");
+await page.waitForSelector("#q");
+ok("Back returns to the search, with what was typed", (await page.inputValue("#q")) === "andrew lau" && (await page.locator(".person-row").count()) === 1);
+// a name on a film's sheet
+await page.click('#tabs [data-tab="browse"]');
+await page.click('.film[data-film="10775"]');
+await page.waitForFunction(() => document.querySelector("#film").open);
+ok("a film's director and actors are tappable names", (await page.locator("#film .who").count()) === 5 && (await page.locator("#film .people").textContent()).includes("Directed by Andrew Lau"));
+await page.click('#film .who:has-text("Eric Tsang")');
+await page.waitForSelector(".person-head");
+await page.waitForFunction(() => !document.querySelector("#film").open);
+ok("tapping an actor on the sheet closes it and opens their page", !(await page.evaluate(() => document.querySelector("#film").open)) && (await page.textContent(".person-head h2")) === "Eric Tsang" && (await page.locator('#tabs [data-tab="search"].active').count()) === 1);
+await page.click('#tabs [data-tab="search"]');
+ok("tapping Search again leaves the person's page", (await page.locator("#q").count()) === 1);
+// Refresh
+const toastText = async () => { await page.waitForSelector("#toast.on"); return page.textContent("#toast"); };
+ok("a Refresh button sits in the header", (await page.getAttribute("#refresh", "aria-label")) === "Refresh the film list");
+await page.click("#refresh");
+ok(`refreshing a list that hasn't changed says so (${await toastText()})`, (await page.textContent("#toast")).startsWith("Already up to date"));
+await page.waitForFunction(() => !document.querySelector("#toast").classList.contains("on"), null, { timeout: 5000 });
+const newer = JSON.stringify({ ...FEED, built: "2026-11-22T03:00:00.000Z", films: [...FEED.films, { ...FEED.films[0], id: 777001, title: "Brand New Film", original: "Brand New Film", year: 2026, era: "2020s" }] });
+await page.route("**/films/feed.json", (r) => r.fulfill({ contentType: "application/json", body: newer }));
+await page.click("#refresh");
+await page.waitForFunction(() => document.querySelector("#toast").textContent.startsWith("Updated"));
+ok("a newer list says Updated and shows its new film", (await page.textContent("#toast")).includes(`${FEED.films.length + 1} films`));
+await page.fill("#q", "brand new");
+await page.waitForSelector('.item[data-film="777001"]');
+ok("…and Search finds the new film at once", true);
+await page.waitForFunction(() => !document.querySelector("#toast").classList.contains("on"), null, { timeout: 5000 });
+await page.route("**/films/feed.json", (r) => r.fulfill({ status: 500, body: "" }));
+await page.click("#refresh");
+await page.waitForFunction(() => document.querySelector("#toast").textContent.startsWith("Couldn"));
+ok("a failed refresh says so and keeps the list", (await page.locator('.item[data-film="777001"]').count()) === 1 && !(await page.evaluate(() => document.querySelector("#refresh").disabled)));
+ok("no horizontal scroll with People and Refresh", await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+ok("no emoji or pictographs on the Search tab", (await pictographs(page)).length === 0);
+await page.context().close();
+
+// 10. iPhone navigation (lib/nav.js), in Chromium with touch emulation: Back and a swipe from the left edge close a sheet or leave a
+// full list or a person's page, nothing happens at the root, and pulling down refreshes. Not a real iPhone.
+{
+  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, serviceWorkers: "block" });
+  let body = FEED_JSON;
+  const pg = await ctx.newPage();
+  pg.on("pageerror", (e) => errs.push(e.message));
+  await pg.route("**/films/feed.json", (r) => r.fulfill({ contentType: "application/json", body }));
+  await pg.route(/^https:\/\/image\.tmdb\.org\//, (r) => r.fulfill({ status: 404, body: "" }));
+  await pg.goto(base, { waitUntil: "load" });
+  await pg.waitForSelector(".film");
+  const cdp = await ctx.newCDPSession(pg);
+  const touch = (type, x, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+  const swipe = async (x0, y0, x1, y1, steps = 10) => { await touch("touchStart", x0, y0); for (let i = 1; i <= steps; i++) { await touch("touchMove", x0 + ((x1 - x0) * i) / steps, y0 + ((y1 - y0) * i) / steps); await pg.waitForTimeout(12); } await touch("touchEnd"); };
+  const st = () => pg.evaluate(() => ({ nav: (history.state && history.state.nav) || 0, film: document.querySelector("#film").open, grid: !!document.querySelector("#grid"), person: !!document.querySelector(".person-head"), url: location.pathname }));
+  const settle = (ms = 700) => pg.waitForTimeout(ms);
+
+  await pg.tap('.film[data-film="10775"]');
+  await pg.waitForFunction(() => document.querySelector("#film").open);
+  let s = await st();
+  ok("opening a film adds one history entry and keeps the address", s.nav === 1 && s.film && s.url === "/films/");
+  await pg.evaluate(() => history.back()); await settle();
+  s = await st();
+  ok("Back closes the film and stays in the app", !s.film && s.nav === 0 && s.url === "/films/");
+  await pg.tap('.film[data-film="10775"]');
+  await pg.waitForFunction(() => document.querySelector("#film").open);
+  await swipe(6, 420, 200, 430); await settle(1000);
+  s = await st();
+  ok("a swipe from the left edge closes the film", !s.film && s.nav === 0);
+  ok("…leaving the sheet clean, not stuck off to the side", await pg.evaluate(() => { const d = document.querySelector("#film"); return !d.style.transform && !d.style.visibility; }));
+  await pg.tap('.film[data-film="10775"]');
+  await pg.waitForFunction(() => document.querySelector("#film").open);
+  await pg.evaluate(() => document.querySelector("#film").scrollTo(0, 0));
+  await swipe(200, 420, 205, 700); await settle(800);
+  ok("a swipe down closes the film", !(await st()).film);
+
+  await pg.tap('[data-all="rated"]');
+  await pg.waitForSelector("#grid");
+  s = await st();
+  ok("a full list is a screen to go back from", s.grid && s.nav === 1);
+  await pg.tap("#grid .film >> nth=0");
+  await pg.waitForFunction(() => document.querySelector("#film").open);
+  s = await st();
+  ok("a film opened from the list stacks on it", s.nav === 2);
+  await pg.evaluate(() => history.back()); await settle();
+  s = await st();
+  ok("Back closes the film first, and the list stays", !s.film && s.grid && s.nav === 1);
+  await swipe(6, 420, 200, 430); await settle(700);
+  s = await st();
+  ok("then a swipe from the edge returns to the shelves", !s.grid && s.nav === 0 && (await pg.locator(".row-list").count()) > 0);
+  await pg.tap('[data-all="rated"]');
+  await pg.waitForSelector("#grid");
+  await pg.tap('#tabs [data-tab="search"]');
+  ok("leaving the tab leaves no history behind for a list you can't see", (await st()).nav === 0);
+  await pg.tap('#tabs [data-tab="browse"]');
+  ok("…and coming back, the list is still there to go back from", (await st()).grid && (await st()).nav === 1);
+  await pg.evaluate(() => history.back()); await settle(400);
+
+  await pg.tap('#tabs [data-tab="search"]');
+  await pg.fill("#q", "andrew lau");
+  await pg.waitForFunction(() => document.querySelector(".person-row b")?.textContent === "Andrew Lau");
+  await pg.tap(".person-row");
+  await pg.waitForSelector(".person-head");
+  ok("a person's page is a screen to go back from", (await st()).nav === 1);
+  await swipe(6, 420, 200, 430); await settle(700);
+  s = await st();
+  ok("a swipe from the edge returns to the search, with what was typed", !s.person && s.nav === 0 && (await pg.inputValue("#q")) === "andrew lau");
+  await swipe(6, 420, 200, 430); await settle(400);
+  s = await st();
+  ok("at the root, nothing happens (the way an iPhone's root screen is)", s.nav === 0 && s.url === "/films/" && (await pg.locator("#q").count()) === 1);
+
+  await pg.tap('#tabs [data-tab="browse"]');
+  await pg.evaluate(() => scrollTo(0, 0));
+  body = JSON.stringify({ ...FEED, built: "2026-11-29T03:00:00.000Z", films: [...FEED.films, { ...FEED.films[0], id: 777002, title: "Pulled In", original: "Pulled In", year: 2026, era: "2020s" }] });
+  await swipe(200, 140, 204, 420, 14);
+  await pg.waitForFunction(() => document.querySelector("#toast").textContent.startsWith("Updated"), null, { timeout: 8000 });
+  ok("pulling down at the top refreshes the list", true);
+  await ctx.close();
+}
+
 ok("no page errors", errs.length === 0);
 if (errs.length) console.log(errs.join("\n"));
 console.log(out.join("\n"));

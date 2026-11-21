@@ -72,9 +72,15 @@ test("filmFrom maps a full record", () => {
   assert.equal(f.votes, 3201);
   assert.equal(f.pop, 21.4);
   assert.equal(f.director.name, "Andrew Lau");
-  assert.deepEqual(f.cast.map((c) => c.name), ["Andy Lau", "Tony Leung Chiu-wai", "Anthony Wong Chau-sang"], "first three by billing order");
+  assert.deepEqual(f.cast.map((c) => c.name), ["Andy Lau", "Tony Leung Chiu-wai", "Anthony Wong Chau-sang", "Eric Tsang"], "by billing order (up to six, so a supporting actor can be searched for)");
   assert.equal(f.poster, "/sample10775.jpg");
   assert.equal(f.trailer, "iaTrailer", "the official trailer, not the fan one");
+});
+
+test("filmFrom keeps the first six billed actors and no more", () => {
+  const eight = { ...details[10775], credits: { ...details[10775].credits,
+    cast: Array.from({ length: 8 }, (_, i) => ({ id: 5000 + i, name: `Actor ${i}`, order: 7 - i })) } };
+  assert.deepEqual(filmFrom(eight, ["HK"]).cast.map((c) => c.name), ["Actor 7", "Actor 6", "Actor 5", "Actor 4", "Actor 3", "Actor 2"], "lowest billing order first, six of them");
 });
 
 test("filmFrom: co-productions, Martial arts and English co-productions", () => {

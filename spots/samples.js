@@ -1,6 +1,6 @@
 // Sample places for trying the app without a Google key, and for the tests. Deterministic: the same search
 // gives the same places. Every name starts with "Sample" and every place is marked sample: true.
-import { kindOf, CBD } from "./model.js";
+import { kindOf, CBD, CUISINES } from "./model.js";
 
 const NOUNS = {
   eat: ["noodle bar", "bistro", "dumpling house", "pizzeria", "ramen shop", "taqueria", "grill", "Thai kitchen", "diner", "pho house", "tapas bar", "curry house"],
@@ -11,6 +11,24 @@ const NOUNS = {
   dessert: ["gelato bar", "dessert café", "patisserie", "waffle bar"],
   nature: ["park", "botanic garden", "walking trail", "nature reserve", "lake walk", "bushland trail"],
   beach: ["beach", "bay beach", "foreshore", "surf beach"],
+};
+// Google-style types for the sample restaurants, so cuisines work in sample mode. A cuisine search ("Korean restaurant")
+// gets places of that cuisine, as Google's search would.
+const EAT_TYPES = ["chinese_restaurant", "restaurant", "chinese_restaurant", "italian_restaurant", "japanese_restaurant", "mexican_restaurant",
+  "restaurant", "thai_restaurant", "restaurant", "vietnamese_restaurant", "restaurant", "indian_restaurant"];
+const CUISINE_NOUNS = {
+  cantonese: ["yum cha house", "roast duck shop", "congee kitchen", "dim sum parlour"],
+  chinese: ["dumpling house", "noodle bar", "Sichuan kitchen", "hand-pulled noodles"],
+  korean: ["BBQ house", "fried chicken", "tofu house", "bibimbap kitchen"],
+  japanese: ["ramen shop", "sushi train", "izakaya", "udon house"],
+  thai: ["Thai kitchen", "pad thai bar", "larb house", "curry kitchen"],
+  vietnamese: ["pho house", "banh mi bar", "bun cha kitchen", "rice paper rolls"],
+  malaysian: ["laksa house", "nasi lemak kitchen", "roti canai bar", "char kway teow stall"],
+  indian: ["curry house", "dosa kitchen", "tandoori grill", "thali house"],
+  italian: ["pizzeria", "pasta bar", "trattoria", "osteria"],
+  greek: ["souvlaki bar", "taverna", "gyros house", "meze kitchen"],
+  mexican: ["taqueria", "burrito bar", "cantina", "taco house"],
+  middleeast: ["falafel bar", "shawarma house", "mezze kitchen", "kebab grill"],
 };
 const RANGES = [null, [10, 20], [20, 40], [40, 80], [80, null]];
 
@@ -37,15 +55,16 @@ function hoursFor(kind, i) {
   }
 }
 
-function makePlace(kind, i, r, center, radiusKm, tag) {
-  const k = kindOf(kind), nouns = NOUNS[k.id];
+function makePlace(kind, i, r, center, radiusKm, tag, cuisine = null) {
+  const k = kindOf(kind), nouns = cuisine ? CUISINE_NOUNS[cuisine.id] : NOUNS[k.id];
   const dist = Math.sqrt(r()) * radiusKm * 0.8, ang = r() * 2 * Math.PI;
   const lat = center.lat + (dist * Math.cos(ang)) / 111.2;
   const lng = center.lng + (dist * Math.sin(ang)) / (111.2 * Math.cos((center.lat * Math.PI) / 180));
   const price = k.priced && i % 5 !== 4 ? 1 + Math.floor(r() * 4) : null;
   const range = price ? RANGES[price] : null;
   return {
-    id: `sample-${tag}-${i}`, name: `Sample ${nouns[i % nouns.length]} ${i + 1}`, kind: k.id, type: k.id, address: "Sample address", area: "Sample area",
+    id: `sample-${tag}-${i}`, name: `Sample ${nouns[i % nouns.length]} ${i + 1}`, kind: k.id,
+    type: cuisine ? cuisine.types[0] || "chinese_restaurant" : k.id === "eat" ? EAT_TYPES[i % EAT_TYPES.length] : k.id, address: "Sample address", area: "Sample area",
     lat: Math.round(lat * 1e5) / 1e5, lng: Math.round(lng * 1e5) / 1e5,
     rating: Math.round((3.8 + r()) * 10) / 10, ratingCount: 20 + Math.floor(r() * 1980),
     price, priceRange: range ? { from: range[0], to: range[1], currency: "AUD" } : null,
@@ -59,7 +78,8 @@ export function sampleProvider() {
     async search({ query, kind, center, radiusKm, max = 12 }) {
       const tag = seed(`${query}|${kind}|${center.lat.toFixed(3)}|${center.lng.toFixed(3)}`).toString(36);
       const r = rng(seed(tag));
-      return Array.from({ length: Math.min(max, 12) }, (_, i) => makePlace(kind, i, r, center, Math.min(radiusKm, 50), tag));
+      const cuisine = kind === "eat" ? CUISINES.find((c) => query.includes(c.query)) || null : null;
+      return Array.from({ length: Math.min(max, 12) }, (_, i) => makePlace(kind, i, r, center, Math.min(radiusKm, 50), tag, cuisine));
     },
     // A made-up spot within about 8 km of the CBD, always the same for the same words.
     async locate(query) {

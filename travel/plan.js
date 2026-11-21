@@ -1,4 +1,5 @@
 import { TRIPS } from "./items.js";
+import { nav } from "../lib/nav.js";
 import { load as loadPacking, save as savePacking } from "./model.js";
 import { KINDS, kindOf, load, save, uid, todayISO, fixRange, reschedule, itinerary, tripDays, nights, dayLabel, rangeLabel,
   status, sortTrips, current, packingFor, toText, exportJSON, importJSON, linkedTrip, isNewer } from "./plan-model.js";
@@ -188,6 +189,9 @@ function editTrip(t = null) {
   tripDlg.showModal();
 }
 
+// A swipe down closes the sheet, as Cancel does. Not a history level: the planner's own screens already use the hash.
+nav.swipeDownToClose(tripDlg, () => tripDlg.close());
+
 tripForm.addEventListener("submit", (e) => {
   if (e.submitter?.value !== "save") return;
   const name = tf.title.value.trim(), type = tf.type.value;
@@ -227,6 +231,8 @@ function editItem(t, i = null, day = "") {
   itemDel.hidden = !i; resetItemDel();
   itemDlg.showModal();
 }
+
+nav.swipeDownToClose(itemDlg, () => itemDlg.close());
 
 itemForm.addEventListener("submit", (e) => {
   if (e.submitter?.value !== "save") return;

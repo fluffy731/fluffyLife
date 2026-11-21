@@ -2,7 +2,7 @@
 // Tested with Google-shaped objects in test/spots-places.test.js. Safe to import in Node (no window at load).
 import { kindOf, priceLevelOf, areaFromAddress, CBD } from "./model.js";
 
-export const SEARCH_FIELDS = ["id", "displayName", "location", "formattedAddress", "primaryType", "rating", "userRatingCount",
+export const SEARCH_FIELDS = ["id", "displayName", "location", "formattedAddress", "primaryType", "primaryTypeDisplayName", "rating", "userRatingCount",
   "priceLevel", "priceRange", "regularOpeningHours", "utcOffsetMinutes", "photos", "googleMapsURI"];
 export const DETAIL_FIELDS = [...SEARCH_FIELDS, "reviewSummary", "reviews"];
 const PRICE_NAMES = ["FREE", "INEXPENSIVE", "MODERATE", "EXPENSIVE", "VERY_EXPENSIVE"];
@@ -50,7 +50,7 @@ export function toPlace(gp, kind) {
   const address = gp.formattedAddress || "";
   return {
     id: gp.id, name: text(gp.displayName) || "Unnamed place", kind: kind ? kindOf(kind).id : kindFromType(gp.primaryType),
-    type: gp.primaryType || "", address, area: areaFromAddress(address),
+    type: gp.primaryType || "", typeLabel: text(gp.primaryTypeDisplayName), address, area: areaFromAddress(address),
     lat: numOr(val(loc.lat)), lng: numOr(val(loc.lng)),
     rating: numOr(gp.rating), ratingCount: numOr(gp.userRatingCount),
     price: priceLevelOf(gp.priceLevel), priceRange: rangeOf(gp.priceRange),
@@ -65,7 +65,7 @@ export function toPlace(gp, kind) {
 
 // Newer fields Google may not accept yet. If a request with them fails, it's retried without them, and
 // they're left out from then on, so one unknown name can't break every search.
-const OPTIONAL = ["priceRange", "reviewSummary"];
+const OPTIONAL = ["priceRange", "reviewSummary", "primaryTypeDisplayName"];
 
 export function googleProvider(lib) {
   const dropped = new Set();

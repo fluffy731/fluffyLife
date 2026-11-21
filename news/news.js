@@ -1,6 +1,7 @@
 // Briefing: renders news/feed.json (built hourly on GitHub Actions by scripts/build-news.mjs).
 import { TABS, LEANS, LEAN_LABEL, storiesFor, leanCounts, skew, headline, ago, koLookup } from "./model.js";
 import { glossLang } from "../lib/dict.js";
+import { nav } from "../lib/nav.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -109,6 +110,13 @@ document.addEventListener("click", (e) => {
 });
 $("#sheet").addEventListener("click", (e) => { if (e.target.id === "sheet") $("#sheet").close(); });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && feed && Date.now() - Date.parse(feed.built) > 30 * 60e3) load(true); });
+
+// iPhone behaviour (lib/nav.js): Back, the left-edge swipe and a swipe down close the sheet, pulling down refreshes
+// the briefing, and tapping the tab you are on scrolls to the top.
+nav.watchDialog($("#sheet"), { swipeDown: true });
+nav.installEdgeSwipe();
+nav.pullToRefresh(window, () => load(true));
+nav.onTabReselect($("#tabs"), "button[data-tab]");
 
 render();
 load();

@@ -124,3 +124,23 @@
 .tmdb-credit { display: flex; align-items: center; gap: 12px; margin-top: 16px; padding: 12px 14px; border: 1px solid var(--hair); border-radius: 12px; background: var(--surface); }
 .tmdb-credit img { width: 64px; height: auto; flex: none; }
 .tmdb-credit p { margin: 0; font-size: 13px; line-height: 1.45; color: var(--muted); }
+
+/* Refresh: top right, beside the watchlist badge. The arrow turns while it fetches. */
+.top .refresh { margin-left: auto; display: grid; place-items: center; width: 44px; height: 44px; margin-right: -8px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--ink); touch-action: manipulation; }
+.top .badge { margin-left: 0; }
+.refresh svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.refresh:active { background: var(--surface-2); }
+.refresh.spin svg { animation: refresh-turn .9s linear infinite; }
+.refresh:disabled { opacity: .6; }
+@keyframes refresh-turn { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .refresh.spin svg { animation: none; } }
+
+/* People: a search result for an actor or director, the names on a film's sheet, and a person's own page. */
+.person-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px 8px 8px; text-align: left; color: var(--ink); font: inherit; }
+.avatar { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--route-soft); color: var(--route-ink); font: 800 16px var(--font-sign); letter-spacing: -.01em; }
+.sub-h { margin: 18px 0 8px; font-size: 14px; font-weight: 800; color: var(--muted); letter-spacing: .02em; }
+.row-t .why { color: var(--route-ink); font-weight: 600; }
+.who { display: inline; min-height: 0; padding: 0; border: 0; border-bottom: 1.5px solid var(--route); background: none; color: inherit; font: inherit; font-weight: 600; touch-action: manipulation; }
+.person-head { margin: 4px 0 2px; }
+.person-head h2 { margin: 0; }
+.person-sub { margin: 0 0 12px; color: var(--muted); font-size: 14px; }

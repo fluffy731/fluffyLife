@@ -152,10 +152,11 @@ export function surprise(films, stats, f, seen, rand = Math.random) {
 }
 
 // Films that share the director (+3), each lead actor (+2), or place, genre and era together (+1).
+export const LEADS = 3;
 export function moreLike(film, films, n = 10) {
-  const cast = new Set(film.cast.map((c) => c.id));
+  const cast = new Set(film.cast.slice(0, LEADS).map((c) => c.id));
   const score = (x) => (film.director && x.director?.id === film.director.id ? 3 : 0)
-    + 2 * x.cast.filter((c) => cast.has(c.id)).length
+    + 2 * x.cast.slice(0, LEADS).filter((c) => cast.has(c.id)).length
     + (x.era === film.era && x.places.some((p) => film.places.includes(p)) && x.genres.some((g) => film.genres.includes(g)) ? 1 : 0);
   return films.filter((x) => x.id !== film.id).map((x) => ({ x, s: score(x) })).filter((c) => c.s > 0)
     .sort((a, b) => b.s - a.s || b.x.votes - a.x.votes || a.x.id - b.x.id).slice(0, n).map((c) => c.x);
@@ -176,6 +177,65 @@ export function search(films, q, limit = 50) {
     else if (people.some((t) => t.includes(k))) hits.push({ x, rank: 2 });
   }
   return hits.sort((a, b) => a.rank - b.rank || b.x.votes - a.x.votes || a.x.id - b.x.id).slice(0, limit).map((h) => h.x);
+}
+
+// ---------- People: actors and directors ----------
+
+// Everyone in the catalogue by their TMDB id: { id, name, director: [films], cast: [films] }. Built once per feed.
+export function peopleIndex(films) {
+  const idx = new Map();
+  const add = (who, film, role) => {
+    if (!who || who.id == null || !who.name) return;
+    const p = idx.get(who.id) || { id: who.id, name: who.name, director: [], cast: [] };
+    p[role].push(film);
+    idx.set(who.id, p);
+  };
+  for (const f of films) { add(f.director, f, "director"); for (const c of f.cast || []) add(c, f, "cast"); }
+  return idx;
+}
+
+const words = (q) => fold(q).split(/[\s-]+/).filter(Boolean);
+const roleOf = (p) => (p.director.length && p.cast.length ? "Director · Actor" : p.director.length ? "Director" : "Actor");
+const filmsOf = (p) => [...new Map([...p.director, ...p.cast].map((f) => [f.id, f])).values()];
+
+// People whose name holds every typed word, in any order. A name that starts with what you typed comes first, then one
+// with a word that does, then the rest; within each, the most films first.
+export function searchPeople(idx, q, limit = 8) {
+  const ws = words(q);
+  if (!ws.length) return [];
+  const hits = [];
+  for (const p of idx.values()) {
+    const name = fold(p.name);
+    if (!ws.every((w) => name.includes(w))) continue;
+    const rank = name.startsWith(ws[0]) ? 0 : name.split(/[\s-]+/).some((t) => t.startsWith(ws[0])) ? 1 : 2;
+    hits.push({ p, rank, count: filmsOf(p).length });
+  }
+  return hits.sort((a, b) => a.rank - b.rank || b.count - a.count || a.p.id - b.p.id).slice(0, limit)
+    .map(({ p, count }) => ({ id: p.id, name: p.name, role: roleOf(p), count }));
+}
+
+// One person's films, best known (most rated) first.
+export function filmography(idx, id) {
+  const p = idx.get(id);
+  if (!p) return null;
+  return { id: p.id, name: p.name, role: roleOf(p), films: filmsOf(p).sort((a, b) => b.votes - a.votes || b.year - a.year || a.id - b.id) };
+}
+
+// Why a film came up for a search that isn't its title: its director or an actor. null when the title says it.
+export function matchedBy(film, q) {
+  const k = fold(q), ws = words(q);
+  if (!ws.length || [film.title, film.original].some((t) => fold(t).includes(k))) return null;
+  const has = (name) => ws.every((w) => fold(name).includes(w));
+  if (film.director && has(film.director.name)) return { role: "Directed by", name: film.director.name };
+  const actor = (film.cast || []).find((c) => has(c.name));
+  return actor ? { role: "With", name: actor.name } : null;
+}
+
+// After a refresh: did a new feed come, and was it newer?
+export function feedChange(old, next) {
+  if (!next) return "failed";
+  if (!old) return "updated";
+  return old.built !== next.built || old.films.length !== next.films.length ? "updated" : "same";
 }
 
 // ---------- Browse: each film once ----------

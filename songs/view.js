@@ -435,6 +435,8 @@ export function createSongs(c, L) {
   return {
     render: () => (ui.view === "add" ? addHTML() : ui.view === "import" ? importHTML() : ui.view === "song" ? songHTML() : listHTML()),
     click, change, input, settingsHTML, importSongs,
+    deep: () => ui.view !== "list",   // a song, the add form or the import form sits above the list: Back returns to it
+    leave: () => { ui.view = "list"; ui.open = -1; ui.relyrics = false; },
     exportSongs: () => songs.slice(),
   };
 }
