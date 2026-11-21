@@ -19,7 +19,7 @@ The bare address forwards to `/korean/`, so home-screen icons saved from it befo
 
 ## Moving around like an iPhone app
 
-The home-screen apps are single pages, so the browser's history knew nothing of their sheets and screens, and iOS's back swipe had nothing to go back to. `lib/nav.js` (with `lib/nav.css`) gives them the usual iPhone behaviour:
+The home-screen apps are single pages, so the browser's history knew nothing of their sheets and screens, and iOS's back swipe had nothing to go back to. `lib/nav.js` (with `lib/nav.css`) gives them the usual iPhone behaviour. **This is the default for every new app** and every new sheet or drill-in screen; the rule, with what is exempt, is in `CLAUDE.md` ("Default app design rule"):
 
 - **Back.** An open sheet or drill-in screen (a stock, a place, a film, a full list, a person's page, a song, the add form, a quiz result) is a *level*: opening one adds a history entry (same address, so apps that use the `#hash` are untouched). The browser's Back, iOS's own edge swipe, or the app's swipe from the left edge closes the top level. Tabs are not levels, so Back at the root does nothing, as on a tab-bar app. A quiz in progress is not a level either, so a stray swipe can't abandon it.
 - **Swipe down** closes a sheet, only from the top of its content so scrolling still works.
